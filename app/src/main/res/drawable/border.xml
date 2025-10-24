@@ -1,0 +1,28 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <!-- 단색으로 채워넣기 -->
+    <!-- <solid android:color="#FFFFFF" /> -->  
+
+    <!-- 테두리를 그려넣기 dashWidth와 dashGap은 점선을 그릴 때 사용 -->
+  <!-- 
+    <stroke
+        android:dashGap="2dp"
+        android:dashWidth="1dp"
+        android:width="3dp"
+        android:color="#BDBDBD" />
+-->
+    <stroke
+        android:width="1dp"
+        android:color="#000000" />
+    
+    <!-- 패딩 
+    <padding
+        android:bottom="7dp"
+        android:left="7dp"
+        android:right="7dp"
+        android:top="7dp" />
+-->
+    <!-- 가장자리를 둥글게 처리 -->
+    <corners android:radius="1dp" />
+
+</shape>

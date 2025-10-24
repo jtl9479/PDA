@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_enabled="false"  android:drawable="@drawable/setting_on_gray"/>
+    <item android:drawable="@drawable/setting_on_green" > <!-- default -->
+        <shape>
+            <size android:width="50dp" android:height="50dp"></size>
+        </shape>
+    </item>
+</selector>
+
+

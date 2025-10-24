@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="work_list">
+
+        <item >바코드</item>
+        <item >수기(중량)</item>
+        <item >상품코드</item>
+
+    </string-array>
+
+</resources>

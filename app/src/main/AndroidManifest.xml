@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.rgbsolution.highland_emart">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
+    <permission
+        android:name="com.highland.scanner.permission.SCANNER_RESULT_RECEIVER"
+        android:protectionLevel="normal" />
+
+    <uses-permission android:name="com.highland.scanner.permission.SCANNER_RESULT_RECEIVER" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/highland"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name="com.rgbsolution.highland_emart.LoginActivity">
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.rgbsolution.highland_emart.MainActivity"
+            android:label="@string/title_activity_main">
+        </activity>
+        <activity android:name="com.rgbsolution.highland_emart.ShipmentActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan"
+            android:label="@string/title_activity_wet">
+        </activity>
+        <activity android:name="com.rgbsolution.highland_emart.ProductionActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan"
+            android:label="계근작업2">
+        </activity>
+        <activity
+            android:name="com.rgbsolution.highland_emart.print.DeviceListActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/select_device"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Dialog" >
+        </activity>
+
+        <activity android:name="com.rgbsolution.highland_emart.ExpiryEnterActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan"
+            android:label="유통기한입력">
+        </activity>
+
+        <activity android:name="com.rgbsolution.highland_emart.SettingActivity"
+            android:label="@string/title_activity_setting">
+        </activity>
+
+        <receiver
+            android:name="com.rgbsolution.highland_emart.scanner.ScannerActivity$ScanResultReceiver"
+            android:enabled="true"
+            android:permission="com.highland.scanner.permission.SCANNER_RESULT_RECEIVER"
+            android:priority="0" >
+            <intent-filter>
+                <action android:name="device.common.USERMSG" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

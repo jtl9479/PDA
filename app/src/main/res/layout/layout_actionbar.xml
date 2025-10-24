@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_gravity="center"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/txt_title"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="7"
+        android:gravity="center_vertical"
+        android:text="계근입력"
+        android:textSize="20dp"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:id="@+id/btn_init"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/txt_print"
+        android:layout_marginRight="5dp"
+        android:layout_centerVertical="true"
+        android:text="스캔순서\n초기화"
+        android:textColor="@android:color/white"
+        android:background="@color/colorPrimaryDark"/>
+
+    <TextView
+        android:id="@+id/txt_print"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@+id/swt_print"
+        android:text="인쇄"
+        android:textColor="@android:color/white"/>
+
+    <android.support.v7.widget.SwitchCompat
+        android:id="@+id/swt_print"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"/>
+
+</RelativeLayout>

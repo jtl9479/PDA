@@ -1,0 +1,123 @@
+<resources>
+    <string name="app_name">(주)하이랜드이노베이션</string>
+
+    <string name="title_activity_login">로그인</string>
+    <string name="title_activity_main">메인화면</string>
+    <string name="title_activity_download">출하대상 다운로드</string>
+    <string name="title_activity_wet">계근작업</string>
+    <string name="title_activity_setting">프린터설정</string>
+    <string name="title_activity_print_setting">프린터 설정</string>
+    <string name="title_activity_scanner">ScannerActivity</string>
+    <string name="exit_message">프로그램을 종료하시겠습니까?</string>
+    <string name="exit_yes">종료</string>
+    <string name="exit_no">취소</string>
+
+    <!-- URL 주소 -->
+
+<!-- 운영서버 주소 -->
+<string name="URL_VERSION">http://175.120.155.125:4040/inno/check_version.jsp</string>
+<string name="URL_LOGIN">http://175.120.155.125:4040/inno/manager_login.jsp</string>
+<string name="URL_SEARCH_SHIPMENT">http://175.120.155.125:4040/inno/search_shipment.jsp</string>
+<string name="URL_SEARCH_SHIPMENT_HOMEPLUS">http://175.120.155.125:4040/inno/search_shipment_homeplus.jsp</string>
+<string name="URL_SEARCH_SHIPMENT_LOTTE">http://175.120.155.125:4040/inno/search_shipment_lotte.jsp</string>
+<string name="URL_SEARCH_SHIPMENT_WHOLESALE">http://175.120.155.125:4040/inno/search_shipment_wholesale.jsp</string>
+<string name="URL_SEARCH_PRODUCTION">http://175.120.155.125:4040/inno/search_production.jsp</string>
+<string name="URL_SEARCH_PRODUCTION_4LABEL">http://175.120.155.125:4040/inno/search_production_4label.jsp</string>
+<string name="URL_SEARCH_BARCODE_INFO">http://175.120.155.125:4040/inno/search_barcode_info.jsp</string>
+<string name="URL_SEARCH_BARCODE_INFO_NONFIXED">http://175.120.155.125:4040/inno/search_barcode_info_nonfixed.jsp</string>
+<string name="URL_SEARCH_GOODS_WET">http://175.120.155.125:4040/inno/search_goods_wet.jsp</string>
+<string name="URL_INSERT_GOODS_WET">http://175.120.155.125:4040/inno/insert_goods_wet.jsp</string>
+<string name="URL_INSERT_GOODS_WET_NEW">http://175.120.155.125:4040/inno/insert_goods_wet_new.jsp</string>
+<string name="URL_INSERT_GOODS_WET_HOMEPLUS">http://175.120.155.125:4040/inno/insert_goods_wet_homeplus.jsp</string>
+<string name="URL_INSERT_BARCODE_INFO">http://175.120.155.125:4040/inno/insert_barcode_info.jsp</string>
+<string name="URL_UPDATE_BARCODE_INFO">http://175.120.155.125:4040/inno/update_barcode_info.jsp</string>
+<string name="URL_UPDATE_SHIPMENT">http://175.120.155.125:4040/inno/update_shipment.jsp</string>
+<string name="URL_WET_PRODUCTION_CALC">http://175.120.155.125:4040/inno/search_production_calc.jsp</string>
+<string name="URL_SEARCH_PRODUCTION_NONFIXED">http://175.120.155.125:4040/inno/search_production_nonfixed.jsp</string>
+<string name="URL_SEARCH_HOMEPLUS_NONFIXED">http://175.120.155.125:4040//inno/search_homeplus_nonfixed.jsp</string>
+<string name="URL_SEARCH_HOMEPLUS_NONFIXED2">http://175.120.155.125:4040//inno/search_homeplus_nonfixed2.jsp</string>
+
+    <!-- JH LOCAL  -->
+    <!--<string name="URL_VERSION">http://172.30.10.116:4040/inno/check_version.jsp</string>-->
+    <!--<string name="URL_LOGIN">http://172.30.10.116:4040/inno/manager_login.jsp</string>-->
+    <!--<string name="URL_SEARCH_SHIPMENT">http://172.30.10.116:4040/inno/search_shipment.jsp</string>-->
+    <!--<string name="URL_SEARCH_SHIPMENT_HOMEPLUS">http://172.30.10.116:4040/inno/search_shipment_homeplus.jsp</string>-->
+    <!--<string name="URL_SEARCH_SHIPMENT_LOTTE">http://172.30.10.116:4040/inno/search_shipment_lotte.jsp</string>-->
+    <!--<string name="URL_SEARCH_SHIPMENT_WHOLESALE">http://172.30.10.116:4040/inno/search_shipment_wholesale.jsp</string>-->
+    <!--<string name="URL_SEARCH_PRODUCTION">http://172.30.10.116:4040/inno/search_production.jsp</string>-->
+    <!--<string name="URL_SEARCH_PRODUCTION_4LABEL">http://172.30.10.116:4040/inno/search_production_4label.jsp</string>-->
+    <!--<string name="URL_SEARCH_BARCODE_INFO">http://172.30.10.116:4040/inno/search_barcode_info.jsp</string>-->
+    <!--<string name="URL_SEARCH_BARCODE_INFO_NONFIXED">http://172.30.10.116:4040/inno/search_barcode_info_nonfixed.jsp</string>-->
+    <!--<string name="URL_SEARCH_GOODS_WET">http://172.30.10.116:4040/inno/search_goods_wet.jsp</string>-->
+    <!--<string name="URL_INSERT_GOODS_WET">http://172.30.10.116:4040/inno/insert_goods_wet.jsp</string>-->
+    <!--<string name="URL_INSERT_GOODS_WET_NEW">http://172.30.10.116:4040/inno/insert_goods_wet_new.jsp</string>-->
+    <!--<string name="URL_INSERT_GOODS_WET_HOMEPLUS">http://172.30.10.116:4040/inno/insert_goods_wet_homeplus.jsp</string>-->
+    <!--<string name="URL_INSERT_BARCODE_INFO">http://172.30.10.116:4040/inno/insert_barcode_info.jsp</string>-->
+    <!--<string name="URL_UPDATE_BARCODE_INFO">http://172.30.10.116:4040/inno/update_barcode_info.jsp</string>-->
+    <!--<string name="URL_UPDATE_SHIPMENT">http://172.30.10.116:4040/inno/update_shipment.jsp</string>-->
+    <!--<string name="URL_WET_PRODUCTION_CALC">http://172.30.10.116:4040/inno/search_production_calc.jsp</string>-->
+    <!--<string name="URL_SEARCH_PRODUCTION_NONFIXED">http://172.30.10.116:4040/inno/search_production_nonfixed.jsp</string>-->
+    <!--<string name="URL_SEARCH_HOMEPLUS_NONFIXED">http://172.30.10.116:4040//inno/search_homeplus_nonfixed.jsp</string>-->
+    <!--<string name="URL_SEARCH_HOMEPLUS_NONFIXED2">http://172.30.10.116:4040//inno/search_homeplus_nonfixed2.jsp</string>-->
+    
+    <string name="shipment_wet_finish">계근 완료</string>
+    <string name="shipment_wet_finish_msg">모든 지점 계근 완료</string>
+
+    <string name="shipment_wet_next">다음 지점을 계근하시겠습니까?</string>
+    <string name="shipment_wet_next_msg">다른 지점을 이어서 계근하세요.</string>
+
+    <string name="shipment_wet_ok">확인</string>
+    <string name="shipment_wet_yes">예</string>
+    <string name="shipment_wet_no">아니요</string>
+
+    <string name="shipment_wet_other">상품 변경</string>
+    <string name="shipment_wet_other_msg">다른 상품을 계근하시겠습니가?</string>
+
+    <string name="shipment_wet_send">계근 전송</string>
+    <string name="shipment_wet_send_msg">전송하시겠습니까?</string>
+
+    <string name="shipment_wet_send_finish">전송 완료</string>
+    <string name="shipment_wet_send_finish_msg">다른 상품 계근을 시작하세요.</string>
+
+    <string name="toast_bt_na">bluetooth is not available</string>
+    <string name="bt_not_enabled_leaving">Bluetooth was not enabled. Leaving Bluetooth print.</string>
+    <string name="connect_fail">Unable to connect device</string>
+    <string name="connect_lost">Device connection was lost</string>
+    <string name="secure_connect">Connect a device - Secure</string>
+    <string name="insecure_connect">Connect a device - Insecure</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="title_paired_devices">Paired Devices</string>
+    <string name="title_other_devices">Other Available Devices</string>
+    <string name="button_scan">Scan for devices</string>
+    <string name="none_paired">No devices have been paired</string>
+    <string name="scanning">scanning for devices....</string>
+    <string name="select_device">select a device to connect</string>
+    <string name="none_found">No devices found</string>
+    <string name="not_connected">You are not connected to a device</string>
+    <string name="warn_timeout">Connection is not available.\nData sending is cancelled.</string>
+    <string name="sample_print">Sample Printing</string>
+    <string name="receipt">Receipt</string>
+    <string name="image">Image</string>
+    <string name="text_print">ASCII Text Printing</string>
+    <string name="edit_text">Enter sample text</string>
+    <string name="print">Print</string>
+    <string name="emphasis">Emphasis</string>
+    <string name="underline">Underline</string>
+    <string name="charsize">Character Size</string>
+    <string name="justification">Justification</string>
+    <string name="left">Left</string>
+    <string name="center">Center</string>
+    <string name="right">Right</string>
+    <string name="sample_barcode">Sample Barcode Printing</string>
+    <string name="barcode_1d">1D barcodes</string>
+    <string name="barcode_2d">2D barcodes</string>
+    <string name="barcode_gs1">GS1 databars</string>
+    <string name="msr_mode_setting">MSR Mode Setting</string>
+    <string name="track23">2 Track Mode</string>
+    <string name="track123">3 Track Mode</string>
+    <string name="msr_cancel">Cancel MSR Mode</string>
+    <string name="msr_clear">Clear Track Info</string>
+    <string name="msr_1track">1st Track</string>
+    <string name="msr_2track">2nd Track</string>
+    <string name="msr_3track">3rd Track</string>
+</resources>

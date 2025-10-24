@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="emart_center_list">
+
+        <item >CJ용인(W)</item>
+        <item >CJ진량(W)</item>
+        <item >대구TRD</item>
+        <item >대구이마트TC</item>
+        <item >시화TRD</item>
+        <item >여주TRD</item>
+        <item >여주이마트TC</item>
+
+    </string-array>
+
+</resources>

@@ -1,0 +1,85 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:layout_marginLeft="15dp"
+    android:layout_marginRight="15dp"
+    android:gravity="center"
+    tools:context="com.rgbsolution.highland_emart.MainActivity" >
+
+    <Button
+        android:id="@+id/btnDay"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/round_button"
+        android:onClick="onClick"
+        android:text="날짜 설정"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="113dp"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/round_button"
+        android:onClick="onClick"
+        android:text="출하대상삭제"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/buttonDelete"
+        android:layout_width="70dp"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/round_button"
+        android:onClick="onClick"
+        android:text="출하대상삭제"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btnDownload"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/round_button"
+        android:onClick="onClick"
+        android:text="출하대상받기"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btnWet"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="계근입력 시작"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/round_button"
+        android:layout_margin="10dp"
+        android:onClick="onClick" />
+
+    <Button
+        android:id="@+id/btnSetting"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="설정"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/round_button"
+        android:layout_margin="10dp"
+        android:onClick="onClick" />
+
+    <Button
+        android:id="@+id/btnClose"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/round_button"
+        android:onClick="onClick"
+        android:text="종 료"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>
