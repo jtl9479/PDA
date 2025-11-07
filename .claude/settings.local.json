@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gradlew.bat clean)",
+      "Bash(./gradlew clean:*)",
+      "Read(//d//**)",
+      "Bash(java -version:*)",
+      "Bash(del doc.md)",
+      "Bash(python:*)",
+      "Bash(powershell:*)",
+      "Bash(gradlew.bat:*)",
+      "Bash(cmd /c gradlew.bat --version)",
+      "Bash(./gradlew.bat:*)",
+      "Read(//c/Users/user/AppData/Local/Android/Sdk/platforms/**)",
+      "Bash(find:*)",
+      "Bash(if not exist \"D:\\PDA\\PDA-INNO\\app\\doc\" mkdir \"D:\\PDA\\PDA-INNO\\app\\doc\")",
+      "Bash(if [ ! -d \"D:/PDA/PDA-INNO/app/doc\" ])",
+      "Bash(then mkdir -p \"D:/PDA/PDA-INNO/app/doc\")",
+      "Bash(fi)",
+      "Bash(test -d \"D:\\PDA\\PDA-INNO\\app\\doc\")",
+      "Bash(findstr:*)",
+      "Bash(cmd /c \"gradlew.bat --version\")",
+      "Bash(tree:*)",
+      "Bash(dir:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
