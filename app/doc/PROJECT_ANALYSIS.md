@@ -219,16 +219,16 @@ PACKER CODE + PP CODE 입력
 
 ### 3.2 작업 유형별 분류
 
-| searchType | 작업명 | 설명 | API URL |
-|------------|--------|------|---------|
-| 0 | 일반 출하대상 | 이마트 일반 출하 | URL_SEARCH_SHIPMENT |
-| 1 | 생산대상 | 생산 계근 | URL_SEARCH_PRODUCTION |
-| 2 | 홈플러스 출하 | 홈플러스 하이퍼 출고 | URL_SEARCH_SHIPMENT_HOMEPLUS |
-| 3 | 도매업체 출하 | 도매업체 출고 | URL_SEARCH_SHIPMENT_WHOLESALE |
-| 4 | 비정량 출하 | 비정량 출고 | URL_SEARCH_PRODUCTION_NONFIXED |
-| 5 | 홈플러스 비정량 | 홈플러스 비정량 출고 | URL_SEARCH_PRODUCTION_NONFIXED |
-| 6 | 롯데 출하 | 롯데마트 출고 | URL_SEARCH_SHIPMENT_LOTTE |
-| 7 | 생산대상(라벨) | 라벨 출력용 생산 계근 | URL_SEARCH_PRODUCTION |
+| searchType | 작업명      | 설명           | API URL                        |
+| ---------- | -------- | ------------ | ------------------------------ |
+| 0          | 일반 출하대상  | 이마트 일반 출하    | URL_SEARCH_SHIPMENT            |
+| 1          | 생산대상     | 생산 계근        | URL_SEARCH_PRODUCTION          |
+| 2          | 홈플러스 출하  | 홈플러스 하이퍼 출고  | URL_SEARCH_SHIPMENT_HOMEPLUS   |
+| 3          | 도매업체 출하  | 도매업체 출고      | URL_SEARCH_SHIPMENT_WHOLESALE  |
+| 4          | 비정량 출하   | 비정량 출고       | URL_SEARCH_PRODUCTION_NONFIXED |
+| 5          | 홈플러스 비정량 | 홈플러스 비정량 출고  | URL_SEARCH_PRODUCTION_NONFIXED |
+| 6          | 롯데 출하    | 롯데마트 출고      | URL_SEARCH_SHIPMENT_LOTTE      |
+| 7          | 생산대상(라벨) | 라벨 출력용 생산 계근 | URL_SEARCH_PRODUCTION          |
 
 ### 3.3 핵심 비즈니스 가치
 

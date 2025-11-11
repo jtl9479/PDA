@@ -62,7 +62,7 @@
                 android:layout_gravity="center"
                 android:layout_weight="7"
                 android:gravity="center_vertical"
-                android:hint="아이디를 입력하세요."
+                android:hint="sgi"
                 android:singleLine="true" />
 
         </LinearLayout>

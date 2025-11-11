@@ -80,6 +80,7 @@ public static ArrayList<Shipments_Info> selectqueryShipment(
 
 **반환**: `ArrayList<Shipments_Info>` - 출하 정보 리스트
 
+
 **SQL 쿼리**:
 ```sql
 SELECT * FROM TB_SHIPMENT

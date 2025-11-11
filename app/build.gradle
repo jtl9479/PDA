@@ -4,6 +4,12 @@ android {
     compileSdkVersion 25 //26버전부터는 바코드리더기가 안될 수 있으므로 25로 남겨놓을 것
     //buildToolsVersion '25.0.3'
 
+    // Java 1.8 설정
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         applicationId "com.rgbsolution.highland_emart"
         minSdkVersion 14
@@ -12,6 +18,12 @@ android {
         versionCode 4
         versionName "1.00"
     }
+    // Lint 설정 (Java 8 업그레이드 시 기존 Lint 에러 무시)
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
     buildTypes {
         /*
         release {

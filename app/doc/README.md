@@ -97,15 +97,15 @@ Highland EMART PDA 시스템은 물류 창고에서 사용되는 Android 기반 
 
 ### 🔧 Common/Utility (공통 유틸리티)
 
-| 문서 | 클래스명 | 라인 수 | 주요 기능 |
-|------|----------|---------|-----------|
-| [Common](./Common.md) | Common | 81 | 전역 상수, URL 정의, 공통 변수 |
-| [HttpHelper](./HttpHelper.md) | HttpHelper | 130 | HTTP POST 통신, EUC-KR 인코딩 |
-| [Base64](./Base64.md) | Base64 | 124 | Base64 인코딩/디코딩 유틸리티 |
-| [ProgressDlgShipSearch](./ProgressDlgShipSearch.md) | ProgressDlgShipSearch | 322 | 출하 데이터 다운로드 AsyncTask |
-| [ProgressDlgGoodsWetSearch](./ProgressDlgGoodsWetSearch.md) | ProgressDlgGoodsWetSearch | 188 | 계근 데이터 조회 AsyncTask |
-| [ProgressDlgBarcodeSearch](./ProgressDlgBarcodeSearch.md) | ProgressDlgBarcodeSearch | 201 | 바코드 정보 조회 AsyncTask |
-| [ProgressDlgNewBarcodeInfo](./ProgressDlgNewBarcodeInfo.md) | ProgressDlgNewBarcodeInfo | 108 | 신규 바코드 등록 AsyncTask |
+| 문서                                                          | 클래스명                      | 라인 수 | 주요 기능                    |
+| ----------------------------------------------------------- | ------------------------- | ---- | ------------------------ |
+| [Common](./Common.md)                                       | Common                    | 81   | 전역 상수, URL 정의, 공통 변수     |
+| [HttpHelper](./HttpHelper.md)                               | HttpHelper                | 130  | HTTP POST 통신, EUC-KR 인코딩 |
+| [Base64](./Base64.md)                                       | Base64                    | 124  | Base64 인코딩/디코딩 유틸리티      |
+| [ProgressDlgShipSearch](./ProgressDlgShipSearch.md)         | ProgressDlgShipSearch     | 322  | 출하 데이터 다운로드 AsyncTask    |
+| [ProgressDlgGoodsWetSearch](./ProgressDlgGoodsWetSearch.md) | ProgressDlgGoodsWetSearch | 188  | 계근 데이터 조회 AsyncTask      |
+| [ProgressDlgBarcodeSearch](./ProgressDlgBarcodeSearch.md)   | ProgressDlgBarcodeSearch  | 201  | 바코드 정보 조회 AsyncTask      |
+| [ProgressDlgNewBarcodeInfo](./ProgressDlgNewBarcodeInfo.md) | ProgressDlgNewBarcodeInfo | 108  | 신규 바코드 등록 AsyncTask      |
 
 **AsyncTask 패턴**:
 - `doInBackground()`: HTTP 통신 및 XML 파싱
@@ -116,10 +116,10 @@ Highland EMART PDA 시스템은 물류 창고에서 사용되는 Android 기반 
 
 ### 🖨️ Print/Scanner (하드웨어 통신)
 
-| 문서 | 클래스명 | 라인 수 | 주요 기능 |
-|------|----------|---------|-----------|
-| [BluetoothPrintService](./BluetoothPrintService.md) | BluetoothPrintService | 316 | 블루투스 프린터 SPP 통신 서비스 |
-| [Constants](./Constants.md) | Constants | 47 | PM80 스캐너 Intent 액션 상수 |
+| 문서                                                  | 클래스명                  | 라인 수 | 주요 기능                 |
+| --------------------------------------------------- | --------------------- | ---- | --------------------- |
+| [BluetoothPrintService](./BluetoothPrintService.md) | BluetoothPrintService | 316  | 블루투스 프린터 SPP 통신 서비스   |
+| [Constants](./Constants.md)                         | Constants             | 47   | PM80 스캐너 Intent 액션 상수 |
 
 **프린터 통신 흐름**:
 ```

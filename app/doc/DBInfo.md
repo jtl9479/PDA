@@ -7,7 +7,7 @@ DBInfo 클래스는 Highland E-mart PDA 애플리케이션의 데이터베이스
 - **패키지**: `com.rgbsolution.highland_emart.db`
 - **총 라인 수**: 126줄
 - **타입**: 데이터베이스 스키마 상수 정의 클래스
-
+ 
 ## 테이블 구조
 
 ### 1. 테이블명 상수

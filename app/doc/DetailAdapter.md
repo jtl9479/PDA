@@ -2,11 +2,14 @@
 
 ## 개요
 
+Adapter는 데이터(Model)와 UI(View)를 연결하는 중간 다리 역할을 합니다. 안드로이드의 ListView, GridView 같은 목록형 UI에 데이터를 표시하기 위해 필수적입니다.
+
 `DetailAdapter`는 계근 상세 내역을 표시하는 BaseAdapter 구현체입니다. 총 200줄의 코드로 구성되어 있으며, ViewHolder 패턴을 사용하여 리스트 뷰의 성능을 최적화합니다.
 
 **파일 경로**: `D:\PDA\PDA-INNO\app\src\main\java\com\rgbsolution\highland_emart\adapter\DetailAdapter.java`
 
 ### 주요 기능
+계근(무게 측정) 상세 내역을 ListView에 표시
 - 계근 상세 내역 리스트 표시
 - 박스별 정보 출력 (순번, 박스시리얼, 포장코드, 중량, 제조일)
 - 항목별 선택 상태 관리 (CheckBox 상태)

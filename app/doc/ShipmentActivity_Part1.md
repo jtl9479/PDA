@@ -25,6 +25,7 @@ public class ShipmentActivity extends ScannerActivity
 
 - **상속**: `ScannerActivity`
   - PM80 하드웨어 바코드 스캐너 기능 제공
+  - 
   - `setMessage()` 메서드를 오버라이드하여 스캔 결과 처리
 - **주요 역할**: 출하/생산 계근(무게 측정) 작업의 핵심 Activity
 - **지원 유형**:
