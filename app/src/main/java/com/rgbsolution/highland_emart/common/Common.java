@@ -5,56 +5,38 @@ import android.util.Log;
 import java.util.ArrayList;
 
 public class Common {
-
     private static final String TAG = "Common";
-
     public static boolean D = true;        // Debug ? true : false
 
-//	public static String URL_VERSION = "http://192.168.0.11:8080/highland/check_version.jsp";
-//	public static String URL_LOGIN = "http://192.168.0.11:8080/manager_login.jsp";
-//	public static String URL_SEARCH_SHIPMENT = "http://192.168.0.11:8080/search_shipment.jsp";
-//	public static String URL_SEARCH_BARCODE_INFO = "http://192.168.0.11:8080/search_barcode_info.jsp";
-//	public static String URL_SEARCH_GOODS_WET = "http://192.168.0.11:8080/search_goods_wet.jsp";
-//	public static String URL_INSERT_GOODS_WET = "http://192.168.0.11:8080/insert_goods_wet.jsp";
-//	public static String URL_INSERT_BARCODE_INFO = "http://192.168.0.11:8080/insert_barcode_info.jsp";
-//	public static String URL_UPDATE_BARCODE_INFO = "http://192.168.0.11:8080/update_barcode_info.jsp";
-//	public static String URL_UPDATE_SHIPMENT = "http://192.168.0.11:8080/update_shipment.jsp";
+    // 베이스 URL (서버 변경 시 여기만 수정)
+    // public static final String BASE_URL = "http://175.120.155.125:4040/inno";  // 운영서버
+    public static final String BASE_URL = "http://49.50.173.44:4040/inno";  // 개발서버
 
-    //	데이터 조회, 추가, 수정을 위한 주소			test
-    public static String URL_VERSION = "";
-    public static String URL_LOGIN = "";
-    public static String URL_SEARCH_SHIPMENT = "";
-    public static String URL_SEARCH_SHIPMENT_HOMEPLUS = "";
-    public static String URL_SEARCH_SHIPMENT_WHOLESALE = "";
-    public static String URL_SEARCH_SHIPMENT_LOTTE = "";
-    public static String URL_SEARCH_PRODUCTION = "";
-    public static String URL_SEARCH_PRODUCTION_4LABEL = "";
-    public static String URL_SEARCH_BARCODE_INFO = "";
-    public static String URL_SEARCH_GOODS_WET = "";
-    public static String URL_INSERT_GOODS_WET = "";
-    public static String URL_INSERT_GOODS_WET_NEW = "";
-    public static String URL_INSERT_GOODS_WET_HOMEPLUS = "";
-    public static String URL_INSERT_BARCODE_INFO = "";
-    public static String URL_UPDATE_BARCODE_INFO = "";
-    public static String URL_UPDATE_SHIPMENT = "";
-    public static String URL_WET_PRODUCTION_CALC = "";
-    public static String URL_SEARCH_PRODUCTION_NONFIXED = "";
-    public static String URL_SEARCH_BARCODE_INFO_NONFIXED = "";
-    // homeplus 비정량
-    public static String URL_SEARCH_HOMEPLUS_NONFIXED = "";
-    public static String URL_SEARCH_HOMEPLUS_NONFIXED2 = "";
-//
 
-    //	데이터 조회, 추가, 수정을 위한 주소			real
-//	public static String URL_LOGIN = "http://183.111.165.158:8080/highland/real/manager_login.jsp";
-//	public static String URL_SEARCH_SHIPMENT = "http://183.111.165.158:8080/highland/real/search_shipment.jsp";
-//	public static String URL_SEARCH_BARCODE_INFO = "http://183.111.165.158:8080/highland/real/search_barcode_info.jsp";
-//	public static String URL_SEARCH_GOODS_WET = "http://183.111.165.158:8080/highland/real/search_goods_wet.jsp";
-//	public static String URL_INSERT_GOODS_WET = "http://183.111.165.158:8080/highland/real/insert_goods_wet.jsp";
-//	public static String URL_INSERT_BARCODE_INFO = "http://183.111.165.158:8080/highland/real/insert_barcode_info.jsp";
-//	public static String URL_UPDATE_BARCODE_INFO = "http://183.111.165.158:8080/highland/real/update_barcode_info.jsp";
-//	public static String URL_UPDATE_SHIPMENT = "http://183.111.165.158:8080/highland/real/update_shipment.jsp";
-//
+    // URL 변수
+    public static final String URL_VERSION = BASE_URL + "/check_version.jsp";
+    public static final String URL_LOGIN = BASE_URL + "/manager_login.jsp";
+    public static final String URL_SEARCH_SHIPMENT = BASE_URL + "/search_shipment.jsp";
+    public static final String URL_SEARCH_SHIPMENT_HOMEPLUS = BASE_URL + "/search_shipment_homeplus.jsp";
+    public static final String URL_SEARCH_SHIPMENT_WHOLESALE = BASE_URL + "/search_shipment_wholesale.jsp";
+    public static final String URL_SEARCH_SHIPMENT_LOTTE = BASE_URL + "/search_shipment_lotte.jsp";
+    public static final String URL_SEARCH_PRODUCTION = BASE_URL + "/search_production.jsp";
+    public static final String URL_SEARCH_PRODUCTION_4LABEL = BASE_URL + "/search_production_4label.jsp";
+    public static final String URL_SEARCH_BARCODE_INFO = BASE_URL + "/search_barcode_info.jsp";
+    public static final String URL_SEARCH_BARCODE_INFO_NONFIXED = BASE_URL + "/search_barcode_info_nonfixed.jsp";
+    public static final String URL_SEARCH_GOODS_WET = BASE_URL + "/search_goods_wet.jsp";
+    public static final String URL_INSERT_GOODS_WET = BASE_URL + "/insert_goods_wet.jsp";
+    public static final String URL_INSERT_GOODS_WET_NEW = BASE_URL + "/insert_goods_wet_new.jsp";
+    public static final String URL_INSERT_GOODS_WET_HOMEPLUS = BASE_URL + "/insert_goods_wet_homeplus.jsp";
+    public static final String URL_INSERT_BARCODE_INFO = BASE_URL + "/insert_barcode_info.jsp";
+    public static final String URL_UPDATE_BARCODE_INFO = BASE_URL + "/update_barcode_info.jsp";
+    public static final String URL_UPDATE_SHIPMENT = BASE_URL + "/update_shipment.jsp";
+    public static final String URL_WET_PRODUCTION_CALC = BASE_URL + "/search_production_calc.jsp";
+    public static final String URL_SEARCH_PRODUCTION_NONFIXED = BASE_URL + "/search_production_nonfixed.jsp";
+    public static final String URL_SEARCH_HOMEPLUS_NONFIXED = BASE_URL + "/search_homeplus_nonfixed.jsp";
+    public static final String URL_SEARCH_HOMEPLUS_NONFIXED2 = BASE_URL + "/search_homeplus_nonfixed2.jsp";
+
+    public static String COMPANY_CODE = "20";                   // 사용자 ID
     public static String REG_ID = "";                   // 사용자 ID
     public static String USER_TYPE = "";                // 사용자 권한
     public static boolean search_bool = false;

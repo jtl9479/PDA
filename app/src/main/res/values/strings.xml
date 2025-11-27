@@ -12,54 +12,6 @@
     <string name="exit_yes">종료</string>
     <string name="exit_no">취소</string>
 
-    <!-- URL 주소 -->
-
-<!-- 운영서버 주소 -->
-<string name="URL_VERSION">http://175.120.155.125:4040/inno/check_version.jsp</string>
-<string name="URL_LOGIN">http://175.120.155.125:4040/inno/manager_login.jsp</string>
-<string name="URL_SEARCH_SHIPMENT">http://175.120.155.125:4040/inno/search_shipment.jsp</string>
-<string name="URL_SEARCH_SHIPMENT_HOMEPLUS">http://175.120.155.125:4040/inno/search_shipment_homeplus.jsp</string>
-<string name="URL_SEARCH_SHIPMENT_LOTTE">http://175.120.155.125:4040/inno/search_shipment_lotte.jsp</string>
-<string name="URL_SEARCH_SHIPMENT_WHOLESALE">http://175.120.155.125:4040/inno/search_shipment_wholesale.jsp</string>
-<string name="URL_SEARCH_PRODUCTION">http://175.120.155.125:4040/inno/search_production.jsp</string>
-<string name="URL_SEARCH_PRODUCTION_4LABEL">http://175.120.155.125:4040/inno/search_production_4label.jsp</string>
-<string name="URL_SEARCH_BARCODE_INFO">http://175.120.155.125:4040/inno/search_barcode_info.jsp</string>
-<string name="URL_SEARCH_BARCODE_INFO_NONFIXED">http://175.120.155.125:4040/inno/search_barcode_info_nonfixed.jsp</string>
-<string name="URL_SEARCH_GOODS_WET">http://175.120.155.125:4040/inno/search_goods_wet.jsp</string>
-<string name="URL_INSERT_GOODS_WET">http://175.120.155.125:4040/inno/insert_goods_wet.jsp</string>
-<string name="URL_INSERT_GOODS_WET_NEW">http://175.120.155.125:4040/inno/insert_goods_wet_new.jsp</string>
-<string name="URL_INSERT_GOODS_WET_HOMEPLUS">http://175.120.155.125:4040/inno/insert_goods_wet_homeplus.jsp</string>
-<string name="URL_INSERT_BARCODE_INFO">http://175.120.155.125:4040/inno/insert_barcode_info.jsp</string>
-<string name="URL_UPDATE_BARCODE_INFO">http://175.120.155.125:4040/inno/update_barcode_info.jsp</string>
-<string name="URL_UPDATE_SHIPMENT">http://175.120.155.125:4040/inno/update_shipment.jsp</string>
-<string name="URL_WET_PRODUCTION_CALC">http://175.120.155.125:4040/inno/search_production_calc.jsp</string>
-<string name="URL_SEARCH_PRODUCTION_NONFIXED">http://175.120.155.125:4040/inno/search_production_nonfixed.jsp</string>
-<string name="URL_SEARCH_HOMEPLUS_NONFIXED">http://175.120.155.125:4040//inno/search_homeplus_nonfixed.jsp</string>
-<string name="URL_SEARCH_HOMEPLUS_NONFIXED2">http://175.120.155.125:4040//inno/search_homeplus_nonfixed2.jsp</string>
-
-    <!-- JH LOCAL  -->
-    <!--<string name="URL_VERSION">http://172.30.10.116:4040/inno/check_version.jsp</string>-->
-    <!--<string name="URL_LOGIN">http://172.30.10.116:4040/inno/manager_login.jsp</string>-->
-    <!--<string name="URL_SEARCH_SHIPMENT">http://172.30.10.116:4040/inno/search_shipment.jsp</string>-->
-    <!--<string name="URL_SEARCH_SHIPMENT_HOMEPLUS">http://172.30.10.116:4040/inno/search_shipment_homeplus.jsp</string>-->
-    <!--<string name="URL_SEARCH_SHIPMENT_LOTTE">http://172.30.10.116:4040/inno/search_shipment_lotte.jsp</string>-->
-    <!--<string name="URL_SEARCH_SHIPMENT_WHOLESALE">http://172.30.10.116:4040/inno/search_shipment_wholesale.jsp</string>-->
-    <!--<string name="URL_SEARCH_PRODUCTION">http://172.30.10.116:4040/inno/search_production.jsp</string>-->
-    <!--<string name="URL_SEARCH_PRODUCTION_4LABEL">http://172.30.10.116:4040/inno/search_production_4label.jsp</string>-->
-    <!--<string name="URL_SEARCH_BARCODE_INFO">http://172.30.10.116:4040/inno/search_barcode_info.jsp</string>-->
-    <!--<string name="URL_SEARCH_BARCODE_INFO_NONFIXED">http://172.30.10.116:4040/inno/search_barcode_info_nonfixed.jsp</string>-->
-    <!--<string name="URL_SEARCH_GOODS_WET">http://172.30.10.116:4040/inno/search_goods_wet.jsp</string>-->
-    <!--<string name="URL_INSERT_GOODS_WET">http://172.30.10.116:4040/inno/insert_goods_wet.jsp</string>-->
-    <!--<string name="URL_INSERT_GOODS_WET_NEW">http://172.30.10.116:4040/inno/insert_goods_wet_new.jsp</string>-->
-    <!--<string name="URL_INSERT_GOODS_WET_HOMEPLUS">http://172.30.10.116:4040/inno/insert_goods_wet_homeplus.jsp</string>-->
-    <!--<string name="URL_INSERT_BARCODE_INFO">http://172.30.10.116:4040/inno/insert_barcode_info.jsp</string>-->
-    <!--<string name="URL_UPDATE_BARCODE_INFO">http://172.30.10.116:4040/inno/update_barcode_info.jsp</string>-->
-    <!--<string name="URL_UPDATE_SHIPMENT">http://172.30.10.116:4040/inno/update_shipment.jsp</string>-->
-    <!--<string name="URL_WET_PRODUCTION_CALC">http://172.30.10.116:4040/inno/search_production_calc.jsp</string>-->
-    <!--<string name="URL_SEARCH_PRODUCTION_NONFIXED">http://172.30.10.116:4040/inno/search_production_nonfixed.jsp</string>-->
-    <!--<string name="URL_SEARCH_HOMEPLUS_NONFIXED">http://172.30.10.116:4040//inno/search_homeplus_nonfixed.jsp</string>-->
-    <!--<string name="URL_SEARCH_HOMEPLUS_NONFIXED2">http://172.30.10.116:4040//inno/search_homeplus_nonfixed2.jsp</string>-->
-    
     <string name="shipment_wet_finish">계근 완료</string>
     <string name="shipment_wet_finish_msg">모든 지점 계근 완료</string>
 

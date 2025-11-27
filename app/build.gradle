@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+// Note: 소켓 통신 방식 사용 - BixolonLabelPrinter SDK 제거됨
 
 android {
     compileSdkVersion 25 //26버전부터는 바코드리더기가 안될 수 있으므로 25로 남겨놓을 것
@@ -50,10 +51,11 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.12'
     implementation 'com.android.support:appcompat-v7:25+'
     implementation files('libs/device.sdk.jar')
     implementation files('libs/ksoap2-3.0.0.jar')
     implementation files('libs/WoosimLib240.jar')
+    implementation files('libs/LabelEngine.jar')
+    // BixolonLabelPrinter SDK 제거 - 소켓 통신 방식(BixolonSocketPrinter) 사용
 }

@@ -24,9 +24,9 @@ public class HttpHelper {
 	
 	//	::::::::::::::::::::::::: ↓ LOGIN ↓ :::::::::::::::::::::::::::::		//
 	
-	public String loginData(String name, String password, String type, String url) throws Exception {
+	public String loginData(String name, String password, String companyCode, String url) throws Exception {
 		try {
-		HttpPost request = makeHttpPost(name, password, type, url);
+		HttpPost request = makeHttpPost(name, password, companyCode, url);
 
 		HttpClient client = new DefaultHttpClient();
 		ResponseHandler<String> reshandler = new BasicResponseHandler();
@@ -38,7 +38,7 @@ public class HttpHelper {
 		}
 	}
     
-	private HttpPost makeHttpPost(String name, String password, String type, String url) throws Exception {
+	private HttpPost makeHttpPost(String name, String password, String companyCode, String url) throws Exception {
 		HttpPost request = null;
 		try {
 		request = new HttpPost(url);
@@ -46,6 +46,7 @@ public class HttpHelper {
 		Vector<BasicNameValuePair> nameValue = new Vector<BasicNameValuePair>();
 		nameValue.add(new BasicNameValuePair("id", name));
 		nameValue.add(new BasicNameValuePair("pwd", password));
+		nameValue.add(new BasicNameValuePair("companyCode", companyCode));
 		
 		request.setEntity(makeEntity(nameValue));
 		} catch (Exception e) {
