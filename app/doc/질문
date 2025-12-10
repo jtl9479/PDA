@@ -1,0 +1,64 @@
+# 마트사 질문
+
+1. 마트사발주는 지정창고 필요
+2. sheet명 통일
+3. 답변받기
+![[마트사별 컬럼 정의.xlsx]]
+
+# 미트워치 신고
+
+# PDA VIEW 질문 리스트
+## 공통
+1. 로그인 화면에서 보이는 센터들이 사업장인지?
+2. PDA 부산에서만 사용이 되는지 아니면 다른곳에서도 해당 앱 다운 받아서 진행하는지
+3. 소스에 주석이 많은데 주석을 다 지워도 괜찮은지
+4. 테이블명에 대한 설명 필요
+
+## 출하
+
+1. VW_PDA_WID_LIST 이마트 발주 출하 계근 리스트 조회인지?
+2. CONTRACT_TYPE 해당 컬럼을 이용해 국내, 해외를 구분하고 UNION ALL을 진행하는데 왜그렇게 진행하는지
+3. VIEW에서 조회하지만 실제로 사용하지 않는 컬럼들(AMOUNT, GOODS_R_ID, GR_REF_NO, BRANDNAME, PACKERNAME, EMARTLOGIS_NAME)
+4. ITEM_SPEC 컬럼에 구체적인 값이 무엇인지
+5. PACKING_QTY 해당 컬럼이 0일때 조회 진행하는데, PACKING_QTY 수량 업데이트는 다른곳에서 진행하는지
+6. IMPORT_ID_NO, BL_NO가 없는 경우
+7. 출하대상 리스트를 조회할 때 해당 컬럼의 분기를 사용하는데 GR_WAREHOUSE_CODE는 사업장을 나타내는지?
+8. PACKER_CODE, PACKER_PRODUCT_CODE 해당 데이터는 무엇이며 언제 데이터를 넣어주며 어떻게 사용하는지
+9. ITEM_TYPE 계근 방식을 결정하는 컬럼으로 보이는데 품목코드에 추가가 필요한지?
+10. W_EMART_ORDER_ITEM 해당 테이블은 마트사 발주 업로드시 데이터가 있는 테이블이 맞나요
+11. CENTER_CODE해당 컬럼을 가지고 직납, 센터납을 구분 함, 해당 컬럼은 거래처가 맞나요
+    STORE_CODE는 거래처, CENTER_CODE는 착지업체가 맞나요.
+12. PACKWEIGHT(팩중량) 품목코드.낱개중량이 맞나요
+13. B_EMART_BARCODE 해당 테이블은 이마트에서 사용하는 바코드 정보를 모은 테이블로 보이는데 C0117의 CO_매출처품목코드매핑 테이블로 대처가 가능한지
+14. EMARTLOGIS_CODE 컬럼이 있는데 EMARTITEM_CODE와 다른점은 무엇이며
+15. ITEM_TYPE, 비정량 체크 -> 비정량, 대분류2    -> 원료육, 대분류1    -> 제품으로 대체해도 괜찮은지
+16. 소비기한 수동입력이 무엇인지
+
+
+
+
+
+
+
+## 생산
+1.
+
+
+
+
+2. VW_PDA_WID_LIST 이마트 발주 출하 계근 리스트 조회인지?
+3. EOI_ID 컬럼의 역할 해당 출고가 어느 마트사 관련 출고인지 구분하는 역할인지 ?
+4. W_GOODS_R(입고정보) IMPORT_ID_NO(이력번호), BL_NO(BL번호) 각각 언제 사용하는지
+5. I_BL_D (BD) - 해외 BL 상세, I_OFFER_D (OD) - 국내 Offer 상세 테이블 언제 사용하는지?
+6. W_EMART_ORDER_ITEM (EOI) - 이마트 발주 상품 -> 마트사 발주와 관련이 있는지?
+7. B_EMART_BARCODE(이마트 바코드 정보) - ITEM_TYPE W:원료육, J:제품, B: 비정량
+8. insert_goods_wet_ono.jsp 해당 jsp를 안드로이드에서 별도로 호출하지 않는데 사용을 안하는지?
+9. 계근 후 W_GOODS_WET 테이블 INSERT시 W_GOODS_ID테이블 UPDATE 진행하는데
+   같은 테이블을 insert하는 insert_goods_wet_homeplus.jsp, insert_goods_wet_new.jsp 화면에서 W_GOODS_ID update를 하지 않는 이유
+10. 로컬 테이블 TB_COMPLETE_ITEM, TB_PRODUCTION 사용하지 않는다.
+11. 이마트에서 사용하는 전용 컬럼들
+12. 해외,국내 분리한 이유
+13. 프로그램상에서 존재하는 주석들 제거해도 괜찮은지
+14. 부산에서만 사용하는지 아니면 다른곳에서도 해당 앱 다운 받아서 진행하는지
+15. 수기입
+16.

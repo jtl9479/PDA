@@ -1,0 +1,216 @@
+[롯데마트 계근시 사용]
+
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "INNO"."VW_PDA_WID_LIST_LOTTE" ("GI_H_ID", "GI_D_ID", "EOI_ID", "ITEM_CODE", "ITEM_NAME", "EMARTITEM_CODE", "EMARTITEM", "GI_REQ_PKG", "GI_REQ_QTY", "AMOUNT", "GOODS_R_ID", "GR_REF_NO", "GI_REQ_DATE", "BL_NO", "BRAND_CODE", "BRANDNAME", "CLIENT_CODE", "CLIENTNAME", "CENTERNAME", "ITEM_SPEC", "CT_CODE", "PACKER_CODE", "IMPORT_ID_NO", "PACKERNAME", "PACKER_PRODUCT_CODE", "BARCODE_TYPE", "ITEM_TYPE", "PACKWEIGHT", "BARCODEGOODS", "STORE_IN_DATE", "GR_WAREHOUSE_CODE", "EMARTLOGIS_CODE", "EMARTLOGIS_NAME", "WH_AREA", "LAST_BOX_ORDER") AS
+  SELECT "GI_H_ID",
+          "GI_D_ID",
+          "EOI_ID",
+          "ITEM_CODE",
+          "ITEM_NAME",
+          "EMARTITEM_CODE",
+          "EMARTITEM",
+          "GI_REQ_PKG",
+          "GI_REQ_QTY",
+          "AMOUNT",
+          "GOODS_R_ID",
+          "GR_REF_NO",
+          "GI_REQ_DATE",
+          "BL_NO",
+          "BRAND_CODE",
+          "BRANDNAME",
+          "CLIENT_CODE",
+          "CLIENTNAME",
+          "CENTERNAME",
+          "ITEM_SPEC",
+          "CT_CODE",
+          "PACKER_CODE",
+          "IMPORT_ID_NO",
+          "PACKERNAME",
+          "PACKER_PRODUCT_CODE",
+          "BARCODE_TYPE",
+          "ITEM_TYPE",
+          "PACKWEIGHT",
+          "BARCODEGOODS",
+          "STORE_IN_DATE",
+          "GR_WAREHOUSE_CODE",
+          "EMARTLOGIS_CODE",
+          "EMARTLOGIS_NAME",
+          "WH_AREA",
+          "LAST_BOX_ORDER"
+     FROM (
+           SELECT IH.GI_H_ID,
+                  ID.GI_D_ID                             -- 출고 번호 (출고상세번호id 값)
+                            ,
+                  ID.EOI_ID AS EOI_ID                              -- 이마트 출하번호
+                                     ,
+                  ID.ITEM_CODE                                         -- 상품코드
+                              ,
+                  DE_ITEM (ID.ITEM_CODE)  AS ITEM_NAME  ,             -- 상품명
+                wmoi.MART_ITEMCODE AS EMARTITEM_CODE,
+                wmoi.MART_ITEMNAME AS EMARTITEM,
+                  ID.GI_REQ_PKG                                      -- 출하요청수량
+                               ,
+                  ID.GI_REQ_QTY                                      -- 출하요청중량
+                               ,
+                  ID.AMOUNT                                          -- 출하상품금액
+                           ,
+                  WR.GOODS_R_ID                                        -- 입고번호
+                               ,
+                  WR.GR_REF_NO                                       -- 창고입고번호
+                              ,
+                  GI_REQ_DATE                                         -- 출하요청일
+                             ,
+                  DECODE (WR.BL_NO, NULL, WR.IMPORT_ID_NO, WR.BL_NO)
+                     BL_NO,                                            -- BL번호
+                  ID.BRAND_CODE                                       -- 브랜드코드
+                               ,
+                  DE_COMMON ('BRAND', ID.BRAND_CODE) AS BRANDNAME      -- 브랜드명
+                                                                 ,
+                  IH.CLIENT_CODE                                     -- 출고업체코드
+                                ,
+                  DE_CLIENT (IH.CLIENT_CODE)
+                  AS CLIENTNAME                                   --  출고업체명
+                                  ,
+                  wmoi.CENTER_NAME  AS CENTERNAME,                                        -- 센터명
+                  WR.ITEM_SPEC,                                           -- 스펙
+                  id.CT_CODE AS CT_CODE,           -- 원산지
+                  BD.PACKER_CODE,                                         -- 패커
+                  WR.IMPORT_ID_NO,                                    -- 수입식별번호
+                  DE_CLIENT (BD.PACKER_CODE) AS PACKERNAME,             -- 패커이름
+                  BD.PACKER_PRODUCT_CODE,                            -- 패커 상품코드
+                  beb.barcode_type AS BARCODE_TYPE,
+                  'S' AS ITEM_TYPE,
+                  NULL AS PACKWEIGHT,
+                  (SELECT a.BARCODEGOODS
+                     FROM S_BARCODE_INFO A
+                    WHERE     A.PACKER_CLIENT_CODE = BD.PACKER_CODE
+                          AND A.PACKER_PRODUCT_CODE = BD.PACKER_PRODUCT_CODE
+                          AND A.status = 'Y'
+                          AND ROWNUM < 2)
+                     BARCODEGOODS,
+                   WR.FROM_EXPIRY_DATE AS STORE_IN_DATE,
+                   WR.GR_WAREHOUSE_CODE,
+                   ( SELECT NVL(REF_CODE2,'회사코드없음' ) FROM B_COMMON_CODE bcc WHERE bcc.MASTER_CODE LIKE 'LOTTE_STORE_CODE'  AND bcc.code =  wmoi.CENTER_CODE ) AS EMARTLOGIS_CODE,
+                   '정보없음' AS EMARTLOGIS_NAME,
+                   '' AS WH_AREA,
+                   NVL((SELECT curr_order
+                        FROM ( SELECT NVL(W.BOX_ORDER, 0) AS curr_order,
+                                      LEAD(W.BOX_ORDER) OVER (ORDER BY W.GOODS_WET_ID DESC) AS next_order
+                               FROM W_GOODS_WET W
+                               WHERE W.GI_D_ID IN (SELECT D.GI_D_ID FROM W_GOODS_ID D, W_MART_ORDER_ITEM L WHERE D.EOI_ID = L.EOI_ID)
+                                 AND W.BOX_ORDER IS NOT NULL
+                                 AND W.PACKER_PRODUCT_CODE = BD.PACKER_PRODUCT_CODE ) t
+                        WHERE (t.curr_order = t.next_order + 1) OR (t.curr_order = 1 AND t.next_order = 9999) --두 값이 연속이거나 로테이션인 경우
+                        FETCH FIRST 1 ROW ONLY)
+                    , 0) AS LAST_BOX_ORDER -- 최근 데이터부터 박스 순번을 순차적으로 검사하여 정상적인 마지막 박스순번을 추출
+             FROM W_GOODS_IH IH
+                  INNER JOIN W_GOODS_ID ID
+                     ON IH.GI_H_ID = ID.GI_H_ID
+                  INNER JOIN W_GOODS_R WR
+                     ON ID.GOODS_R_ID = WR.GOODS_R_ID
+                  INNER JOIN I_BL_D BD
+                     ON BD.BL_D_ID = WR.BL_D_ID AND BD.BL_S_ID = WR.BL_S_ID
+                  INNER JOIN B_CLIENT_CHARGE bcc
+                     ON Bcc.CLIENT_CODE  = IH.CLIENT_CODE AND BCC.STATUS = 'Y'
+                  INNER JOIN W_MART_ORDER_ITEM wmoi   --- 발주서
+                     ON wmoi.EOI_ID = id.EOI_ID
+                  INNER JOIN B_EMART_BARCODE beb
+                     ON beb.EMARTITEM_CODE = wmoi.MART_ITEMCODE  AND beb.BARCODE_TYPE LIKE 'L%'
+            WHERE     1 = 1
+                  AND ID.GI_REQ_PKG <> 0
+                  AND WR.CONTRACT_TYPE <> '40'
+                  AND IH.SEND_FLAG <> 'N'     -- 임시주석처리한 것
+                  AND IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')
+                  AND bcc.USER_ID  = 'LOTTE'
+                  AND ID.STATUS = '10'
+      --            AND WMOI.EOI_ID = 2829150   -- 작업                    ----  SELECT * FROM W_MART_ORDER_ITEM WHERE ORDER_DATE = '20250624'
+            UNION
+
+      SELECT IH.GI_H_ID,
+                  ID.GI_D_ID                             -- 출고 번호 (출고상세번호id 값)
+                            ,
+                  ID.EOI_ID AS EOI_ID                              -- 이마트 출하번호
+                                     ,
+                  ID.ITEM_CODE                                         -- 상품코드
+                              ,
+                  DE_ITEM (ID.ITEM_CODE)  AS ITEM_NAME  ,             -- 상품명
+                wmoi.MART_ITEMCODE AS EMARTITEM_CODE,
+                wmoi.MART_ITEMNAME AS EMARTITEM,
+                  ID.GI_REQ_PKG                                      -- 출하요청수량
+                               ,
+                  ID.GI_REQ_QTY                                      -- 출하요청중량
+                               ,
+                  ID.AMOUNT                                          -- 출하상품금액
+                           ,
+                  WR.GOODS_R_ID                                        -- 입고번호
+                               ,
+                  WR.GR_REF_NO                                       -- 창고입고번호
+                              ,
+                  GI_REQ_DATE                                         -- 출하요청일
+                             ,
+                  DECODE (WR.BL_NO, NULL, WR.IMPORT_ID_NO, WR.BL_NO)
+                     BL_NO,                                            -- BL번호
+                  ID.BRAND_CODE                                       -- 브랜드코드
+                               ,
+                  DE_COMMON ('BRAND', ID.BRAND_CODE) AS BRANDNAME      -- 브랜드명
+                                                                 ,
+                  IH.CLIENT_CODE                                     -- 출고업체코드
+                                ,
+                  DE_CLIENT (IH.CLIENT_CODE)
+                  AS CLIENTNAME                                   --  출고업체명
+                                  ,
+                  wmoi.CENTER_NAME  AS CENTERNAME,                                        -- 센터명
+                  WR.ITEM_SPEC,                                           -- 스펙
+                  id.CT_CODE AS CT_CODE,           -- 원산지
+                  OD.PACKER_CODE,                                         -- 패커
+                  WR.IMPORT_ID_NO,                                    -- 수입식별번호
+                  DE_CLIENT (OD.PACKER_CODE) AS PACKERNAME,             -- 패커이름
+                  OD.PACKER_PRODUCT_CODE,                            -- 패커 상품코드
+                  beb.barcode_type AS BARCODE_TYPE,
+                  'S' AS ITEM_TYPE,
+                  NULL AS PACKWEIGHT,
+                  (SELECT a.BARCODEGOODS
+                     FROM S_BARCODE_INFO A
+                    WHERE     A.PACKER_CLIENT_CODE = OD.PACKER_CODE
+                          AND A.PACKER_PRODUCT_CODE = OD.PACKER_PRODUCT_CODE
+                          AND A.status = 'Y'
+                          AND ROWNUM < 2)
+                     BARCODEGOODS,
+                   WR.FROM_EXPIRY_DATE AS STORE_IN_DATE,
+                   WR.GR_WAREHOUSE_CODE,
+                   ( SELECT NVL(REF_CODE2,'회사코드없음' ) FROM B_COMMON_CODE bcc WHERE bcc.MASTER_CODE LIKE 'LOTTE_STORE_CODE'  AND bcc.code =  wmoi.CENTER_CODE ) AS EMARTLOGIS_CODE,
+                   '정보없음' AS EMARTLOGIS_NAME,
+                   '' AS WH_AREA,
+                   NVL((SELECT curr_order
+                        FROM ( SELECT NVL(W.BOX_ORDER, 0) AS curr_order,
+                                      LEAD(W.BOX_ORDER) OVER (ORDER BY W.GOODS_WET_ID DESC) AS next_order
+                               FROM W_GOODS_WET W
+                               WHERE W.GI_D_ID IN (SELECT D.GI_D_ID FROM W_GOODS_ID D, W_MART_ORDER_ITEM L WHERE D.EOI_ID = L.EOI_ID)
+                                 AND W.BOX_ORDER IS NOT NULL
+                                 AND W.PACKER_PRODUCT_CODE = OD.PACKER_PRODUCT_CODE ) t
+                        WHERE (t.curr_order = t.next_order + 1) OR (t.curr_order = 1 AND t.next_order = 9999) --두 값이 연속이거나 로테이션인 경우
+                        FETCH FIRST 1 ROW ONLY)
+                    , 0) AS LAST_BOX_ORDER -- 최근 데이터부터 박스 순번을 순차적으로 검사하여 정상적인 마지막 박스순번을 추출
+             FROM W_GOODS_IH IH
+                  INNER JOIN W_GOODS_ID ID
+                     ON IH.GI_H_ID = ID.GI_H_ID
+                  INNER JOIN W_GOODS_R WR
+                     ON ID.GOODS_R_ID = WR.GOODS_R_ID
+                  INNER JOIN I_OFFER_D OD
+                     ON OD.OFFER_D_ID = WR.BL_D_ID
+                  INNER JOIN B_CLIENT_CHARGE bcc
+                     ON Bcc.CLIENT_CODE  = IH.CLIENT_CODE AND BCC.STATUS = 'Y'
+                  INNER JOIN W_MART_ORDER_ITEM wmoi   --- 발주서
+                     ON wmoi.EOI_ID = id.EOI_ID
+                  INNER JOIN B_EMART_BARCODE beb
+                     ON beb.EMARTITEM_CODE = wmoi.MART_ITEMCODE  AND beb.BARCODE_TYPE LIKE 'L%'
+            WHERE     1 = 1
+               --   AND ID.PACKING_QTY = 0
+                  AND ID.GI_REQ_PKG <> 0
+                  AND WR.CONTRACT_TYPE = '40'
+                  AND IH.SEND_FLAG <> 'N'
+                  AND IH.GI_REQ_DATE >= TO_CHAR(SYSDATE, 'YYYYMMDD')
+                  AND bcc.USER_ID  = 'LOTTE'
+                  AND beb.ITEM_TYPE = 'W'    --- 원료육만 해당되는 것을 찍음
+                  AND ID.STATUS = '10'
+              --    AND bcc.USER_ID = '삭제삭제'  --- TEST용
+            );

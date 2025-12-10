@@ -1,0 +1,330 @@
+#  1. JSP 파일 ( 24개)
+
+## JSP 파일 사용 여부 (총 24개)
+
+### 1.조회 (search_) - 14개
+   1. search_shipment.jsp                   | 이마트 계근 조회        | 사용    |
+  URL_SEARCH_SHIPMENT              |
+  2. search_shipment_homeplus.jsp          | 홈플러스 계근 조회       | 사용    |
+  URL_SEARCH_SHIPMENT_HOMEPLUS     |
+  3. search_shipment_lotte.jsp             | 롯데 계근 조회         | 사용    |
+  4. search_shipment_wholesale.jsp         | 도매 계근 조회         | 사용    |
+  URL_SEARCH_SHIPMENT_WHOLESALE    |
+  5. search_production.jsp                 | 생산 조회            | 사용    |
+  URL_SEARCH_PRODUCTION            |
+  6. | search_production_4label.jsp          | 4라벨 생산 조회        | 사용    |
+  URL_SEARCH_PRODUCTION_4LABEL     |
+  7. | search_production_nonfixed.jsp        | 비정량 생산 조회        | 사용    |
+  URL_SEARCH_PRODUCTION_NONFIXED   |
+  8. | search_production_calc.jsp            | 생산 계산 조회         | 사용    |
+  URL_WET_PRODUCTION_CALC          |
+  9. | search_homeplus_nonfixed.jsp          | 홈플러스 비정량 조회      | 사용    |
+  URL_SEARCH_HOMEPLUS_NONFIXED     |
+  10. | search_homeplus_nonfixed2.jsp         | 홈플러스 비정량2 조회     | 사용    |
+  URL_SEARCH_HOMEPLUS_NONFIXED2    |
+  11. | search_barcode_info.jsp               | 바코드 정보 조회        | 사용    |
+  URL_SEARCH_BARCODE_INFO          |
+  12. | search_barcode_info_nonfixed.jsp      | 바코드 비정량 조회       | 사용    |
+  URL_SEARCH_BARCODE_INFO_NONFIXED |
+  13. | search_goods_wet.jsp                  | 계근 데이터 조회        | 사용    |
+  URL_SEARCH_GOODS_WET             |
+---
+### 등록 (insert_) - 3개
+1.  insert_goods_wet.jsp          | 이마트 계근 등록  | 사용    | URL_INSERT_GOODS_WET
+2.  insert_goods_wet_homeplus.jsp | 홈플러스 계근 등록 | 사용    |
+URL_INSERT_GOODS_WET_HOMEPLUS |
+3.  insert_goods_wet_new.jsp      | 신규 계근 등록   | 사용    | URL_INSERT_GOODS_WET_NEW
+---
+### 수정 (update_) - 1개
+1.  update_shipment.jsp | 출하 상태 수정 | 사용    | URL_UPDATE_SHIPMENT |
+---
+### 기타 - 1개
+1.  manager_login.jsp | 관리자 로그인 | 사용    | URL_LOGIN      |
+  ---
+### 요약
+
+  | 구분           | 전체  | 사용  | 미사용 |
+  |--------------|-----|-----|-----|
+  | 조회 (search_) | 18개 | 13개 | 5개  |
+  | 등록 (insert_) | 4개  | 3개  | 1개  |
+  | 수정 (update_) | 1개  | 1개  | 0개  |
+  | 기타           | 1개  | 1개  | 0개  |
+  | 합계           | 24개 | 18개 | 6개  |
+
+  ---
+### 미사용 JSP 파일 (6개)
+
+  | 파일명                                   | 용도               | 비고            |
+  |---------------------------------------|------------------|---------------|
+  | search_shipment_ono.jsp               | ONO 계근 조회        | ONO 관련 기능 미구현 |
+  | search_shipment_ono_temp.jsp          | ONO 임시 계근 조회     | ONO 관련 기능 미구현 |
+  | search_shipment_ono_temp_diff_prd.jsp | ONO 임시 (다른상품) 조회 | ONO 관련 기능 미구현 |
+  | search_barcode_info_temp.jsp          | 바코드 정보 임시 조회     | 임시 기능 미구현
+  |
+  | search_barcode_info_temp_diff_prd.jsp | 바코드 정보 (다른상품)    | 임시 기능 미구현
+  |
+  | insert_goods_wet_ono.jsp              | ONO 계근 등록        | ONO 관련 기능 미구현 |
+
+  공통점: ONO 관련 기능과 임시(temp) 관련 기능이 안드로이드 앱에서 구현되지 않음
+
+---
+##  Common.java
+``` java
+
+public static final String URL_VERSION = BASE_URL + "/check_version.jsp";
+public static final String URL_LOGIN = BASE_URL + "/manager_login.jsp";
+public static final String URL_SEARCH_SHIPMENT = BASE_URL + "/search_shipment.jsp";
+public static final String URL_SEARCH_SHIPMENT_HOMEPLUS = BASE_URL + "/search_shipment_homeplus.jsp";
+public static final String URL_SEARCH_SHIPMENT_WHOLESALE = BASE_URL + "/search_shipment_wholesale.jsp";
+public static final String URL_SEARCH_SHIPMENT_LOTTE = BASE_URL + "/search_shipment_lotte.jsp";
+public static final String URL_SEARCH_PRODUCTION = BASE_URL + "/search_production.jsp";
+public static final String URL_SEARCH_PRODUCTION_4LABEL = BASE_URL + "/search_production_4label.jsp";
+public static final String URL_SEARCH_BARCODE_INFO = BASE_URL + "/search_barcode_info.jsp";
+public static final String URL_SEARCH_BARCODE_INFO_NONFIXED = BASE_URL + "/search_barcode_info_nonfixed.jsp";
+public static final String URL_SEARCH_GOODS_WET = BASE_URL + "/search_goods_wet.jsp";
+public static final String URL_INSERT_GOODS_WET = BASE_URL + "/insert_goods_wet.jsp";
+public static final String URL_INSERT_GOODS_WET_NEW = BASE_URL + "/insert_goods_wet_new.jsp";
+public static final String URL_INSERT_GOODS_WET_HOMEPLUS = BASE_URL + "/insert_goods_wet_homeplus.jsp";
+public static final String URL_INSERT_BARCODE_INFO = BASE_URL + "/insert_barcode_info.jsp";
+public static final String URL_UPDATE_BARCODE_INFO = BASE_URL + "/update_barcode_info.jsp";
+public static final String URL_UPDATE_SHIPMENT = BASE_URL + "/update_shipment.jsp";
+public static final String URL_WET_PRODUCTION_CALC = BASE_URL + "/search_production_calc.jsp";
+public static final String URL_SEARCH_PRODUCTION_NONFIXED = BASE_URL + "/search_production_nonfixed.jsp";
+public static final String URL_SEARCH_HOMEPLUS_NONFIXED = BASE_URL + "/search_homeplus_nonfixed.jsp";
+public static final String URL_SEARCH_HOMEPLUS_NONFIXED2 = BASE_URL + "/search_homeplus_nonfixed2.jsp";
+
+```
+
+## 미사용 jsp
+  1. check_version.jsp - 버전 체크 기능 미구현
+  2. update_barcode_info.jsp - 바코드 정보 수정 기능 미구현
+  3. insert_barcode_info.jsp - 바코드 정보 등록 기능 미구현 (클래스는 있으나 호출 없음)
+
+---
+---
+# 2. VIEW
+## 계근(출하) 관련 VIEW
+
+|VIEW 이름|사용 JSP|용도|
+|---|---|---|
+|VW_PDA_WID_LIST|search_shipment.jsp|이마트 계근|
+|VW_PDA_WID_HOMEPLUS_LIST|search_shipment_homeplus.jsp|홈플러스 계근|
+|VW_PDA_WID_LIST_LOTTE|search_shipment_lotte.jsp|롯데 계근|
+|VW_PDA_WID_LIST_ONO|search_shipment_ono.jsp|ONO 계근|
+|VW_PDA_WID_LIST_ONO_TEMP|search_shipment_ono_temp.jsp|ONO 임시 계근|
+|VW_PDA_WID_LIST_ONO_TEMP|search_shipment_ono_temp_diff_prd.jsp|ONO 임시 (다른상품)|
+|VW_PDA_WID_WHOLESALE_LIST|search_shipment_wholesale.jsp|도매 계근|
+
+## 생산 관련 VIEW
+
+| VIEW 이름                    | 사용 JSP                         | 용도     |
+| -------------------------- | ------------------------------ | ------ |
+| VW_PDA_WID_PRO_LIST        | search_production.jsp          | 생산     |
+| VW_PDA_WID_PRO_4LABEL_LIST | search_production_4label.jsp   | 4라벨 생산 |
+| VW_PDA_WID_LIST_NONFIXED   | search_production_nonfixed.jsp | 비정량 생산 |
+
+## 비정량/바코드 관련 VIEW
+
+| VIEW 이름                      | 사용 JSP                                | 용도         |
+| ---------------------------- | ------------------------------------- | ---------- |
+| VW_PDA_WID_LIST_NONFIXED_HP  | search_homeplus_nonfixed.jsp          | 홈플러스 비정량   |
+| VW_PDA_WID_LIST_ONO_DIFF_PRD | search_barcode_info_temp_diff_prd.jsp | 바코드 (다른상품) |
+
+## VIEW 목록 요약 (총 11개)
+
+| No  | VIEW 이름                      | 사용 JSP 수 | EXCEL |
+| --- | ---------------------------- | -------- | ----- |
+| 1   | VW_PDA_WID_LIST              | 1        | O     |
+| 2   | VW_PDA_WID_HOMEPLUS_LIST     | 1        | O     |
+| 3   | VW_PDA_WID_LIST_LOTTE        | 1        | O     |
+| 4   | VW_PDA_WID_LIST_ONO          | 1        | X     |
+| 5   | VW_PDA_WID_LIST_ONO_TEMP     | 2        | X     |
+| 6   | VW_PDA_WID_WHOLESALE_LIST    | 1        | O     |
+| 7   | VW_PDA_WID_PRO_LIST          | 1        | O     |
+| 8   | VW_PDA_WID_PRO_4LABEL_LIST   | 1        | X     |
+| 9   | VW_PDA_WID_LIST_NONFIXED     | 1        | O     |
+| 10  | VW_PDA_WID_LIST_NONFIXED_HP  | 1        | O     |
+| 11  | VW_PDA_WID_LIST_ONO_DIFF_PRD | 1        | X     |
+
+* VW_PDA_WID_PRO_4LABEL_LIST, search_production_4label 호출할때 사용하는 VIEW로 보임
+  VIEW 공유해준 문서에 해당 VIEW는 별도로 존재하지 않음
+---
+
+#  프로젝트 클래스 파일 정리 (총 27개) - 최종
+
+##  1. Activity (화면) - 7개
+
+  | #   | 클래스명                | 용도         | 사용  |
+  |-----|---------------------|------------|-----|
+  | 1   | LoginActivity       | 로그인 화면     | O   |
+  | 2   | MainActivity        | 메인 화면      | O   |
+  | 3   | ShipmentActivity    | 계근 작업 화면   | O   |
+  | 4   | ProductionActivity  | 생산 계근 화면   | O   |
+  | 5   | SettingActivity     | 설정 화면      | O   |
+  | 6   | ExpiryEnterActivity | 유통기한 입력 화면 | O   |
+  | 7   | DeviceListActivity  | 블루투스 장치 목록 | O   |
+
+## 2. Adapter - 3개
+
+  | #   | 클래스명                | 용도       | 사용  |
+  |-----|---------------------|----------|-----|
+  | 1   | ShipmentListAdapter | 계근 대상 목록 | O   |
+  | 2   | DetailAdapter       | 상세 목록    | O   |
+  | 3   | UnknownAdapter      | 미확인 항목   | O   |
+
+##  3. Common - 7개
+
+  | #   | 클래스명                      | 용도         | 사용  |
+  |-----|---------------------------|------------|-----|
+  | 1   | Common                    | 공통 상수/URL  | O   |
+  | 2   | HttpHelper                | HTTP 통신    | O   |
+  | 3   | Base64                    | Base64 인코딩 | X   |
+  | 4   | ProgressDlgShipSearch     | 출하 대상 조회   | O   |
+  | 5   | ProgressDlgBarcodeSearch  | 바코드 정보 조회  | O   |
+  | 6   | ProgressDlgGoodsWetSearch | 계근 데이터 조회  | O   |
+  | 7   | ProgressDlgNewBarcodeInfo | 신규 바코드 등록  | X   |
+
+##  4. Database - 3개
+
+  | #   | 클래스명      | 용도        | 사용  |
+  |-----|-----------|-----------|-----|
+  | 1   | DBHelper  | SQLite 헬퍼 | O   |
+  | 2   | DBHandler | DB 쿼리 처리  | O   |
+  | 3   | DBInfo    | 테이블/컬럼 상수 | O   |
+
+##  5. Items (모델) - 3개
+
+  | #   | 클래스명           | 용도        | 사용  |
+  |-----|----------------|-----------|-----|
+  | 1   | Shipments_Info | 출하 대상 모델  | O   |
+  | 2   | Barcodes_Info  | 바코드 정보 모델 | O   |
+  | 3   | Goodswets_Info | 계근 결과 모델  | O   |
+
+##  6. Print - 2개
+
+  | #   | 클래스명                  | 용도         | 사용  |
+  |-----|-----------------------|------------|-----|
+  | 1   | BluetoothPrintService | 블루투스 프린터   | O   |
+  | 2   | BixolonSocketPrinter  | 빅솔론 소켓 프린터 | O   |
+
+##  7. Scanner - 2개
+
+  | #   | 클래스명            | 용도         | 사용  |
+  |-----|-----------------|------------|-----|
+  | 1   | ScannerActivity | 스캐너 부모 클래스 | O   |
+  | 2   | Constants       | 스캐너 상수     | X   |
+
+  ---
+## 요약
+
+  | 구분       | 전체  | 사용  | 미사용 |
+  |----------|-----|-----|-----|
+  | Activity | 7개  | 7개  | 0개  |
+  | Adapter  | 3개  | 3개  | 0개  |
+  | Common   | 7개  | 5개  | 2개  |
+  | Database | 3개  | 3개  | 0개  |
+  | Items    | 3개  | 3개  | 0개  |
+  | Print    | 2개  | 2개  | 0개  |
+  | Scanner  | 2개  | 1개  | 1개  |
+  | 합계       | 27개 | 24개 | 3개  |
+
+  ---
+## 미사용 클래스 (3개)
+
+  | #   | 클래스명                      | 비고           |
+  |-----|---------------------------|--------------|
+  | 1   | Base64                    | import/호출 없음 |
+  | 2   | ProgressDlgNewBarcodeInfo | new 호출 없음    |
+  | 3   | Constants                 | import/참조 없음 |
+
+---
+---
+# 로컬 테이블
+
+  | 테이블             | 역할        | 생성 시점        |
+  |-----------------|-----------|--------------|
+  | TB_SHIPMENT     | 계근 대상     | 계근 대상 다운로드 시 |
+  | TB_BARCODE_INFO | 바코드 파싱 규칙 | 바코드 정보 조회 시  |
+  | TB_GOODS_WET    | 계근 결과     | 바코드 스캔 시     |
+  | 테이블                          | 사용 Activity        | 상태           |
+  |------------------------------|--------------------|--------------|
+  | TB_PRODUCTION                | -                  | ❌ 미사용        |
+  | TB_GOODS_WET_PRODUCTION_CALC | ProductionActivity | ✅ 생산 계근에서 사용 |
+  | TB_COMPLETE_ITEM             | -                  | ❌ 미사용        |
+
+
+## MainActivity (계근 준비)
+
+  1. 계근 대상 다운로드 (VW_PDA_WID_LIST)
+         ↓
+  2. 로컬 TB_SHIPMENT에 INSERT (insertqueryShipment)
+         ↓
+  3. 바코드 정보 조회 onPostExecute
+         ↓
+  4. 로컬 TB_BARCODE_INFO에 INSERT
+         ↓
+  5. ShipmentActivity 화면 이동
+
+  ShipmentActivity (계근 작업)
+
+  6. 바코드 스캔
+         ↓
+  7. TB_SHIPMENT에서 출하대상 정보 조회 (selectqueryShipment)
+         ↓
+  8. TB_BARCODE_INFO에서 바코드 파싱 규칙 조회
+         ↓
+  9. 바코드에서 중량 추출 + 출하대상 정보 결합
+         ↓
+  10. 로컬 TB_GOODS_WET에 INSERT
+         ↓
+  11. "전송" 버튼 클릭
+         ↓
+  12. 로컬 TB_GOODS_WET에서 SELECT
+         ↓
+  13. 서버 W_GOODS_WET에 INSERT
+         ↓
+  14. 완료 시 서버 출하대상 UPDATE
+
+
+  테이블 역할 요약
+
+  | 테이블             | 역할        | 생성 시점        |
+  |-----------------|-----------|--------------|
+  | TB_SHIPMENT     | 계근 대상     | 계근 대상 다운로드 시 |
+  | TB_BARCODE_INFO | 바코드 파싱 규칙 | 바코드 정보 조회 시  |
+  | TB_GOODS_WET    | 계근 결과     | 바코드 스캔 시     |
+
+---
+## ProductionActivity (생산프로세스)
+
+  1. ProductionActivity 진입
+         ↓
+  2. TB_GOODS_WET_PRODUCTION_CALC 초기화 (DELETE)
+         ↓
+  3. PACKER CODE, PP CODE 입력
+         ↓
+  4. "바코드 정보 수신" 버튼 클릭
+         ↓
+  5. 서버에서 바코드 파싱 정보 조회 (search_production_calc.jsp)
+     (WEIGHT_FROM, WEIGHT_TO, ZEROPOINT, BASEUNIT)
+         ↓
+  6. 바코드 스캔
+         ↓
+  7. TB_GOODS_WET_PRODUCTION_CALC에서 중복 체크
+         ↓
+     - 중복 없음 → INSERT 후 중량 계산
+     - 중복 있음 → "중복 스캔" 알림, 종료
+         ↓
+  8. 바코드에서 중량 추출
+         ↓
+  9. 총 박스 수량, 총 중량 누적 (화면 표시)
+         ↓
+  10. 다음 바코드 스캔 (6번으로 반복)
+         ↓
+  11. 리셋 또는 화면 종료 시 TB_GOODS_WET_PRODUCTION_CALC 삭제
+
+  | 테이블                          | 용도        |
+  |------------------------------|-----------|
+  | TB_GOODS_WET_PRODUCTION_CALC | 바코드 중복 체크 |
+
+

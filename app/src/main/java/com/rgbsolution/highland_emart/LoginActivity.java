@@ -38,15 +38,12 @@ import java.security.MessageDigest;
 import java.util.Set;
 
 public class LoginActivity extends AppCompatActivity {
-
     private final String TAG = "LoginActivity";                        // Log's TAG
-
     private ProgressDialog pDialog = null;
 
     // UI references.
     private EditText editID;                                        // ID 입력창
     private EditText editPWD;                                        // PWD 입력창
-
     private String user_id = "";
     private String user_pwd = "";
 
@@ -77,10 +74,11 @@ public class LoginActivity extends AppCompatActivity {
         Common.printer_setting = spfBluetooth.getBoolean("printer_setting", true);
         Common.printer_address = spfBluetooth.getString("printer_address", "");
 
-        if (!Common.printer_setting)
+        if (!Common.printer_setting) {
             Common.print_bool = false;
-        else
+        } else {
             Common.print_bool = true;
+        }
 
         editID = (EditText) findViewById(R.id.editID);
         editPWD = (EditText) findViewById(R.id.editPWD);

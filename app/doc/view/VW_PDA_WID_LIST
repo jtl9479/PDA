@@ -1,0 +1,339 @@
+[이마트 계근 사용]
+
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "HIGHLAND"."VW_PDA_WID_LIST" ("GI_H_ID", "GI_D_ID", "EOI_ID", "ITEM_CODE", "ITEM_NAME", "EMARTITEM_CODE", "EMARTITEM", "GI_REQ_PKG", "GI_REQ_QTY", "AMOUNT", "GOODS_R_ID", "GR_REF_NO", "GI_REQ_DATE", "BL_NO", "BRAND_CODE", "BRANDNAME", "CLIENT_CODE", "CLIENTNAME", "CENTERNAME", "ITEM_SPEC", "CT_CODE", "PACKER_CODE", "IMPORT_ID_NO", "PACKERNAME", "PACKER_PRODUCT_CODE", "BARCODE_TYPE", "ITEM_TYPE", "PACKWEIGHT", "BARCODEGOODS", "STORE_IN_DATE", "GR_WAREHOUSE_CODE", "EMARTLOGIS_CODE", "EMARTLOGIS_NAME", "WH_AREA", "USE_NAME", "USE_CODE", "CT_NAME", "STORE_CODE", "EMART_PLANT_CODE", "MAJOR_CATEGORY", "CONTAINER_TYPE") AS
+  SELECT "GI_H_ID",
+          "GI_D_ID",
+          "EOI_ID",
+          "ITEM_CODE",
+          "ITEM_NAME",
+          "EMARTITEM_CODE",
+          "EMARTITEM",
+          "GI_REQ_PKG",
+          "GI_REQ_QTY",
+          "AMOUNT",
+          "GOODS_R_ID",
+          "GR_REF_NO",
+          "GI_REQ_DATE",
+          "BL_NO",
+          "BRAND_CODE",
+          "BRANDNAME",
+          "CLIENT_CODE",
+          "CLIENTNAME",
+          "CENTERNAME",
+          "ITEM_SPEC",
+          "CT_CODE",
+          "PACKER_CODE",
+          "IMPORT_ID_NO",
+          "PACKERNAME",
+          "PACKER_PRODUCT_CODE",
+          "BARCODE_TYPE",
+          "ITEM_TYPE",
+          "PACKWEIGHT",
+          "BARCODEGOODS",
+          "STORE_IN_DATE",
+          "GR_WAREHOUSE_CODE",
+          "EMARTLOGIS_CODE",
+          "EMARTLOGIS_NAME",
+          "WH_AREA",
+          "USE_NAME",
+          "USE_CODE",
+          "CT_NAME",
+          "STORE_CODE",
+          "EMART_PLANT_CODE",
+          "MAJOR_CATEGORY",
+          "CONTAINER_TYPE"
+     FROM (                                                  -- 해외 매입으로 입고된 경우
+           SELECT IH.GI_H_ID,
+                  ID.GI_D_ID                             -- 출고 번호 (출고상세번호id 값)
+                            ,
+                  ID.EOI_ID AS EOI_ID                              -- 이마트 출하번호
+                                     ,
+                  ID.ITEM_CODE                                         -- 상품코드
+                              ,
+                  DECODE (EO.ITEM_NAME,
+                          NULL, DE_ITEM (ID.ITEM_CODE),
+                          EO.ITEM_NAME)
+                     AS ITEM_NAME -- 상품명
+                                 ,
+                  EO.ITEM_CODE AS EMARTITEM_CODE,
+                  EO.ITEM_NAME AS EMARTITEM                          -- 이마트상품명
+                                           ,
+                  ID.GI_REQ_PKG                                      -- 출하요청수량
+                               ,
+                  ID.GI_REQ_QTY                                      -- 출하요청중량
+                               ,
+                  ID.AMOUNT                                          -- 출하상품금액
+                           ,
+                  WR.GOODS_R_ID                                        -- 입고번호
+                               ,
+                  WR.GR_REF_NO                                       -- 창고입고번호
+                              ,
+                  GI_REQ_DATE                                         -- 출하요청일
+                             ,
+                  DECODE (WR.IMPORT_ID_NO, NULL, WR.BL_NO, WR.IMPORT_ID_NO)
+                     BL_NO,                                            -- BL번호
+                  ID.BRAND_CODE                                       -- 브랜드코드
+                               ,
+                  DE_COMMON ('BRAND', ID.BRAND_CODE) AS BRANDNAME      -- 브랜드명
+                                                                 ,
+                  IH.CLIENT_CODE                                     -- 출고업체코드
+                                ,
+                  DECODE (
+                     SUBSTR (EO.CENTERNAME, 1, 2),
+                     'CJ',    DE_CLIENT2 (IH.CLIENT_CODE)
+                           || '('
+                           || EO.STORECODE
+                           || ')',
+                     DE_CLIENT (IH.CLIENT_CODE))
+                     AS CLIENTNAME                                   --  출고업체명
+                                  ,
+                  EO.CENTERNAME,                                        -- 센터명
+                  WR.ITEM_SPEC,                                           -- 스펙
+                  WR.CT_CODE,                                            -- 원산지
+                  (SELECT BC.CODE_NAME FROM B_COMMON_CODE BC WHERE BC.CODE = WR.CT_CODE AND BC.MASTER_CODE = 'HOMEPLUS_ORIGIN_CODE' AND BC.STATUS = 'Y')||'산' AS CT_NAME,
+                  BD.PACKER_CODE,                                         -- 패커
+                  WR.IMPORT_ID_NO,                                    -- 수입식별번호
+                  DE_CLIENT (BD.PACKER_CODE) AS PACKERNAME,             -- 패커이름
+                  BD.PACKER_PRODUCT_CODE,                            -- 패커 상품코드
+                  DECODE(CENTER_SCALE_USE_YN, 'Y', DECODE(BI.ITEM_TYPE, '10', DECODE(BI.MAJOR_CATEGORY, '10', 'M9', EO.BARCODE_TYPE), EO.BARCODE_TYPE ) , EO.BARCODE_TYPE) AS BARCODE_TYPE, --여기
+                  EO.ITEM_TYPE,                     -- 원료육 :  W, 제품 : J, 비정량 : B
+                  EO.PACKWEIGHT,
+                  (SELECT BARCODEGOODS
+                     FROM S_BARCODE_INFO A
+                    WHERE     A.PACKER_CLIENT_CODE = BD.PACKER_CODE
+                          AND A.PACKER_PRODUCT_CODE = BD.PACKER_PRODUCT_CODE
+                          AND A.status = 'Y'
+                          AND ROWNUM < 2)
+                     BARCODEGOODS,
+                    STORE_IN_DATE,
+                   WR.GR_WAREHOUSE_CODE,
+                   DECODE(EO.EMARTLOGIS_CODE,NULL,'0000000',EO.EMARTLOGIS_CODE) AS EMARTLOGIS_CODE,
+                   DECODE(EO.EMARTLOGIS_NAME,NULL,'정보없음',EO.EMARTLOGIS_NAME) AS EMARTLOGIS_NAME,
+                   WH_AREA,
+                   EO.USE_NAME,
+                   EO.USE_CODE,
+                   EO.STORECODE AS STORE_CODE,
+                   DECODE(EO.STORECODE, '9820', BSI.EMART_PLANT_CODE, NULL)  AS EMART_PLANT_CODE,
+                   BI.MAJOR_CATEGORY AS MAJOR_CATEGORY,
+                   BI.CONTAINER_TYPE AS CONTAINER_TYPE
+             FROM W_GOODS_IH IH
+                  INNER JOIN W_GOODS_ID ID
+                     ON IH.GI_H_ID = ID.GI_H_ID
+                  INNER JOIN W_GOODS_R WR
+                     ON ID.GOODS_R_ID = WR.GOODS_R_ID
+                  INNER JOIN I_BL_D BD
+                     ON BD.BL_D_ID = WR.BL_D_ID
+                     AND BD.BL_S_ID = WR.BL_S_ID
+              	LEFT OUTER JOIN B_SUPPLIER_ITEM BSI -- Emart Plant Code Start
+                  	 ON BD.PACKER_CODE = BSI.PACKER_CODE
+                  	 AND BD.PACKER_PRODUCT_CODE = BSI.PACKER_PRODUCT_CODE -- Emart Plant Code END
+                  INNER JOIN B_ITEM BI --여기
+                     ON ID.ITEM_CODE = BI.ITEM_CODE
+                  INNER JOIN (SELECT EOI.EOI_ID,
+                                     EOI.STORE_NAME STORENAME,
+                                     EOI.STORE_CODE STORECODE,
+                                     EOI.ITEM_CODE,
+                                     EOI.ITEM_NAME,
+                                     EB.BARCODE_TYPE,
+                                     EB.ITEM_TYPE,
+                                     EB.PACKWEIGHT,
+                                     BCC.CODE_NAME CENTERNAME,
+                                     EOI.STORE_IN_DATE,
+                                     EB.EMARTLOGIS_CODE,
+                                     (SELECT BE.EMRTITEM_NAME FROM B_EMART_BARCODE BE WHERE BE.EMARTITEM_CODE = EB.EMARTLOGIS_CODE) AS EMARTLOGIS_NAME ,
+                                     BCC2.REF_CODE2 WH_AREA,
+                                     DECODE( EOI.STORE_CODE, EOI.CENTER_CODE, '직납','센터납') deliverType,
+                                     (
+                                      SELECT BC.CODE_NAME
+                                        FROM B_COMMON_CODE BC
+                                        WHERE BC.MASTER_CODE = 'EMART_RAWMEAT_USE_TYPE'
+                                          AND BC.CODE = EB.USE_CODE
+                                      )AS USE_NAME,
+                                      EB.USE_CODE AS USE_CODE,
+                                      DECODE(X.CODE, NULL, 'N', 'Y')  AS CENTER_SCALE_USE_YN
+                                FROM W_EMART_ORDER_ITEM EOI
+                                     INNER JOIN B_EMART_BARCODE EB
+                                        ON     EB.EMARTITEM_CODE = EOI.ITEM_CODE
+                                       	AND EB.ITEM_TYPE = 'W'
+                                     INNER JOIN B_COMMON_CODE BCC
+                                        ON     BCC.MASTER_CODE =
+                                                  'EMART_STORE_CODE'
+                                           AND EOI.CENTER_CODE = BCC.CODE
+                                     INNER JOIN B_COMMON_CODE BCC2
+                                        ON     BCC2.MASTER_CODE =
+                                                  'EMART_STORE_CODE'
+                                           AND EOI.STORE_CODE = BCC2.CODE
+                                     LEFT OUTER JOIN  --여기
+                                     (
+                                        SELECT CODE FROM
+                                            (
+                                                SELECT REF_CODE1, CODE FROM B_COMMON_CODE
+                                                WHERE MASTER_CODE = 'EMART_SCALE_BARCODE_USE_CENTER'
+                                                 AND STATUS = 'Y'
+                                            )BC
+                                      )X
+                                      ON EOI.CENTER_CODE = X.CODE
+                                           ) EO
+                     ON ID.EOI_ID = EO.EOI_ID
+            WHERE     1 = 1
+                  AND ID.PACKING_QTY = 0
+                  AND ID.GI_REQ_PKG <> 0
+                  AND WR.CONTRACT_TYPE <> '40'
+                  --AND IH.SEND_FLAG = 'Y'
+                  AND EO.EOI_ID IS NOT NULL
+                  AND IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')
+           -- 국내매출처에서 매입으로 입고된 경우
+
+           UNION ALL
+
+           SELECT IH.GI_H_ID,
+                  ID.GI_D_ID                             -- 출고 번호 (출고상세번호id 값)
+                            ,
+                  ID.EOI_ID AS EOI_ID                              -- 이마트 출고번호
+                                     ,
+                  ID.ITEM_CODE                                         -- 상품코드
+                              ,
+                  DE_ITEM (ID.ITEM_CODE)                                -- 상품명
+                                        ,
+                  EO.ITEM_CODE AS EMARTITEM_CODE,
+                  EO.ITEM_NAME AS EMARTITEM                          -- 이마트상품명
+                                           ,
+                  ID.GI_REQ_PKG                                      -- 출하요청수량
+                               ,
+                  ID.GI_REQ_QTY                                      -- 출하요청중량
+                               ,
+                  ID.AMOUNT                                          -- 출하상품금액
+                           ,
+                  WR.GOODS_R_ID                                        -- 입고번호
+                               ,
+                  WR.GR_REF_NO                                       -- 창고입고번호
+                              ,
+                  GI_REQ_DATE                                         -- 출하요청일
+                             ,
+                  DECODE (WR.IMPORT_ID_NO, NULL, WR.BL_NO, WR.IMPORT_ID_NO)
+                     BL_NO,                                            -- BL번호
+                  ID.BRAND_CODE                                       -- 브랜드코드
+                               ,
+                  DE_COMMON ('BRAND', ID.BRAND_CODE) AS BRANDNAME      -- 브랜드명
+                                                                 ,
+                  IH.CLIENT_CODE                                     -- 출고업체코드
+                                ,
+                  DECODE (
+                     SUBSTR (EO.CENTERNAME, 1, 2),
+                     'CJ',    DE_CLIENT2 (IH.CLIENT_CODE)
+                           || '('
+                           || EO.STORECODE
+                           || ')',
+                     DE_CLIENT (IH.CLIENT_CODE))
+                     AS CLIENTNAME                                   --  출고업체명
+                                  ,
+                  EO.CENTERNAME                                         -- 센터명
+                               ,
+                  WR.ITEM_SPEC                                           -- 스펙
+                              ,
+                  WR.CT_CODE                                            -- 원산지
+                            ,
+                  (SELECT BC.CODE_NAME FROM B_COMMON_CODE BC WHERE BC.CODE = WR.CT_CODE AND BC.MASTER_CODE = 'HOMEPLUS_ORIGIN_CODE' AND BC.STATUS = 'Y')||'산' AS CT_NAME,
+                  OD.PACKER_CODE,
+                  WR.IMPORT_ID_NO,                                   -- 수입식별번호
+                  DE_CLIENT (OD.PACKER_CODE) AS PACKERNAME             -- 패커이름
+                                                          ,
+                  DECODE (OD.PACKER_PRODUCT_CODE,
+                          NULL, ID.ITEM_CODE,
+                          OD.PACKER_PRODUCT_CODE)
+                     AS PACKER_PRODUCT_CODE                         -- 패커 상품코드
+                                           ,
+                  DECODE(CENTER_SCALE_USE_YN, 'Y', DECODE(BI.ITEM_TYPE, '10', DECODE(BI.MAJOR_CATEGORY, '10', 'M9', EO.BARCODE_TYPE), EO.BARCODE_TYPE ) , EO.BARCODE_TYPE) AS BARCODE_TYPE, --여기
+                  EO.ITEM_TYPE,
+                  EO.PACKWEIGHT,
+                  DECODE (
+                     OD.PACKER_PRODUCT_CODE,
+                     NULL, ID.ITEM_CODE,
+                     (SELECT BARCODEGOODS
+                        FROM S_BARCODE_INFO A
+                       WHERE     A.PACKER_CLIENT_CODE = OD.PACKER_CODE
+                             AND A.PACKER_PRODUCT_CODE =
+                                    OD.PACKER_PRODUCT_CODE
+                             AND A.status = 'Y'
+                             AND ROWNUM < 2))
+                   BARCODEGOODS,
+                   STORE_IN_DATE,
+                   WR.GR_WAREHOUSE_CODE,
+                   DECODE(EO.EMARTLOGIS_CODE,NULL,'0000000',EO.EMARTLOGIS_CODE) AS EMARTLOGIS_CODE,
+                   DECODE(EO.EMARTLOGIS_NAME,NULL,'정보없음',EO.EMARTLOGIS_NAME) AS EMARTLOGIS_NAME,
+                   WH_AREA,
+                   EO.USE_NAME,
+                   EO.USE_CODE,
+                   EO.STORECODE AS STORE_CODE,
+                   DECODE(EO.STORECODE, '9820', BSI.EMART_PLANT_CODE, NULL)  AS EMART_PLANT_CODE,
+                   BI.MAJOR_CATEGORY AS MAJOR_CATEGORY,
+                   BI.CONTAINER_TYPE AS CONTAINER_TYPE
+             FROM W_GOODS_IH IH
+                  INNER JOIN W_GOODS_ID ID
+                     ON IH.GI_H_ID = ID.GI_H_ID
+                  INNER JOIN W_GOODS_R WR
+                     ON ID.GOODS_R_ID = WR.GOODS_R_ID
+                  INNER JOIN I_OFFER_D OD
+                     ON OD.OFFER_D_ID = WR.BL_D_ID
+                 LEFT OUTER JOIN B_SUPPLIER_ITEM BSI -- Emart Plant Code Start
+                  	 ON OD.PACKER_CODE = BSI.PACKER_CODE
+                  	 AND OD.PACKER_PRODUCT_CODE = BSI.PACKER_PRODUCT_CODE -- Emart Plant Code END
+                  INNER JOIN B_ITEM BI --여기
+                     ON ID.ITEM_CODE = BI.ITEM_CODE
+                  INNER JOIN (SELECT EOI.EOI_ID,
+                                     BCC.CODE_NAME CENTERNAME,
+                                     EOI.STORE_NAME STORENAME,
+                                     EOI.STORE_CODE STORECODE,
+                                     EOI.ITEM_CODE,
+                                     EOI.ITEM_NAME,
+                                     EB.BARCODE_TYPE,
+                                     EB.ITEM_TYPE,
+                                     EB.PACKWEIGHT,
+                                     eoi.STORE_IN_DATE,
+                   					 EB.EMARTLOGIS_CODE,
+                   					(SELECT BE.EMRTITEM_NAME FROM B_EMART_BARCODE BE WHERE BE.EMARTITEM_CODE = EB.EMARTLOGIS_CODE) AS EMARTLOGIS_NAME,
+                   				     BCC2.REF_CODE2	WH_AREA,
+                                     DECODE( EOI.STORE_CODE, EOI.CENTER_CODE, '직납','센터납') deliverType, --여기
+                                     (
+                                      SELECT BC.CODE_NAME
+                                        FROM B_COMMON_CODE BC
+                                        WHERE BC.MASTER_CODE = 'EMART_RAWMEAT_USE_TYPE'
+                                          AND BC.CODE = EB.USE_CODE
+                                      )AS USE_NAME,
+                                      EB.USE_CODE AS USE_CODE,
+                                      DECODE(X.CODE, NULL, 'N', 'Y')  AS CENTER_SCALE_USE_YN
+                                FROM W_EMART_ORDER_ITEM EOI
+                                     INNER JOIN B_EMART_BARCODE EB
+                                        ON     EB.EMARTITEM_CODE =
+                                                  EOI.ITEM_CODE
+                                           AND EB.ITEM_TYPE = 'W'
+                                     INNER JOIN B_COMMON_CODE BCC
+                                        ON     BCC.MASTER_CODE =
+                                                  'EMART_STORE_CODE'
+                                           AND EOI.CENTER_CODE = BCC.CODE
+                                    INNER JOIN B_COMMON_CODE BCC2
+                                        ON     BCC2.MASTER_CODE =
+                                                  'EMART_STORE_CODE'
+                                           AND EOI.STORE_CODE = BCC2.CODE
+                                    LEFT OUTER JOIN  --여기
+                                     (
+                                        SELECT CODE FROM
+                                            (
+                                                SELECT REF_CODE1, CODE FROM B_COMMON_CODE
+                                                WHERE MASTER_CODE = 'EMART_SCALE_BARCODE_USE_CENTER'
+                                                 AND STATUS = 'Y'
+                                            )BC
+                                      )X
+                                      ON EOI.CENTER_CODE = X.CODE
+                                     ) EO
+                     ON ID.EOI_ID = EO.EOI_ID
+            WHERE     1 = 1
+                   AND ID.PACKING_QTY = 0
+                   AND ID.GI_REQ_PKG <> 0
+                   AND EO.EOI_ID IS NOT NULL
+                   AND WR.CONTRACT_TYPE = '40'       -- AND ID.GI_D_ID = 178505
+                   --AND IH.SEND_FLAG = 'Y'
+                   AND IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')
+
+
+);

@@ -55,87 +55,297 @@ import java.util.Date;
 
 import static com.rgbsolution.highland_emart.R.id.sp_center;
 
+/**
+ * ShipmentActivity - 출하 계근 작업 화면
+ *
+ * <h2>개요</h2>
+ * PDA 앱에서 출하 대상 상품의 계근(무게 측정) 작업을 수행하는 핵심 Activity.
+ * 바코드 스캔, 중량 입력, 바코드 라벨 인쇄, 서버 전송 기능을 담당한다.
+ *
+ * <h2>주요 기능</h2>
+ * <ul>
+ *   <li><b>출하 대상 조회</b>: 센터별/BL번호별 출하 대상 상품 목록 표시</li>
+ *   <li><b>바코드 스캔</b>: 상품 바코드 및 BL번호 바코드 스캔으로 작업 상품 식별</li>
+ *   <li><b>계근 작업</b>: 저울 연동 또는 수기 입력으로 중량 측정</li>
+ *   <li><b>라벨 인쇄</b>: 블루투스 프린터로 바코드 라벨 인쇄 (Woosim 프린터)</li>
+ *   <li><b>서버 전송</b>: 계근 완료 데이터를 서버(G3)로 전송</li>
+ * </ul>
+ *
+ * <h2>출하 유형 (Common.searchType)</h2>
+ * <ul>
+ *   <li>"0" : 이마트 출하 - 바코드 타입별 라벨 인쇄 (M0, M1, M3, M4, M8, M9, E0-E3, P0 등)</li>
+ *   <li>"1" : 생산 투입 - 프린터 비활성화, 생산 공정용</li>
+ *   <li>"3" : 도매 출하 - activity_shipment_wholesale 레이아웃 사용</li>
+ *   <li>"4" : 홈플러스 출하</li>
+ *   <li>"5" : 롯데 출하</li>
+ *   <li>"6" : 원앤원 출하</li>
+ * </ul>
+ *
+ * <h2>계근 방식 (ITEM_TYPE)</h2>
+ * <ul>
+ *   <li>"W", "HW" : 바코드 계근 - 바코드에서 중량 추출</li>
+ *   <li>"S" : 저울 계근 - 저울에서 중량 입력 (소수점 2자리)</li>
+ *   <li>"J" : 지정 중량 - PACKWEIGHT 값 사용</li>
+ *   <li>"B" : 박스 계근</li>
+ * </ul>
+ *
+ * <h2>바코드 타입 (BARCODE_TYPE) - 라벨 인쇄 분기</h2>
+ * <ul>
+ *   <li>"M0" : 이마트 기본 (미트센터 분기 포함)</li>
+ *   <li>"M1" : 이마트 타입1</li>
+ *   <li>"M3", "M4" : 이마트 타입3/4</li>
+ *   <li>"M8" : 수입식별번호 포함</li>
+ *   <li>"M9" : 납품일자 포함</li>
+ *   <li>"E0", "E1", "E2", "E3" : 이마트 확장 타입</li>
+ *   <li>"P0" : 기본 바코드</li>
+ *   <li>"NA" : 도매용 (바코드 타입 없음)</li>
+ * </ul>
+ *
+ * <h2>화면 구성</h2>
+ * <ul>
+ *   <li>sp_center_name : 이마트 센터 선택 스피너</li>
+ *   <li>sp_bl_no : BL번호 선택 스피너</li>
+ *   <li>sp_point_name : 지점 선택 스피너</li>
+ *   <li>edit_barcode : 바코드/중량 입력 필드</li>
+ *   <li>edit_product_name, edit_product_code : 상품명/상품코드 표시</li>
+ *   <li>edit_wet_count, edit_wet_weight : 요청수량/중량 vs 계근수량/중량 표시</li>
+ *   <li>sList : 작업 대상 지점 리스트뷰</li>
+ * </ul>
+ *
+ * <h2>주요 데이터 흐름</h2>
+ * <ol>
+ *   <li>출하 대상 조회 (VIEW → JSP → 앱 로컬 DB)</li>
+ *   <li>센터/BL/지점 선택</li>
+ *   <li>상품 바코드 스캔 → 상품 매칭</li>
+ *   <li>중량 입력 (바코드/저울/수기)</li>
+ *   <li>라벨 인쇄 (프린터 연결 시)</li>
+ *   <li>계근 데이터 로컬 DB 저장</li>
+ *   <li>전송 버튼 → 서버 전송 (insert_goods_wet.jsp)</li>
+ * </ol>
+ *
+ * <h2>관련 클래스</h2>
+ * <ul>
+ *   <li>{@link Shipments_Info} : 출하 대상 정보 DTO</li>
+ *   <li>{@link Goodswets_Info} : 계근 데이터 DTO</li>
+ *   <li>{@link Barcodes_Info} : 바코드 정보 DTO</li>
+ *   <li>{@link DBHandler} : 로컬 SQLite DB 핸들러</li>
+ *   <li>{@link ShipmentListAdapter} : 출하 리스트 어댑터</li>
+ *   <li>{@link BluetoothPrintService} : 블루투스 프린터 서비스</li>
+ *   <li>{@link WoosimService} : Woosim 프린터 명령어 서비스</li>
+ * </ul>
+ *
+ * <h2>관련 VIEW</h2>
+ * <ul>
+ *   <li>VW_PDA_WID_LIST : 이마트 출하용</li>
+ *   <li>VW_PDA_WID_WHOLESALE_LIST : 도매 출하용</li>
+ *   <li>VW_PDA_WID_PRO_LIST : 생산 투입용</li>
+ *   <li>VW_PDA_WID_LIST_LOTTE : 롯데 출하용</li>
+ *   <li>VW_PDA_WID_HOMEPLUS_LIST : 홈플러스 출하용</li>
+ * </ul>
+ *
+ * @see ScannerActivity 바코드 스캐너 기본 Activity
+ * @see LoginActivity 로그인 및 출하 유형 선택
+ * @see MainActivity 메인 화면
+ */
 public class ShipmentActivity extends ScannerActivity {
 
+    // ========================================================================================
+    // 상수 정의
+    // ========================================================================================
     private final String TAG = "ShipmentActivity";
+
+    /** Handler 메시지 타입 - 리스트 행 체크 완료 */
     private final int MESSAGE_ROWCHECK = 1000;
+    /** Handler 메시지 타입 - 계근 작업 완료 */
     private final int MESSAGE_COMPLETE = 1001;
+    /** Handler 메시지 타입 - 검색 체크 완료 */
     private final int MESSAGE_SEARCHCHECK = 1002;
 
-    //	::::::::::::::   프 린 터    ::::::::::::	//
-    // Intent request codes
-    public static final int REQUEST_CONNECT_DEVICE = 1;        //	공통
-    // Message types sent from the BluetoothPrintService Handler
+    // ========================================================================================
+    // 블루투스 프린터 관련 상수 및 필드
+    // ========================================================================================
+
+    /** 프린터 연결 요청 코드 */
+    public static final int REQUEST_CONNECT_DEVICE = 1;
+
+    // BluetoothPrintService Handler 메시지 타입
+    /** 프린터 디바이스명 수신 */
     public static final int MESSAGE_DEVICE_NAME = 1;
+    /** Toast 메시지 표시 */
     public static final int MESSAGE_TOAST = 2;
+    /** 프린터 데이터 읽기 */
     public static final int MESSAGE_READ = 3;
+    /** 검색 완료 */
     public static final int MESSAGE_SEARCH = 4;
+    /** 재인쇄 요청 */
     public static final int MESSAGE_REPRINT = 5;
+    /** 소비기한 입력 화면에서 데이터 수신 요청 코드 */
     public static final int GET_DATA_REQUEST = 8;
-    // Key names received from the BluetoothPrintService Handler
+
+    // Handler 키 이름
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
 
+    /** 제조일자 입력값 (소비기한 계산용) */
     public static final String makingDateInput = "";
 
-    // Intent request codes
-    //private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
+    /** 비보안 모드 프린터 연결 요청 코드 */
     private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
+    /** 블루투스 활성화 요청 코드 */
     private static final int REQUEST_ENABLE_BT = 3;
-    // Name of the connected device
+
+    /** 연결된 프린터 디바이스명 */
     private String mConnectedDeviceName = null;
+    /** 블루투스 어댑터 */
     private BluetoothAdapter mBluetoothAdapter = null;
+    /** 블루투스 프린터 서비스 */
     private BluetoothPrintService mPrintService = null;
+    /** Woosim 프린터 서비스 (라벨 인쇄 명령어 생성) */
     private WoosimService mWoosim = null;
+
+    /** 효과음 풀 */
     protected SoundPool sound_pool;
+    /** 성공 효과음 ID */
     protected int sound_success;
+    /** 실패 효과음 ID */
     protected int sound_fail;
+    /** 롯데 전송 재시도 카운트 */
     private int lotte_TryCount = 0;
-    //	::::::::::::::   프 린 터    ::::::::::::	//
 
+    // ========================================================================================
+    // UI 컴포넌트 및 Activity 필드
+    // ========================================================================================
 
-    // ::::::::::::::::::: Activity 필드 ::::::::::::::::: //
     private LayoutInflater Inflater;
+    /** 로딩 다이얼로그 */
     private ProgressDialog pDialog = null;
+    /** 프린터 연결 다이얼로그 */
     private ProgressDialog cDialog = null;
-    private ArrayList<Shipments_Info> arSM;             // 출하대상 List
-    private ArrayList<Goodswets_Info> arBcode;          // 계근 List
+
+    /**
+     * 출하 대상 리스트 - VIEW에서 조회한 출하 대상 정보
+     * @see Shipments_Info
+     */
+    private ArrayList<Shipments_Info> arSM;
+    /**
+     * 계근 데이터 리스트 - 계근 완료된 상품 정보
+     * @see Goodswets_Info
+     */
+    private ArrayList<Goodswets_Info> arBcode;
+
+    /** 작업 모드 선택 스피너 (바코드스캔/수기입력/상품코드) */
     private Spinner sp_work;
-    private EditText edit_barcode;                      // 스캔한 바코드 정보
-    private Button btn_input;                           // 입력 버튼
-    private Spinner sp_center_name;                     // 이마트 센터명
-    private EditText edit_product_name;                 // 패커 상품명
-    private EditText edit_product_code;                 // 패커 상품코드
-    private Spinner sp_bl_no;                           // BL 번호
-    private EditText edit_center_tcount;                // 센터 총 수량
-    private EditText edit_center_tweight;               // 센터 총 중량
-    private Spinner sp_point_name;                      // 이마트 지점명
-    //    private EditText edit_position_name;          // 이마트 지점명
-    private EditText edit_wet_count;                    // 지점 계근 수량
-    private EditText edit_wet_weight;                   // 지점 계근 중량
+    /** 바코드/중량 입력 필드 - 스캔된 바코드 또는 수기 입력 중량 */
+    private EditText edit_barcode;
+    /** 입력 버튼 - 바코드 입력 또는 중량 입력 확인 */
+    private Button btn_input;
+    /** 센터 선택 스피너 - 이마트 물류센터 선택 */
+    private Spinner sp_center_name;
+    /** 상품명 표시 필드 - 현재 작업 중인 상품명 (ITEM_NAME) */
+    private EditText edit_product_name;
+    /** 상품코드 표시 필드 - 현재 작업 중인 패커상품코드 (PACKER_PRODUCT_CODE) */
+    private EditText edit_product_code;
+    /** BL번호 선택 스피너 - 동일 BL건 그룹핑 */
+    private Spinner sp_bl_no;
+    /** 센터 총 요청수량 - 선택된 센터의 전체 GI_REQ_PKG 합계 */
+    private EditText edit_center_tcount;
+    /** 센터 총 요청중량 - 선택된 센터의 전체 GI_REQ_QTY 합계 */
+    private EditText edit_center_tweight;
+    /** 지점 선택 스피너 - 출고 대상 지점 선택 (CLIENTNAME) */
+    private Spinner sp_point_name;
+    /** 지점 계근 현황 - "요청수량 / 완료수량" 형태 (GI_REQ_PKG / PACKING_QTY) */
+    private EditText edit_wet_count;
+    /** 지점 계근 중량 - "요청중량 / 완료중량" 형태 (GI_REQ_QTY / GI_QTY) */
+    private EditText edit_wet_weight;
+
+    /** 출하 대상 리스트 어댑터 */
     private ShipmentListAdapter sListAdapter;
-    private ListView sList;                             // 작업 중인 지점 List
-    private Button btn_back;                            // 뒤로 버튼
-    private Button btn_send;                            // 계근 완료된 정보 G3 전송
-    private Button btn_select;                          // 선택 지점의 계근 상세정보 popup
+    /** 출하 대상 리스트뷰 - 센터별 출하 대상 목록 표시 */
+    private ListView sList;
+
+    /** 뒤로가기 버튼 */
+    private Button btn_back;
+    /** 전송 버튼 - 계근 완료 데이터를 서버(G3)로 전송 */
+    private Button btn_send;
+    /** 선택 버튼 - 선택된 지점의 계근 상세정보 팝업 */
+    private Button btn_select;
+
+    // ========================================================================================
+    // 계근 작업 상태 관리 필드
+    // ========================================================================================
+
+    /** 센터 총 요청수량 (GI_REQ_PKG 합계) */
     private int centerTotalCount;
+    /** 센터 완료수량 (PACKING_QTY 합계) */
     private int centerWorkCount;
+    /** 센터 총 요청중량 (GI_REQ_QTY 합계) */
     private double centerTotalWeight;
+    /** 센터 완료중량 (GI_QTY 합계) */
     private double centerWorkWeight;
+    /** 리스트에서 선택된 위치 (상세보기용) */
     private int select_position;
-    private int current_work_position;                          // List 중 현재 계근작업 position
-    private int work_flag = 1;       //  1 바코드스캔 , 2 수기입력 , 3 상품코드
-    private boolean scan_flag = true;      // true ? 패커상품스캔 차례 : BL스캔 차례
-    private boolean select_flag = true;     // true ? 스캔 : 선택
+    /**
+     * 현재 계근 작업 중인 리스트 위치
+     * -1: 미선택, 0~n: arSM 리스트 인덱스
+     */
+    private int current_work_position;
+
+    /**
+     * 작업 모드 플래그
+     * 1: 바코드 스캔 모드
+     * 0: 수기 입력 모드 (중량 직접 입력)
+     * 2: 상품코드 입력 모드
+     */
+    private int work_flag = 1;
+    /**
+     * 스캔 순서 플래그
+     * true: 상품 바코드 스캔 차례
+     * false: BL번호 바코드 스캔 차례
+     */
+    private boolean scan_flag = true;
+    /**
+     * 선택 모드 플래그
+     * true: 스캔 모드
+     * false: 선택 모드
+     */
+    private boolean select_flag = true;
+    /** 계근 작업 완료 플래그 */
     private boolean finish_flag = false;
+
+    /** 진동 알림 */
     private Vibrator vibrator;
     private Toast toast;
     AlertDialog alert;
-    boolean alert_flag = false; //중복 제어 변수
+    /** 다이얼로그 중복 표시 방지 플래그 */
+    boolean alert_flag = false;
+    /** 제조일자 입력 플래그 (킬코이 미트센터용) */
     boolean makingdateInputFlag = false;
 
-    private String storeCode = LoginActivity.store[0]; // searchType은 생산대상 다운로드 후에 계근시작을 해야만 1이됨, 즉 searchType으로 프린터 켤지 말지 판단할 수 없음. storeCode 읽어와서 판단한다.
+    /**
+     * 현재 로그인한 스토어 코드
+     * 프린터 활성화 여부 판단에 사용 (생산 계근 시 프린터 비활성화)
+     */
+    private String storeCode = LoginActivity.store[0];
 
+    // ========================================================================================
+    // Activity 생명주기 메서드
+    // ========================================================================================
+
+    /**
+     * Activity 생성 시 호출
+     * <p>
+     * 주요 처리:
+     * <ul>
+     *   <li>출하 유형에 따른 레이아웃 설정 (도매: activity_shipment_wholesale, 기타: activity_shipment)</li>
+     *   <li>UI 컴포넌트 초기화 및 이벤트 리스너 등록</li>
+     *   <li>센터 리스트 로드</li>
+     *   <li>블루투스 어댑터 초기화</li>
+     *   <li>생산 계근 시 프린터 비활성화</li>
+     * </ul>
+     * </p>
+     *
+     * @param savedInstanceState 저장된 인스턴스 상태
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -143,6 +353,8 @@ public class ShipmentActivity extends ScannerActivity {
 
         super.onCreate(savedInstanceState);
 
+        // 출하 유형에 따른 레이아웃 설정
+        // searchType "3": 도매 출하 - 별도 레이아웃 사용
         if(Common.searchType.equals("3")){
             setContentView(R.layout.activity_shipment_wholesale);
         }else{
@@ -286,6 +498,30 @@ public class ShipmentActivity extends ScannerActivity {
         btn_input.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
+    // ========================================================================================
+    // 버튼 클릭 리스너
+    // ========================================================================================
+
+    /**
+     * 입력 버튼 클릭 리스너
+     * <p>
+     * 작업 모드(work_flag)에 따라 동작이 달라짐:
+     * <ul>
+     *   <li>work_flag=1 (바코드 스캔): setBarcodeMsg() 호출하여 바코드 처리</li>
+     *   <li>work_flag=0 (수기 입력): 입력된 중량값으로 wet_data_insert() 호출</li>
+     *   <li>work_flag=2 (상품코드): setBarcodeMsg() 호출하여 상품코드 처리</li>
+     * </ul>
+     * </p>
+     * <p>
+     * 수기 입력 시 특수 조건:
+     * <ul>
+     *   <li>킬코이 미트센터(패커코드 30228, 스토어 9231): 소비기한 입력 화면으로 이동</li>
+     *   <li>수입육 센터(TRD/WET/E/T): 이마트/롯데 출하 시 소비기한 입력 화면으로 이동</li>
+     *   <li>이마트 출하: 소수점 첫째자리까지 반올림</li>
+     *   <li>생산/홈플러스: 입력값 그대로 사용</li>
+     * </ul>
+     * </p>
+     */
     private View.OnClickListener inputBtnListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -398,6 +634,12 @@ public class ShipmentActivity extends ScannerActivity {
         }
     };
 
+    /**
+     * 뒤로가기 버튼 클릭 리스너
+     * <p>
+     * Activity를 종료하고 이전 화면(MainActivity)으로 복귀
+     * </p>
+     */
     private View.OnClickListener backBtnListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -406,6 +648,20 @@ public class ShipmentActivity extends ScannerActivity {
         }
     };
 
+    /**
+     * 전송 버튼 클릭 리스너
+     * <p>
+     * 계근 완료된 데이터를 서버(G3)로 전송
+     * </p>
+     * <p>
+     * 처리 흐름:
+     * <ol>
+     *   <li>확인 다이얼로그 표시</li>
+     *   <li>확인 시 ProgressDlgShipmentSend AsyncTask 실행</li>
+     *   <li>insert_goods_wet.jsp 호출하여 계근 데이터 전송</li>
+     * </ol>
+     * </p>
+     */
     private View.OnClickListener sendBtnListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -446,6 +702,20 @@ public class ShipmentActivity extends ScannerActivity {
         }
     };
 
+    /**
+     * 선택 버튼 클릭 리스너
+     * <p>
+     * 선택된 지점의 계근 상세정보 팝업을 표시
+     * </p>
+     * <p>
+     * 처리 흐름:
+     * <ol>
+     *   <li>체크박스로 선택된 지점 확인</li>
+     *   <li>선택된 지점이 있으면 show_wetDetailDialog() 호출하여 상세 팝업 표시</li>
+     *   <li>선택된 지점이 없으면 경고 메시지 및 진동 알림</li>
+     * </ol>
+     * </p>
+     */
     private View.OnClickListener selectBtnListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -468,6 +738,12 @@ public class ShipmentActivity extends ScannerActivity {
         }
     };
 
+    /**
+     * 스캔 초기화 버튼 클릭 리스너
+     * <p>
+     * 스캔 상태를 초기화하여 상품 바코드 스캔부터 다시 시작
+     * </p>
+     */
     private View.OnClickListener initBtnListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -487,6 +763,27 @@ public class ShipmentActivity extends ScannerActivity {
         return this.select_position;
     }
 
+    // ========================================================================================
+    // Handler - 비동기 메시지 처리
+    // ========================================================================================
+
+    /**
+     * 메인 핸들러 - UI 스레드에서 메시지 처리
+     * <p>
+     * 처리하는 메시지 유형:
+     * <ul>
+     *   <li>MESSAGE_ROWCHECK (1000): 리스트 행 체크 완료 - 해당 위치로 스크롤</li>
+     *   <li>MESSAGE_COMPLETE (1001): 계근 작업 완료 알림</li>
+     *   <li>MESSAGE_SEARCHCHECK (1002): 검색 체크 - GI_D_ID로 해당 행 선택</li>
+     *   <li>MESSAGE_DEVICE_NAME (1): 프린터 연결 성공 - 디바이스명 저장 및 성공음 재생</li>
+     *   <li>MESSAGE_TOAST (2): Toast 메시지 표시</li>
+     *   <li>MESSAGE_READ (3): 프린터 데이터 읽기 - Woosim 서비스로 전달</li>
+     *   <li>MESSAGE_SEARCH (4): 프린터 검색 - DeviceListActivity 호출</li>
+     *   <li>MESSAGE_REPRINT (5): 재인쇄 요청 - 출하 유형별 프린팅 메서드 호출</li>
+     *   <li>WoosimService.MESSAGE_PRINTER: Woosim 프린터 관련 메시지</li>
+     * </ul>
+     * </p>
+     */
     public Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             try {
@@ -609,15 +906,56 @@ public class ShipmentActivity extends ScannerActivity {
         }
     }
 
+    // ========================================================================================
+    // 바코드 처리 관련 필드 및 메서드
+    // ========================================================================================
+
+    /** 현재 작업 중인 바코드 정보 (S_BARCODE_INFO 테이블 데이터) */
     Barcodes_Info work_item_bi_info;
+    /** 현재 작업 중인 패커 상품 코드 */
     String work_ppcode = "";
+    /** 현재 작업 중인 BL 번호 */
     String work_bl_no = "";
+    /** 스캔된 전체 바코드 문자열 (중량, 제조일 추출용) */
     String work_item_fullbarcode = "";
+    /** 바코드 상품 코드 (BARCODEGOODS) */
     String work_item_barcodegoods = "";
+    /** 소비기한 전송용 변수 */
     String expiryDayTrans = "";
+    /** 다이얼로그 표시 중 플래그 (중복 처리 방지) */
     boolean dialog_flag = false;
+    /** 전체 바코드 임시 저장 */
     String fullbarcode = "";
 
+    /**
+     * 바코드 메시지 처리 핵심 메서드
+     * <p>
+     * 스캔된 바코드를 분석하여 상품을 매칭하고 계근 작업을 수행한다.
+     * scan_flag에 따라 상품 바코드 또는 BL번호 바코드를 처리한다.
+     * </p>
+     *
+     * <h3>처리 흐름</h3>
+     * <ol>
+     *   <li>scan_flag=true (상품 바코드 스캔):
+     *     <ul>
+     *       <li>work_flag=1: find_PackerProduct()로 바코드에서 패커상품코드 추출</li>
+     *       <li>work_flag=2: find_PackerProductBarcodeGoods()로 상품코드로 검색</li>
+     *       <li>중복 스캔 체크 (홈플러스 비정량은 중복 허용)</li>
+     *       <li>출하 대상 조회 (ProgressDlgShipSelect 실행)</li>
+     *     </ul>
+     *   </li>
+     *   <li>scan_flag=false (BL번호 스캔):
+     *     <ul>
+     *       <li>BL번호 일치 확인</li>
+     *       <li>ITEM_TYPE에 따른 중량 추출 (W/HW: 바코드, S: 저울, J: 지정)</li>
+     *       <li>LB→KG 환산 (필요시)</li>
+     *       <li>wet_data_insert() 호출</li>
+     *     </ul>
+     *   </li>
+     * </ol>
+     *
+     * @param msg 스캔된 바코드 문자열
+     */
     public void setBarcodeMsg(final String msg) {
         try {
             if (dialog_flag)
@@ -914,6 +1252,7 @@ public class ShipmentActivity extends ScannerActivity {
                          *      중량(LB체크) / 제조일 / 박스번호 Find
                          */
                         Log.d(TAG, "******************current_work_position:" + arSM.get(current_work_position).getITEM_TYPE());
+
                         if (arSM.get(current_work_position).getITEM_TYPE().equals("W") || arSM.get(current_work_position).getITEM_TYPE().equals("HW")) {
                             String weight_from = work_item_bi_info.getWEIGHT_FROM();
                             String weight_to = work_item_bi_info.getWEIGHT_TO();
@@ -1099,6 +1438,52 @@ public class ShipmentActivity extends ScannerActivity {
         }
     }
 
+    // ========================================================================================
+    // 핵심 비즈니스 로직 메서드
+    // ========================================================================================
+
+    /**
+     * 계근 데이터 저장 및 UI 업데이트
+     * <p>
+     * 계근 완료된 데이터를 로컬 DB에 저장하고 화면에 반영하는 핵심 메서드.
+     * 출하 유형에 따라 다른 DB 테이블/로직을 사용한다.
+     * </p>
+     *
+     * <h3>처리 흐름</h3>
+     * <ol>
+     *   <li>요청수량 완료 여부 체크 - 완료 시 다음 지점으로 이동 알림</li>
+     *   <li>Goodswets_Info 객체 생성 및 데이터 설정</li>
+     *   <li>출하 유형별 DB 저장:
+     *     <ul>
+     *       <li>홈플러스(2): insertqueryGoodsWetHomeplus()</li>
+     *       <li>롯데(6): insertqueryGoodsWetLotte() - 박스 순번(lotte_TryCount) 관리</li>
+     *       <li>기타: insertqueryGoodsWet()</li>
+     *     </ul>
+     *   </li>
+     *   <li>출하 유형별 중량 처리:
+     *     <ul>
+     *       <li>이마트(0): 소수점 첫째자리까지 (10단위 반올림)</li>
+     *       <li>생산/홈플러스: 입력값 그대로</li>
+     *     </ul>
+     *   </li>
+     *   <li>계근수량(PACKING_QTY), 계근중량(GI_QTY) 업데이트</li>
+     *   <li>센터 합계 업데이트 (centerWorkCount, centerWorkWeight)</li>
+     *   <li>UI 업데이트 (EditText, ListView)</li>
+     *   <li>라벨 인쇄 (Common.print_bool이 true일 때):
+     *     <ul>
+     *       <li>홈플러스(2,5): setHomeplusPrinting()</li>
+     *       <li>이마트(0,4): setPrinting()</li>
+     *       <li>롯데(6): setPrintingLotte()</li>
+     *       <li>생산(7): setPrinting_prod()</li>
+     *     </ul>
+     *   </li>
+     * </ol>
+     *
+     * @param weight_str 중량 문자열 (서버 전송용)
+     * @param weight_double 중량 실수값 (UI 표시 및 계산용)
+     * @param making_date 제조일자 (바코드에서 추출, 없으면 빈 문자열)
+     * @param box_serial 박스 시리얼 번호 (바코드에서 추출, 없으면 빈 문자열)
+     */
     public void wet_data_insert(String weight_str, double weight_double, String making_date, String box_serial) {
         Log.e(TAG, "=========================계근입력 시작=========================" + weight_double);
         if (arSM.get(current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.get(current_work_position).getPACKING_QTY()))) {
@@ -1582,6 +1967,18 @@ public class ShipmentActivity extends ScannerActivity {
         }
     }
 
+    /**
+     * 생산 투입용 바코드 라벨 인쇄
+     * <p>
+     * 생산 공정 투입 시 사용하는 간소화된 라벨 인쇄.
+     * 상품명, 상품코드, 중량만 표시하는 기본 바코드 형식.
+     * </p>
+     *
+     * @param weight_double 계근 중량 (소수점 2자리)
+     * @param si 출하 대상 정보 (Shipments_Info)
+     * @param reprint 재인쇄 여부
+     * @return 인쇄에 사용된 중량 문자열
+     */
     public String setPrinting_prod(double weight_double, Shipments_Info si, boolean reprint){
         Log.e(TAG, "======================::::::::: setPrinting_prod ::::::::======================");
         if (Common.D) {
@@ -1679,6 +2076,41 @@ public class ShipmentActivity extends ScannerActivity {
         return String.valueOf(weight_double);
     }
 
+    // ========================================================================================
+    // 라벨 인쇄 메서드
+    // ========================================================================================
+
+    /**
+     * 이마트 출하용 바코드 라벨 인쇄
+     * <p>
+     * 이마트/트레이더스 출하 시 Woosim 블루투스 프린터로 바코드 라벨을 인쇄한다.
+     * BARCODE_TYPE에 따라 라벨 형식이 달라진다.
+     * </p>
+     *
+     * <h3>바코드 타입별 라벨 형식</h3>
+     * <ul>
+     *   <li>M0: 기본형 - 미트센터 납품 시 특별 처리 (EMARTLOGIS_NAME으로 분기)</li>
+     *   <li>M1: 타입1 - 상품명, 바코드, 중량 표시</li>
+     *   <li>M3: 타입3 - 소비기한 포함</li>
+     *   <li>M4: 타입4 - 소비기한 포함 (M3과 유사)</li>
+     *   <li>M8: 수입식별번호 포함</li>
+     *   <li>M9: 납품일자 포함</li>
+     *   <li>E0, E1, E2, E3: 이마트 확장 타입</li>
+     *   <li>P0: 기본 바코드</li>
+     * </ul>
+     *
+     * <h3>특별 처리 케이스</h3>
+     * <ul>
+     *   <li>킬코이 미트센터(패커코드 30228, 스토어 9231): 제조일에서 소비기한 계산</li>
+     *   <li>수입육 센터(TRD/WET/E/T): 소비기한 계산하여 라벨에 표시</li>
+     * </ul>
+     *
+     * @param weight_double 계근 중량
+     * @param si 출하 대상 정보 (Shipments_Info)
+     * @param reprint 재인쇄 여부 (true: 재인쇄, false: 최초 인쇄)
+     * @param making_date 제조일자 (소비기한 계산용)
+     * @return 인쇄에 사용된 중량 문자열
+     */
     public String setPrinting(double weight_double, Shipments_Info si, boolean reprint, String making_date){
         if (Common.D) {
             Log.d(TAG, "센터명 : '" + si.CENTERNAME + "'\n출고업체명 : '" + si.CLIENTNAME + "'\n이마트상품명 : '"
@@ -2512,6 +2944,25 @@ public class ShipmentActivity extends ScannerActivity {
         return String.valueOf(print_weight_double);
     }
 
+    /**
+     * 홈플러스 출하용 바코드 라벨 인쇄
+     * <p>
+     * 홈플러스 비정량 제품 출하 시 사용하는 라벨 인쇄.
+     * 홈플러스 전용 바코드 포맷(H5)으로 라벨을 생성한다.
+     * </p>
+     *
+     * <h3>라벨 정보</h3>
+     * <ul>
+     *   <li>업체명: (주)하이랜드이노베이션</li>
+     *   <li>상품명, 중량, 지점코드, 점포코드 표시</li>
+     *   <li>소수점 2자리까지 중량 표시</li>
+     * </ul>
+     *
+     * @param weight_double 계근 중량
+     * @param si 출하 대상 정보 (Shipments_Info)
+     * @param reprint 재인쇄 여부
+     * @return 인쇄에 사용된 중량 문자열
+     */
     public String setHomeplusPrinting(double weight_double, Shipments_Info si, boolean reprint) {
         if (Common.D) {
             Log.d(TAG, "센터명 : '" + si.CENTERNAME + "'\n출고업체명 : '" + si.CLIENTNAME + "'\n이마트상품명 : '"
@@ -2636,7 +3087,29 @@ public class ShipmentActivity extends ScannerActivity {
         return String.valueOf(print_weight_double);
     }
 
-    // 롯데
+    /**
+     * 롯데 출하용 바코드 라벨 인쇄
+     * <p>
+     * 롯데 유통 출하 시 사용하는 바코드 라벨 인쇄.
+     * 롯데 전용 바코드 포맷과 박스 순번(box_order)을 포함한다.
+     * </p>
+     *
+     * <h3>라벨 정보</h3>
+     * <ul>
+     *   <li>업체명: (주)하이랜드이노베이션</li>
+     *   <li>업체코드: EMARTLOGIS_CODE에서 가져옴</li>
+     *   <li>상품명, 중량, 제조일자, 박스 순번 표시</li>
+     *   <li>소수점 2자리까지 중량 표시</li>
+     *   <li>박스 순번(lotte_TryCount)으로 바코드 시퀀스 관리</li>
+     * </ul>
+     *
+     * @param weight_double 계근 중량
+     * @param si 출하 대상 정보 (Shipments_Info)
+     * @param reprint 재인쇄 여부
+     * @param making_date 제조일자
+     * @param box_order 박스 순번 (바코드 시퀀스용)
+     * @return 인쇄에 사용된 중량 문자열
+     */
     public String setPrintingLotte(double weight_double, Shipments_Info si, boolean reprint, String making_date, String box_order){
         if (Common.D) {
             Log.d(TAG, "센터명 : '" + si.CENTERNAME + "'\n출고업체명 : '" + si.CLIENTNAME + "'\n이마트상품명 : '"
@@ -2912,6 +3385,27 @@ public class ShipmentActivity extends ScannerActivity {
             mPrintService.write(data);
     }
 
+    // ========================================================================================
+    // AsyncTask 클래스 - 백그라운드 비동기 작업
+    // ========================================================================================
+
+    /**
+     * 출하 대상 조회 AsyncTask
+     * <p>
+     * 패커상품코드 또는 BL번호로 출하 대상 목록을 조회한다.
+     * 로컬 DB에서 조회하여 arSM 리스트에 저장하고 ListView에 표시한다.
+     * </p>
+     *
+     * <h3>처리 흐름</h3>
+     * <ol>
+     *   <li>onPreExecute: 로딩 다이얼로그 표시, 카운터 초기화</li>
+     *   <li>doInBackground: DBHandler.selectqueryShipment() 호출</li>
+     *   <li>롯데의 경우 lotte_TryCount 계산 (박스 순번 관리)</li>
+     *   <li>onPostExecute: ListView 어댑터 설정, 센터 합계 표시</li>
+     * </ol>
+     *
+     * @see DBHandler#selectqueryShipment(Context, String, String, boolean)
+     */
     class ProgressDlgShipSelect extends AsyncTask<Integer, String, Integer> {
         private Context mContext;
         private String center_name;
@@ -3097,6 +3591,15 @@ public class ShipmentActivity extends ScannerActivity {
         }
     }
 
+    /**
+     * BL번호 기반 출하 대상 조회 AsyncTask
+     * <p>
+     * BL번호로 출하 대상 목록을 조회한다.
+     * ProgressDlgShipSelect와 유사하지만 BL번호 전용 조회에 사용.
+     * </p>
+     *
+     * @see ProgressDlgShipSelect
+     */
     class ProgressDlgShipSelectBL extends AsyncTask<Integer, String, Integer> {
         private Context mContext;
         private String center_name;
@@ -3271,8 +3774,33 @@ public class ShipmentActivity extends ScannerActivity {
         }
     }
 
+    /** 전송할 계근 데이터 목록 */
     private ArrayList<Goodswets_Info> list_send_info;
 
+    /**
+     * 계근 데이터 서버 전송 AsyncTask
+     * <p>
+     * 로컬 DB에 저장된 계근 데이터를 서버(G3)로 전송한다.
+     * 출하 유형별로 다른 JSP URL을 호출한다.
+     * </p>
+     *
+     * <h3>전송 URL (Common.searchType 기준)</h3>
+     * <ul>
+     *   <li>이마트(0), 도매(3): insert_goods_wet.jsp (inno 스키마)</li>
+     *   <li>생산(1), 생산출력(7): insert_goods_wet.jsp (inno 스키마)</li>
+     *   <li>홈플러스(2), 롯데(6): insert_goods_wet_homeplus.jsp (inno 스키마)</li>
+     *   <li>홈플러스 비정량(4,5): insert_goods_wet_homeplus.jsp</li>
+     * </ul>
+     *
+     * <h3>전송 패킷 구조 (:: 구분자)</h3>
+     * <pre>
+     * GI_D_ID::WEIGHT::WEIGHT_UNIT::PACKER_PRODUCT_CODE::BARCODE::
+     * PACKER_CLIENT_CODE::MAKINGDATE::BOXSERIAL::BOX_CNT::REG_ID::
+     * ITEM_CODE::BRAND_CODE::CLIENT_TYPE::BOX_ORDER
+     * </pre>
+     *
+     * @see HttpHelper#sendDataDb(String, String, String, String)
+     */
     class ProgressDlgShipmentSend extends AsyncTask<Void, String, String> {
         private Context mContext;
         String receiveData = "";
@@ -3594,7 +4122,20 @@ public class ShipmentActivity extends ScannerActivity {
         }
     }
 
-    //	모바일프린터 연결을 위한 AsyncTask
+    /**
+     * 블루투스 프린터 연결 AsyncTask
+     * <p>
+     * Woosim 블루투스 프린터에 연결한다.
+     * 저장된 프린터 주소(Common.printer_address)로 자동 연결을 시도한다.
+     * </p>
+     *
+     * <h3>처리 흐름</h3>
+     * <ol>
+     *   <li>onPreExecute: 연결 로딩 다이얼로그 표시</li>
+     *   <li>doInBackground: BluetoothAdapter로 디바이스 연결</li>
+     *   <li>연결 성공 시 mHandler로 MESSAGE_DEVICE_NAME 메시지 전달</li>
+     * </ol>
+     */
     class ProgressDlgPrintConnect extends AsyncTask<Integer, String, Integer> {
         private Context mContext;
 
@@ -3726,7 +4267,13 @@ public class ShipmentActivity extends ScannerActivity {
         }
     }
 
-    //	모바일프린터 장비 해제를 위한 AsyncTask
+    /**
+     * 블루투스 프린터 연결 해제 AsyncTask
+     * <p>
+     * Activity 종료 시 프린터 연결을 해제한다.
+     * onDestroy()에서 호출된다.
+     * </p>
+     */
     class ProgressDlgDiscon extends AsyncTask<Void, Void, Void> {
         private Context mContextDiscon;
 

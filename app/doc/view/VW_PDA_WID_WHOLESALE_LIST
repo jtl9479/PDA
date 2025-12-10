@@ -1,0 +1,214 @@
+[도매 계근시 사용]
+
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "HIGHLAND"."VW_PDA_WID_WHOLESALE_LIST" ("GI_H_ID", "GI_D_ID", "EOI_ID", "ITEM_CODE", "ITEM_NAME", "EMARTITEM_CODE", "EMARTITEM", "GI_REQ_PKG", "GI_REQ_QTY", "AMOUNT", "GOODS_R_ID", "GR_REF_NO", "GI_REQ_DATE", "BL_NO", "BRAND_CODE", "BRANDNAME", "CLIENT_CODE", "CLIENTNAME", "CENTERNAME", "ITEM_SPEC", "CT_CODE", "PACKER_CODE", "IMPORT_ID_NO", "PACKERNAME", "PACKER_PRODUCT_CODE", "BARCODE_TYPE", "ITEM_TYPE", "PACKWEIGHT", "BARCODEGOODS", "STORE_IN_DATE", "GR_WAREHOUSE_CODE", "EMARTLOGIS_CODE", "EMARTLOGIS_NAME", "WH_AREA") AS
+  SELECT "GI_H_ID",
+          "GI_D_ID",
+          "EOI_ID",
+          "ITEM_CODE",
+          "ITEM_NAME",
+          "EMARTITEM_CODE",
+          "EMARTITEM",
+          "GI_REQ_PKG",
+          "GI_REQ_QTY",
+          "AMOUNT",
+          "GOODS_R_ID",
+          "GR_REF_NO",
+          "GI_REQ_DATE",
+          "BL_NO",
+          "BRAND_CODE",
+          "BRANDNAME",
+          "CLIENT_CODE",
+          "CLIENTNAME",
+          "CENTERNAME",
+          "ITEM_SPEC",
+          "CT_CODE",
+          "PACKER_CODE",
+          "IMPORT_ID_NO",
+          "PACKERNAME",
+          "PACKER_PRODUCT_CODE",
+          "BARCODE_TYPE",
+          "ITEM_TYPE",
+          "PACKWEIGHT",
+          "BARCODEGOODS",
+          "STORE_IN_DATE",
+          "GR_WAREHOUSE_CODE",
+          "EMARTLOGIS_CODE",
+          "EMARTLOGIS_NAME",
+          "WH_AREA"
+     FROM (                                                  -- 해외 매입으로 입고된 경우
+           SELECT IH.GI_H_ID,
+                  ID.GI_D_ID                             -- 출고 번호 (출고상세번호id 값)
+                            ,
+                  'NA' AS EOI_ID                              -- 이마트 출하번호 --여기
+                                     ,
+                  ID.ITEM_CODE                                         -- 상품코드
+                              ,
+                  DE_ITEM (ID.ITEM_CODE) AS ITEM_NAME -- 상품명
+                                 ,
+                  'NA' AS EMARTITEM_CODE,
+                  'NA' AS EMARTITEM                          -- 이마트상품명
+                                           ,
+                  ID.GI_REQ_PKG                                      -- 출하요청수량
+                               ,
+                  ID.GI_REQ_QTY                                      -- 출하요청중량
+                               ,
+                  ID.AMOUNT                                          -- 출하상품금액
+                           ,
+                  WR.GOODS_R_ID                                        -- 입고번호
+                               ,
+                  WR.GR_REF_NO                                       -- 창고입고번호
+                              ,
+                  GI_REQ_DATE                                         -- 출하요청일
+                             ,
+                  DECODE (WR.IMPORT_ID_NO, NULL, WR.BL_NO, WR.IMPORT_ID_NO)
+                     BL_NO,                                            -- BL번호
+                  ID.BRAND_CODE                                       -- 브랜드코드
+                               ,
+                  DE_COMMON ('BRAND', ID.BRAND_CODE) AS BRANDNAME      -- 브랜드명
+                                                                 ,
+                  IH.CLIENT_CODE                                     -- 출고업체코드
+                                ,
+                  DE_CLIENT (IH.CLIENT_CODE) AS CLIENTNAME           --  출고업체명
+                                  ,
+                  DE_CLIENT (IH.CLIENT_CODE) AS CENTERNAME           --센터명
+                                  ,
+                  --DE_CLIENT (IH.GR_WAREHOUSE_CODE) AS CENTERNAME,                                        -- 센터명
+                  WR.ITEM_SPEC,                                           -- 스펙
+                  WR.CT_CODE,                                            -- 원산지
+                  BD.PACKER_CODE,                                         -- 패커
+                  WR.IMPORT_ID_NO,                                    -- 수입식별번호
+                  DE_CLIENT (BD.PACKER_CODE) AS PACKERNAME,             -- 패커이름
+                  BD.PACKER_PRODUCT_CODE,                            -- 패커 상품코드
+                  'NA' AS BARCODE_TYPE,
+                  'S' AS ITEM_TYPE, --PDA에서 소수점 2자리 계근 가능한 경우는 ITEM_TYPE S아님 J일 경우임 J는 제품의 의미로 사용하고 있기때문에 S로 하드코딩
+                  'NA' AS PACKWEIGHT,
+                  (SELECT BARCODEGOODS
+                     FROM S_BARCODE_INFO A
+                    WHERE     A.PACKER_CLIENT_CODE = BD.PACKER_CODE
+                          AND A.PACKER_PRODUCT_CODE = BD.PACKER_PRODUCT_CODE
+                          AND A.status = 'Y'
+                          AND ROWNUM < 2)
+                     BARCODEGOODS,
+                    IH.GI_REQ_DATE AS STORE_IN_DATE,
+                   WR.GR_WAREHOUSE_CODE,
+                   '0000000' AS EMARTLOGIS_CODE,
+                   '정보없음' AS EMARTLOGIS_NAME,
+                   '' AS WH_AREA
+             FROM W_GOODS_IH IH
+                  INNER JOIN W_GOODS_ID ID
+                     ON IH.GI_H_ID = ID.GI_H_ID
+                  INNER JOIN W_GOODS_R WR
+                     ON ID.GOODS_R_ID = WR.GOODS_R_ID
+                  INNER JOIN I_BL_D BD
+                     ON BD.BL_D_ID = WR.BL_D_ID AND BD.BL_S_ID = WR.BL_S_ID
+                  INNER JOIN B_ITEM BI
+                     ON WR.ITEM_CODE = BI.ITEM_CODE
+            WHERE     1 = 1
+                  AND ID.PACKING_QTY = 0
+                  AND ID.GI_REQ_PKG <> 0
+                  AND WR.CONTRACT_TYPE <> '40'
+                  AND ID.CHECK_YN = 'Y'
+                  AND ID.EOI_ID IS NULL
+                  AND BI.STATUS = 'Y'
+                  AND BI.ITEM_TYPE = '10'
+                  AND IH.SEND_FLAG <> 'N'
+                  AND WR.GR_WAREHOUSE_CODE = '4001'
+                  AND IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')
+                  --AND IH.GI_REQ_DATE >= '20200917'
+           -- 국내매출처에서 매입으로 입고된 경우
+           UNION ALL
+           SELECT IH.GI_H_ID,
+                  ID.GI_D_ID                             -- 출고 번호 (출고상세번호id 값)
+                            ,
+                  'NA' AS EOI_ID                              -- 이마트 출고번호
+                                     ,
+                  ID.ITEM_CODE                                         -- 상품코드
+                              ,
+                  DE_ITEM (ID.ITEM_CODE)                                -- 상품명
+                                        ,
+                  'NA' AS EMARTITEM_CODE,
+                  'NA' AS EMARTITEM                                  -- 이마트상품명
+                                           ,
+                  ID.GI_REQ_PKG                                      -- 출하요청수량
+                               ,
+                  ID.GI_REQ_QTY                                      -- 출하요청중량
+                               ,
+                  ID.AMOUNT                                          -- 출하상품금액
+                           ,
+                  WR.GOODS_R_ID                                        -- 입고번호
+                               ,
+                  WR.GR_REF_NO                                       -- 창고입고번호
+                              ,
+                  GI_REQ_DATE                                         -- 출하요청일
+                             ,
+                  DECODE (WR.IMPORT_ID_NO, NULL, WR.BL_NO, WR.IMPORT_ID_NO)
+                     BL_NO,                                            -- BL번호
+                  ID.BRAND_CODE                                       -- 브랜드코드
+                               ,
+                  DE_COMMON ('BRAND', ID.BRAND_CODE) AS BRANDNAME      -- 브랜드명
+                                                                 ,
+                  IH.CLIENT_CODE                                     -- 출고업체코드
+                                ,
+                     DE_CLIENT (IH.CLIENT_CODE)
+                     AS CLIENTNAME                                    --  출고업체명
+                                  ,
+                  DE_CLIENT (IH.CLIENT_CODE) AS CENTERNAME           --센터명
+                                  ,
+                  --DE_CLIENT (IH.GR_WAREHOUSE_CODE)
+                  --   AS CENTERNAME                                         -- 센터명
+                  --             ,
+                  WR.ITEM_SPEC                                           -- 스펙
+                              ,
+                  WR.CT_CODE                                            -- 원산지
+                            ,
+                  OD.PACKER_CODE,
+                  WR.IMPORT_ID_NO,                                   -- 수입식별번호
+                  DE_CLIENT (OD.PACKER_CODE) AS PACKERNAME             -- 패커이름
+                                                          ,
+                  DECODE (OD.PACKER_PRODUCT_CODE,
+                          NULL, ID.ITEM_CODE,
+                          OD.PACKER_PRODUCT_CODE)
+                     AS PACKER_PRODUCT_CODE                         -- 패커 상품코드
+                                           ,
+                  'NA' AS BARCODE_TYPE                                     -- 바코드유형
+                                 ,
+                  'S' AS ITEM_TYPE,  --PDA에서 소수점 2자리 계근 가능한 경우는 ITEM_TYPE S아님 J일 경우임 J는 제품의 의미로 사용하고 있기때문에 S로 하드코딩
+                  'NA' AS PACKWEIGHT,
+                  DECODE (
+                     OD.PACKER_PRODUCT_CODE,
+                     NULL, ID.ITEM_CODE,
+                     (SELECT BARCODEGOODS
+                        FROM S_BARCODE_INFO A
+                       WHERE     A.PACKER_CLIENT_CODE = OD.PACKER_CODE
+                             AND A.PACKER_PRODUCT_CODE =
+                                    OD.PACKER_PRODUCT_CODE
+                             AND A.status = 'Y'
+                             AND ROWNUM < 2))
+                   BARCODEGOODS,
+                   IH.GI_REQ_DATE AS STORE_IN_DATE,
+                   WR.GR_WAREHOUSE_CODE,
+                   '0000000' AS EMARTLOGIS_CODE,
+                   '정보없음' AS EMARTLOGIS_NAME,
+                   '' AS WH_AREA
+             FROM W_GOODS_IH IH
+                  INNER JOIN W_GOODS_ID ID
+                     ON IH.GI_H_ID = ID.GI_H_ID
+                  INNER JOIN W_GOODS_R WR
+                     ON ID.GOODS_R_ID = WR.GOODS_R_ID
+                  INNER JOIN I_OFFER_D OD
+                     ON OD.OFFER_D_ID = WR.BL_D_ID
+                  INNER JOIN B_ITEM BI
+                     ON WR.ITEM_CODE = BI.ITEM_CODE
+            WHERE     1 = 1
+                  AND ID.PACKING_QTY = 0
+                  AND ID.GI_REQ_PKG <> 0
+                  AND WR.CONTRACT_TYPE = '40'       -- AND ID.GI_D_ID = 178505
+                  AND ID.CHECK_YN = 'Y'
+                  AND ID.EOI_ID IS NULL
+                  AND BI.STATUS = 'Y'
+                  AND BI.ITEM_TYPE = '10'
+                  AND IH.SEND_FLAG <> 'N'
+                  AND WR.GR_WAREHOUSE_CODE = '4001'
+                  AND IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')
+                  --AND IH.GI_REQ_DATE >= '20200917'
+                  );

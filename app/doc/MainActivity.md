@@ -150,6 +150,7 @@ DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener
   1. 선택된 날짜를 Calendar 객체에 저장
   2. "YYYYMMDD" 형식으로 문자열 변환 (예: 20250131)
   3. `Common.selectDay`에 저장하여 전역적으로 사용
+  4. 서버에서 출하/생산 대상 리스트를 받아올 때 어떤 날짜의 데이터를 조회할지 지정하기 위해 사용합니다.
 
 #### 날짜 포맷팅 로직
 - **연도**: 4자리 (예: 2025)
@@ -168,7 +169,7 @@ public boolean onCreateOptionsMenu(Menu menu) {
 ```
 - **라인**: 68-71
 - **역할**: 액션바 메뉴 생성
-
+- 액션바 메뉴 기능을 추가하기 위한 메소드
 #### onOptionsItemSelected()
 ```java
 @Override
@@ -198,6 +199,7 @@ public boolean onOptionsItemSelected(MenuItem item) {
 - **메뉴 항목**:
   - `action_pinrtsettings`: 설정 화면으로 이동
   - `action_daysettings`: 날짜 선택 다이얼로그 표시
+  메뉴 버튼 클릭 시 동작 실행
 
 ### 4.3 키 이벤트 처리
 
