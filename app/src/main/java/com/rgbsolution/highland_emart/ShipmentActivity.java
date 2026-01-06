@@ -383,20 +383,17 @@ public class ShipmentActivity extends ScannerActivity {
         sp_work.setOnItemSelectedListener(workSelectedListener);
         edit_barcode = (EditText) findViewById(R.id.edit_barcode);
         sp_center_name = (Spinner) findViewById(sp_center);
-        //sp_center_name.setSelection(0);
 
         Common.list_center_info = DBHandler.selectqueryCenterList(this);
         ArrayAdapter<String> center_adapter = new ArrayAdapter<String>(ShipmentActivity.this, android.R.layout.simple_spinner_item, Common.list_center_info);
         center_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sp_center_name.setAdapter(center_adapter);
         sp_center_name.setOnItemSelectedListener(emartCenterSelectedListener);
-        //sp_center_name.setOnItemClickListener(centerItemClickedListener);
         btn_input = (Button) findViewById(R.id.btn_input);
         btn_input.setOnClickListener(inputBtnListener);
 
         edit_product_name = (EditText) findViewById(R.id.edit_product_name);
         edit_product_code = (EditText) findViewById(R.id.edit_product_code);
-        //sp_product_code = (Spinner) findViewById(R.id.sp_product_code);
         sp_bl_no = (Spinner) findViewById(R.id.sp_bl_no);
         edit_center_tcount = (EditText) findViewById(R.id.edit_center_tcount);
         edit_center_tweight = (EditText) findViewById(R.id.edit_center_tweight);
@@ -447,8 +444,6 @@ public class ShipmentActivity extends ScannerActivity {
     protected void onStart() {
         super.onStart();
         Log.i(TAG, TAG + " onStart");
-
-        //new ProgressDlgShipSelect(ShipmentActivity.this).execute();
         // 출하대상 불러오기 끝, Print 연결 시작
 
         if (!mBluetoothAdapter.isEnabled() && !Common.searchType.equals("1")) {  //안드로이드 디바이스에서 블루투스 ON 여부, 이노이천에서 생산 계근일때는 블루투스 on 여부 묻지 않는다
@@ -527,11 +522,8 @@ public class ShipmentActivity extends ScannerActivity {
         public void onClick(View v) {
             Log.i(TAG, "입력버튼 클릭");
 
-            //박스 훼손 등으로 인한 수기입력시 소비기한 출력용 변수는 무조건 초기화한다.
-            //expiryDayTrans = "";
             hideKeyboard();
             if (work_flag == 1) {     // 바코드 스캔 작업
-                //Toast.makeText(getApplicationContext(), "바코드를 스캔하세요,", Toast.LENGTH_SHORT).show();
                 setBarcodeMsg(edit_barcode.getText().toString());
             } else if(work_flag == 0) {            // 수기 입력 작업
                 if (edit_barcode.getText().toString().equals("")) {      // 중량값이 입력되지 않았을 때
@@ -546,8 +538,6 @@ public class ShipmentActivity extends ScannerActivity {
                 } else {                                                // 필수값이 전부 입력되있을 때
                     work_item_fullbarcode = "";
                     String weight_str = edit_barcode.getText().toString();    // 입력값 저장
-
-                    //double weight_double = Math.round(Double.parseDouble(weight_str) * 100) / 100.0;    // 2자리 반올림
 
                     Log.i(TAG, "=====================weight_str 1==================" + weight_str);
 
@@ -625,7 +615,6 @@ public class ShipmentActivity extends ScannerActivity {
                     }else{
                         wet_data_insert(weight_str, weight_double, "", "");
                     }
-                    //Log.i(TAG, "=====================팝업 닫아야 진행되나?==================");
                     edit_barcode.setText("");
                 }
             } else if(work_flag == 2) {            // 상품코드
@@ -666,19 +655,6 @@ public class ShipmentActivity extends ScannerActivity {
         @Override
         public void onClick(View v) {
             Log.i(TAG, "Send 버튼 클릭");
-            /*int iCount = 0;
-            for (int i = 0; i < arSM.size(); i++) {
-                if (arSM.get(i).getSAVE_TYPE().equals("Y")) {
-                    iCount++;
-                }
-            }
-            if (iCount == arSM.size()) {
-                Toast.makeText(getApplicationContext(), "모두 전송된 리스트입니다.\n다른 상품을 계근하세요.", Toast.LENGTH_SHORT).show();
-                vibrator.vibrate(500);
-                btn_send.setEnabled(false);
-                btn_send.setBackgroundResource(R.drawable.disable_round_button);
-                return;
-            }*/
 
             dialog_flag = true;
             new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
@@ -750,8 +726,6 @@ public class ShipmentActivity extends ScannerActivity {
             scanFlag_init();
             Log.i(TAG, "스캔초기화 이벤트");
             Toast.makeText(getApplicationContext(), "          * 스캔초기화 *\n상품바코드를 스캔하세요.", Toast.LENGTH_SHORT).show();
-            //toast.setGravity(Gravity.CENTER_HORIZONTAL, 0, 0);
-            //toast.show();
         }
     };
 
@@ -796,7 +770,6 @@ public class ShipmentActivity extends ScannerActivity {
                         pos = msg.getData().getInt("POSITION");
                         Toast.makeText(getApplicationContext(), "선택된 상품이 존재합니다.", Toast.LENGTH_SHORT).show();
                         sList.setSelection(pos);
-                        //myAdapter.notifyDataSetChanged();
                         break;
                     case MESSAGE_COMPLETE:
                         Toast.makeText(getApplicationContext(), "계근이 완료된 상품입니다.", Toast.LENGTH_SHORT).show();
@@ -924,8 +897,6 @@ public class ShipmentActivity extends ScannerActivity {
     String expiryDayTrans = "";
     /** 다이얼로그 표시 중 플래그 (중복 처리 방지) */
     boolean dialog_flag = false;
-    /** 전체 바코드 임시 저장 */
-    String fullbarcode = "";
 
     /**
      * 바코드 메시지 처리 핵심 메서드
@@ -987,25 +958,12 @@ public class ShipmentActivity extends ScannerActivity {
                     } else {
                         if (work_ppcode.equals("")) {
                             boolean dup = DBHandler.duplicatequeryGoodsWet_check(getApplicationContext(), msg);
-                            /*
-                            if (dup) {
-                                Toast.makeText(getApplicationContext(), "이미 스캔한 바코드입니다.\n다른 바코드를 스캔하세요.", Toast.LENGTH_SHORT).show();
-                                vibrator.vibrate(1000);
-                                work_item_fullbarcode = "";
-                                work_item_barcodegoods = "";
-                                return;
-                            }
-                            else {*/
                             // 최초 스캔일 경우
                             Log.e(TAG, "========================최초 스캔11======================");
                             Log.e(TAG, "========================find_ppcode test!!======================"+find_ppcode);
                             work_ppcode = find_ppcode;
                             work_item_fullbarcode = msg;
                             new ProgressDlgShipSelect(this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
-                            /*}*/
-                           /* work_ppcode = find_ppcode;
-                            work_item_fullbarcode = msg;
-                            new ProgressDlgShipSelect(this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();*/
                         } else if (!work_ppcode.equals("") && work_ppcode.equals(find_ppcode)) {         // 작업 중이고, 같은 상품을 스캔했을 경우
                             work_item_fullbarcode = msg;
                             Log.e("바코드", "" + work_item_fullbarcode);
@@ -1022,40 +980,14 @@ public class ShipmentActivity extends ScannerActivity {
                                 work_item_fullbarcode = "";
                                 work_item_barcodegoods = "";
                                 return;
-                                /*Log.e(TAG, "=====================중복상품스캔=========================");
-                                vibrator.vibrate(500);
-                                new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
-                                        .setIcon(R.drawable.highland)
-                                        .setTitle("중복상품스캔")
-                                        .setMessage("중복된상품을 스캔하시겠습니까?")
-                                        .setCancelable(false)
-                                        .setPositiveButton(R.string.shipment_wet_yes,
-                                                new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialog, int which) {
-                                                    }
-                                                }
-                                        )
-                                        .setNegativeButton(R.string.shipment_wet_no,
-                                                new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialog, int which) {
-                                                        return;
-                                                    }
-                                                }
-                                        )
-                                        .show();*/
                             } else{
                                 Log.e(TAG, "=====================상품스캔일반=========================");
                                 set_scanFlag(false);        // BL스캔 시작
                                 work_ppcode = find_ppcode;
-                                //scanFlag_swap();
                                 work_item_fullbarcode = msg;
 
                                 if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
                                     show_wetFinishDialog();
-                                } else {
-                                    //scanFlag_swap();
                                 }
                                 setBarcodeMsg(msg);
                             }
@@ -1074,8 +1006,6 @@ public class ShipmentActivity extends ScannerActivity {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     dialog_flag = false;
-                                                    //scanFlag_swap();
-                                                    //set_scanFlag(false);
                                                     work_ppcode = find_ppcode;
                                                     work_item_fullbarcode = msg;
                                                     new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
@@ -1102,11 +1032,9 @@ public class ShipmentActivity extends ScannerActivity {
                 work_item_fullbarcode = msg;
 
                 try {
-                    //if (find_BL(msg))        // PPCODE & BL 일치 -> 계근 시작
-                    if (true) {// PPCODE & BL 일치 -> 계근 시작
+                    if (true) {
                         String temp_bl_no = sp_bl_no.getItemAtPosition(sp_bl_no.getSelectedItemPosition()).toString();
                         for (int i = 0; i < arSM.size(); i++) {
-                            //0216 수정
                             if (temp_bl_no.equals(arSM.get(i).getBL_NO()) && !arSM.get(i).getGI_REQ_PKG().equals(String.valueOf(arSM.get(i).getPACKING_QTY()))) {
                                 // BL번호 같은 상품 검색 완료
                                 current_work_position = i;
@@ -1136,44 +1064,6 @@ public class ShipmentActivity extends ScannerActivity {
                                 scan_flag = true;
                                 return;
                             }
-
-                           /* //소비기한 변조
-                            int from = Integer.parseInt(work_item_bi_info.getMAKINGDATE_FROM()) - 1; //자바 substr의 index는 0부터 시작하므로
-                            int to = Integer.parseInt(work_item_bi_info.getMAKINGDATE_TO()); //java는 end 인덱스 직전 위치까지 리턴하기때문에 end index는 1을 빼지 않음
-
-                            String rawExp = "20"+work_item_fullbarcode.substring(from,to);
-                            Log.e(TAG, "rawExp chk : " + rawExp);
-
-                            //rawExp : 2170730
-                            int shelfLiftToInt = Integer.parseInt(work_item_bi_info.getSHELF_LIFE()) - 1; //1일을 뺀다.
-
-                            Log.e(TAG, "shelf life chk : " + shelfLiftToInt);
-
-                            SimpleDateFormat dtFormat = new SimpleDateFormat("yyyyMMdd");
-                            Calendar cal = Calendar.getInstance();
-                            Date dt = dtFormat.parse(rawExp);
-                            cal.setTime(dt);
-                            //쉘프라이프를 더한다.
-                            cal.add(Calendar.DATE,  shelfLiftToInt);
-                            String expireDateCalc = dtFormat.format(cal.getTime());
-                            Log.e(TAG, "계산된 날짜 원본 : " + expireDateCalc);
-
-                            //dash 처리 위해서 잘라서 다시 붙임
-                            String YYYY = expireDateCalc.substring(0,4);
-                            String MM = expireDateCalc.substring(4,6);
-                            String DD = expireDateCalc.substring(6);
-
-                            String YYYYMMDD = YYYY+"-"+MM+"-"+DD;
-
-                            //테스트용코드
-                            //arSM.get(current_work_position).setBARCODE_TYPE("M3");
-
-                            if(arSM.get(current_work_position).getBARCODE_TYPE().equals("M3") || arSM.get(current_work_position).getBARCODE_TYPE().equals("M4")){
-                                //M3와 M4타입은 미트센터에 납품된 적이 없지만 혹시 몰라서 개발해놓음
-                                expiryDayTrans = "소비기한: "+YYYYMMDD;
-                            }else{ //그 외, 전부 이쪽 탐
-                                expiryDayTrans = "/소비기한 : "+YYYYMMDD;
-                            }*/
                         } else if (arSM.get(current_work_position).getCENTERNAME().equals("용인TRD") || arSM.get(current_work_position).getCENTERNAME().equals("대구TRD") || arSM.get(current_work_position).getCENTERNAME().equals("시화(W)_TRD") || arSM.get(current_work_position).getCENTERNAME().equals("여주TRD") || arSM.get(current_work_position).getCENTERNAME().substring(0, 3).equals("E/T") || arSM.get(current_work_position).getCENTERNAME().contains("E/T")  ||  arSM.get(current_work_position).getCENTERNAME().contains("WET")) {
                             if (Common.searchType.equals("0")) {
                                 if (work_item_bi_info.getSHELF_LIFE().equals("") || work_item_bi_info.getMAKINGDATE_FROM().equals("") || work_item_bi_info.getMAKINGDATE_TO().equals("")) {
@@ -1187,7 +1077,6 @@ public class ShipmentActivity extends ScannerActivity {
                         }
 
                         if (current_work_position == -1) {
-                            //show_sendFinishDialog();
                             Toast.makeText(getApplicationContext(), "해당하는 BL상품이 없습니다.\nBL번호를 확인해주세요.", Toast.LENGTH_SHORT).show();
                             vibrator.vibrate(300);
                             return;
@@ -1198,11 +1087,8 @@ public class ShipmentActivity extends ScannerActivity {
                         sList.setSelection(current_work_position);      // 현재 계근지점으로 위치 변경
 
                         if (arSM.get(current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.get(current_work_position).getPACKING_QTY()))) {
-                            //scanFlag_swap();
                             if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
                                 show_wetFinishDialog();
-                            } else {
-                                //show_wetNextDialog();                       // 현재 지점 계근완료 && 아직 계근 중
                             }
                             return;
                         }
@@ -1228,11 +1114,9 @@ public class ShipmentActivity extends ScannerActivity {
                             vibrator.vibrate(1000);
                             work_item_fullbarcode = "";
                             work_item_barcodegoods = "";
-                            //set_scanFlag(true);
                             return;
                         }
 
-                        //scanFlag_swap();
                         Goodswets_Info gi = new Goodswets_Info();
                         Log.i(TAG, "## 패커상품코드 & BL번호 확인 완료. 계근 시작 ##");
                         Log.i(TAG, "현재 계근할 FULL 바코드                     : " + work_item_fullbarcode);
@@ -1339,9 +1223,6 @@ public class ShipmentActivity extends ScannerActivity {
                                 Log.i(TAG, "LB->KG | 환산 중량 Double값 : " + item_weight_double);
                                 Log.i(TAG, "LB->KG | 환산 중량 String값 : " + item_weight_str);
                             }
-
-                            //item_weight_double = Math.floor(item_weight_double * 10);
-                            //item_weight_double = item_weight_double / 10.0;
 
                             String temp_weight = String.format("%.2f", item_weight_double);
                             item_weight_double = Double.parseDouble(temp_weight);
@@ -1492,7 +1373,6 @@ public class ShipmentActivity extends ScannerActivity {
             } else {
                 Toast.makeText(getApplicationContext(), "계근이 끝난 지점입니다.\n다음 지점을 작업해주세요.", Toast.LENGTH_SHORT).show();
                 vibrator.vibrate(300);
-                //show_wetNextDialog();
             }
             return;
         }
@@ -1563,7 +1443,6 @@ public class ShipmentActivity extends ScannerActivity {
             double v3 = v1+v2;
             double v4 = Math.round(v3*1000)/1000.0;
 
-            //arSM.get(current_work_position).setGI_QTY((arSM.get(current_work_position).getGI_QTY() + weight_double));    // 계근중량 원래 소스, 주석 처리
             arSM.get(current_work_position).setGI_QTY(v4);    // 계근중량 변경 후
             Log.e(TAG, "=========================chk prod 계근중량=========================" + v4);
         }
@@ -1630,8 +1509,6 @@ public class ShipmentActivity extends ScannerActivity {
             // 요청수량과 계근수량이 같을 때 (계근이 끝났을 때)
             if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
                 show_wetFinishDialog();
-            } else {
-                //show_wetNextDialog();
             }
         }
     }
@@ -1663,7 +1540,6 @@ public class ShipmentActivity extends ScannerActivity {
     public String find_PackerProduct(String barcode) {
         try {
             String pp_code = "";
-            //String pp_name = "";
             Log.e(TAG, "========================pp_code 가져오기 시작======================");
             pp_code = find_work_info(barcode, true);
             Log.e(TAG, "========================pp_code 가져오기 끝======================");
@@ -1671,7 +1547,6 @@ public class ShipmentActivity extends ScannerActivity {
                 return pp_code;
             } else {
                 return "null";
-                //scanFlag_swap();
             }
         } catch (Exception ex) {
             Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
@@ -1683,7 +1558,6 @@ public class ShipmentActivity extends ScannerActivity {
         Log.e(TAG, "find_PackerProductBarcodeGoods");
         try {
             String pp_code = "";
-            //String pp_name = "";
             pp_code = find_work_info_barcodeGoods(barcode, false);
             if (!edit_product_name.getText().equals("")) {
                 return pp_code;
@@ -1735,7 +1609,6 @@ public class ShipmentActivity extends ScannerActivity {
 
                 if (temp_bg.equals(bg)) {                       // barcodegoods find success
                     Log.i(TAG, "barcodegoods find success");
-                    //pp_name = bi.getITEM_NAME_KR();
                     work_item_bi_info = bi;
                     edit_product_name.setText(bi.getITEM_NAME_KR());
                     edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
@@ -1745,7 +1618,6 @@ public class ShipmentActivity extends ScannerActivity {
                         pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
                     }
                     Log.i(TAG, "===================pp_code=================" + pp_code);
-                    //work_ppcode = bi.getPACKER_PRODUCT_CODE();
                     work_item_barcodegoods = bg;
                     count++;
                 } else {
@@ -1764,25 +1636,9 @@ public class ShipmentActivity extends ScannerActivity {
                         pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
                     }
                     Log.i(TAG, "===================pp_code=================" + pp_code);
-                    //work_ppcode = bi.getPACKER_PRODUCT_CODE();
                     work_item_barcodegoods = bg;
                     count++;
                 }
-
-//                if(Common.searchType.equals("5")){
-//                    work_item_bi_info = bi;
-//                    edit_product_name.setText(bi.getITEM_NAME_KR());
-//                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
-//                    if(count == 0){
-//                        pp_code = bi.getPACKER_PRODUCT_CODE();
-//                    }else{
-//                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
-//                    }
-//                    Log.i(TAG, "===================pp_code=================" + pp_code);
-//                    //work_ppcode = bi.getPACKER_PRODUCT_CODE();
-//                    work_item_barcodegoods = bg;
-//                    count++;
-//                }
             }
 
             Log.i(TAG, "===================return pp_code test!!! =================" + pp_code);
@@ -2117,26 +1973,13 @@ public class ShipmentActivity extends ScannerActivity {
                     + si.EMARTITEM + "'\n중량 : '" + weight_double + "'");
         }
 
-        /*Log.d(TAG, "패커프로덕코드1 : " + work_item_bi_info.getPACKER_PRODUCT_CODE());
-        Log.d(TAG, "패커프로덕코드2 : " + si.getPACKER_PRODUCT_CODE());
-        Log.d(TAG, "소비기한 정보 FROM : " + work_item_bi_info.getMAKINGDATE_FROM());
-        Log.d(TAG, "소비기한 정보 TO : " + work_item_bi_info.getMAKINGDATE_TO());
-        Log.d(TAG, "소비기한 정보 SHELF LIFE : " + work_item_bi_info.getSHELF_LIFE());
-        Log.d(TAG, "패커정보 : " + si.getPACKER_CODE());
-        Log.d(TAG, "스토어 코드 정보 : " + si.getSTORE_CODE());
-        Log.d(TAG, "소비기한 테스트 : " + expiryDayTrans);*/
-
         String expiryDayConvert = "";
 
         if (si.getPACKER_CODE().equals("30228") && si.getSTORE_CODE().equals("9231")) { //킬코이 , 미트센터 납품분으로 makingdate 이용해 소비기한 변조해 출력
 
-            //int from = Integer.parseInt(work_item_bi_info.getMAKINGDATE_FROM()) - 1; //자바 substr의 index는 0부터 시작하므로
-            //int to = Integer.parseInt(work_item_bi_info.getMAKINGDATE_TO()); //java는 end 인덱스 직전 위치까지 리턴하기때문에 end index는 1을 빼지 않음
-
             String rawExp = "20"+making_date;
             Log.e(TAG, "rawExp chk : " + rawExp);
 
-            //rawExp : 2170730
             int shelfLiftToInt = Integer.parseInt(work_item_bi_info.getSHELF_LIFE()) - 1; //1일을 뺀다.
 
             Log.e(TAG, "shelf life chk : " + shelfLiftToInt);
@@ -2162,31 +2005,21 @@ public class ShipmentActivity extends ScannerActivity {
 
             String YYYYMMDD = YYYY+"-"+MM+"-"+DD;
 
-            //테스트용코드
-            //arSM.get(current_work_position).setBARCODE_TYPE("M3");
             if(arSM.get(current_work_position).getBARCODE_TYPE().equals("M3") || arSM.get(current_work_position).getBARCODE_TYPE().equals("M4")){
-                //M3와 M4타입은 미트센터에 납품된 적이 없지만 혹시 몰라서 개발해놓음
                 expiryDayConvert = "소비기한: "+YYYYMMDD;
-            }else{ //그 외, 전부 이쪽 탐
+            }else{
                 expiryDayConvert = "/소비기한 : "+YYYYMMDD;
             }
 
         }
 
         if(Common.searchType.equals("0")){ //이마트 수입육 계근일때만
-            if (si.getCENTERNAME().contains("E/T")  ||  si.getCENTERNAME().contains("WET")  ||  si.getCENTERNAME().contains("TRD")) { //트레이더스 납품분 그냥 센터명으로 처리(공통코드에 있음)  트레이드센터 납품용
-
-                //int from = Integer.parseInt(work_item_bi_info.getMAKINGDATE_FROM()) - 1; //자바 substr의 index는 0부터 시작하므로
-                //int to = Integer.parseInt(work_item_bi_info.getMAKINGDATE_TO()); //java는 end 인덱스 직전 위치까지 리턴하기때문에 end index는 1을 빼지 않음
-
-               // String gubunja = si.getCENTERNAME().substring(0,3) ;
-
+            if (si.getCENTERNAME().contains("E/T")  ||  si.getCENTERNAME().contains("WET")  ||  si.getCENTERNAME().contains("TRD")) { //트레이더스 납품분
 
                 String rawExp = "20"+making_date;
                 Log.e(TAG, "rawExp chk : " + rawExp);
 
-                int shelfLiftToInt = Integer.parseInt(work_item_bi_info.getSHELF_LIFE()) - 1; //1일을 뺀.
-              //  int shelfLiftToInt = Integer.parseInt(work_item_bi_info.getSHELF_LIFE()) ; // 소비기한계산일hhh
+                int shelfLiftToInt = Integer.parseInt(work_item_bi_info.getSHELF_LIFE()) - 1;
                 Log.e(TAG, "shelf life chk : " + shelfLiftToInt);
 
                 SimpleDateFormat dtFormat = new SimpleDateFormat("yyyyMMdd");
@@ -2210,12 +2043,9 @@ public class ShipmentActivity extends ScannerActivity {
 
                 String YYYYMMDD = YYYY+"-"+MM+"-"+DD;
 
-                //테스트용코드
-                //arSM.get(current_work_position).setBARCODE_TYPE("M3");
                 if(arSM.get(current_work_position).getBARCODE_TYPE().equals("M3") || arSM.get(current_work_position).getBARCODE_TYPE().equals("M4")){
-                    //M3와 M4타입은 미트센터에 납품된 적이 없지만 혹시 몰라서 개발해놓음
                     expiryDayConvert = "소비기한: "+YYYYMMDD;
-                }else{ //그 외, 전부 이쪽 탐
+                }else{
                     expiryDayConvert = "/소비기한: "+YYYYMMDD;
                 }
             }
@@ -2224,16 +2054,10 @@ public class ShipmentActivity extends ScannerActivity {
         String pointName = "";                // 이마트 지점명
         String pCompCode = "";
         String pCompName = "";
-        //String pItemCode = "";
 
-        //if(si.getITEM_TYPE().equals("HW")){ //이노베이션 비정량 출하
         // 모든 건 이노베이션으로 출고
         pCompCode = "610933";
         pCompName = "(주)하이랜드이노베이션";
-        /*}else{ //원래있던 원료육 출하
-            pCompCode = "606950";
-            pCompName = "(주)하이랜드푸드";
-        }*/
 
         String sBarcode = "";
         String sBarcodeStr = "";
@@ -2253,9 +2077,6 @@ public class ShipmentActivity extends ScannerActivity {
         String[] weight_sp = weight_str.split("\\.");
         String print_weight = weight_sp[0] + "." + weight_sp[1].substring(0, 1);
         weight_double = Double.parseDouble(print_weight);
-        //print_weight_double = Double.parseDouble(weight_);
-        //weight_double = Math.round(weight_double * 10) / 10.0;  // 소수점 1자리 반올림
-        // weight_double = Math.round(weight_double * 10) / 10.0;  // 소수점 1자리 반올림
 
         // 이마트 상품 W, J 구분
         if (si.getITEM_TYPE().equals("W") || si.getITEM_TYPE().equals("HW") ) {
@@ -2267,7 +2088,6 @@ public class ShipmentActivity extends ScannerActivity {
                 Log.d(TAG, "ITEM_TYPE : W");
             }
         } else if (si.getITEM_TYPE().equals("J")) {
-            //pWeight = si.getPACKWEIGHT();
             print_weight_str = si.getPACKWEIGHT();
             print_weight_double = Double.parseDouble(print_weight_str);
             if (Common.D) {
@@ -2285,8 +2105,6 @@ public class ShipmentActivity extends ScannerActivity {
             temp = "0" + temp;            // ex) 198 -> 000198
         }
 
-        //테스트용코드
-        //si.setBARCODE_TYPE("M3");
         Log.e(TAG, "::::::::: STORE CODE TEST ::::::::" + si.getSTORE_CODE());
 
         print_weight_str = temp;
@@ -2403,8 +2221,6 @@ public class ShipmentActivity extends ScannerActivity {
                     Log.d(TAG, "full itemcode : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
                     Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
                 }
-                //pBarcode = hMap.get("EMARTITEM_CODE").substring(0,6) + hMap.get("IMPORT_ID_NO");
-                //pBarcodeStr = hMap.get("EMARTITEM_CODE").substring(0,6) + " " + hMap.get("IMPORT_ID_NO");
                 pBarcode = si.getEMARTITEM_CODE().toString() + si.getIMPORT_ID_NO();
                 pBarcodeStr = si.getEMARTITEM_CODE().toString() + " " + si.getIMPORT_ID_NO();
 
@@ -2565,11 +2381,6 @@ public class ShipmentActivity extends ScannerActivity {
                 }
             }
 
-            /*if(!si.EMARTLOGIS_CODE.toString().equals("")){
-                byteStream.write(WoosimCmd.PM_setPosition(260, 10));
-                byteStream.write(WoosimCmd.getTTFcode(35, 35, si.EMARTLOGIS_CODE.toString()));                    // 지점명 출력
-                Log.i(TAG, "===============EMARTLOGIS_CODE============" + si.EMARTLOGIS_CODE.toString());
-            }*/
             //상품명 위치
             if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
                 byteStream.write(WoosimCmd.PM_setPosition(15, 65));
@@ -2589,14 +2400,6 @@ public class ShipmentActivity extends ScannerActivity {
 
             Log.i(TAG, "===============EMARTITEM============" + si.EMARTITEM);
 
-            //상품명이 일정 길이 이상 넘어갈 경우 2줄로 출력되므로	글자 크기 조절                                 // 상품명 출력
-            /*if (si.EMARTLOGIS_NAME.length() > 14) {
-                byteStream.write(WoosimCmd.getTTFcode(35, 35, si.EMARTLOGIS_NAME));
-            } else {
-                byteStream.write(WoosimCmd.getTTFcode(40, 40, si.EMARTLOGIS_NAME));
-            }
-            Log.i(TAG, "===============EMARTLOGIS_NAME============" + si.EMARTLOGIS_NAME);
-            */
             byte[] STORECODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, sBarcode.getBytes());
 
             Log.i(TAG, "===============sBarcode============" + sBarcode);
@@ -2759,7 +2562,6 @@ public class ShipmentActivity extends ScannerActivity {
             Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
 
             if(whArea != null || !whArea.equals("")){
-                //byteStream.write(WoosimCmd.PM_setPosition(383, 270));
                 byteStream.write(WoosimCmd.PM_setPosition(430, 385));
                 byteStream.write(WoosimCmd.getTTFcode(65, 65, whArea));
             }
@@ -2918,12 +2720,11 @@ public class ShipmentActivity extends ScannerActivity {
                     Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
 
                     if(whArea != null || !whArea.equals("")){
-                        //byteStream.write(WoosimCmd.PM_setPosition(383, 270));
                         byteStream.write(WoosimCmd.PM_setPosition(430, 385));
                         byteStream.write(WoosimCmd.getTTFcode(65, 65, whArea));
                     }
 
-                    byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));    // 0.6인치 : 115.2
+                    byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));
                     byteStream.write(WoosimCmd.PM_printData());
                     byteStream.write(WoosimCmd.PM_setStdMode());
 
@@ -2993,9 +2794,6 @@ public class ShipmentActivity extends ScannerActivity {
         }
 
         weight_double = Double.parseDouble(print_weight);
-        //print_weight_double = Double.parseDouble(weight_);
-        //weight_double = Math.round(weight_double * 10) / 10.0;  // 소수점 1자리 반올림
-        // weight_double = Math.round(weight_double * 10) / 10.0;  // 소수점 1자리 반올림
 
         print_weight_double = weight_double;
 
@@ -3013,19 +2811,7 @@ public class ShipmentActivity extends ScannerActivity {
             byteStream.write(WoosimCmd.PM_setArea(0, 0, 510, 590));    // 0.6인치 : 115.2
             byteStream.write(WoosimCmd.PM_setDirection(1));
 
-            /*
-            if(pointName.length() >10){
-                //11자 이상일때
-                byteStream.write(WoosimCmd.PM_setPosition(30, 170));
-                byteStream.write(WoosimCmd.getTTFcode(65, 65, pointName.toString()));                    // 지점명 출력
-            }else if(pointName.length() >8){ //9자부터
-                //9자~10자일때
-                byteStream.write(WoosimCmd.PM_setPosition(30, 170));
-                byteStream.write(WoosimCmd.getTTFcode(65, 65, pointName.toString()));                    // 지점명 출력
-
-            }else
-               */
-            if(pointName.length() >6) { //9자부터
+            if(pointName.length() >6) {
                 //6자~8자일때
                 //5자 이내일때
                 byteStream.write(WoosimCmd.PM_setPosition(30, 170));
@@ -3117,7 +2903,6 @@ public class ShipmentActivity extends ScannerActivity {
         }
 
         String pointName = "";                // 이마트 지점명
-        //String pItemCode = "";
         String pCompName = "(주)하이랜드이노베이션";
         String pBarcode = "";
         String pBarcodeStr = "";
@@ -3215,9 +3000,6 @@ public class ShipmentActivity extends ScannerActivity {
                     Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
                 }
 
-                // si.getPACKING_QTY() 를 4자리 형태로 만들기
-//                tring boxserial_cnt = String.format("%04d", si.getPACKING_QTY());
-                // > 바코드 중복건으로 인해 현재 품목의 모든 PACKING_QTY 더해서 boxserial 입력하는 형태로 변경
                 String boxserial_cnt = "";
 
                 //재출력, 신규 출력 상관없이 전달받은 box_order 파라미터 사용
@@ -3344,7 +3126,6 @@ public class ShipmentActivity extends ScannerActivity {
             Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
 
             if(whArea != null || !whArea.equals("")){
-                //byteStream.write(WoosimCmd.PM_setPosition(383, 270));
                 byteStream.write(WoosimCmd.PM_setPosition(385, 305));
                 byteStream.write(WoosimCmd.getTTFcode(65, 65, whArea));
             }
@@ -3867,8 +3648,7 @@ public class ShipmentActivity extends ScannerActivity {
                             Log.i(TAG, "=====================Common.searchType==================" + Common.searchType);
 
                             // 디비접속 설정
-                            if(Common.searchType.equals("0")||Common.searchType.equals("3")) {   // 출하대상 리스트, 스토어 코드 넣은 이유는 앱을 종료로 안 닫고 앱정리로 닫은 후 생산리스트를 다운받지 않은 상태에서 계근입력후 전송하면 하이랜드 스키마로 데이터가 입력될 수 있음
-                                //result = HttpHelper.getInstance().sendData(packet, "goodswet_insert", Common.URL_INSERT_GOODS_WET);
+                            if(Common.searchType.equals("0")||Common.searchType.equals("3")) {
                                 result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
                             }else if(Common.searchType.equals("2")||Common.searchType.equals("6")){   // 홈플러스, 롯데 같이 태우기
                                 result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_HOMEPLUS);
@@ -3904,11 +3684,8 @@ public class ShipmentActivity extends ScannerActivity {
 
                                                 Log.d(TAG, "j number : " + j);
 
-                                                //출하대상 Table의 계근여부 Update
-                                                // 밑에 쿼리 정상 작동 안함
                                                 // 디비접속 설정
-                                                if(Common.searchType.equals("0") || Common.searchType.equals("2") || Common.searchType.equals("6")) {   // 출하대상 리스트
-                                                    //receiveData = HttpHelper.getInstance().sendData(completeStr, "complete_shipment", Common.URL_UPDATE_SHIPMENT);
+                                                if(Common.searchType.equals("0") || Common.searchType.equals("2") || Common.searchType.equals("6")) {
                                                     receiveData = HttpHelper.getInstance().sendDataDb(completeStr, "inno", "complete_shipment", Common.URL_UPDATE_SHIPMENT);
                                                 }else if(Common.searchType.equals("1")||Common.searchType.equals("4")||Common.searchType.equals("5")||Common.searchType.equals("7")){
                                                     receiveData = HttpHelper.getInstance().sendDataDb(completeStr, "inno", "complete_shipment", Common.URL_UPDATE_SHIPMENT);
@@ -3994,7 +3771,6 @@ public class ShipmentActivity extends ScannerActivity {
                         }else if(Common.searchType.equals("2")){
                             result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_HOMEPLUS);
                         }else if(Common.searchType.equals("1") || Common.searchType.equals("4")|| Common.searchType.equals("5")|| Common.searchType.equals("7")){
-                            //result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
                             Log.i(TAG, "===================send packet 확인==================" + packet);
                             result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_NEW);
                         }else if(Common.searchType.equals("3")){
@@ -4035,11 +3811,8 @@ public class ShipmentActivity extends ScannerActivity {
                                                 Log.d(TAG, "arSM.size() : " + arSM.size());
                                                 Log.d(TAG, "j number : " + j);
 
-                                                //출하대상 Table의 계근여부 Update
-                                                // 밑에 쿼리 정상 작동 안함
                                                 // 디비접속 설정
-                                                if (Common.searchType.equals("0") || Common.searchType.equals("2")) {   // 출하대상 리스트
-                                                    //receiveData = HttpHelper.getInstance().sendData(completeStr, "complete_shipment", Common.URL_UPDATE_SHIPMENT);
+                                                if (Common.searchType.equals("0") || Common.searchType.equals("2")) {
                                                     receiveData = HttpHelper.getInstance().sendDataDb(completeStr, "inno", "complete_shipment", Common.URL_UPDATE_SHIPMENT);
                                                 } else if (Common.searchType.equals("1")) {
                                                     receiveData = HttpHelper.getInstance().sendDataDb(completeStr, "inno", "complete_shipment", Common.URL_UPDATE_SHIPMENT);
