@@ -85,18 +85,6 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
             }
             mScanner.aDecodeSetDecodeEnable(1);
             mScanner.aDecodeSetResultType(ScanConst.ResultType.DCD_RESULT_USERMSG);
-
-			/*if (mScanner.aDecodeGetTriggerMode() == ScanConst.TriggerMode.DCD_TRIGGER_MODE_AUTO) {
-				mAutoScanOption.setChecked(true);
-			} else {
-				mAutoScanOption.setChecked(false);
-			}
-
-			if (mScanner.aDecodeGetBeepEnable() == 1) {
-				mBeepOption.setChecked(true);
-			} else {
-				mBeepOption.setChecked(false);
-			}*/
         }
     }
 
@@ -105,15 +93,11 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scanner);
 
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //getSupportActionBar().setHomeButtonEnabled(true);
-
         initScanner();
         IntentFilter filter = new IntentFilter(RECEIVE_PM80);
         this.registerReceiver(m_brc, filter);                        // ScanResultReceiver에서 전달하는 값을 받기위한 Receiver 등록
 
         ActionBar actionBar = getSupportActionBar();
-        //actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
         View mCustomView = LayoutInflater.from(this).inflate(R.layout.layout_actionbar, null);
         actionBar.setCustomView(mCustomView);
@@ -140,8 +124,6 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        SharedPreferences spfBluetooth = getSharedPreferences("spfBluetooth", Activity.MODE_PRIVATE);
-        SharedPreferences.Editor editor = spfBluetooth.edit();
         switch (buttonView.getId()) {
             case R.id.swt_print:
                 if (!isChecked) {

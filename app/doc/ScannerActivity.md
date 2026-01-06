@@ -193,3 +193,47 @@ public class MyActivity extends ScannerActivity {
 | onDestroy() | 165-169 |
 | setMessage() | 186-187 |
 | m_brc 리시버 | 190-206 |
+
+---
+
+## 코드 정리 기록
+
+### 작업 일자
+2026-01-06
+
+### 개요
+ScannerActivity.java에서 불필요한 주석 처리된 코드와 미사용 변수를 삭제하였습니다.
+
+### 1. 삭제된 주석 처리 코드
+
+| 원래 위치 | 삭제된 코드 | 설명 |
+|-----------|-------------|------|
+| 89-99행 | `/*if (mScanner.aDecodeGetTriggerMode()... mBeepOption.setChecked(false); }*/` | 트리거 모드/비프 설정 관련 블록 주석 (11줄) |
+| 108-109행 | `//getSupportActionBar().setDisplayHomeAsUpEnabled(true);` 등 | 중복 코드 (121-122행에서 동일 호출) |
+| 116행 | `//actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);` | 미사용 네비게이션 모드 설정 |
+
+### 2. 삭제된 미사용 변수
+
+| 변수명 | 타입 | 원래 위치 | 메서드 | 삭제 사유 |
+|--------|------|-----------|--------|-----------|
+| `spfBluetooth` | `SharedPreferences` | 143행 | onCheckedChanged() | 선언만 되고 사용되지 않음 |
+| `editor` | `SharedPreferences.Editor` | 144행 | onCheckedChanged() | 선언만 되고 사용되지 않음 |
+
+### 3. 정리 요약
+
+| 항목 | 수량 |
+|------|------|
+| 삭제된 주석 처리 코드 | 약 15줄 |
+| 삭제된 미사용 변수 | 2개 |
+| 정리 후 파일 라인 수 | 189줄 |
+
+### 4. 미정리 항목 (검토 필요)
+
+| 위치 | 내용 | 비고 |
+|------|------|------|
+| 84-85행 | `catch (InterruptedException e) { }` | 빈 catch 블록 - 로그 추가 검토 필요 |
+
+### 5. 참고 사항
+
+- 모든 설명 주석은 유지되었습니다.
+- 빈 catch 블록은 의도적으로 남겨두었습니다 (Thread.sleep 인터럽트 무시가 일반적 패턴).
