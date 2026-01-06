@@ -83,8 +83,6 @@ public class ProductionActivity extends ScannerActivity {
         swt_print.setChecked(false); //인쇄 안함으로 세팅
         swt_print.setClickable(false); //스위치 불가능하도록 변경
 
-        /*edit_pp_code.setText("22872");
-        edit_packer_code.setText("30360");*/
         //혹시 모르니 프로그램 들어갈 때 한번 더 지워줌
         DBHandler.deleteGoodsWetProductionCalc(getApplicationContext());
     }
@@ -188,7 +186,6 @@ public class ProductionActivity extends ScannerActivity {
                 switch (arg2) {
                     case 0:        // 바코드
                         work_flag = 1;
-                        //scan_flag = true;
                         Log.i(TAG, "바코드 클릭");
                         break;
                     case 1:        // 수기
@@ -408,7 +405,6 @@ public class ProductionActivity extends ScannerActivity {
     class SelectWeightFromTo extends AsyncTask<String, String, String> {
 
         private Context mContext;
-        String receiveData = "";
 
         public SelectWeightFromTo(Context context) {
             mContext = context;
