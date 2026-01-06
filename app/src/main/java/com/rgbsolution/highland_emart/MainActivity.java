@@ -52,14 +52,11 @@ public class MainActivity extends AppCompatActivity {
     // 진동 서비스 - 에러 발생 시 사용자 피드백용
     private Vibrator vibrator;
 
-    // 생산/출하 구분 플래그 - "ship", "prod", "homplus", "lotte" 등 작업 유형 구분
-    private String chkProdShip = "";
-
-
     // 날짜 선택용 캘린더 인스턴스
     Calendar calendar = Calendar.getInstance();
 
     /**
+     * 수정 필요 없음
      * 날짜 선택 다이얼로그 리스너
      *
      * 사용자가 DatePickerDialog에서 날짜를 선택하면 실행됩니다.
@@ -194,29 +191,13 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onClick(View v) {
         Intent i;
+
         switch (v.getId()) {
 
             // ==================== 날짜 선택 ====================
             case R.id.btnDay:
                 // DatePickerDialog를 표시하여 사용자가 날짜를 선택할 수 있도록 함
                 new DatePickerDialog(MainActivity.this,date,calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
-
-                /* 주석 처리된 코드: 날짜 변경 시 확인 다이얼로그
-                 * 원래는 날짜 변경 전 기존 데이터 삭제 경고를 표시하려 했으나 현재는 직접 변경
-                new AlertDialog.Builder(MainActivity.this, R.style.AppCompatDialogStyle)
-                        .setIcon(R.drawable.highland)
-                        .setTitle(getResources().getString(R.string.app_name))
-                        .setMessage("기존 출하 대상이 삭제 됩니다. 날짜를 변경 하시겠습니까?")
-                        .setCancelable(false)
-                        .setPositiveButton("변경",
-                                new DialogInterface.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        DBHandler.deletequeryShipment(getApplicationContext());
-                                        new DatePickerDialog(MainActivity.this,date,calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
-                                    }
-                                }).setNegativeButton("취소", null).show();*/
                 break;
 
             // ==================== 계근대상삭제 ====================
@@ -231,7 +212,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btnDownload:
                 Log.i(TAG, TAG + "=====================출하대상받기======================" + Common.selectDay);
 
-                chkProdShip = "ship";  // 작업 유형: 출하
                 Common.searchType = "0";  // 서버 통신 시 사용되는 검색 타입
 
                 // 기존 출하대상 데이터 삭제 (새 데이터 다운로드 전 초기화)
@@ -277,7 +257,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btnproductionlist:
                 Log.i(TAG, TAG + "=====================생산대상받기======================" + Common.selectDay);
 
-                chkProdShip = "prod";  // 작업 유형: 생산
                 Common.searchType = "1";  // 서버 통신 시 사용되는 검색 타입
 
                 DBHandler.deletequeryShipment(getApplicationContext());
@@ -317,7 +296,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btnDownloadHomeplus:
                 Log.i(TAG, TAG + "=====================홈플러스출하대상받기======================" + Common.selectDay);
 
-                chkProdShip = "homplus";  // 작업 유형: 홈플러스
                 Common.searchType = "2";
 
                 DBHandler.deletequeryShipment(getApplicationContext());
@@ -356,7 +334,6 @@ public class MainActivity extends AppCompatActivity {
             // 서버에서 도매업체 출하대상 리스트를 다운로드
             case R.id.btnDownloadWholesale:
                 Log.i(TAG, TAG + "=====================도매업체출하대상받기======================" + Common.selectDay);
-                //chkProdShip = "homplus";  // 주석 처리됨 - 도매업체용 별도 값 없음
                 Common.searchType = "3";
 
                 DBHandler.deletequeryShipment(getApplicationContext());
@@ -395,7 +372,6 @@ public class MainActivity extends AppCompatActivity {
             // 서버에서 비정량 출하계근대상 리스트를 다운로드
             case R.id.btnproductionNonfixedlist:
                 Log.i(TAG, TAG + "=====================비정량출하대상받기======================" + Common.selectDay);
-                //chkProdShip = "homplus";  // 주석 처리됨
                 Common.searchType = "4";
 
                 DBHandler.deletequeryShipment(getApplicationContext());
@@ -436,8 +412,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btnDownloadLotte:
                 Log.i(TAG, TAG + "=====================롯데출하대상받기======================" + Common.selectDay);
 
-                chkProdShip = "lotte";  // 작업 유형: 롯데
-                Common.searchType = "6";  // searchType == 5는 홈플러스 비정량
+                Common.searchType = "6";
 
                 DBHandler.deletequeryShipment(getApplicationContext());
 
@@ -474,14 +449,6 @@ public class MainActivity extends AppCompatActivity {
             // ==================== (이마트출하) 계근입력시작 (searchType: 0 필요) ====================
             // 다운로드된 이마트 출하대상 리스트를 기반으로 계근 입력 화면으로 이동
             case R.id.btnWet:
-
-                /* 주석 처리된 코드: chkProdShip으로 검증하는 이전 방식
-                if (chkProdShip.equals("prod")) {
-                    Toast.makeText(getApplicationContext(), "출하를 위해 출하 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }*/
-
                 // searchType 검증 - 출하대상 데이터가 다운로드되었는지 확인
                 if (!Common.searchType.equals("0")) {
                     Toast.makeText(getApplicationContext(), "출하를 위해 출하 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
@@ -505,14 +472,6 @@ public class MainActivity extends AppCompatActivity {
 
             // ==================== (도매업체) 계근입력시작 (searchType: 3 필요) ====================
             case R.id.btnWetWholesale:
-
-                /* 주석 처리된 코드
-                if (chkProdShip.equals("prod")) {
-                    Toast.makeText(getApplicationContext(), "출하를 위해 출하 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }*/
-
                 // searchType 검증
                 if (!Common.searchType.equals("3")) {
                     Toast.makeText(getApplicationContext(), "출하를 위해 출하 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
@@ -541,12 +500,6 @@ public class MainActivity extends AppCompatActivity {
                     vibrator.vibrate(300);
                     break;
                 }
-                /* 주석 처리된 코드
-                if (chkProdShip.equals("ship")) {
-                    Toast.makeText(getApplicationContext(), "생산 계근을 위해 생산 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }*/
 
                 Common.searchType = "1";
                 ArrayList<Shipments_Info> list_prod_si = DBHandler.selectqueryAllShipment(MainActivity.this);
@@ -589,7 +542,6 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.i(TAG, TAG + "=====================홈플러스 비정량 출하대상받기======================" + Common.selectDay);
 
-                //chkProdShip = "homplus";  // 주석 처리됨
                 Common.searchType = "5";
 
                 DBHandler.deletequeryShipment(getApplicationContext());
@@ -699,7 +651,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btnproductionlist4print:
                 Log.i(TAG, TAG + "=====================생산대상받기(라벨)======================" + Common.selectDay);
 
-                chkProdShip = "prod";  // 작업 유형: 생산
                 Common.searchType = "7";  // 라벨용 생산
 
                 DBHandler.deletequeryShipment(getApplicationContext());
@@ -857,7 +808,6 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                //log.Write("프로그램 종료");
                                 finish();
                             }
                         }).setNegativeButton(buttonNo, null).show();
