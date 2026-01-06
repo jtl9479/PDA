@@ -98,7 +98,6 @@ public class DBHandler {
 
             if (type) {      // true : pp_code
                 qry_condition = " AND PACKER_PRODUCT_CODE in ('" + condition + "' )"; //전체 지점 검색
-                /*qry_condition = ""; //전체 지점 검색*/
             } else {         // false : bl_no
                 qry_condition = " AND BL_NO = '" + condition + "' ";
             }
@@ -376,7 +375,6 @@ public class DBHandler {
                 Log.v(TAG, "selectqueryShipmentBL Count ->" + cursor.getCount());
             }
 
-            HashMap<String, String> data;
             Shipments_Info si;
             while (cursor.moveToNext()) {
                 si = new Shipments_Info();
@@ -543,7 +541,6 @@ public class DBHandler {
         return list_code_info;
     }
 
-    //
     public static ArrayList<String[]> selectqueryCodeListForNonFixed(Context context) {
         ArrayList<String[]> list_code_info = new ArrayList<String[]>();
         DBHelper dbHelper = new DBHelper(context);
@@ -860,7 +857,6 @@ public class DBHandler {
 
     // 바코드 정보 SELECT
     public static ArrayList<Barcodes_Info> selectqueryBarcodeInfo(Context context) {//
-        ArrayList<HashMap<String, String>> hMaps = new ArrayList<HashMap<String, String>>();
         ArrayList<Barcodes_Info> list_barcode_info = new ArrayList<Barcodes_Info>();
         DBHelper mDbHelper = new DBHelper(context);
         mDbHelper.open();
@@ -933,34 +929,6 @@ public class DBHandler {
                 bi.setMEMO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("MEMO")), ""));
                 bi.setSHELF_LIFE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SHELF_LIFE")), ""));
                 list_barcode_info.add(bi);
-                /*
-                data.put("BARCODE_INFO_ID", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODE_INFO_ID")), ""));
-				data.put("PACKER_CLIENT_CODE", Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_CLIENT_CODE")), ""));
-				data.put("BRAND_CODE", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BRAND_CODE")), ""));
-				data.put("PACKER_PRODUCT_CODE", Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRODUCT_CODE")), ""));
-				data.put("PACKER_PRD_NAME", Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRD_NAME")), ""));
-				data.put("ITEM_CODE", Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_CODE")), ""));
-				data.put("ITEM_NAME_KR", Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME_KR")), ""));
-				data.put("BARCODEGOODS", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODEGOODS")), ""));
-				data.put("BASEUNIT", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BASEUNIT")), ""));
-				data.put("ZEROPOINT", Common.nullCheck(cursor.getString(cursor.getColumnIndex("ZEROPOINT")), ""));
-				data.put("PACKER_PRD_CODE_FROM", Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRD_CODE_FROM")), ""));
-				data.put("PACKER_PRD_CODE_TO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRD_CODE_TO")), ""));
-				data.put("BARCODEGOODS_FROM", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODEGOODS_FROM")), ""));
-				data.put("BARCODEGOODS_TO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODEGOODS_TO")), ""));
-				data.put("WEIGHT_FROM", Common.nullCheck(cursor.getString(cursor.getColumnIndex("WEIGHT_FROM")), ""));
-				data.put("WEIGHT_TO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("WEIGHT_TO")), ""));
-				data.put("MAKINGDATE_FROM", Common.nullCheck(cursor.getString(cursor.getColumnIndex("MAKINGDATE_FROM")), ""));
-				data.put("MAKINGDATE_TO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("MAKINGDATE_TO")), ""));
-				data.put("BOXSERIAL_FROM", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BOXSERIAL_FROM")), ""));
-				data.put("BOXSERIAL_TO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BOXSERIAL_TO")), ""));
-				data.put("STATUS", Common.nullCheck(cursor.getString(cursor.getColumnIndex("STATUS")), ""));
-				data.put("REG_ID", Common.nullCheck(cursor.getString(cursor.getColumnIndex("REG_ID")), ""));
-				data.put("REG_DATE", Common.nullCheck(cursor.getString(cursor.getColumnIndex("REG_DATE")), ""));
-				data.put("REG_TIME", Common.nullCheck(cursor.getString(cursor.getColumnIndex("REG_TIME")), ""));
-				data.put("MEMO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("MEMO")), ""));
-				hMaps.add(data);
-				*/
             }
             cursor.close();
         } catch (Exception e) {
@@ -975,7 +943,6 @@ public class DBHandler {
 
     // 바코드 정보 SELECT
     public static ArrayList<Barcodes_Info> selectqueryBarcodeGoodsInfo(Context context) {//
-        ArrayList<HashMap<String, String>> hMaps = new ArrayList<HashMap<String, String>>();
         ArrayList<Barcodes_Info> list_barcode_info = new ArrayList<Barcodes_Info>();
         DBHelper mDbHelper = new DBHelper(context);
         mDbHelper.open();
@@ -1048,39 +1015,11 @@ public class DBHandler {
                 bi.setMEMO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("MEMO")), ""));
                 bi.setSHELF_LIFE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SHELF_LIFE")), ""));
                 list_barcode_info.add(bi);
-                /*
-                data.put("BARCODE_INFO_ID", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODE_INFO_ID")), ""));
-				data.put("PACKER_CLIENT_CODE", Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_CLIENT_CODE")), ""));
-				data.put("BRAND_CODE", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BRAND_CODE")), ""));
-				data.put("PACKER_PRODUCT_CODE", Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRODUCT_CODE")), ""));
-				data.put("PACKER_PRD_NAME", Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRD_NAME")), ""));
-				data.put("ITEM_CODE", Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_CODE")), ""));
-				data.put("ITEM_NAME_KR", Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME_KR")), ""));
-				data.put("BARCODEGOODS", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODEGOODS")), ""));
-				data.put("BASEUNIT", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BASEUNIT")), ""));
-				data.put("ZEROPOINT", Common.nullCheck(cursor.getString(cursor.getColumnIndex("ZEROPOINT")), ""));
-				data.put("PACKER_PRD_CODE_FROM", Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRD_CODE_FROM")), ""));
-				data.put("PACKER_PRD_CODE_TO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRD_CODE_TO")), ""));
-				data.put("BARCODEGOODS_FROM", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODEGOODS_FROM")), ""));
-				data.put("BARCODEGOODS_TO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODEGOODS_TO")), ""));
-				data.put("WEIGHT_FROM", Common.nullCheck(cursor.getString(cursor.getColumnIndex("WEIGHT_FROM")), ""));
-				data.put("WEIGHT_TO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("WEIGHT_TO")), ""));
-				data.put("MAKINGDATE_FROM", Common.nullCheck(cursor.getString(cursor.getColumnIndex("MAKINGDATE_FROM")), ""));
-				data.put("MAKINGDATE_TO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("MAKINGDATE_TO")), ""));
-				data.put("BOXSERIAL_FROM", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BOXSERIAL_FROM")), ""));
-				data.put("BOXSERIAL_TO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("BOXSERIAL_TO")), ""));
-				data.put("STATUS", Common.nullCheck(cursor.getString(cursor.getColumnIndex("STATUS")), ""));
-				data.put("REG_ID", Common.nullCheck(cursor.getString(cursor.getColumnIndex("REG_ID")), ""));
-				data.put("REG_DATE", Common.nullCheck(cursor.getString(cursor.getColumnIndex("REG_DATE")), ""));
-				data.put("REG_TIME", Common.nullCheck(cursor.getString(cursor.getColumnIndex("REG_TIME")), ""));
-				data.put("MEMO", Common.nullCheck(cursor.getString(cursor.getColumnIndex("MEMO")), ""));
-				hMaps.add(data);
-				*/
             }
             cursor.close();
         } catch (Exception e) {
             if (Common.D) {
-                Log.v(TAG, "selectqueryBarcodeInfo exception -> " + e.getMessage().toString());
+                Log.v(TAG, "selectqueryBarcodeGoodsInfo exception -> " + e.getMessage().toString());
             }
         }
 
@@ -1423,7 +1362,6 @@ public class DBHandler {
                     + " count(" + DBInfo.GI_D_ID + ") as COUNT,"
                     + " count(" + DBInfo.SAVE_TYPE + "='Y') as SEND_Y,"
                     + " count(" + DBInfo.SAVE_TYPE + "='F') as SEND_N"
-                    //+ " max(" + DBInfo.WH_AREA + ") as WH_AREA"
                     + " FROM "
                     + DBInfo.TABLE_NAME_GOODS_WET
                     + " WHERE "
@@ -1914,7 +1852,6 @@ public class DBHandler {
 
     // 출하대상 수정사항만 변경하기
     public static boolean refreshShipmentList(Context context, ArrayList<String> list_delete, ArrayList<Shipments_Info> list_insert) {
-        Context mContext = context;
         boolean result;
         try {
             DBHelper dbHelper = new DBHelper(context);
@@ -1938,7 +1875,7 @@ public class DBHandler {
 
             if (list_insert.size() > 0) {
                 for (int i = 0; i < list_insert.size(); i++) {
-                    insertqueryShipment(mContext, list_insert.get(i), "F");
+                    insertqueryShipment(context, list_insert.get(i), "F");
                 }
             }
 
@@ -1958,7 +1895,6 @@ public class DBHandler {
         String dateStr = dateformat.format(datetime);
         String timeStr = timeformat.format(datetime);
         int maxBoxN1 = 0;
-        String[] row_info = new String[0];
         DBHelper mDbHelper = new DBHelper(context);
         mDbHelper.open();
 
@@ -2050,7 +1986,6 @@ public class DBHandler {
     public static String selectGoodsWetProductionCalc(Context context, String msg){
         DBHelper mDbHelper = new DBHelper(context);
         mDbHelper.open();
-        //String duplicate = "";
         String count = "";
 
         try {
@@ -2065,7 +2000,6 @@ public class DBHandler {
                 Log.v(TAG, "selectGoodsWetProductionCalc cursor -> " + cursor.getCount());
             }
             while (cursor.moveToNext()) {
-                //maxBoxN1 = Log.e(TAG, "=======================db 커서 값 확인 확인 222##========================="+ cursor.getString(0));
                 count = cursor.getString(0);
             }
             cursor.close();

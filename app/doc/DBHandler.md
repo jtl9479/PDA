@@ -1248,3 +1248,70 @@ public static boolean insertqueryShipment(Context context, Shipments_Info si, St
 7. **성능**
    - 대량 데이터는 배치 처리
    - 불필요한 SELECT * 지양
+
+---
+
+## 코드 정리 기록
+
+### 작업 일자
+2026-01-06
+
+### 개요
+DBHandler.java에서 불필요한 주석 처리된 코드와 미사용 변수를 삭제하였습니다.
+
+### 1. 삭제된 주석 처리 코드
+
+#### selectqueryShipment() 메서드
+| 원래 위치 | 삭제된 코드 |
+|-----------|-------------|
+| 101행 | `/*qry_condition = ""; //전체 지점 검색*/` |
+
+#### selectqueryBarcodeInfo() 메서드
+| 원래 위치 | 삭제된 코드 |
+|-----------|-------------|
+| 936-963행 | HashMap data.put() 관련 블록 주석 (약 27줄) |
+
+#### selectqueryBarcodeGoodsInfo() 메서드
+| 원래 위치 | 삭제된 코드 |
+|-----------|-------------|
+| 1051-1078행 | HashMap data.put() 관련 블록 주석 (약 27줄) |
+
+#### selectqueryListGoodsWetInfo() 메서드
+| 원래 위치 | 삭제된 코드 |
+|-----------|-------------|
+| 1426행 | `//+ " max(" + DBInfo.WH_AREA + ") as WH_AREA"` |
+
+#### selectGoodsWetProductionCalc() 메서드
+| 원래 위치 | 삭제된 코드 |
+|-----------|-------------|
+| 2053행 | `//String duplicate = "";` |
+| 2068행 | `//maxBoxN1 = Log.e(TAG, "==...db 커서 값 확인..."+ cursor.getString(0));` |
+
+### 2. 삭제된 미사용 변수
+
+| 변수명 | 타입 | 원래 위치 | 메서드 | 삭제 사유 |
+|--------|------|-----------|--------|-----------|
+| `data` | `HashMap<String, String>` | 379행 | selectqueryShipmentBL() | 선언만 되고 사용되지 않음 |
+| `hMaps` | `ArrayList<HashMap<String, String>>` | 863행 | selectqueryBarcodeInfo() | 선언만 되고 사용되지 않음 |
+| `mContext` | `Context` | 1858행 | refreshShipmentList() | 불필요한 변수 복사 (context를 직접 사용하도록 변경) |
+| `row_info` | `String[]` | 1902행 | selectMaxBoxOrder() | 선언만 되고 사용되지 않음 |
+
+### 3. 삭제된 빈 주석
+
+| 원래 위치 | 삭제된 코드 |
+|-----------|-------------|
+| 546행 | `//` (내용 없는 빈 주석) |
+
+### 4. 정리 요약
+
+| 항목 | 수량 |
+|------|------|
+| 삭제된 주석 처리 코드 | 약 60줄 |
+| 삭제된 미사용 변수 | 4개 |
+| 삭제된 빈 주석 | 1개 |
+| 예상 파일 크기 감소 | 약 3-4KB |
+
+### 5. 참고 사항
+
+- 모든 설명 주석(descriptive comments)은 유지되었습니다.
+- 예: `// 출하대상 CREATE`, `// 바코드 정보 SELECT`, `// 계근정보 중복체크` 등
