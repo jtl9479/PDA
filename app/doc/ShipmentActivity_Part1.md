@@ -1,8 +1,9 @@
 # ShipmentActivity 분석 - Part 1: 개요 및 클래스 구조
 
 > **파일 위치**: `app/src/main/java/com/rgbsolution/highland_emart/ShipmentActivity.java`
-> **코드 라인**: 4158줄
+> **코드 라인**: 4705줄
 > **작성일**: 2025-01-27
+> **최종 수정일**: 2026-01-06
 
 ---
 
@@ -71,7 +72,7 @@ public class ShipmentActivity extends ScannerActivity
 
 ### 2.1 주요 필드 (Member Variables)
 
-#### 2.1.1 프린터 관련 필드 (65~94줄)
+#### 2.1.1 프린터 관련 필드 (165~214줄)
 
 ```java
 // 블루투스 프린터 관련
@@ -97,7 +98,7 @@ protected int sound_fail;     // 프린터 연결 실패음
 private int lotte_TryCount = 0;  // 롯데 박스 순번 카운터 (1~9999 순환)
 ```
 
-#### 2.1.2 UI 컴포넌트 필드 (98~120줄)
+#### 2.1.2 UI 컴포넌트 필드 (218~271줄)
 
 ```java
 // 레이아웃 및 다이얼로그
@@ -135,7 +136,7 @@ private Button btn_send;                     // 계근 완료된 정보 G3 전�
 private Button btn_select;                   // 선택 지점의 계근 상세정보 popup
 ```
 
-#### 2.1.3 상태 관리 필드 (121~137줄)
+#### 2.1.3 상태 관리 필드 (274~320줄)
 
 ```java
 // 센터 누적 정보
@@ -164,7 +165,7 @@ boolean makingdateInputFlag = false;
 private String storeCode = LoginActivity.store[0];  // 창고 코드
 ```
 
-#### 2.1.4 작업 관련 필드 (612~619줄)
+#### 2.1.4 작업 관련 필드 (약 320~345줄)
 
 ```java
 Barcodes_Info work_item_bi_info;    // 현재 작업중인 상품 바코드 정보
@@ -179,7 +180,7 @@ String fullbarcode = "";
 
 ### 2.2 상수 정의
 
-#### 2.2.1 Message Types (60~74줄)
+#### 2.2.1 Message Types (155~195줄)
 
 ```java
 private final String TAG = "ShipmentActivity";
@@ -203,7 +204,7 @@ private static final int REQUEST_ENABLE_BT = 3;
 
 ## 3. 생명주기 메서드
 
-### 3.1 onCreate (140~226줄)
+### 3.1 onCreate (350~445줄)
 
 ```java
 @Override
@@ -212,7 +213,7 @@ protected void onCreate(Bundle savedInstanceState)
 
 **주요 동작**:
 
-#### 1단계: 레이아웃 설정 (146~150줄)
+#### 1단계: 레이아웃 설정 (356~360줄)
 ```java
 if(Common.searchType.equals("3")) {
     setContentView(R.layout.activity_shipment_wholesale);  // 도매용
@@ -221,7 +222,7 @@ if(Common.searchType.equals("3")) {
 }
 ```
 
-#### 2단계: 변수 초기화 (152~161줄)
+#### 2단계: 변수 초기화 (362~371줄)
 ```java
 current_work_position = -1;  // 작업 position 초기화
 
@@ -235,14 +236,14 @@ scan_flag = true;      // 패커상품 스캔부터 시작
 vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 ```
 
-#### 3단계: 사운드 설정 (163~167줄)
+#### 3단계: 사운드 설정 (373~377줄)
 ```java
 sound_pool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
 sound_success = sound_pool.load(getBaseContext(), R.raw.beep, 1);   // 성공음
 sound_fail = sound_pool.load(getBaseContext(), R.raw.e, 1);         // 실패음
 ```
 
-#### 4단계: UI 컴포넌트 초기화 (168~206줄)
+#### 4단계: UI 컴포넌트 초기화 (378~416줄)
 ```java
 Inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -271,7 +272,7 @@ btn_input.setOnClickListener(inputBtnListener);
 // ... (기타 컴포넌트)
 ```
 
-#### 5단계: 블루투스 어댑터 설정 (210~217줄)
+#### 5단계: 블루투스 어댑터 설정 (420~427줄)
 ```java
 mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -282,7 +283,7 @@ if (mBluetoothAdapter == null) {
 }
 ```
 
-#### 6단계: 이노이천 생산 계근 특수 처리 (220~225줄)
+#### 6단계: 이노이천 생산 계근 특수 처리 (430~435줄)
 ```java
 if(Common.searchType.equals("1")) {
     Log.i(TAG, "===================PRINTER DISABLE==================");
@@ -299,7 +300,7 @@ if(Common.searchType.equals("1")) {
 
 ---
 
-### 3.2 onStart (235~264줄)
+### 3.2 onStart (447~476줄)
 
 ```java
 @Override
@@ -308,7 +309,7 @@ protected void onStart()
 
 **주요 동작**:
 
-#### 1단계: 블루투스 활성화 확인 (242~246줄)
+#### 1단계: 블루투스 활성화 확인 (454~458줄)
 ```java
 if (!mBluetoothAdapter.isEnabled() && !Common.searchType.equals("1")) {
     // 블루투스 OFF + 생산 계근이 아닐 때
@@ -317,7 +318,7 @@ if (!mBluetoothAdapter.isEnabled() && !Common.searchType.equals("1")) {
 }
 ```
 
-#### 2단계: 프린터 연결 시도 (248~263줄)
+#### 2단계: 프린터 연결 시도 (460~475줄)
 ```java
 else {
     if (Common.printer_setting && !Common.searchType.equals("1")) {
@@ -347,7 +348,7 @@ else {
 
 ---
 
-### 3.3 onResume (229~232줄)
+### 3.3 onResume (440~443줄)
 
 ```java
 @Override
@@ -361,7 +362,7 @@ public void onResume() {
 
 ---
 
-### 3.4 onPause (267~270줄)
+### 3.4 onPause (479~482줄)
 
 ```java
 @Override
@@ -375,7 +376,7 @@ protected void onPause() {
 
 ---
 
-### 3.5 onDestroy (273~282줄)
+### 3.5 onDestroy (485~494줄)
 
 ```java
 @Override
@@ -403,7 +404,7 @@ public void onDestroy() {
 
 ## 4. Handler 및 메시지 처리
 
-### 4.1 mHandler (490~592줄)
+### 4.1 mHandler (787~889줄)
 
 ```java
 public Handler mHandler = new Handler() {
@@ -427,7 +428,7 @@ public Handler mHandler = new Handler() {
 | MESSAGE_REPRINT | 5 | 재출력 (계근 상세에서) |
 | WoosimService.MESSAGE_PRINTER | - | Woosim 프린터 이벤트 |
 
-#### 4.1.1 프린터 연결 성공 처리 (522~533줄)
+#### 4.1.1 프린터 연결 성공 처리 (819~830줄)
 
 ```java
 case MESSAGE_DEVICE_NAME:
@@ -447,7 +448,7 @@ case MESSAGE_DEVICE_NAME:
     break;
 ```
 
-#### 4.1.2 재출력 처리 (559~578줄)
+#### 4.1.2 재출력 처리 (856~875줄)
 
 ```java
 case MESSAGE_REPRINT:
@@ -479,7 +480,7 @@ case MESSAGE_REPRINT:
 
 ## 5. 키보드 제어
 
-### 5.1 hideKeyboard (284~287줄)
+### 5.1 hideKeyboard (496~504줄)
 
 ```java
 private void hideKeyboard() {
@@ -492,7 +493,7 @@ private void hideKeyboard() {
 ```
 
 **사용처**:
-- 입력 버튼 클릭시 키보드 자동 숨김 (296줄)
+- 입력 버튼 클릭시 키보드 자동 숨김 (506줄)
 
 ---
 

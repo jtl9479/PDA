@@ -4,7 +4,7 @@
 
 ### 파일 정보
 - **파일 위치**: `D:\PDA\PDA-INNO\app\src\main\java\com\rgbsolution\highland_emart\MainActivity.java`
-- **총 라인 수**: 663줄
+- **총 라인 수**: 813줄 (2026-01-06 정리 후)
 - **패키지명**: `com.rgbsolution.highland_emart`
 
 ### 상속 관계
@@ -35,9 +35,6 @@ private final String TAG = "MainActivity";
 // 진동 서비스
 private Vibrator vibrator;
 
-// 생산/출하 구분 플래그
-private String chkProdShip = "";
-
 // 날짜 선택용 캘린더
 Calendar calendar = Calendar.getInstance();
 ```
@@ -47,8 +44,9 @@ Calendar calendar = Calendar.getInstance();
 |--------|------|------|
 | `TAG` | String | 로그 출력용 태그 (디버깅) |
 | `vibrator` | Vibrator | 사용자 피드백용 진동 서비스 |
-| `chkProdShip` | String | "ship", "prod", "homplus", "lotte" 등 작업 유형 구분 |
 | `calendar` | Calendar | 날짜 선택 및 포맷팅에 사용 |
+
+> **참고**: `chkProdShip` 변수는 2026-01-06에 삭제됨 (미사용 변수였음, 실제 검증은 `Common.searchType` 사용)
 
 ---
 
@@ -77,7 +75,7 @@ protected void onResume() {
 }
 ```
 - **역할**: 액티비티가 포그라운드로 돌아올 때 호출
-- **라인**: 609-612
+- **라인**: 737-741
 
 ### onStart()
 ```java
@@ -88,7 +86,7 @@ protected void onStart() {
 }
 ```
 - **역할**: 액티비티가 사용자에게 보이기 시작할 때 호출
-- **라인**: 615-618
+- **라인**: 746-750
 
 ### onPause()
 ```java
@@ -99,7 +97,7 @@ protected void onPause() {
 }
 ```
 - **역할**: 액티비티가 백그라운드로 이동할 때 호출
-- **라인**: 621-624
+- **라인**: 755-759
 
 ### onDestroy()
 ```java
@@ -110,7 +108,7 @@ protected void onDestroy() {
 }
 ```
 - **역할**: 액티비티가 소멸될 때 호출
-- **라인**: 627-630
+- **라인**: 764-768
 
 ---
 
@@ -120,6 +118,7 @@ protected void onDestroy() {
 
 #### DatePickerDialog.OnDateSetListener
 ```java
+
 DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener(){
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth){
         calendar.set(Calendar.YEAR, year);
@@ -143,8 +142,9 @@ DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener
         Log.i(TAG, TAG + "=====================selectDay======================" + inPutDay);
     }
 };
+
 ```
-- **라인**: 36-58
+- **라인**: 65-93
 - **역할**: 사용자가 날짜를 선택할 때 실행되는 리스너
 - **동작**:
   1. 선택된 날짜를 Calendar 객체에 저장
@@ -167,7 +167,7 @@ public boolean onCreateOptionsMenu(Menu menu) {
     return true;
 }
 ```
-- **라인**: 68-71
+- **라인**: 116-120
 - **역할**: 액션바 메뉴 생성
 - 액션바 메뉴 기능을 추가하기 위한 메소드
 #### onOptionsItemSelected()
@@ -194,7 +194,7 @@ public boolean onOptionsItemSelected(MenuItem item) {
     return super.onOptionsItemSelected(item);
 }
 ```
-- **라인**: 74-91
+- **라인**: 132-152
 - **역할**: 메뉴 아이템 선택 처리
 - **메뉴 항목**:
   - `action_pinrtsettings`: 설정 화면으로 이동
@@ -213,7 +213,7 @@ public boolean onKeyDown(int keyCode, KeyEvent event) {
     return super.onKeyDown(keyCode, event);
 }
 ```
-- **라인**: 634-639
+- **라인**: 779-785
 - **역할**: 뒤로가기 버튼 처리
 - **동작**: BACK 버튼 누를 시 종료 다이얼로그 표시
 
@@ -239,7 +239,7 @@ public void exitDialog() {
                     }).setNegativeButton(buttonNo, null).show();
 }
 ```
-- **라인**: 642-662
+- **라인**: 793-812
 - **역할**: 앱 종료 확인 다이얼로그 표시
 - **동작**:
   - "예" 버튼: `finish()` 호출하여 액티비티 종료
@@ -264,7 +264,7 @@ public void onClick(View v) {
     }
 }
 ```
-- **라인**: 93-606
+- **라인**: 191-732
 - **역할**: 모든 버튼 클릭 이벤트를 중앙에서 처리
 
 ### 5.1 날짜 및 데이터 관리 버튼
@@ -278,7 +278,7 @@ case R.id.btnDay:
         calendar.get(Calendar.DAY_OF_MONTH)).show();
     break;
 ```
-- **라인**: 96-113
+- **라인**: 196-199
 - **역할**: 날짜 선택 다이얼로그 표시
 
 #### buttonDelete - 출하대상 삭제
@@ -288,7 +288,7 @@ case R.id.buttonDelete:
     Toast.makeText(getApplicationContext(), "출하대상이 삭제 되었습니다.", Toast.LENGTH_SHORT).show();
     break;
 ```
-- **라인**: 114-117
+- **라인**: 202-206
 - **역할**: 로컬 DB의 모든 출하대상 데이터 삭제
 
 ### 5.2 데이터 다운로드 버튼 (6가지 유형)
@@ -305,7 +305,6 @@ case R.id.buttonDelete:
 case R.id.btnDownload:
     Log.i(TAG, TAG + "=====================출하대상받기======================" + Common.selectDay);
 
-    chkProdShip = "ship";
     Common.searchType = "0";
 
     DBHandler.deletequeryShipment(getApplicationContext());
@@ -336,9 +335,7 @@ case R.id.btnDownload:
 
     break;
 ```
-- **라인**: 118-154
 - **searchType**: "0"
-- **chkProdShip**: "ship"
 - **용도**: 일반 출하대상 데이터 다운로드
 
 #### 2) btnproductionlist - 생산대상 받기
@@ -346,7 +343,6 @@ case R.id.btnDownload:
 case R.id.btnproductionlist:
     Log.i(TAG, TAG + "=====================생산대상받기======================" + Common.selectDay);
 
-    chkProdShip = "prod";
     Common.searchType = "1";
 
     DBHandler.deletequeryShipment(getApplicationContext());
@@ -358,9 +354,7 @@ case R.id.btnproductionlist:
 
     break;
 ```
-- **라인**: 155-190
 - **searchType**: "1"
-- **chkProdShip**: "prod"
 - **용도**: 생산대상 데이터 다운로드
 
 #### 3) btnDownloadHomeplus - 홈플러스 출하대상 받기
@@ -368,7 +362,6 @@ case R.id.btnproductionlist:
 case R.id.btnDownloadHomeplus:
     Log.i(TAG, TAG + "=====================홈플러스출하대상받기======================" + Common.selectDay);
 
-    chkProdShip = "homplus";
     Common.searchType = "2";
 
     DBHandler.deletequeryShipment(getApplicationContext());
@@ -380,9 +373,7 @@ case R.id.btnDownloadHomeplus:
 
     break;
 ```
-- **라인**: 191-226
 - **searchType**: "2"
-- **chkProdShip**: "homplus"
 - **용도**: 홈플러스 하이퍼 출하대상 다운로드
 
 #### 4) btnDownloadWholesale - 도매업체 출하대상 받기
@@ -430,8 +421,7 @@ case R.id.btnproductionNonfixedlist:
 case R.id.btnDownloadLotte:
     Log.i(TAG, TAG + "=====================롯데출하대상받기======================" + Common.selectDay);
 
-    chkProdShip = "lotte";
-    Common.searchType = "6"; // searchType == 5는 홈플러스 비정량
+    Common.searchType = "6";
 
     DBHandler.deletequeryShipment(getApplicationContext());
     // ... (날짜 설정 로직)
@@ -442,9 +432,7 @@ case R.id.btnDownloadLotte:
 
     break;
 ```
-- **라인**: 297-332
 - **searchType**: "6"
-- **chkProdShip**: "lotte"
 - **용도**: 롯데 출하대상 다운로드
 - **참고**: searchType "5"는 홈플러스 비정량용으로 예약됨
 
@@ -473,8 +461,7 @@ case R.id.btnWetHomeplusNon:
 case R.id.btnproductionlist4print:
     Log.i(TAG, TAG + "=====================생산대상받기(라벨)======================" + Common.selectDay);
 
-    chkProdShip = "prod";
-    Common.searchType = "7";
+    Common.searchType = "7";  // 라벨용 생산
 
     DBHandler.deletequeryShipment(getApplicationContext());
     // ... (날짜 설정 로직)
@@ -485,9 +472,7 @@ case R.id.btnproductionlist4print:
 
     break;
 ```
-- **라인**: 533-568
 - **searchType**: "7"
-- **chkProdShip**: "prod"
 - **용도**: 라벨 출력용 생산대상 다운로드
 
 ### 5.3 계근 입력 버튼
@@ -759,16 +744,18 @@ case R.id.btnClose:
 
 ### searchType 매핑 테이블
 
-| searchType | 작업 유형 | 다운로드 버튼 | 계근 입력 버튼 | chkProdShip |
-|-----------|----------|-------------|-------------|-------------|
-| "0" | 출하대상 | btnDownload | btnWet | "ship" |
-| "1" | 생산대상 | btnproductionlist | btnProdWet | "prod" |
-| "2" | 홈플러스 하이퍼 | btnDownloadHomeplus | btnWetHomeplus | "homplus" |
-| "3" | 도매업체 | btnDownloadWholesale | btnWetWholesale | - |
-| "4" | 비정량 출하 | btnproductionNonfixedlist | btnProdNonfixedWet | - |
-| "5" | 홈플러스 비정량 | btnWetHomeplusNon | btnWetHomeplusNon2 | - |
-| "6" | 롯데 | btnDownloadLotte | btnWetLotte | "lotte" |
-| "7" | 생산(라벨) | btnproductionlist4print | btnProdWet4print | "prod" |
+| searchType | 작업 유형 | 다운로드 버튼 | 계근 입력 버튼 |
+|-----------|----------|-------------|-------------|
+| "0" | 출하대상 | btnDownload | btnWet |
+| "1" | 생산대상 | btnproductionlist | btnProdWet |
+| "2" | 홈플러스 하이퍼 | btnDownloadHomeplus | btnWetHomeplus |
+| "3" | 도매업체 | btnDownloadWholesale | btnWetWholesale |
+| "4" | 비정량 출하 | btnproductionNonfixedlist | btnProdNonfixedWet |
+| "5" | 홈플러스 비정량 | btnWetHomeplusNon | btnWetHomeplusNon2 |
+| "6" | 롯데 | btnDownloadLotte | btnWetLotte |
+| "7" | 생산(라벨) | btnproductionlist4print | btnProdWet4print |
+
+> **참고**: `chkProdShip` 컬럼은 2026-01-06에 삭제됨 (미사용 변수였음)
 
 ### searchType 검증 로직
 
@@ -901,54 +888,54 @@ if (!Common.searchType.equals("X")) {
 
 ---
 
-## 8. 코드 위치 참조
+## 8. 코드 위치 참조 (2026-01-06 업데이트)
 
 ### 클래스 선언 및 필드
-- **라인 28-34**: 클래스 선언 및 필드 정의
+- **라인 47-56**: 클래스 선언 및 필드 정의
 
 ### 날짜 관련
-- **라인 34-58**: Calendar 및 DatePickerDialog 리스너
-- **라인 96-113**: 날짜 선택 버튼 (btnDay)
+- **라인 65-93**: DatePickerDialog 리스너
+- **라인 196-199**: 날짜 선택 버튼 (btnDay)
 
 ### 생명주기 메서드
-- **라인 61-65**: onCreate()
-- **라인 609-612**: onResume()
-- **라인 615-618**: onStart()
-- **라인 621-624**: onPause()
-- **라인 627-630**: onDestroy()
+- **라인 101-108**: onCreate()
+- **라인 737-741**: onResume()
+- **라인 746-750**: onStart()
+- **라인 755-759**: onPause()
+- **라인 764-768**: onDestroy()
 
 ### 메뉴 관련
-- **라인 68-71**: onCreateOptionsMenu()
-- **라인 74-91**: onOptionsItemSelected()
+- **라인 116-120**: onCreateOptionsMenu()
+- **라인 132-152**: onOptionsItemSelected()
 
 ### 데이터 다운로드 버튼
-- **라인 118-154**: 출하대상 받기 (searchType "0")
-- **라인 155-190**: 생산대상 받기 (searchType "1")
-- **라인 191-226**: 홈플러스 출하대상 받기 (searchType "2")
-- **라인 227-261**: 도매업체 출하대상 받기 (searchType "3")
-- **라인 262-296**: 비정량 출하대상 받기 (searchType "4")
-- **라인 432-468**: 홈플러스 비정량 출하대상 받기 (searchType "5")
-- **라인 297-332**: 롯데 출하대상 받기 (searchType "6")
-- **라인 533-568**: 생산대상 받기 라벨 (searchType "7")
+- **라인 210-251**: 출하대상 받기 (searchType "0")
+- **라인 255-290**: 생산대상 받기 (searchType "1")
+- **라인 294-329**: 홈플러스 출하대상 받기 (searchType "2")
+- **라인 333-367**: 도매업체 출하대상 받기 (searchType "3")
+- **라인 371-405**: 비정량 출하대상 받기 (searchType "4")
+- **라인 539-575**: 홈플러스 비정량 출하대상 받기 (searchType "5")
+- **라인 410-445**: 롯데 출하대상 받기 (searchType "6")
+- **라인 649-684**: 생산대상 받기 라벨 (searchType "7")
 
 ### 계근 입력 버튼
-- **라인 333-357**: 출하 계근 입력 (searchType "0")
-- **라인 385-408**: 생산 계근 입력 (searchType "1")
-- **라인 410-429**: 홈플러스 계근 입력 (searchType "2")
-- **라인 359-383**: 도매업체 계근 입력 (searchType "3")
-- **라인 493-512**: 비정량 계근 입력 (searchType "4")
-- **라인 471-491**: 홈플러스 비정량 계근 입력 (searchType "5")
-- **라인 513-532**: 롯데 계근 입력 (searchType "6")
-- **라인 569-588**: 생산 계근 입력 라벨 (searchType "7")
+- **라인 449-469**: 출하 계근 입력 (searchType "0")
+- **라인 493-512**: 생산 계근 입력 (searchType "1")
+- **라인 515-535**: 홈플러스 계근 입력 (searchType "2")
+- **라인 472-490**: 도매업체 계근 입력 (searchType "3")
+- **라인 602-622**: 비정량 계근 입력 (searchType "4")
+- **라인 578-599**: 홈플러스 비정량 계근 입력 (searchType "5")
+- **라인 625-645**: 롯데 계근 입력 (searchType "6")
+- **라인 687-708**: 생산 계근 입력 라벨 (searchType "7")
 
 ### 기타 버튼
-- **라인 114-117**: 출하대상 삭제 버튼
-- **라인 590-595**: 생산 계산 버튼
-- **라인 602-604**: 종료 버튼
+- **라인 202-206**: 출하대상 삭제 버튼
+- **라인 712-717**: 생산 계산 버튼
+- **라인 728-730**: 종료 버튼
 
 ### 키 이벤트 및 다이얼로그
-- **라인 634-639**: onKeyDown() (BACK 버튼 처리)
-- **라인 642-662**: exitDialog() (종료 다이얼로그)
+- **라인 779-785**: onKeyDown() (BACK 버튼 처리)
+- **라인 793-812**: exitDialog() (종료 다이얼로그)
 
 ---
 
@@ -992,26 +979,20 @@ Shipments_Info            // 출하/생산 정보를 담는 데이터 클래스
 
 ## 10. 특이사항 및 주의점
 
-### 10.1 주석 처리된 코드
-**라인 99-112**: 날짜 변경 시 확인 다이얼로그 (현재 비활성화)
-```java
-/*new AlertDialog.Builder(MainActivity.this, R.style.AppCompatDialogStyle)
-        .setIcon(R.drawable.highland)
-        .setTitle(getResources().getString(R.string.app_name))
-        .setMessage("기존 출하 대상이 삭제 됩니다. 날짜를 변경 하시겠습니까?")
-        ...*/
-```
-- 원래는 날짜 변경 시 경고 메시지를 표시하려 했으나 현재는 직접 변경
+### 10.1 삭제된 코드 (2026-01-06)
 
-**라인 335-339, 361-365, 392-396**: searchType 대신 chkProdShip로 검증하는 로직 (주석 처리됨)
-```java
-/*if (chkProdShip.equals("prod")) {
-    Toast.makeText(getApplicationContext(), "출하를 위해 출하 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-    vibrator.vibrate(300);
-    break;
-}*/
-```
-- 과거 코드로 보이며, 현재는 `Common.searchType`으로 통일
+다음 코드들이 불필요 소스 정리 작업으로 삭제되었습니다:
+
+**삭제된 변수**:
+- `private String chkProdShip = "";` - 미사용 변수
+- 관련 할당문 6개소 (`chkProdShip = "ship"`, `"prod"`, `"homplus"`, `"lotte"` 등)
+
+**삭제된 주석 코드**:
+- 날짜 변경 시 확인 다이얼로그 주석 블록
+- `chkProdShip` 검증 로직 주석 블록 4개소
+- 기타 한 줄 주석들
+
+> 자세한 삭제 내역은 `클래스별_불필요소스_정리.md` 문서 참조
 
 ### 10.2 searchType 번호 순서
 searchType이 순차적이지 않습니다:
@@ -1129,16 +1110,24 @@ Toast.makeText(getApplicationContext(), getString(R.string.msg_shipment_deleted)
 
 | 메서드명 | 역할 | 라인 |
 |---------|------|------|
-| onCreate() | 액티비티 초기화 | 61-65 |
-| onCreateOptionsMenu() | 메뉴 생성 | 68-71 |
-| onOptionsItemSelected() | 메뉴 선택 처리 | 74-91 |
-| onClick() | 버튼 클릭 처리 (중앙 라우터) | 93-606 |
-| onResume() | 액티비티 재개 | 609-612 |
-| onKeyDown() | 키 이벤트 처리 | 634-639 |
-| exitDialog() | 종료 다이얼로그 표시 | 642-662 |
+| onCreate() | 액티비티 초기화 | 101-108 |
+| onCreateOptionsMenu() | 메뉴 생성 | 116-120 |
+| onOptionsItemSelected() | 메뉴 선택 처리 | 132-152 |
+| onClick() | 버튼 클릭 처리 (중앙 라우터) | 191-732 |
+| onResume() | 액티비티 재개 | 737-741 |
+| onKeyDown() | 키 이벤트 처리 | 779-785 |
+| exitDialog() | 종료 다이얼로그 표시 | 793-812 |
 
 ---
 
 **문서 작성일**: 2025-10-31
-**대상 파일**: MainActivity.java (663줄)
+**최종 수정일**: 2026-01-06
+**대상 파일**: MainActivity.java
 **작성 목적**: 코드 분석 및 유지보수 가이드
+
+### 변경 이력
+| 날짜 | 내용 |
+|-----|------|
+| 2025-10-31 | 문서 최초 작성 |
+| 2026-01-06 | `chkProdShip` 변수 삭제 반영, 주석 코드 삭제 반영 |
+| 2026-01-06 | 라인 번호 전체 업데이트 (813줄 기준) |

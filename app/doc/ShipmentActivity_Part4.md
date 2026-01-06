@@ -1,8 +1,9 @@
 # ShipmentActivity 분석 - Part 4: 서버 전송, 예외 처리 및 요약
 
 > **파일 위치**: `app/src/main/java/com/rgbsolution/highland_emart/ShipmentActivity.java`
-> **코드 라인**: 4158줄
+> **코드 라인**: 4705줄
 > **작성일**: 2025-01-27
+> **최종 수정일**: 2026-01-06
 
 ---
 
@@ -15,7 +16,7 @@
 
 ---
 
-## 1. ProgressDlgShipSelect AsyncTask (2915~3098줄)
+## 1. ProgressDlgShipSelect AsyncTask (3409~3592줄)
 
 ### 1.1 개요
 
@@ -30,7 +31,7 @@ class ProgressDlgShipSelect extends AsyncTask<Integer, String, Integer>
 - `condition`: 검색 조건 (패커상품코드 또는 BL번호)
 - `type`: true = 패커상품코드 스캔, false = BL 스캔
 
-### 1.2 onPreExecute (2928~2943줄)
+### 1.2 onPreExecute (3422~3437줄)
 
 ```java
 @Override
@@ -51,9 +52,9 @@ protected void onPreExecute() {
 }
 ```
 
-### 1.3 doInBackground (2946~2990줄)
+### 1.3 doInBackground (3440~3484줄)
 
-#### 1.3.1 출하대상 조회 (2949~2958줄)
+#### 1.3.1 출하대상 조회 (3443~3452줄)
 
 ```java
 // 계근지점 검색
@@ -72,7 +73,7 @@ for (int i = 0; i < arSM.size(); i++) {
 }
 ```
 
-#### 1.3.2 롯데 박스 순번 초기화 (2964~2981줄)
+#### 1.3.2 롯데 박스 순번 초기화 (3458~3475줄)
 
 ```java
 // 롯데의 경우만 lotte_TryCount 사용
@@ -105,9 +106,9 @@ if(Common.searchType.equals("6")) {
 - 현재 계근된 수량만큼 추가
 - 9999 초과시 1로 순환
 
-### 1.4 onPostExecute (3003~3097줄)
+### 1.4 onPostExecute (3497~3591줄)
 
-#### 1.4.1 출하대상 존재시 처리 (3009~3053줄)
+#### 1.4.1 출하대상 존재시 처리 (3503~3547줄)
 
 ```java
 if (arSM.size() > 0) {       // 목록 존재
@@ -164,7 +165,7 @@ if (arSM.size() > 0) {       // 목록 존재
 }
 ```
 
-#### 1.4.2 조회 결과 없을 시 (3054~3092줄)
+#### 1.4.2 조회 결과 없을 시 (3548~3586줄)
 
 ```java
 else {            // 결과 없음
@@ -211,7 +212,7 @@ else {            // 결과 없음
 
 ---
 
-## 2. ProgressDlgShipmentSend AsyncTask (3276~3595줄)
+## 2. ProgressDlgShipmentSend AsyncTask (3804~4123줄)
 
 ### 2.1 개요
 
@@ -221,7 +222,7 @@ else {            // 결과 없음
 class ProgressDlgShipmentSend extends AsyncTask<Void, String, String>
 ```
 
-### 2.2 onPreExecute (3284~3293줄)
+### 2.2 onPreExecute (3812~3821줄)
 
 ```java
 @Override
@@ -238,7 +239,7 @@ protected void onPreExecute() {
 
 ### 2.3 doInBackground - 처리 흐름
 
-#### 2.3.1 전송 대상 조회 (3299~3310줄)
+#### 2.3.1 전송 대상 조회 (3827~3838줄)
 
 ```java
 String qry_where = "";
@@ -255,7 +256,7 @@ list_send_info = DBHandler.selectquerySendGoodsWet(mContext, qry_where);
 publishProgress("max", Integer.toString(list_send_info.size()));
 ```
 
-#### 2.3.2 이마트/홈플러스/롯데 전송 방식 (3315~3421줄) - 개별 건
+#### 2.3.2 이마트/홈플러스/롯데 전송 방식 (3843~3949줄) - 개별 건
 
 ```java
 if(Common.searchType.equals("0") || Common.searchType.equals("2") || Common.searchType.equals("6")) {
@@ -359,7 +360,7 @@ if(Common.searchType.equals("0") || Common.searchType.equals("2") || Common.sear
 - 출하대상별 전송 개수 카운트
 - 전송 개수 = 요청 개수일 때 complete_shipment API 호출
 
-#### 2.3.3 생산/도매 전송 방식 (3422~3558줄) - 일괄 전송 (##구분)
+#### 2.3.3 생산/도매 전송 방식 (3950~4086줄) - 일괄 전송 (##구분)
 
 ```java
 else if(Common.searchType.equals("1") || Common.searchType.equals("3") || Common.searchType.equals("4") || Common.searchType.equals("5") || Common.searchType.equals("7")) {
@@ -489,7 +490,7 @@ return result;
 | **6** | 롯데 출하 | ✅ 호출 |
 | **7** | 생산 계근 | ✅ 호출 |
 
-**도매계근 complete_shipment API 미호출 이유 (3518~3521줄 주석)**:
+**도매계근 complete_shipment API 미호출 이유 (4046~4049줄 주석)**:
 ```java
 // 도매계근은 아래 URL을 호출하지 않는다.
 // GI_D_ID별 CHECK_YN으로 대상을 구분하는데
@@ -498,7 +499,7 @@ return result;
 receiveData = "s";
 ```
 
-### 2.5 onPostExecute (3573~3594줄)
+### 2.5 onPostExecute (4101~4122줄)
 
 ```java
 @Override
@@ -540,7 +541,7 @@ protected void onPostExecute(String _result) {
 
 ### 3.1 중복 바코드 체크 (2곳)
 
-#### 3.1.1 첫 번째 체크: 패커상품 스캔 직후 (651줄)
+#### 3.1.1 첫 번째 체크: 패커상품 스캔 직후 (989줄)
 
 ```java
 boolean dup = DBHandler.duplicatequeryGoodsWet_check(getApplicationContext(), msg);
@@ -551,7 +552,7 @@ boolean dup = DBHandler.duplicatequeryGoodsWet_check(getApplicationContext(), ms
 SELECT COUNT(*) FROM TB_GOODS_WET WHERE BARCODE = ?
 ```
 
-#### 3.1.2 두 번째 체크: BL 스캔 직후 (876~895줄)
+#### 3.1.2 두 번째 체크: BL 스캔 직후 (1214~1233줄)
 
 ```java
 boolean dup = DBHandler.duplicatequeryGoodsWet(getApplicationContext(),
@@ -589,7 +590,7 @@ WHERE BARCODE = ?
 
 ### 3.2 소비기한 필수 검증
 
-#### 3.2.1 킬코이 + 미트센터 (793~800줄)
+#### 3.2.1 킬코이 + 미트센터 (1131~1138줄)
 
 ```java
 if (arSM.get(current_work_position).getPACKER_CODE().equals("30228")
@@ -611,7 +612,7 @@ if (arSM.get(current_work_position).getPACKER_CODE().equals("30228")
 }
 ```
 
-#### 3.2.2 트레이더스/수입육 (839~848줄)
+#### 3.2.2 트레이더스/수입육 (1177~1186줄)
 
 ```java
 if (arSM.get(current_work_position).getCENTERNAME().equals("용인TRD")
@@ -645,7 +646,7 @@ if (arSM.get(current_work_position).getCENTERNAME().equals("용인TRD")
 
 3개 필드 중 하나라도 빈 값이면 계근 불가
 
-### 3.3 계근 완료 체크 (862~870줄)
+### 3.3 계근 완료 체크 (1200~1208줄)
 
 ```java
 if (arSM.get(current_work_position).getGI_REQ_PKG()
@@ -713,7 +714,7 @@ public void showAlertDialog(String s, int i) {
 
 ## 4. 주요 Dialog
 
-### 4.1 show_wetDetailDialog (3779~3948줄) - 계근 상세
+### 4.1 show_wetDetailDialog (4326~4493줄) - 계근 상세
 
 ```java
 private void show_wetDetailDialog(Shipments_Info si, Barcodes_Info bi, int position)
@@ -731,7 +732,7 @@ private void show_wetDetailDialog(Shipments_Info si, Barcodes_Info bi, int posit
 2. **선택 삭제 (detail_btn_delete)**: 선택된 계근 데이터 삭제
 3. **합산 (detail_btn_sum)**: 전체 리스트 중량 합산 라벨 출력
 
-#### 4.1.1 합산 라벨 출력 (3860~3936줄)
+#### 4.1.1 합산 라벨 출력 (4407~4483줄)
 
 ```java
 detail_btn_sum.setOnClickListener(new View.OnClickListener() {
@@ -809,7 +810,7 @@ detail_btn_sum.setOnClickListener(new View.OnClickListener() {
 - 페이지 하단에 합계 출력
 - 36건 초과시 여러 페이지 출력
 
-### 4.2 deleteQuestionDialog (3955~4009줄) - 삭제 확인
+### 4.2 deleteQuestionDialog (4502~4556줄) - 삭제 확인
 
 ```java
 public void deleteQuestionDialog(final Shipments_Info si, final ArrayList<Goodswets_Info> list_delete)
@@ -852,7 +853,7 @@ new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
     .show();
 ```
 
-#### 4.2.1 refresh_delete (4011~4020줄)
+#### 4.2.1 refresh_delete (4558~4567줄)
 
 ```java
 public void refresh_delete(String delete_weight) {
@@ -869,7 +870,7 @@ public void refresh_delete(String delete_weight) {
 }
 ```
 
-### 4.3 show_wetFinishDialog (4091~4118줄) - 계근 완료
+### 4.3 show_wetFinishDialog (4638~4665줄) - 계근 완료
 
 ```java
 private void show_wetFinishDialog()
@@ -906,7 +907,7 @@ new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
         }).show();
 ```
 
-### 4.4 show_sendFinishDialog (4023~4050줄) - 전송 완료
+### 4.4 show_sendFinishDialog (4570~4597줄) - 전송 완료
 
 ```java
 private void show_sendFinishDialog()
@@ -949,7 +950,7 @@ new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
 
 ## 5. UI 리스너
 
-### 5.1 inputBtnListener (290~399줄) - 입력 버튼
+### 5.1 inputBtnListener (525~663줄) - 입력 버튼
 
 ```java
 private View.OnClickListener inputBtnListener = new View.OnClickListener()
@@ -1040,7 +1041,7 @@ else if(work_flag == 2) {
 }
 ```
 
-### 5.2 sendBtnListener (409~447줄) - 전송 버튼
+### 5.2 sendBtnListener (665~717줄) - 전송 버튼
 
 ```java
 private View.OnClickListener sendBtnListener = new View.OnClickListener()
@@ -1074,7 +1075,7 @@ public void onClick(View v) {
 }
 ```
 
-### 5.3 selectBtnListener (449~469줄) - 선택 버튼
+### 5.3 selectBtnListener (719~742줄) - 선택 버튼
 
 ```java
 private View.OnClickListener selectBtnListener = new View.OnClickListener()
@@ -1108,7 +1109,7 @@ public void onClick(View v) {
 }
 ```
 
-### 5.4 workSelectedListener (1460~1502줄) - 작업 유형 Spinner
+### 5.4 workSelectedListener (1845~1887줄) - 작업 유형 Spinner
 
 ```java
 private Spinner.OnItemSelectedListener workSelectedListener = new Spinner.OnItemSelectedListener()
@@ -1163,7 +1164,7 @@ public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) 
 - 1: 수기 입력 (work_flag=0, scan_flag=false)
 - 2: 상품코드 (work_flag=2, scan_flag=true)
 
-### 5.5 emartCenterSelectedListener (1505~1532줄) - 센터명 Spinner
+### 5.5 emartCenterSelectedListener (1890~1917줄) - 센터명 Spinner
 
 ```java
 private Spinner.OnItemSelectedListener emartCenterSelectedListener = new Spinner.OnItemSelectedListener()
@@ -1191,7 +1192,7 @@ public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) 
 }
 ```
 
-### 5.6 emartPointSelectedListener (1534~1559줄) - 지점명 Spinner
+### 5.6 emartPointSelectedListener (1919~1944줄) - 지점명 Spinner
 
 ```java
 private Spinner.OnItemSelectedListener emartPointSelectedListener = new Spinner.OnItemSelectedListener()
@@ -1219,7 +1220,7 @@ public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) 
 }
 ```
 
-#### 5.6.1 calc_info (1561~1583줄)
+#### 5.6.1 calc_info (1946~1968줄)
 
 ```java
 private void calc_info(int work_position) {
@@ -1339,7 +1340,7 @@ private void calc_info(int work_position) {
 
 ### 7.1 롯데 박스 순번 관리
 
-**초기화 로직 (2964~2981줄)**:
+**초기화 로직 (3458~3475줄)**:
 
 ```java
 if(Common.searchType.equals("6")) {
@@ -1361,7 +1362,7 @@ if(Common.searchType.equals("6")) {
 }
 ```
 
-**증가 로직 (1139~1151줄)**:
+**증가 로직 (1526~1538줄)**:
 
 ```java
 if (Common.searchType.equals("6")) {
@@ -1385,7 +1386,7 @@ if (Common.searchType.equals("6")) {
 
 ### 7.2 이노이천 생산 계근 프린터 비활성화
 
-**onCreate (220~225줄)**:
+**onCreate (433~438줄)**:
 
 ```java
 if(Common.searchType.equals("1")) {
@@ -1403,7 +1404,7 @@ if(Common.searchType.equals("1")) {
 
 ### 7.3 미트센터 추가 라벨
 
-**조건 (2348~2426줄, 2428~2504줄)**:
+**조건 (2785~2863줄, 2865~2941줄)**:
 - 바코드 타입: M0
 - 지점코드: 9231 (미트센터)
 
@@ -1413,7 +1414,7 @@ if(Common.searchType.equals("1")) {
 
 ### 7.4 도매계근 complete_shipment API 미호출
 
-**이유 (3518~3521줄 주석)**:
+**이유 (4047줄 주석)**:
 ```
 도매계근은 아래 URL을 호출하지 않는다.
 GI_D_ID별 CHECK_YN으로 대상을 구분하는데
@@ -1432,7 +1433,7 @@ GI_D_ID별 CHECK_YN으로 대상을 구분하는데
 
 ### 8.1 코드 중복
 
-**전송 로직 (3315~3558줄)**:
+**전송 로직 (3843~4086줄)**:
 - 개별 건 전송 (이마트/홈플러스/롯데)
 - 일괄 전송 (생산/도매)
 
@@ -1454,7 +1455,7 @@ private static final int LOTTE_BOX_ORDER_MAX = 9999;
 
 ### 8.3 하드코딩된 조건
 
-**킬코이 + 미트센터 (793줄)**:
+**킬코이 + 미트센터 (1131줄)**:
 ```java
 if (arSM.get(current_work_position).getPACKER_CODE().equals("30228")
     && arSM.get(current_work_position).getSTORE_CODE().equals("9231"))

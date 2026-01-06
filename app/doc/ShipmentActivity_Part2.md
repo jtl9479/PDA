@@ -1,7 +1,9 @@
 # ShipmentActivity 분석 - Part 2: 바코드 스캔 처리
 
 > **파일 위치**: `app/src/main/java/com/rgbsolution/highland_emart/ShipmentActivity.java`
+> **코드 라인**: 4705줄
 > **작성일**: 2025-01-27
+> **최종 수정일**: 2026-01-06
 
 ---
 
@@ -16,7 +18,7 @@
 
 ## 1. 바코드 스캔 진입점
 
-### 1.1 setMessage (594~610줄)
+### 1.1 setMessage (892~908줄)
 
 ```java
 @Override
@@ -52,7 +54,7 @@ if (msg != null) {
 
 ---
 
-## 2. setBarcodeMsg 메서드 (621~1100줄) ⭐ 핵심
+## 2. setBarcodeMsg 메서드 (959~1485줄) ⭐ 핵심
 
 ### 2.1 메서드 개요
 
@@ -60,7 +62,7 @@ if (msg != null) {
 public void setBarcodeMsg(final String msg)
 ```
 
-**총 라인**: 479줄
+**총 라인**: 약 526줄
 **역할**: 바코드 스캔 데이터를 처리하고 중량을 추출하는 핵심 메서드
 
 **처리 흐름**:
@@ -78,14 +80,14 @@ public void setBarcodeMsg(final String msg)
 └─────────────────────────────────┘
        ↓                ↓
  [패커상품 스캔]     [BL 스캔]
-  (629~760줄)     (761~1096줄)
+  (967~1098줄)     (1099~1434줄)
 ```
 
 ---
 
-### 2.2 패커상품 스캔 처리 (629~760줄)
+### 2.2 패커상품 스캔 처리 (967~1098줄)
 
-#### 2.2.1 패커상품 코드 추출 (631~643줄)
+#### 2.2.1 패커상품 코드 추출 (969~981줄)
 
 ```java
 String find_ppcodetemp = "";
@@ -110,7 +112,7 @@ if (find_ppcode.equals("null")) {
 }
 ```
 
-#### 2.2.2 최초 스캔 처리 (650~667줄)
+#### 2.2.2 최초 스캔 처리 (988~1005줄)
 
 ```java
 if (work_ppcode.equals("")) {
@@ -129,7 +131,7 @@ if (work_ppcode.equals("")) {
 }
 ```
 
-#### 2.2.3 동일 상품 재스캔 처리 (671~723줄)
+#### 2.2.3 동일 상품 재스캔 처리 (1009~1061줄)
 
 ```java
 else if (!work_ppcode.equals("") && work_ppcode.equals(find_ppcode)) {
@@ -169,7 +171,7 @@ else if (!work_ppcode.equals("") && work_ppcode.equals(find_ppcode)) {
 }
 ```
 
-#### 2.2.4 다른 상품 스캔 처리 (724~756줄)
+#### 2.2.4 다른 상품 스캔 처리 (1062~1094줄)
 
 ```java
 else if (!work_ppcode.equals(find_ppcode)) {
@@ -220,9 +222,9 @@ else if (!work_ppcode.equals(find_ppcode)) {
 
 ---
 
-### 2.3 BL 스캔 및 계근 처리 (761~1096줄)
+### 2.3 BL 스캔 및 계근 처리 (1099~1434줄)
 
-#### 2.3.1 BL 번호로 작업 position 찾기 (768~787줄)
+#### 2.3.1 BL 번호로 작업 position 찾기 (1106~1125줄)
 
 ```java
 work_item_fullbarcode = msg;
@@ -246,7 +248,7 @@ try {
 
 #### 2.3.2 소비기한 정보 검증
 
-**킬코이 + 미트센터 (793~800줄)**:
+**킬코이 + 미트센터 (1131~1138줄)**:
 
 ```java
 if (arSM.get(current_work_position).getPACKER_CODE().equals("30228")
@@ -268,7 +270,7 @@ if (arSM.get(current_work_position).getPACKER_CODE().equals("30228")
 }
 ```
 
-**트레이더스/수입육 (839~848줄)**:
+**트레이더스/수입육 (1177~1186줄)**:
 
 ```java
 if (arSM.get(current_work_position).getCENTERNAME().equals("용인TRD")
@@ -295,7 +297,7 @@ if (arSM.get(current_work_position).getCENTERNAME().equals("용인TRD")
 }
 ```
 
-#### 2.3.3 current_work_position 확인 (851~858줄)
+#### 2.3.3 current_work_position 확인 (1189~1196줄)
 
 ```java
 if (current_work_position == -1) {
@@ -311,7 +313,7 @@ if (current_work_position == -1) {
 sList.setSelection(current_work_position);  // 리스트 스크롤
 ```
 
-#### 2.3.4 계근 완료 체크 (862~870줄)
+#### 2.3.4 계근 완료 체크 (1200~1208줄)
 
 ```java
 if (arSM.get(current_work_position).getGI_REQ_PKG()
@@ -327,7 +329,7 @@ if (arSM.get(current_work_position).getGI_REQ_PKG()
 }
 ```
 
-#### 2.3.5 중복 바코드 체크 (876~895줄)
+#### 2.3.5 중복 바코드 체크 (1214~1233줄)
 
 ```java
 boolean dup = DBHandler.duplicatequeryGoodsWet(getApplicationContext(),
@@ -353,11 +355,11 @@ if (dup) {
 
 ---
 
-### 2.4 중량 추출 로직 (917~1087줄)
+### 2.4 중량 추출 로직 (1255~1425줄)
 
 #### 2.4.1 ITEM_TYPE별 처리
 
-**ITEM_TYPE "W" (917~969줄)**: 이마트 바코드 계근
+**ITEM_TYPE "W" (1255~1307줄)**: 이마트 바코드 계근
 
 ```java
 if (arSM.get(current_work_position).getITEM_TYPE().equals("W")
@@ -420,7 +422,7 @@ if (arSM.get(current_work_position).getITEM_TYPE().equals("W")
 }
 ```
 
-**ITEM_TYPE "S" (970~1023줄)**: 소수점 둘째자리 처리
+**ITEM_TYPE "S" (1308~1361줄)**: 소수점 둘째자리 처리
 
 ```java
 else if (arSM.get(current_work_position).getITEM_TYPE().equals("S")) {
@@ -433,7 +435,7 @@ else if (arSM.get(current_work_position).getITEM_TYPE().equals("S")) {
 }
 ```
 
-**ITEM_TYPE "J" (1024~1032줄)**: 지정 중량
+**ITEM_TYPE "J" (1362~1370줄)**: 지정 중량
 
 ```java
 else if (arSM.get(current_work_position).getITEM_TYPE().equals("J")) {
@@ -446,7 +448,7 @@ else if (arSM.get(current_work_position).getITEM_TYPE().equals("J")) {
 }
 ```
 
-**ITEM_TYPE "B" (1035~1086줄)**: 홈플러스 비정량
+**ITEM_TYPE "B" (1373~1424줄)**: 홈플러스 비정량
 
 ```java
 // Homeplus 비정량 "B"
@@ -460,7 +462,7 @@ if (arSM.get(current_work_position).getITEM_TYPE().equals("B")) {
 }
 ```
 
-#### 2.4.2 wet_data_insert 호출 (1088줄)
+#### 2.4.2 wet_data_insert 호출 (1426줄)
 
 ```java
 wet_data_insert(item_weight_str, item_weight_double, item_making_date, item_box_serial);
@@ -470,7 +472,7 @@ wet_data_insert(item_weight_str, item_weight_double, item_making_date, item_box_
 
 ## 3. 보조 메서드
 
-### 3.1 find_PackerProduct (1278~1295줄)
+### 3.1 find_PackerProduct (1663~1680줄)
 
 ```java
 public String find_PackerProduct(String barcode)
@@ -489,7 +491,7 @@ if (!edit_product_name.getText().equals("")) {
 }
 ```
 
-### 3.2 find_work_info (1327~1410줄)
+### 3.2 find_work_info (1712~1795줄)
 
 ```java
 private String find_work_info(String req, boolean type)
@@ -561,11 +563,11 @@ return pp_code;
 
 | ITEM_TYPE | 설명 | 중량 처리 | 소수점 | LB→KG 변환 | 제조일 | 박스시리얼 | 코드 위치 |
 |-----------|------|----------|--------|-----------|--------|----------|---------|
-| **W** | 이마트 바코드 계근 | 바코드 추출 | **1자리** | ✅ | ✅ | ✅ | 917~969 |
-| **HW** | 이노베이션 비정량 | 바코드 추출 | **1자리** | ✅ | ✅ | ✅ | 917 (W와 동일) |
-| **S** | 바코드 계근 | 바코드 추출 | **2자리** | ✅ | ✅ | ✅ | 970~1023 |
-| **J** | 지정 중량 | **PACKWEIGHT** | - | ❌ | ❌ | ❌ | 1024~1032 |
-| **B** | 홈플러스 비정량 | 바코드 추출 | **2자리** | ✅ | ✅ | ✅ | 1035~1086 |
+| **W** | 이마트 바코드 계근 | 바코드 추출 | **1자리** | ✅ | ✅ | ✅ | 1255~1307 |
+| **HW** | 이노베이션 비정량 | 바코드 추출 | **1자리** | ✅ | ✅ | ✅ | 1255 (W와 동일) |
+| **S** | 바코드 계근 | 바코드 추출 | **2자리** | ✅ | ✅ | ✅ | 1308~1361 |
+| **J** | 지정 중량 | **PACKWEIGHT** | - | ❌ | ❌ | ❌ | 1362~1370 |
+| **B** | 홈플러스 비정량 | 바코드 추출 | **2자리** | ✅ | ✅ | ✅ | 1373~1424 |
 
 ---
 
@@ -632,7 +634,7 @@ return pp_code;
 
 ## 6. 중복 바코드 체크
 
-### 6.1 첫 번째 체크: 패커상품 스캔 직후 (651~660줄)
+### 6.1 첫 번째 체크: 패커상품 스캔 직후 (989~998줄)
 
 ```java
 boolean dup = DBHandler.duplicatequeryGoodsWet_check(getApplicationContext(), msg);
@@ -643,7 +645,7 @@ boolean dup = DBHandler.duplicatequeryGoodsWet_check(getApplicationContext(), ms
 SELECT COUNT(*) FROM TB_GOODS_WET WHERE BARCODE = ?
 ```
 
-### 6.2 두 번째 체크: BL 스캔 직후 (876~895줄)
+### 6.2 두 번째 체크: BL 스캔 직후 (1214~1233줄)
 
 ```java
 boolean dup = DBHandler.duplicatequeryGoodsWet(getApplicationContext(),

@@ -8,7 +8,7 @@
 
 ---
 
-## 1. wet_data_insert() - 계근 데이터 저장 및 출력 (1102~1252줄)
+## 1. wet_data_insert() - 계근 데이터 저장 및 출력 (1487~1660줄)
 
 ### 1.1 메서드 개요
 계근 중량을 입력받아 DB에 저장하고 프린터 출력을 수행하는 핵심 메서드입니다.
@@ -23,7 +23,7 @@ public void wet_data_insert(String weight_str, double weight_double, String maki
 - `making_date`: 제조일자
 - `box_serial`: 박스 일련번호
 
-### 1.2 계근 완료 체크 (1104~1113줄)
+### 1.2 계근 완료 체크 (1489~1498줄)
 
 ```java
 if (arSM.get(current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.get(current_work_position).getPACKING_QTY()))) {
@@ -42,7 +42,7 @@ if (arSM.get(current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.g
 - 마지막 작업지점이면 완료 다이얼로그 표시
 - 그 외는 다음 지점 작업 안내
 
-### 1.3 Goodswets_Info 객체 생성 (1115~1131줄)
+### 1.3 Goodswets_Info 객체 생성 (1500~1516줄)
 
 ```java
 Goodswets_Info gi = new Goodswets_Info();
@@ -64,7 +64,7 @@ gi.setSAVE_TYPE("F");
 gi.setDUPLICATE("F");
 ```
 
-### 1.4 출하유형별 DB 저장 (1133~1151줄)
+### 1.4 출하유형별 DB 저장 (1518~1536줄)
 
 ```java
 String lotteBoxOrder = ""; // 롯데 전용 박스 순번을 담을 변수
@@ -93,7 +93,7 @@ if(Common.searchType.equals("2")) { //홈플러스
 - **롯데(6)**: lotte_TryCount 사용하여 4자리 박스 순번 관리
 - **이마트(0)**: 일반 저장
 
-### 1.5 중량 변환 처리 (1153~1167줄)
+### 1.5 중량 변환 처리 (1538~1552줄)
 
 ```java
 String temp_weight = "";
@@ -113,7 +113,7 @@ weight_double = Double.parseDouble(temp_weight);
 - **이마트**: 소수점 첫째자리에서 내림 (floor)
 - **홈플러스/생산**: 원본 값 그대로 사용
 
-### 1.6 출하대상 누적 업데이트 (1169~1184줄)
+### 1.6 출하대상 누적 업데이트 (1554~1569줄)
 
 ```java
 arSM.get(current_work_position).setPACKING_QTY(arSM.get(current_work_position).getPACKING_QTY() + 1);           // 계근수량
@@ -134,7 +134,7 @@ if(Common.searchType.equals("0")) {
 - **이마트**: 소수점 둘째자리에서 반올림
 - **생산**: 소수점 넷째자리에서 반올림
 
-### 1.7 센터 누적 중량 업데이트 (1186~1205줄)
+### 1.7 센터 누적 중량 업데이트 (1571~1590줄)
 
 ```java
 centerWorkCount++;
@@ -162,7 +162,7 @@ edit_wet_count.setText(arSM.get(current_work_position).getGI_REQ_PKG() + " / " +
 edit_wet_weight.setText(arSM.get(current_work_position).getGI_REQ_QTY() + " / " + arSM.get(current_work_position).getGI_QTY());
 ```
 
-### 1.8 프린터 출력 호출 (1223~1240줄)
+### 1.8 프린터 출력 호출 (1608~1625줄)
 
 ```java
 if (Common.print_bool) {
@@ -191,7 +191,7 @@ if (Common.print_bool) {
 - **롯데(6)**: setPrintingLotte()
 - **생산(7)**: setPrinting_prod()
 
-### 1.9 계근 완료 체크 (1244~1251줄)
+### 1.9 계근 완료 체크 (1629~1636줄)
 
 ```java
 if (Integer.parseInt(arSM.get(current_work_position).getGI_REQ_PKG()) <= arSM.get(current_work_position).getPACKING_QTY()) {
@@ -206,7 +206,7 @@ if (Integer.parseInt(arSM.get(current_work_position).getGI_REQ_PKG()) <= arSM.ge
 
 ---
 
-## 2. setPrinting() - 이마트 라벨 출력 (1682~2513줄)
+## 2. setPrinting() - 이마트 라벨 출력 (2114~2960줄)
 
 ### 2.1 메서드 시그니처
 
@@ -220,9 +220,9 @@ public String setPrinting(double weight_double, Shipments_Info si, boolean repri
 - `reprint`: 재출력 여부
 - `making_date`: 제조일자
 
-### 2.2 소비기한 계산 로직 (1697~1790줄)
+### 2.2 소비기한 계산 로직 (2129~2222줄)
 
-#### 2.2.1 미트센터 특수 처리 (1699~1742줄)
+#### 2.2.1 미트센터 특수 처리 (2131~2174줄)
 
 ```java
 if (si.getPACKER_CODE().equals("30228") && si.getSTORE_CODE().equals("9231")) { //킬코이 , 미트센터 납품분
@@ -266,7 +266,7 @@ if (si.getPACKER_CODE().equals("30228") && si.getSTORE_CODE().equals("9231")) { 
 3. 제조일자에 SHELF_LIFE 추가하여 소비기한 계산
 4. YYYY-MM-DD 형식으로 변환
 
-#### 2.2.2 트레이더스 센터 처리 (1744~1789줄)
+#### 2.2.2 트레이더스 센터 처리 (2176~2221줄)
 
 ```java
 if(Common.searchType.equals("0")){ //이마트 수입육 계근일때만
@@ -302,7 +302,7 @@ if(Common.searchType.equals("0")){ //이마트 수입육 계근일때만
 }
 ```
 
-### 2.3 업체코드 설정 (1792~1804줄)
+### 2.3 업체코드 설정 (2224~2236줄)
 
 ```java
 String pCompCode = "610933";
@@ -312,7 +312,7 @@ String pCompName = "(주)하이랜드이노베이션";
 **참고:**
 - 모든 건이 하이랜드이노베이션으로 출고됨
 
-### 2.4 중량 변환 (1816~1863줄)
+### 2.4 중량 변환 (2248~2295줄)
 
 ```java
 // 소수점 한자리 이후 절사
@@ -350,9 +350,9 @@ print_weight_str = temp;
 3. J 타입: 고정 중량(PACKWEIGHT) 사용
 4. 6자리 형식으로 변환 (앞자리 0 채움)
 
-### 2.5 바코드 형식별 바코드 생성 (1865~2052줄)
+### 2.5 바코드 형식별 바코드 생성 (2297~2484줄)
 
-#### 2.5.1 M0 형식 (1866~1882줄)
+#### 2.5.1 M0 형식 (2298~2314줄)
 
 ```java
 case "M0":
@@ -369,7 +369,7 @@ case "M0":
 
 **예시:** `123456` + `000198` + `610933` + `123456789012`
 
-#### 2.5.2 M1 형식 (1883~1898줄)
+#### 2.5.2 M1 형식 (2315~2330줄)
 
 ```java
 case "M1":
@@ -384,7 +384,7 @@ case "M1":
 
 **형식:** `상품코드6자리` + `중량6자리` + `회사코드`
 
-#### 2.5.3 M3 형식 (1899~1915줄)
+#### 2.5.3 M3 형식 (2331~2347줄)
 
 ```java
 case "M3":
@@ -399,7 +399,7 @@ case "M3":
 
 **특징:** PC매입용 형식
 
-#### 2.5.4 M4 형식 (1916~1931줄)
+#### 2.5.4 M4 형식 (2348~2363줄)
 
 ```java
 case "M4":
@@ -412,7 +412,7 @@ case "M4":
     break;
 ```
 
-#### 2.5.5 E0 형식 (1932~1948줄)
+#### 2.5.5 E0 형식 (2364~2380줄)
 
 ```java
 case "E0":
@@ -426,7 +426,7 @@ case "E0":
     break;
 ```
 
-#### 2.5.6 E1 형식 (1949~1964줄)
+#### 2.5.6 E1 형식 (2381~2396줄)
 
 ```java
 case "E1":
@@ -442,7 +442,7 @@ case "E1":
 
 **특징:** 수입식별번호 대신 "111111111111" 고정값 사용
 
-#### 2.5.7 E2 형식 (1965~1981줄)
+#### 2.5.7 E2 형식 (2397~2413줄)
 
 ```java
 case "E2":
@@ -458,7 +458,7 @@ case "E2":
 
 **특징:** 중량 정보가 바코드에 포함되지 않음
 
-#### 2.5.8 E3 형식 (1982~1994줄)
+#### 2.5.8 E3 형식 (2414~2426줄)
 
 ```java
 case "E3":
@@ -474,7 +474,7 @@ case "E3":
 
 **특징:** 상품코드만 사용
 
-#### 2.5.9 M9 형식 (2012~2033줄)
+#### 2.5.9 M9 형식 (2444~2465줄)
 
 ```java
 case "M9":
@@ -497,7 +497,7 @@ case "M9":
 - 두 번째 바코드에 USE_CODE 포함
 - 용도명 정보 추가
 
-#### 2.5.10 M8 형식 (2035~2051줄)
+#### 2.5.10 M8 형식 (2467~2483줄)
 
 ```java
 case "M8":
@@ -510,9 +510,9 @@ case "M8":
     break;
 ```
 
-### 2.6 Woosim 프린터 명령 (2078~2346줄)
+### 2.6 Woosim 프린터 명령 (2510~2778줄)
 
-#### 2.6.1 프린터 초기화 및 설정 (2080~2084줄)
+#### 2.6.1 프린터 초기화 및 설정 (2512~2516줄)
 
 ```java
 ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -529,7 +529,7 @@ try {
 - `selectTTF("HYWULM.TTF")`: 한글 폰트 선택
 - `setTextStyle(bold, italic, underline, width, height)`: 텍스트 스타일
 
-#### 2.6.2 센터명 출력 (2086~2096줄)
+#### 2.6.2 센터명 출력 (2518~2528줄)
 
 ```java
 if (7 < si.CENTERNAME.length()) {
@@ -545,7 +545,7 @@ if (7 < si.CENTERNAME.length()) {
 - 센터명 길이가 7자 초과: 35pt 크기
 - 7자 이하: 40pt 크기
 
-#### 2.6.3 지점명/업체명 출력 (2098~2134줄)
+#### 2.6.3 지점명/업체명 출력 (2530~2566줄)
 
 ```java
 if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
@@ -579,7 +579,7 @@ if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
 }
 ```
 
-#### 2.6.4 상품명 출력 (2142~2156줄)
+#### 2.6.4 상품명 출력 (2574~2588줄)
 
 ```java
 if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
@@ -597,7 +597,7 @@ if (si.EMARTITEM.length() > 14) {
 }
 ```
 
-#### 2.6.5 지점코드 바코드 출력 (2168~2184줄)
+#### 2.6.5 지점코드 바코드 출력 (2600~2616줄)
 
 ```java
 byte[] STORECODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, sBarcode.getBytes());
@@ -620,7 +620,7 @@ if (!si.getBARCODE_TYPE().equals("M9")){
 - HRI 출력: false (바코드 하단 숫자 출력 안함)
 - 데이터: 바이트 배열
 
-#### 2.6.6 메인 바코드 출력 (2186~2242줄)
+#### 2.6.6 메인 바코드 출력 (2618~2674줄)
 
 ```java
 byte[] CODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, pBarcode.getBytes());
@@ -671,7 +671,7 @@ if (si.getBARCODE_TYPE().equals("M0") || si.getBARCODE_TYPE().equals("E0") ||
 }
 ```
 
-#### 2.6.7 M9 하단 바코드 및 정보 출력 (2252~2267줄)
+#### 2.6.7 M9 하단 바코드 및 정보 출력 (2684~2699줄)
 
 ```java
 if(si.getBARCODE_TYPE().equals("M9")){
@@ -691,7 +691,7 @@ if(si.getBARCODE_TYPE().equals("M9")){
 }
 ```
 
-#### 2.6.8 중량 및 업체 정보 출력 (2277~2322줄)
+#### 2.6.8 중량 및 업체 정보 출력 (2709~2754줄)
 
 ```java
 if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
@@ -740,7 +740,7 @@ if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
 }
 ```
 
-#### 2.6.9 보관구역 표시 (2324~2333줄)
+#### 2.6.9 보관구역 표시 (2756~2765줄)
 
 ```java
 whArea = si.getWH_AREA();
@@ -751,7 +751,7 @@ if(whArea != null || !whArea.equals("")){
 }
 ```
 
-#### 2.6.10 출력 완료 및 전송 (2335~2346줄)
+#### 2.6.10 출력 완료 및 전송 (2767~2778줄)
 
 ```java
 if(si.getBARCODE_TYPE().equals("M9")) {
@@ -774,9 +774,9 @@ if( !si.getBARCODE_TYPE().equals("P0") ) {
 - `PM_setStdMode()`: 표준 모드로 전환
 - `feedToMark()`: 라벨 자르기 위치까지 용지 이송
 
-### 2.7 미트센터 추가 라벨 출력 (2348~2504줄)
+### 2.7 미트센터 추가 라벨 출력 (2780~2936줄)
 
-#### 2.7.1 ERP-미트센터출하코드 (2348~2426줄)
+#### 2.7.1 ERP-미트센터출하코드 (2780~2858줄)
 
 ```java
 if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals("9231") &&
@@ -834,7 +834,7 @@ if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals("9231") &&
 
 **바코드 형식:** `물류코드6자리` + `중량6자리` + `미트센터코드(059015)` + `수입식별번호` + `공장코드`
 
-#### 2.7.2 미트센터출하코드 (2428~2504줄)
+#### 2.7.2 미트센터출하코드 (2860~2936줄)
 
 ```java
 if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals("9231") &&
@@ -862,7 +862,7 @@ if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals("9231") &&
 
 ---
 
-## 3. setHomeplusPrinting() - 홈플러스 라벨 출력 (2515~2637줄)
+## 3. setHomeplusPrinting() - 홈플러스 라벨 출력 (2966~3088줄)
 
 ### 3.1 메서드 시그니처
 
@@ -870,7 +870,7 @@ if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals("9231") &&
 public String setHomeplusPrinting(double weight_double, Shipments_Info si, boolean reprint)
 ```
 
-### 3.2 중량 변환 (2528~2549줄)
+### 3.2 중량 변환 (2979~3000줄)
 
 ```java
 String print_weight_str = "";
@@ -900,7 +900,7 @@ pointName = si.CLIENTNAME.toString();
 - 소수점 둘째자리까지 유지 (이마트와 다름)
 - 지점코드: EMARTLOGIS_CODE 사용
 
-### 3.3 프린터 출력 (2556~2627줄)
+### 3.3 프린터 출력 (3007~3078줄)
 
 ```java
 ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -975,7 +975,7 @@ try {
 
 ---
 
-## 4. setPrintingLotte() - 롯데 라벨 출력 (2640~2902줄)
+## 4. setPrintingLotte() - 롯데 라벨 출력 (3113~3375줄)
 
 ### 4.1 메서드 시그니처
 
@@ -986,7 +986,7 @@ public String setPrintingLotte(double weight_double, Shipments_Info si, boolean 
 **매개변수:**
 - `box_order`: 롯데 전용 박스 순번 (4자리)
 
-### 4.2 중량 4자리 변환 로직 (2656~2729줄)
+### 4.2 중량 4자리 변환 로직 (3129~3202줄)
 
 ```java
 String[] weight_sp = weight_str.split("\\.");
@@ -1041,7 +1041,7 @@ print_weight_str = temp;
 | 17 kg | 17 | 2 | 앞에 00, 뒤에 00 추가 | 001700 |
 | 1.7 kg | 17 | 2 | 앞에 000, 뒤에 0 추가 | 000170 |
 
-### 4.3 L0 바코드 형식 (2732~2767줄)
+### 4.3 L0 바코드 형식 (3205~3240줄)
 
 ```java
 switch (si.getBARCODE_TYPE()) {
@@ -1085,7 +1085,7 @@ switch (si.getBARCODE_TYPE()) {
 바코드: 123456 211225 1736 789012 0001
 ```
 
-### 4.4 프린터 출력 (2784~2892줄)
+### 4.4 프린터 출력 (3257~3365줄)
 
 ```java
 ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -1175,7 +1175,7 @@ try {
 
 ---
 
-## 5. setPrinting_prod() - 생산 라벨 출력 (1585~1680줄)
+## 5. setPrinting_prod() - 생산 라벨 출력 (1982~2077줄)
 
 ### 5.1 메서드 시그니처
 
@@ -1183,7 +1183,7 @@ try {
 public String setPrinting_prod(double weight_double, Shipments_Info si, boolean reprint)
 ```
 
-### 5.2 중량 변환 (1594~1613줄)
+### 5.2 중량 변환 (1991~2010줄)
 
 ```java
 String weight_str = String.valueOf(weight_double);
@@ -1208,7 +1208,7 @@ print_weight_str = temp;
 - 소수점 둘째자리까지 강제 표시 (DecimalFormat)
 - 6자리 형식으로 변환
 
-### 5.3 바코드 생성 (1615~1623줄)
+### 5.3 바코드 생성 (2012~2020줄)
 
 ```java
 // 바코드 형식 : 상품코드 + 중량 6자리 + 00 + 연월일시분초
@@ -1236,7 +1236,7 @@ pBarcodeStr = si.getEMARTITEM_CODE() + print_weight_str + "00" + now;
 바코드: 1234567890123 001980 00 21122515304512
 ```
 
-### 5.4 프린터 출력 (1626~1670줄)
+### 5.4 프린터 출력 (2023~2067줄)
 
 ```java
 ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -1537,4 +1537,8 @@ setPrintingLotte()
 
 ---
 
-*이 문서는 ShipmentActivity.java의 1102~2902줄 (계근 데이터 처리 및 프린터 출력 부분)을 분석한 것입니다.*
+*이 문서는 ShipmentActivity.java의 1487~3375줄 (계근 데이터 처리 및 프린터 출력 부분)을 분석한 것입니다.*
+
+---
+
+**최종 수정일**: 2026-01-06
