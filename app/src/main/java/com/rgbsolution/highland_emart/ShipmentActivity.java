@@ -155,7 +155,7 @@ public class ShipmentActivity extends ScannerActivity {
     private final String TAG = "ShipmentActivity";
 
     // searchType 상수 (Common.searchType과 비교용)
-    private static final String SEARCH_TYPE_EMART = "0";          // 이마트 출하
+    private static final String SEARCH_TYPE_EMART = "0";             // 이마트 출하
     private static final String SEARCH_TYPE_PRODUCTION = "1";        // 생산 계근 (이노이천)
     private static final String SEARCH_TYPE_HOMEPLUS = "2";          // 홈플러스 출하
     private static final String SEARCH_TYPE_WHOLESALE = "3";         // 도매 출하
@@ -163,6 +163,19 @@ public class ShipmentActivity extends ScannerActivity {
     private static final String SEARCH_TYPE_HOMEPLUS_NONFIXED = "5"; // 홈플러스 비정량
     private static final String SEARCH_TYPE_LOTTE = "6";             // 롯데 출하
     private static final String SEARCH_TYPE_PRODUCTION_LABEL = "7";  // 생산 라벨
+
+    // 업체 정보 상수
+    private static final String COMPANY_CODE = "610933";                    // 회사 코드
+    private static final String COMPANY_NAME = "(주)하이랜드이노베이션";    // 회사명
+
+    // 미트센터 관련 상수
+    private static final String MEAT_CENTER_CODE = "059015";         // 미트센터 업체코드
+    private static final String MEAT_CENTER_STORE_CODE = "9231";     // 미트센터 지점코드
+    private static final String KILKOY_PACKER_CODE = "30228";        // 킬코이 패커코드
+    private static final String LOGIS_CODE_DEFAULT = "0000000";      // 로지스코드 기본값
+
+    // 롯데 박스 순번 관련 상수
+    private static final int LOTTE_BOX_ORDER_MAX = 9999;             // 롯데 박스 순번 최대값
 
     /** Handler 메시지 타입 - 리스트 행 체크 완료 */
     private final int MESSAGE_ROWCHECK = 1000;
@@ -580,7 +593,7 @@ public class ShipmentActivity extends ScannerActivity {
                     Log.i(TAG, "=====================패커코드 체크==================" + arSM.get(current_work_position).getPACKER_CODE());
                     Log.i(TAG, "=====================스토어코드 체크==================" + arSM.get(current_work_position).getSTORE_CODE());
 
-                    if (arSM.get(current_work_position).getPACKER_CODE().equals("30228") && arSM.get(current_work_position).getSTORE_CODE().equals("9231")) {
+                    if (arSM.get(current_work_position).getPACKER_CODE().equals(KILKOY_PACKER_CODE) && arSM.get(current_work_position).getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE)) {
 
                           String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
                           String makingTo = work_item_bi_info.getMAKINGDATE_TO();
@@ -1066,7 +1079,7 @@ public class ShipmentActivity extends ScannerActivity {
 
                         Log.e(TAG, "========================TEST TEST======================" + arSM.get(current_work_position).getCENTERNAME()); //센터 선택하고 스캔할떄 여기 탐
 
-                        if (arSM.get(current_work_position).getPACKER_CODE().equals("30228") && arSM.get(current_work_position).getSTORE_CODE().equals("9231")) { //킬코이제품이면서 이마트미트센터나갈때, 미트센터는 지점이 없기 때문에 센터코드와 스토어코드가 같다. 현재 뷰에 센터코드가 없어서 스토어코드로 처리
+                        if (arSM.get(current_work_position).getPACKER_CODE().equals(KILKOY_PACKER_CODE) && arSM.get(current_work_position).getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE)) { //킬코이제품이면서 이마트미트센터나갈때, 미트센터는 지점이 없기 때문에 센터코드와 스토어코드가 같다. 현재 뷰에 센터코드가 없어서 스토어코드로 처리
                             if (work_item_bi_info.getSHELF_LIFE().equals("") || work_item_bi_info.getMAKINGDATE_FROM().equals("") || work_item_bi_info.getMAKINGDATE_TO().equals("")) {
                                 Toast.makeText(getApplicationContext(), "미트센터 납품 - KILKOY 상품의 경우 소비기한정보가 필수로 입력되어야 합니다.\n 현 상품의 계근을 진행할 수 없습니다. 관리자에게 문의하세요.", Toast.LENGTH_LONG).show();
                                 vibrator.vibrate(1000);
@@ -1418,7 +1431,7 @@ public class ShipmentActivity extends ScannerActivity {
             DBHandler.insertqueryGoodsWetLotte(this, gi, lotte_TryCount);
             // 3. DB 저장이 끝난 직후, 다음 계근을 위해 카운터 즉시 증가
             lotte_TryCount++;
-            if (lotte_TryCount > 9999) {
+            if (lotte_TryCount > LOTTE_BOX_ORDER_MAX) {
                 lotte_TryCount = 1;
             }
         } else { //
@@ -1985,7 +1998,7 @@ public class ShipmentActivity extends ScannerActivity {
 
         String expiryDayConvert = "";
 
-        if (si.getPACKER_CODE().equals("30228") && si.getSTORE_CODE().equals("9231")) { //킬코이 , 미트센터 납품분으로 makingdate 이용해 소비기한 변조해 출력
+        if (si.getPACKER_CODE().equals(KILKOY_PACKER_CODE) && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE)) { //킬코이 , 미트센터 납품분으로 makingdate 이용해 소비기한 변조해 출력
 
             String rawExp = "20"+making_date;
             Log.e(TAG, "rawExp chk : " + rawExp);
@@ -2066,8 +2079,8 @@ public class ShipmentActivity extends ScannerActivity {
         String pCompName = "";
 
         // 모든 건 이노베이션으로 출고
-        pCompCode = "610933";
-        pCompName = "(주)하이랜드이노베이션";
+        pCompCode = COMPANY_CODE;
+        pCompName = COMPANY_NAME;
 
         String sBarcode = "";
         String sBarcodeStr = "";
@@ -2356,7 +2369,7 @@ public class ShipmentActivity extends ScannerActivity {
             if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
 
             } else if(si.getBARCODE_TYPE().equals("M9")){
-                String vendorName = "[(주)하이랜드이노베이션]";
+                String vendorName = "[" + COMPANY_NAME + "]";
                 byteStream.write(WoosimCmd.PM_setPosition(330, 13));
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, vendorName));       // 업체명 출력
 
@@ -2590,14 +2603,14 @@ public class ShipmentActivity extends ScannerActivity {
             }
 
             // // todo 이마트 미트센터 +공장코드
-            if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals("9231") && si.getEMARTLOGIS_CODE().equals("0000000") && !si.getEMART_PLANT_CODE().equals("")) {
+            if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && !si.getEMART_PLANT_CODE().equals("")) {
                 byteStream.reset(); // clear
 
                 System.out.println(">>>>>>>>>>>>>>> 이마트 미트센터 +공장코드 >>>>>>>>>>>>>>>");
 
                 try {
                     String meatCenterTitle = "ERP-미트센터출하코드";
-                    String meatCenterCode = "059015";
+                    String meatCenterCode = MEAT_CENTER_CODE;
 
                     String meatCenterBarcodeStr = "";
 
@@ -2670,12 +2683,12 @@ public class ShipmentActivity extends ScannerActivity {
             }
 
             // todo 이마트 미트센터
-            if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals("9231") && !si.getEMARTLOGIS_CODE().equals("0000000") && si.getEMART_PLANT_CODE().equals("")) {
+            if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && !si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && si.getEMART_PLANT_CODE().equals("")) {
                 byteStream.reset(); // clear
 
                 try {
                     String meatCenterTitle = "미트센터출하코드";
-                    String meatCenterCode = "059015";
+                    String meatCenterCode = MEAT_CENTER_CODE;
                     String meatCenterBarcodeStr = "";
 
                     byteStream.write(WoosimCmd.initPrinter());
@@ -2785,7 +2798,7 @@ public class ShipmentActivity extends ScannerActivity {
         String pointCode = "";                // 지점코드
         String storeCode = "";                // 점포코드(홈플러스 비정량)
         String pointName = "";                // 지점명
-        String pCompName = "(주)하이랜드이노베이션";
+        String pCompName = COMPANY_NAME;
 
         //소수점 한자리 이후 절사
         String print_weight_str = "";
@@ -2913,7 +2926,7 @@ public class ShipmentActivity extends ScannerActivity {
         }
 
         String pointName = "";                // 이마트 지점명
-        String pCompName = "(주)하이랜드이노베이션";
+        String pCompName = COMPANY_NAME;
         String pBarcode = "";
         String pBarcodeStr = "";
         String pBarcode2 = "";
@@ -3252,15 +3265,15 @@ public class ShipmentActivity extends ScannerActivity {
 
                     Shipments_Info si = arSM.get(0);
                     lotte_TryCount = Integer.parseInt(si.LAST_BOX_ORDER) + 1;
-                    if (lotte_TryCount > 9999) {
+                    if (lotte_TryCount > LOTTE_BOX_ORDER_MAX) {
                         lotte_TryCount = 1;
                     }
                     Log.e(TAG, "***************************LAST_BOX_ORDER : " +si.getLAST_BOX_ORDER());
                     for (int i = 0; i < arSM.size(); i++) {
                         lotte_TryCount += arSM.get(i).getPACKING_QTY();
                     }
-                    if (lotte_TryCount > 9999) {
-                        lotte_TryCount = lotte_TryCount % 9999; //찍힌 수량까지 더했을 때 9999 넘는 경우 1번대로 다시 회귀한 넘버링 적용 (9999로 나눈 나머지)
+                    if (lotte_TryCount > LOTTE_BOX_ORDER_MAX) {
+                        lotte_TryCount = lotte_TryCount % LOTTE_BOX_ORDER_MAX; //찍힌 수량까지 더했을 때 9999 넘는 경우 1번대로 다시 회귀한 넘버링 적용 (9999로 나눈 나머지)
                     }
                     Log.d(TAG, "======================== lotte_TryCount ========================="+ lotte_TryCount);
                 }
