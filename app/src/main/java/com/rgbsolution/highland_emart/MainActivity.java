@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity";
 
     // searchType 상수
-    private static final String SEARCH_TYPE_SHIPMENT = "0";          // 출하대상
+    private static final String SEARCH_TYPE_EMART = "0";          // 출하대상
     private static final String SEARCH_TYPE_PRODUCTION = "1";        // 생산대상
     private static final String SEARCH_TYPE_HOMEPLUS = "2";          // 홈플러스 하이퍼
     private static final String SEARCH_TYPE_WHOLESALE = "3";         // 도매업체
@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
 
             // ==================== 이마트 출하대상받기 (searchType: 0) ====================
             case R.id.btnDownload:
-                downloadShipmentList(SEARCH_TYPE_SHIPMENT, "출하대상받기");
+                downloadShipmentList(SEARCH_TYPE_EMART, "출하대상받기");
                 break;
 
             // ==================== 생산계근대상받기 (searchType: 1) ====================
@@ -250,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
 
             // ==================== 이마트 계근입력시작 (searchType: 0) ====================
             case R.id.btnWet:
-                startWeighing(SEARCH_TYPE_SHIPMENT, "출하를 위해 출하 리스트를 받아주세요.", "출하대상 리스트가 없습니다.\n리스트를 받아주세요.");
+                startWeighing(SEARCH_TYPE_EMART, "출하를 위해 출하 리스트를 받아주세요.", "출하대상 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 생산 계근입력시작 (searchType: 1) ====================

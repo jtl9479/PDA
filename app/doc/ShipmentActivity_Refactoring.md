@@ -16,178 +16,174 @@
 
 ## 개요
 - **파일 위치**: `app/src/main/java/com/rgbsolution/highland_emart/ShipmentActivity.java`
-- **현재 코드 라인**: 약 4,478줄
+- **현재 코드 라인**: 4,479줄
 - **작성일**: 2026-01-07
+- **소스 확인**: 전체 소스 코드 직접 확인 완료
 
 ---
 
-## 현재 코드 분석 요약
+## 현재 코드 구조 (실제 라인 기준)
 
-### 파일 구조
-| 영역 | 라인 범위 | 설명 |
-|-----|----------|------|
-| 멤버 변수 | 1~330 | 330개 이상의 변수 선언 |
-| 생명주기 | 331~525 | onCreate, onResume, onDestroy 등 |
-| 버튼 리스너 | 525~760 | inputBtnListener, sendBtnListener, selectBtnListener 등 |
-| setMessage | 892~908 | PM80 스캐너 진입점 |
-| setBarcodeMsg | 959~1485 | **핵심 메서드** (약 526줄) |
-| wet_data_insert | 1487~1660 | 계근 데이터 저장 |
-| find_* 메서드 | 1663~1795 | 패커상품 검색 |
-| Spinner 리스너 | 1845~1968 | 센터/지점/작업유형 선택 |
-| setPrinting | 2114~2960 | 이마트 라벨 출력 (약 846줄) |
-| setHomeplusPrinting | 2966~3088 | 홈플러스 라벨 출력 |
-| setPrintingLotte | 3113~3375 | 롯데 라벨 출력 |
-| ProgressDlgShipSelect | 3409~3592 | 출하대상 조회 AsyncTask |
-| ProgressDlgShipmentSend | 3804~4123 | 서버 전송 AsyncTask |
-| Dialog 메서드 | 4121~4705 | 각종 다이얼로그 |
+| 영역 | 라인 범위 | 줄 수 | 설명 |
+|-----|----------|------|------|
+| import 및 클래스 선언 | 1~100 | 100 | 패키지, import 문 |
+| 멤버 변수 | 101~330 | 230 | 약 230개 이상의 변수 선언 |
+| onCreate() | 331~525 | 195 | 생명주기, 초기화 |
+| 버튼 리스너 | 526~760 | 235 | inputBtnListener, sendBtnListener 등 |
+| mHandler, setMessage() | 761~908 | 148 | PM80 스캐너 메시지 처리 |
+| **setBarcodeMsg()** | 909~1485 | **576** | **핵심 메서드 - 바코드 스캔 처리** |
+| wet_data_insert() | 1486~1660 | 175 | 계근 데이터 DB 저장 |
+| find_* 메서드 | 1661~1795 | 135 | 패커상품/BL 검색 |
+| Spinner 리스너 | 1796~1968 | 173 | 센터/지점/작업유형 선택 |
+| **setPrinting()** | 1969~2746 | **777** | **이마트 라벨 출력** |
+| setHomeplusPrinting() | 2747~2874 | 127 | 홈플러스 라벨 출력 |
+| setPrintingLotte() | 2875~3157 | 282 | 롯데 라벨 출력 |
+| sendData() | 3158~3167 | 10 | 프린터 데이터 전송 |
+| ProgressDlgShipSelect | 3168~3373 | 206 | 출하대상 조회 AsyncTask |
+| ProgressDlgShipSelectBL | 3374~3556 | 183 | BL번호 기반 조회 |
+| **ProgressDlgShipmentSend** | 3557~3896 | **339** | **서버 전송 AsyncTask** |
+| ProgressDlgPrintConnect | 3897~3952 | 56 | 프린터 연결 |
+| onActivityResult | 3953~4041 | 89 | Activity 결과 처리 |
+| ProgressDlgDiscon | 4042~4080 | 39 | 프린터 연결 해제 |
+| show_wetDetailDialog() | 4081~4268 | 188 | 계근 상세 내역 다이얼로그 |
+| 기타 Dialog | 4269~4438 | 170 | 삭제/전송완료/계근완료 다이얼로그 |
+| showAlertDialog() | 4439~4478 | 40 | 에러 알림 다이얼로그 |
 
-### 주요 문제점
-1. **매직 넘버**: searchType "0"~"7", 롯데 박스 순번 9999, 업체코드 610933 등
-2. **거대 메서드**: setBarcodeMsg (526줄), setPrinting (846줄)
-3. **코드 중복**: 전송 로직, 소비기한 계산 로직
-4. **하드코딩**: 업체코드 "30228", 지점코드 "9231" 등
-5. **문자열 비교**: `==` 대신 `.equals()` 사용 필요한 곳 존재
+---
+
+## searchType 사용 현황 (실제 소스 확인)
+
+| 값 | 의미 | 사용 위치 (주요) |
+|----|------|-----------------|
+| "0" | 이마트 출하 | 2016줄, 3624줄, 3651줄, 3688줄 등 |
+| "1" | 생산 계근 (이노이천) | 3655줄, 3727줄, 3773줄 등 |
+| "2" | 홈플러스 출하 | 3653줄, 3688줄, 3771줄 등 |
+| "3" | 도매 출하 | 3651줄, 3727줄, 3776줄 등 |
+| "4" | 도매 비정량 | 3727줄, 3773줄, 3819줄 등 |
+| "5" | 홈플러스 비정량 | 3727줄, 3773줄, 3819줄 등 |
+| "6" | 롯데 출하 | 2922줄, 3240줄, 3653줄 등 |
+| "7" | 생산 계근 (라벨) | 3657줄, 3727줄, 3823줄 등 |
+
+**총 사용 횟수**: 약 50회 이상
+
+---
+
+## 매직 넘버 현황 (실제 소스 확인)
+
+| 값 | 의미 | 사용 위치 |
+|----|------|----------|
+| `9999` | 롯데 박스 순번 최대값 | 3245줄, 3252줄, 3253줄 |
+| `"610933"` | 회사 코드 | 2059줄 |
+| `"(주)하이랜드이노베이션"` | 회사명 | 2060줄, 2778줄, 2906줄 |
+| `"059015"` | 미트센터 코드 | 2590줄, 2668줄 |
+| `"9231"` | 미트센터 지점코드 | 2583줄, 2663줄 |
+| `"0000000"` | 로지스코드 기본값 | 2583줄, 2663줄 |
 
 ---
 
 ## 리팩토링 체크리스트
 
-### Step 1. searchType 상수 정의
-- [ ] SEARCH_TYPE_SHIPMENT = "0" (이마트 출하)
-- [ ] SEARCH_TYPE_PRODUCTION_INNO = "1" (생산 계근 이노이천)
-- [ ] SEARCH_TYPE_HOMEPLUS = "2" (홈플러스 출하)
-- [ ] SEARCH_TYPE_WHOLESALE = "3" (도매 출하)
-- [ ] SEARCH_TYPE_NONFIXED = "4" (도매 비정량)
-- [ ] SEARCH_TYPE_HOMEPLUS_NONFIXED = "5" (홈플러스 비정량)
-- [ ] SEARCH_TYPE_LOTTE = "6" (롯데 출하)
-- [ ] SEARCH_TYPE_PRODUCTION = "7" (생산 계근)
+### Step 1. searchType 상수 정의 ✅ 완료 (2026-01-07)
+- [x] `SEARCH_TYPE_EMART = "0"` (이마트 출하)
+- [x] `SEARCH_TYPE_PRODUCTION = "1"` (생산 계근)
+- [x] `SEARCH_TYPE_HOMEPLUS = "2"` (홈플러스 출하)
+- [x] `SEARCH_TYPE_WHOLESALE = "3"` (도매 출하)
+- [x] `SEARCH_TYPE_NONFIXED = "4"` (도매 비정량)
+- [x] `SEARCH_TYPE_HOMEPLUS_NONFIXED = "5"` (홈플러스 비정량)
+- [x] `SEARCH_TYPE_LOTTE = "6"` (롯데 출하)
+- [x] `SEARCH_TYPE_PRODUCTION_LABEL = "7"` (생산 라벨)
 
-**비고**: MainActivity에서 정의한 상수와 동일하게 Common.java에 정의하거나, 각 Activity에서 import하여 사용
+**변경 내역**: 157~165줄에 상수 정의, 47개 사용처 모두 상수로 변경, SHIPMENT → EMART로 명칭 변경
 
 ---
 
 ### Step 2. 매직 넘버 상수화
-- [ ] `LOTTE_BOX_ORDER_MAX = 9999` (롯데 박스 순번 최대값)
-- [ ] `COMPANY_CODE = "610933"` (회사 코드)
-- [ ] `COMPANY_NAME = "(주)하이랜드이노베이션"` (회사명)
-- [ ] `MEAT_CENTER_CODE = "059015"` (미트센터 코드)
-- [ ] `MEAT_CENTER_STORE_CODE = "9231"` (미트센터 지점코드)
-- [ ] `KILKOY_PACKER_CODE = "30228"` (킬코이 패커코드)
+- [ ] `LOTTE_BOX_ORDER_MAX = 9999` (3245, 3252, 3253줄)
+- [ ] `COMPANY_CODE = "610933"` (2059줄)
+- [ ] `COMPANY_NAME = "(주)하이랜드이노베이션"` (2060줄)
+- [ ] `MEAT_CENTER_CODE = "059015"` (2590, 2668줄)
+- [ ] `MEAT_CENTER_STORE_CODE = "9231"` (2583, 2663줄)
 
 ---
 
-### Step 3. setBarcodeMsg() 메서드 분리
-현재 526줄의 거대 메서드를 의미 단위로 분리
+### Step 3. 문자열 비교 수정
 
-#### 3-1. 패커상품 스캔 처리 분리
-- [ ] `handlePackerProductScan(String msg)` 메서드 추출 (967~1094줄)
-  - 최초 스캔 처리
-  - 동일 상품 재스캔 처리
-  - 다른 상품 스캔 처리
+현재 소스에서 `Common.searchType.equals("0")` 형태로 **이미 올바르게** `.equals()` 사용 중.
 
-#### 3-2. BL 스캔 처리 분리
-- [ ] `handleBLScan(String msg)` 메서드 추출 (1099~1434줄)
-  - BL번호로 position 찾기
-  - 소비기한 검증
-  - 계근 완료 체크
-  - 중복 바코드 체크
-
-#### 3-3. 중량 추출 로직 분리
-- [ ] `extractWeight(int itemType)` 메서드 추출 (1255~1425줄)
-  - ITEM_TYPE별 중량 추출 로직
-  - LB → KG 변환
-  - 제조일/박스시리얼 추출
+**수정 필요 항목**:
+- [ ] `whArea != null || !whArea.equals("")` (2564줄) - 논리 오류 (`||` → `&&` 검토)
+- [ ] `work_item_barcodegoods == ""` (3335줄) - `.equals()` 변경 필요
+- [ ] `packet ==""` (3763줄) - `.equals()` 변경 필요
 
 ---
 
-### Step 4. 소비기한 검증 로직 분리
-- [ ] `validateShelfLife(int position)` 메서드 추출
-  - 킬코이 + 미트센터 검증 (1131~1138줄)
-  - 트레이더스/수입육 검증 (1177~1186줄)
+### Step 4. Lambda 표현식 변환 가능 항목
+
+| 위치 | 현재 코드 | 변환 가능 |
+|-----|----------|----------|
+| 4126줄 | `detail_btn_back.setOnClickListener(new View.OnClickListener()...)` | O |
+| 4152줄 | `detail_btn_delete.setOnClickListener(new View.OnClickListener()...)` | O |
+| 4180줄 | `detail_btn_sum.setOnClickListener(new View.OnClickListener()...)` | O |
+| 4286줄 | `new DialogInterface.OnClickListener()` (deleteQuestionDialog) | O |
+| 4351줄 | `new DialogInterface.OnClickListener()` (show_sendFinishDialog) | O |
+| 4381줄 | `new DialogInterface.OnClickListener()` (show_wetNextDialog) | O |
+| 4418줄 | `new DialogInterface.OnClickListener()` (show_wetFinishDialog) | O |
+| 4457줄 | `new DialogInterface.OnClickListener()` (showAlertDialog) | O |
 
 ---
 
-### Step 5. setPrinting() 메서드 분리
-현재 846줄의 거대 메서드를 분리
+### Step 5. 코드 정리
 
-#### 5-1. 소비기한 계산 분리
-- [ ] `calculateExpiryDate(String makingDate)` 메서드 추출 (2129~2222줄)
-  - 미트센터 특수 처리
-  - 트레이더스 센터 처리
-
-#### 5-2. 바코드 생성 분리
-- [ ] `generateBarcode(String barcodeType, Shipments_Info si, String weightStr)` 메서드 추출 (2297~2484줄)
-  - M0~M9, E0~E3 바코드 형식별 생성
-
-#### 5-3. Woosim 프린터 명령 분리
-- [ ] `printEmartLabel(ByteArrayOutputStream stream, Shipments_Info si)` 메서드 추출 (2510~2778줄)
-
----
-
-### Step 6. 서버 전송 로직 공통화
-ProgressDlgShipmentSend 내 중복 로직 정리
-
-- [ ] 개별 건 전송 / 일괄 전송 로직 공통 메서드 추출
-- [ ] complete_shipment API 호출 조건 상수화
-
----
-
-### Step 7. 문자열 비교 수정
-- [ ] `searchType == "0"` → `"0".equals(searchType)` 또는 `SEARCH_TYPE_SHIPMENT.equals(searchType)`
-- [ ] 기타 `==` 문자열 비교 → `.equals()` 변경
-
----
-
-### Step 8. Lambda 표현식 변환
-- [ ] DialogInterface.OnClickListener → Lambda
-- [ ] View.OnClickListener → Lambda (선택적)
-- [ ] Spinner.OnItemSelectedListener (Lambda 변환 불가능 - 2개 메서드)
-
----
-
-### Step 9. 코드 정리
-- [ ] 미사용 변수 삭제
-- [ ] 불필요한 주석 정리 (Cleanup 문서 참조 - 이미 155줄 삭제됨)
-- [ ] `if (true)` 조건문 검토 (1034줄 - find_BL(msg) 복원 또는 제거)
-- [ ] `finish_flag` 변수 검토 (값 설정만 되고 사용 안됨)
+#### 5-1. 확인 필요 사항
+- [ ] `finish_flag` 변수 (4354, 4422줄) - 값 설정만 되고 읽히지 않음 → 삭제 검토
+- [ ] `whArea != null || !whArea.equals("")` (2564, 2645, 2722, 3128줄) - 논리 오류
 
 ---
 
 ## 리팩토링 우선순위
 
-### 높음 (즉시 적용 가능)
+### 높음 (즉시 적용 가능, 안전)
 1. **Step 1**: searchType 상수 정의 - 가독성 향상, 오타 방지
 2. **Step 2**: 매직 넘버 상수화 - 유지보수성 향상
-3. **Step 7**: 문자열 비교 수정 - 버그 예방
+3. **Step 3**: 문자열 비교 수정 (`==` → `.equals()`) - 버그 예방
 
-### 중간 (신중한 적용 필요)
-4. **Step 8**: Lambda 표현식 변환 - 코드 간결화
-5. **Step 4**: 소비기한 검증 분리 - 재사용성 향상
-6. **Step 9**: 코드 정리 - 불필요 코드 제거
+### 중간 (신중한 적용)
+4. **Step 4**: Lambda 표현식 변환 - 코드 간결화
+5. **Step 5**: 미사용 변수/논리 오류 수정
 
-### 낮음 (대규모 변경)
-7. **Step 3**: setBarcodeMsg 분리 - 526줄 메서드 분할
-8. **Step 5**: setPrinting 분리 - 846줄 메서드 분할
-9. **Step 6**: 전송 로직 공통화 - AsyncTask 구조 변경
+### 낮음 (대규모 변경, 현재 범위 제외)
+- setBarcodeMsg() 메서드 분리 (576줄)
+- setPrinting() 메서드 분리 (777줄)
+- 서버 전송 로직 공통화
+
+**대규모 변경은 현재 리팩토링 범위에서 제외**.
 
 ---
 
-## 주의사항
+## 테스트 체크리스트
 
-### 동작 보장
-- 모든 8가지 출하 유형(searchType 0~7)이 정상 동작해야 함
-- 프린터 출력 결과가 기존과 100% 동일해야 함
-- 서버 전송 패킷 형식이 변경되면 안됨
+리팩토링 후 반드시 확인해야 할 항목:
 
-### 테스트 필수 항목
-1. 바코드 스캔 → 출하대상 조회
-2. 중량 추출 (ITEM_TYPE W, S, J, B)
-3. 계근 데이터 DB 저장
-4. 프린터 출력 (이마트, 홈플러스, 롯데, 생산)
-5. 서버 전송 (개별 건, 일괄 전송)
-6. 롯데 박스 순번 순환 (1~9999)
-7. 비정량 중복 바코드 허용
-8. 미트센터 추가 라벨 출력
+### 기능 테스트
+- [ ] 이마트 출하 (searchType "0") - 바코드 스캔, 라벨 출력, 서버 전송
+- [ ] 생산 계근 (searchType "1") - 바코드 스캔, 라벨 출력, 서버 전송
+- [ ] 홈플러스 출하 (searchType "2") - 바코드 스캔, 라벨 출력, 서버 전송
+- [ ] 도매 출하 (searchType "3") - 바코드 스캔, 라벨 출력, 서버 전송
+- [ ] 도매 비정량 (searchType "4") - 바코드 스캔, 라벨 출력, 서버 전송
+- [ ] 홈플러스 비정량 (searchType "5") - 바코드 스캔, 라벨 출력, 서버 전송
+- [ ] 롯데 출하 (searchType "6") - 바코드 스캔, 라벨 출력, 서버 전송, 박스 순번
+- [ ] 생산 라벨 (searchType "7") - 바코드 스캔, 라벨 출력, 서버 전송
+
+### 프린터 출력 테스트
+- [ ] 이마트 라벨 (M0~M9, E0~E3, P0)
+- [ ] 홈플러스 라벨 (H5)
+- [ ] 롯데 라벨 (L0)
+- [ ] 미트센터 추가 라벨 (9231 지점)
+
+### 서버 전송 테스트
+- [ ] 개별 건 전송 (이마트, 홈플러스, 롯데)
+- [ ] 일괄 전송 (생산, 도매)
+- [ ] complete_shipment API 호출
 
 ---
 
@@ -205,9 +201,9 @@ ProgressDlgShipmentSend 내 중복 로직 정리
 
 | 단계 | 작업 내용 | 완료 일자 | 비고 |
 |-----|----------|----------|------|
-| - | 리팩토링 계획 문서 작성 | 2026-01-07 | 현재 문서 |
-| - | 주석 처리 코드 삭제 (1차) | 2026-01-06 | Cleanup 문서 참조 |
-| - | 주석 처리 코드 삭제 (2차) | 2026-01-06 | 약 155줄 삭제 |
+| Step 1 | searchType 상수 정의 | 2026-01-07 | 8개 상수, 47개 사용처 변경 |
+| - | 리팩토링 계획 문서 작성 | 2026-01-07 | 전체 소스 확인 후 재작성 |
+| - | 주석 처리 코드 삭제 (Cleanup) | 2026-01-06 | 약 155줄 삭제 완료 |
 
 ---
 
