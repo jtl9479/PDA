@@ -245,147 +245,43 @@ public class MainActivity extends AppCompatActivity {
 
             // ==================== 이마트 계근입력시작 (searchType: 0) ====================
             case R.id.btnWet:
-                if (!Common.searchType.equals("0")) {
-                    Toast.makeText(getApplicationContext(), "출하를 위해 출하 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }
-                Common.searchType = "0";
-                ArrayList<Shipments_Info> list_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-                if (list_si.size() > 0) {
-                    i = new Intent(this, ShipmentActivity.class);
-                    startActivity(i);
-                } else {
-                    Toast.makeText(getApplicationContext(), "출하대상 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                }
+                startWeighing("0", "출하를 위해 출하 리스트를 받아주세요.", "출하대상 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 생산 계근입력시작 (searchType: 1) ====================
             case R.id.btnProdWet:
-                if (!Common.searchType.equals("1")) {
-                    Toast.makeText(getApplicationContext(), "생산 계근을 위해 생산 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }
-                Common.searchType = "1";
-                ArrayList<Shipments_Info> list_prod_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-                if (list_prod_si.size() > 0) {
-                    i = new Intent(this, ShipmentActivity.class);
-                    startActivity(i);
-                } else {
-                    Toast.makeText(getApplicationContext(), "생산대상 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                }
+                startWeighing("1", "생산 계근을 위해 생산 리스트를 받아주세요.", "생산대상 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 홈플러스 계근입력시작 (searchType: 2) ====================
             case R.id.btnWetHomeplus:
-                if (!Common.searchType.equals("2")) {
-                    Toast.makeText(getApplicationContext(), "홈플러스 출고분 계근을 위해 홈플러스 하이퍼 출고 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }
-                Common.searchType = "2";
-                ArrayList<Shipments_Info> list_homeplus_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-                if (list_homeplus_si.size() > 0) {
-                    i = new Intent(this, ShipmentActivity.class);
-                    startActivity(i);
-                } else {
-                    Toast.makeText(getApplicationContext(), "홈플러스 하이퍼 출고 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                }
+                startWeighing("2", "홈플러스 출고분 계근을 위해 홈플러스 하이퍼 출고 리스트를 받아주세요.", "홈플러스 하이퍼 출고 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 도매업체 계근입력시작 (searchType: 3) ====================
             case R.id.btnWetWholesale:
-                if (!Common.searchType.equals("3")) {
-                    Toast.makeText(getApplicationContext(), "출하를 위해 출하 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }
-                Common.searchType = "3";
-                ArrayList<Shipments_Info> list_wholesale_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-                if (list_wholesale_si.size() > 0) {
-                    i = new Intent(this, ShipmentActivity.class);
-                    startActivity(i);
-                } else {
-                    Toast.makeText(getApplicationContext(), "출하대상 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                }
+                startWeighing("3", "출하를 위해 출하 리스트를 받아주세요.", "출하대상 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 비정량 계근입력시작 (searchType: 4) ====================
             case R.id.btnProdNonfixedWet:
-                if (!Common.searchType.equals("4")) {
-                    Toast.makeText(getApplicationContext(), "비정량 출고분 계근을 위해 비정량 출고 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }
-                Common.searchType = "4";
-                ArrayList<Shipments_Info> list_prodNonfixed_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-                if (list_prodNonfixed_si.size() > 0) {
-                    i = new Intent(this, ShipmentActivity.class);
-                    startActivity(i);
-                } else {
-                    Toast.makeText(getApplicationContext(), "비정량 출고 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                }
+                startWeighing("4", "비정량 출고분 계근을 위해 비정량 출고 리스트를 받아주세요.", "비정량 출고 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 홈플러스 비정량 계근입력시작 (searchType: 5) ====================
             case R.id.btnWetHomeplusNon2:
-                if (!Common.searchType.equals("5")) {
-                    Toast.makeText(getApplicationContext(), "홈플러스 출고분 계근을 위해 홈플러스 비정량 출고 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }
-                Common.searchType = "5";
-                ArrayList<Shipments_Info> list_homeplus_si2 = DBHandler.selectqueryAllShipment(MainActivity.this);
-                if (list_homeplus_si2.size() > 0) {
-                    i = new Intent(this, ShipmentActivity.class);
-                    startActivity(i);
-                } else {
-                    Toast.makeText(getApplicationContext(), "홈플러스 비정량 출고 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                }
+                startWeighing("5", "홈플러스 출고분 계근을 위해 홈플러스 비정량 출고 리스트를 받아주세요.", "홈플러스 비정량 출고 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 롯데 계근입력시작 (searchType: 6) ====================
             case R.id.btnWetLotte:
-                if (!Common.searchType.equals("6")) {
-                    Toast.makeText(getApplicationContext(), "롯데 출고분 계근을 위해 롯데 출고 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }
-                Common.searchType = "6";
-                ArrayList<Shipments_Info> list_Lotte_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-                if (list_Lotte_si.size() > 0) {
-                    i = new Intent(this, ShipmentActivity.class);
-                    startActivity(i);
-                } else {
-                    Toast.makeText(getApplicationContext(), "롯데 출고 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                }
+                startWeighing("6", "롯데 출고분 계근을 위해 롯데 출고 리스트를 받아주세요.", "롯데 출고 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 생산(라벨) 계근입력시작 (searchType: 7) ====================
             case R.id.btnProdWet4print:
                 Log.i(TAG, TAG + "=====================생산입력시작(라벨)======================" + Common.selectDay);
-                if (!Common.searchType.equals("7")) {
-                    Toast.makeText(getApplicationContext(), "생산 계근을 위해 생산 리스트(라벨)를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }
-                Common.searchType = "7";
-                ArrayList<Shipments_Info> list_prod_si2 = DBHandler.selectqueryAllShipment(MainActivity.this);
-                if (list_prod_si2.size() > 0) {
-                    i = new Intent(this, ShipmentActivity.class);
-                    startActivity(i);
-                } else {
-                    Toast.makeText(getApplicationContext(), "생산대상 리스트(라벨)가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                }
+                startWeighing("7", "생산 계근을 위해 생산 리스트(라벨)를 받아주세요.", "생산대상 리스트(라벨)가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ============================================================
@@ -465,6 +361,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * 계근입력 시작 처리
+     *
+     * @param searchType 검색 타입 ("0"~"7")
+     * @param wrongTypeMessage searchType이 일치하지 않을 때 표시할 메시지
+     * @param emptyListMessage 리스트가 비어있을 때 표시할 메시지
+     */
+    private void startWeighing(String searchType, String wrongTypeMessage, String emptyListMessage) {
+        if (!Common.searchType.equals(searchType)) {
+            Toast.makeText(getApplicationContext(), wrongTypeMessage, Toast.LENGTH_SHORT).show();
+            vibrator.vibrate(300);
+            return;
+        }
+
+        Common.searchType = searchType;
+        ArrayList<Shipments_Info> list = DBHandler.selectqueryAllShipment(MainActivity.this);
+
+        if (list.size() > 0) {
+            Intent i = new Intent(this, ShipmentActivity.class);
+            startActivity(i);
+        } else {
+            Toast.makeText(getApplicationContext(), emptyListMessage, Toast.LENGTH_SHORT).show();
+            vibrator.vibrate(300);
+        }
+    }
+
+    /**
      * 출하/생산 대상 리스트 다운로드
      *
      * @param searchType 검색 타입 ("0"~"7")
@@ -499,16 +421,19 @@ public class MainActivity extends AppCompatActivity {
      */
     private String formatDateYYYYMMDD() {
         String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
+
         if(calendar.get(Calendar.MONTH)+1 < 10) {
             inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
         }else{
             inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
         }
+
         if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
             inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
         }else{
             inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
         }
+
         return inPutDay;
     }
 
