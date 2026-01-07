@@ -332,8 +332,6 @@ public class ShipmentActivity extends ScannerActivity {
      * false: 선택 모드
      */
     private boolean select_flag = true;
-    /** 계근 작업 완료 플래그 */
-    private boolean finish_flag = false;
 
     /** 진동 알림 */
     private Vibrator vibrator;
@@ -4342,7 +4340,6 @@ public class ShipmentActivity extends ScannerActivity {
                 .setMessage(R.string.shipment_wet_send_finish_msg)
                 .setCancelable(false)
                 .setPositiveButton("확인", (dialog, which) -> {
-                    finish_flag = true;
                     btn_send.setEnabled(false);
                     btn_send.setBackgroundResource(R.drawable.disable_round_button);
                     dialog_flag = false;
@@ -4401,7 +4398,6 @@ public class ShipmentActivity extends ScannerActivity {
                 .setMessage(R.string.shipment_wet_finish_msg)
                 .setCancelable(false)
                 .setPositiveButton("확인", (dialog, which) -> {
-                    finish_flag = true;
                     btn_send.setEnabled(true);
                     btn_send.setBackgroundResource(R.drawable.round_button);
                     dialog_flag = false;
