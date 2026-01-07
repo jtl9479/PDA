@@ -49,6 +49,16 @@ public class MainActivity extends AppCompatActivity {
     // 로그 태그 - 디버깅용
     private final String TAG = "MainActivity";
 
+    // searchType 상수
+    private static final String SEARCH_TYPE_SHIPMENT = "0";          // 출하대상
+    private static final String SEARCH_TYPE_PRODUCTION = "1";        // 생산대상
+    private static final String SEARCH_TYPE_HOMEPLUS = "2";          // 홈플러스 하이퍼
+    private static final String SEARCH_TYPE_WHOLESALE = "3";         // 도매업체
+    private static final String SEARCH_TYPE_NONFIXED = "4";          // 비정량 출하
+    private static final String SEARCH_TYPE_HOMEPLUS_NONFIXED = "5"; // 홈플러스 비정량
+    private static final String SEARCH_TYPE_LOTTE = "6";             // 롯데
+    private static final String SEARCH_TYPE_PRODUCTION_LABEL = "7";  // 생산(라벨)
+
     // 진동 서비스 - 에러 발생 시 사용자 피드백용
     private Vibrator vibrator;
 
@@ -201,42 +211,42 @@ public class MainActivity extends AppCompatActivity {
 
             // ==================== 이마트 출하대상받기 (searchType: 0) ====================
             case R.id.btnDownload:
-                downloadShipmentList("0", "출하대상받기");
+                downloadShipmentList(SEARCH_TYPE_SHIPMENT, "출하대상받기");
                 break;
 
             // ==================== 생산계근대상받기 (searchType: 1) ====================
             case R.id.btnproductionlist:
-                downloadShipmentList("1", "생산대상받기");
+                downloadShipmentList(SEARCH_TYPE_PRODUCTION, "생산대상받기");
                 break;
 
             // ==================== 홈플러스하이퍼 출하대상받기 (searchType: 2) ====================
             case R.id.btnDownloadHomeplus:
-                downloadShipmentList("2", "홈플러스출하대상받기");
+                downloadShipmentList(SEARCH_TYPE_HOMEPLUS, "홈플러스출하대상받기");
                 break;
 
             // ==================== 도매업체 출하대상받기 (searchType: 3) ====================
             case R.id.btnDownloadWholesale:
-                downloadShipmentList("3", "도매업체출하대상받기");
+                downloadShipmentList(SEARCH_TYPE_WHOLESALE, "도매업체출하대상받기");
                 break;
 
             // ==================== (비정량)출하계근대상받기 (searchType: 4) ====================
             case R.id.btnproductionNonfixedlist:
-                downloadShipmentList("4", "비정량출하대상받기");
+                downloadShipmentList(SEARCH_TYPE_NONFIXED, "비정량출하대상받기");
                 break;
 
             // ==================== (비정량)홈플러스 출하대상받기 (searchType: 5) ====================
             case R.id.btnWetHomeplusNon:
-                downloadShipmentList("5", "홈플러스 비정량 출하대상받기");
+                downloadShipmentList(SEARCH_TYPE_HOMEPLUS_NONFIXED, "홈플러스 비정량 출하대상받기");
                 break;
 
             // ==================== 롯데 출하대상받기 (searchType: 6) ====================
             case R.id.btnDownloadLotte:
-                downloadShipmentList("6", "롯데출하대상받기");
+                downloadShipmentList(SEARCH_TYPE_LOTTE, "롯데출하대상받기");
                 break;
 
             // ==================== 생산대상받기(라벨) (searchType: 7) ====================
             case R.id.btnproductionlist4print:
-                downloadShipmentList("7", "생산대상받기(라벨)");
+                downloadShipmentList(SEARCH_TYPE_PRODUCTION_LABEL, "생산대상받기(라벨)");
                 break;
 
             // ============================================================
@@ -245,43 +255,43 @@ public class MainActivity extends AppCompatActivity {
 
             // ==================== 이마트 계근입력시작 (searchType: 0) ====================
             case R.id.btnWet:
-                startWeighing("0", "출하를 위해 출하 리스트를 받아주세요.", "출하대상 리스트가 없습니다.\n리스트를 받아주세요.");
+                startWeighing(SEARCH_TYPE_SHIPMENT, "출하를 위해 출하 리스트를 받아주세요.", "출하대상 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 생산 계근입력시작 (searchType: 1) ====================
             case R.id.btnProdWet:
-                startWeighing("1", "생산 계근을 위해 생산 리스트를 받아주세요.", "생산대상 리스트가 없습니다.\n리스트를 받아주세요.");
+                startWeighing(SEARCH_TYPE_PRODUCTION, "생산 계근을 위해 생산 리스트를 받아주세요.", "생산대상 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 홈플러스 계근입력시작 (searchType: 2) ====================
             case R.id.btnWetHomeplus:
-                startWeighing("2", "홈플러스 출고분 계근을 위해 홈플러스 하이퍼 출고 리스트를 받아주세요.", "홈플러스 하이퍼 출고 리스트가 없습니다.\n리스트를 받아주세요.");
+                startWeighing(SEARCH_TYPE_HOMEPLUS, "홈플러스 출고분 계근을 위해 홈플러스 하이퍼 출고 리스트를 받아주세요.", "홈플러스 하이퍼 출고 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 도매업체 계근입력시작 (searchType: 3) ====================
             case R.id.btnWetWholesale:
-                startWeighing("3", "출하를 위해 출하 리스트를 받아주세요.", "출하대상 리스트가 없습니다.\n리스트를 받아주세요.");
+                startWeighing(SEARCH_TYPE_WHOLESALE, "출하를 위해 출하 리스트를 받아주세요.", "출하대상 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 비정량 계근입력시작 (searchType: 4) ====================
             case R.id.btnProdNonfixedWet:
-                startWeighing("4", "비정량 출고분 계근을 위해 비정량 출고 리스트를 받아주세요.", "비정량 출고 리스트가 없습니다.\n리스트를 받아주세요.");
+                startWeighing(SEARCH_TYPE_NONFIXED, "비정량 출고분 계근을 위해 비정량 출고 리스트를 받아주세요.", "비정량 출고 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 홈플러스 비정량 계근입력시작 (searchType: 5) ====================
             case R.id.btnWetHomeplusNon2:
-                startWeighing("5", "홈플러스 출고분 계근을 위해 홈플러스 비정량 출고 리스트를 받아주세요.", "홈플러스 비정량 출고 리스트가 없습니다.\n리스트를 받아주세요.");
+                startWeighing(SEARCH_TYPE_HOMEPLUS_NONFIXED, "홈플러스 출고분 계근을 위해 홈플러스 비정량 출고 리스트를 받아주세요.", "홈플러스 비정량 출고 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 롯데 계근입력시작 (searchType: 6) ====================
             case R.id.btnWetLotte:
-                startWeighing("6", "롯데 출고분 계근을 위해 롯데 출고 리스트를 받아주세요.", "롯데 출고 리스트가 없습니다.\n리스트를 받아주세요.");
+                startWeighing(SEARCH_TYPE_LOTTE, "롯데 출고분 계근을 위해 롯데 출고 리스트를 받아주세요.", "롯데 출고 리스트가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ==================== 생산(라벨) 계근입력시작 (searchType: 7) ====================
             case R.id.btnProdWet4print:
                 Log.i(TAG, TAG + "=====================생산입력시작(라벨)======================" + Common.selectDay);
-                startWeighing("7", "생산 계근을 위해 생산 리스트(라벨)를 받아주세요.", "생산대상 리스트(라벨)가 없습니다.\n리스트를 받아주세요.");
+                startWeighing(SEARCH_TYPE_PRODUCTION_LABEL, "생산 계근을 위해 생산 리스트(라벨)를 받아주세요.", "생산대상 리스트(라벨)가 없습니다.\n리스트를 받아주세요.");
                 break;
 
             // ============================================================
