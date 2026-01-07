@@ -3,7 +3,6 @@ package com.rgbsolution.highland_emart;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -13,7 +12,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.DatePicker;
 import android.widget.Toast;
 
 import com.rgbsolution.highland_emart.common.Common;
@@ -66,27 +64,24 @@ public class MainActivity extends AppCompatActivity {
     Calendar calendar = Calendar.getInstance();
 
     /**
-     * 수정 필요 없음
      * 날짜 선택 다이얼로그 리스너
      *
      * 사용자가 DatePickerDialog에서 날짜를 선택하면 실행됩니다.
      * 선택된 날짜를 "YYYYMMDD" 형식으로 변환하여 Common.selectDay에 저장합니다.
      * 예: 2025년 1월 31일 → "20250131"
      */
-    DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener(){
-        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth){
-            // 캘린더에 선택된 날짜 설정
-            calendar.set(Calendar.YEAR, year);
-            calendar.set(Calendar.MONTH, monthOfYear);
-            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+    DatePickerDialog.OnDateSetListener date = (view, year, monthOfYear, dayOfMonth) -> {
+        // 캘린더에 선택된 날짜 설정
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, monthOfYear);
+        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-            // 날짜를 YYYYMMDD 형식 문자열로 변환
-            String inPutDay = formatDateYYYYMMDD();
+        // 날짜를 YYYYMMDD 형식 문자열로 변환
+        String inPutDay = formatDateYYYYMMDD();
 
-            // 전역 변수에 선택된 날짜 저장
-            Common.selectDay = inPutDay;
-            Log.i(TAG, TAG + "=====================selectDay======================" + inPutDay);
-        }
+        // 전역 변수에 선택된 날짜 저장
+        Common.selectDay = inPutDay;
+        Log.i(TAG, TAG + "=====================selectDay======================" + inPutDay);
     };
 
     /**
@@ -378,19 +373,24 @@ public class MainActivity extends AppCompatActivity {
      * @param emptyListMessage 리스트가 비어있을 때 표시할 메시지
      */
     private void startWeighing(String searchType, String wrongTypeMessage, String emptyListMessage) {
+        // 1. searchType 검증 (다운로드한 리스트 타입과 일치하는지 확인)
+        //    불일치 시 에러 메시지 표시, 진동 후 종료
         if (!Common.searchType.equals(searchType)) {
             Toast.makeText(getApplicationContext(), wrongTypeMessage, Toast.LENGTH_SHORT).show();
             vibrator.vibrate(300);
             return;
         }
 
-        Common.searchType = searchType;
+        // 2. DB에서 출하대상 리스트 조회
         ArrayList<Shipments_Info> list = DBHandler.selectqueryAllShipment(MainActivity.this);
 
+        // 3. 리스트 존재 여부에 따라 분기
         if (list.size() > 0) {
+            // 3-1. 리스트 있음: ShipmentActivity로 이동 (계근 입력 화면)
             Intent i = new Intent(this, ShipmentActivity.class);
             startActivity(i);
         } else {
+            // 3-2. 리스트 없음: 에러 메시지 표시, 진동
             Toast.makeText(getApplicationContext(), emptyListMessage, Toast.LENGTH_SHORT).show();
             vibrator.vibrate(300);
         }
@@ -403,24 +403,32 @@ public class MainActivity extends AppCompatActivity {
      * @param logMessage 로그에 출력할 메시지
      */
     private void downloadShipmentList(String searchType, String logMessage) {
+        // 1. 다운로드 시작 로그 출력
         Log.i(TAG, TAG + "=====================" + logMessage + "======================" + Common.selectDay);
 
+        // 2. 전역 searchType 설정 (서버 통신 시 사용)
         Common.searchType = searchType;
 
+        // 3. 기존 출하대상 데이터 삭제
         DBHandler.deletequeryShipment(getApplicationContext());
 
-        if(Common.selectDay == ""){
+        // 4. 날짜 미선택 시 오늘 날짜로 설정
+        if ("".equals(Common.selectDay)) {
             calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
             calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
             calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
             Common.selectDay = formatDateYYYYMMDD();
         }
 
+        // 5. 선택된 날짜/창고 로그 출력
         Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
         Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
 
+        // 6. 바코드 정보 및 계근 내역 데이터 삭제
         DBHandler.deletequeryBarcodeInfo(getApplicationContext());
         DBHandler.deletequeryGoodsWet(getApplicationContext());
+
+        // 7. 서버에서 출하/생산 대상 리스트 다운로드 (비동기)
         new ProgressDlgShipSearch(this).execute();
     }
 
@@ -430,20 +438,26 @@ public class MainActivity extends AppCompatActivity {
      * @return YYYYMMDD 형식의 날짜 문자열 (예: "20260107")
      */
     private String formatDateYYYYMMDD() {
+        // 1. 연도 추출 (4자리)
         String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
 
+        // 2. 월 추출 (Calendar.MONTH는 0부터 시작하므로 +1)
+        //    10 미만이면 앞에 0 추가 (예: 1월 → "01")
         if(calendar.get(Calendar.MONTH)+1 < 10) {
             inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
         }else{
             inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
         }
 
+        // 3. 일 추출
+        //    10 미만이면 앞에 0 추가 (예: 7일 → "07")
         if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
             inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
         }else{
             inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
         }
 
+        // 4. 최종 결과 반환 (예: "20260107")
         return inPutDay;
     }
 
@@ -464,13 +478,8 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle(alertTitle)
                 .setMessage(buttonMessage)
                 .setCancelable(false)
-                .setPositiveButton(buttonYes,
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                finish();
-                            }
-                        }).setNegativeButton(buttonNo, null).show();
+                .setPositiveButton(buttonYes, (dialog, which) -> finish())
+                .setNegativeButton(buttonNo, null)
+                .show();
     }
 }
