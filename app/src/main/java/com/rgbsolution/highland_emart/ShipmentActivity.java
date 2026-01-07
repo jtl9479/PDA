@@ -6,7 +6,6 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
@@ -196,6 +195,11 @@ public class ShipmentActivity extends ScannerActivity {
     private static final String ITEM_TYPE_S = "S";    // 저울 계근
     private static final String ITEM_TYPE_J = "J";    // 지정 중량
     private static final String ITEM_TYPE_B = "B";    // 홈플러스 비정량
+
+    // 센터명 상수 (수입육 센터 판별용)
+    private static final String CENTER_NAME_TRD = "TRD";
+    private static final String CENTER_NAME_WET = "WET";
+    private static final String CENTER_NAME_ET = "E/T";
 
     /** Handler 메시지 타입 - 리스트 행 체크 완료 */
     private final int MESSAGE_ROWCHECK = 1000;
@@ -616,7 +620,7 @@ public class ShipmentActivity extends ScannerActivity {
 
                           startActivityForResult(IntentA,GET_DATA_REQUEST);
 
-                    }else if(arSM.get(current_work_position).getCENTERNAME().contains("TRD") || arSM.get(current_work_position).getCENTERNAME().contains("WET") || arSM.get(current_work_position).getCENTERNAME().contains("E/T") || Common.searchType.equals(SEARCH_TYPE_LOTTE)){
+                    }else if(arSM.get(current_work_position).getCENTERNAME().contains(CENTER_NAME_TRD) || arSM.get(current_work_position).getCENTERNAME().contains(CENTER_NAME_WET) || arSM.get(current_work_position).getCENTERNAME().contains(CENTER_NAME_ET) || Common.searchType.equals(SEARCH_TYPE_LOTTE)){
                         if(Common.searchType.equals(SEARCH_TYPE_EMART) || Common.searchType.equals(SEARCH_TYPE_LOTTE)){ //수입육 계근, 롯데계근일 때 수기입력시 소비기한 창 띄움
                             String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
                             String makingTo = work_item_bi_info.getMAKINGDATE_TO();
@@ -1074,7 +1078,7 @@ public class ShipmentActivity extends ScannerActivity {
                                 scan_flag = true;
                                 return;
                             }
-                        } else if (arSM.get(current_work_position).getCENTERNAME().equals("용인TRD") || arSM.get(current_work_position).getCENTERNAME().equals("대구TRD") || arSM.get(current_work_position).getCENTERNAME().equals("시화(W)_TRD") || arSM.get(current_work_position).getCENTERNAME().equals("여주TRD") || arSM.get(current_work_position).getCENTERNAME().substring(0, 3).equals("E/T") || arSM.get(current_work_position).getCENTERNAME().contains("E/T")  ||  arSM.get(current_work_position).getCENTERNAME().contains("WET")) {
+                        } else if (arSM.get(current_work_position).getCENTERNAME().equals("용인TRD") || arSM.get(current_work_position).getCENTERNAME().equals("대구TRD") || arSM.get(current_work_position).getCENTERNAME().equals("시화(W)_TRD") || arSM.get(current_work_position).getCENTERNAME().equals("여주TRD") || arSM.get(current_work_position).getCENTERNAME().substring(0, 3).equals(CENTER_NAME_ET) || arSM.get(current_work_position).getCENTERNAME().contains(CENTER_NAME_ET)  ||  arSM.get(current_work_position).getCENTERNAME().contains(CENTER_NAME_WET)) {
                             if (Common.searchType.equals(SEARCH_TYPE_EMART)) {
                                 if (work_item_bi_info.getSHELF_LIFE().equals("") || work_item_bi_info.getMAKINGDATE_FROM().equals("") || work_item_bi_info.getMAKINGDATE_TO().equals("")) {
                                     Toast.makeText(getApplicationContext(), "트레이더스 납품 상품의 경우 소비기한정보가 필수로 입력되어야 합니다.\n 현 상품의 계근을 진행할 수 없습니다. 관리자에게 문의하세요.", Toast.LENGTH_LONG).show();
@@ -2024,7 +2028,7 @@ public class ShipmentActivity extends ScannerActivity {
         }
 
         if(Common.searchType.equals(SEARCH_TYPE_EMART)){ //이마트 수입육 계근일때만
-            if (si.getCENTERNAME().contains("E/T")  ||  si.getCENTERNAME().contains("WET")  ||  si.getCENTERNAME().contains("TRD")) { //트레이더스 납품분
+            if (si.getCENTERNAME().contains(CENTER_NAME_ET)  ||  si.getCENTERNAME().contains(CENTER_NAME_WET)  ||  si.getCENTERNAME().contains(CENTER_NAME_TRD)) { //트레이더스 납품분
 
                 String rawExp = "20"+making_date;
                 Log.e(TAG, "rawExp chk : " + rawExp);
@@ -2316,8 +2320,8 @@ public class ShipmentActivity extends ScannerActivity {
             split_name = si.CLIENTNAME.split("백화점");
         } else if (si.CLIENTNAME.contains("EVERY")) {
             split_name = si.CLIENTNAME.split("EVERY");
-        } else if (si.CLIENTNAME.contains("E/T")) {
-            split_name = si.CLIENTNAME.split("E/T");
+        } else if (si.CLIENTNAME.contains(CENTER_NAME_ET)) {
+            split_name = si.CLIENTNAME.split(CENTER_NAME_ET);
         } else {
             pointName = si.CLIENTNAME.toString();
         }
