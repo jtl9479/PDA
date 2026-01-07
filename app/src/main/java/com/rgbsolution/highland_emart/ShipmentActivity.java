@@ -190,6 +190,13 @@ public class ShipmentActivity extends ScannerActivity {
     private static final String BARCODE_TYPE_E3 = "E3";
     private static final String BARCODE_TYPE_P0 = "P0";
 
+    // 계근 방식 상수
+    private static final String ITEM_TYPE_W = "W";    // 바코드 계근
+    private static final String ITEM_TYPE_HW = "HW";  // 바코드 계근 확장
+    private static final String ITEM_TYPE_S = "S";    // 저울 계근
+    private static final String ITEM_TYPE_J = "J";    // 지정 중량
+    private static final String ITEM_TYPE_B = "B";    // 홈플러스 비정량
+
     /** Handler 메시지 타입 - 리스트 행 체크 완료 */
     private final int MESSAGE_ROWCHECK = 1000;
     /** Handler 메시지 타입 - 계근 작업 완료 */
@@ -485,13 +492,11 @@ public class ShipmentActivity extends ScannerActivity {
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
             // Otherwise, setup the chat session
         } else {
-
             if (Common.printer_setting && !Common.searchType.equals(SEARCH_TYPE_PRODUCTION)) {  //메인화면 프린터설정에서 ON으로 하면 아래 로직을 탄다, 이노이천에서 생산 계근일떄는 물어보지 않도록 변경
-
                 if (mPrintService == null) {
-
                     mPrintService = new BluetoothPrintService(ShipmentActivity.this, mHandler);
                     mWoosim = new WoosimService(mHandler);
+
                     if (Common.printer_address.equals("")) {
                         Intent i = new Intent(ShipmentActivity.this, DeviceListActivity.class);
                         startActivityForResult(i, REQUEST_CONNECT_DEVICE);
@@ -514,9 +519,11 @@ public class ShipmentActivity extends ScannerActivity {
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, TAG + " onDestroy");
+
         if (mPrintService != null) {
             new ProgressDlgDiscon(ShipmentActivity.this).execute();
         }
+
         if (cDialog != null && cDialog.isShowing()) {
             cDialog.dismiss(); //접속되면 여기서 종료
         }
@@ -559,7 +566,7 @@ public class ShipmentActivity extends ScannerActivity {
             hideKeyboard();
             if (work_flag == 1) {     // 바코드 스캔 작업
                 setBarcodeMsg(edit_barcode.getText().toString());
-            } else if(work_flag == 0) {            // 수기 입력 작업
+            } else if (work_flag == 0) {            // 수기 입력 작업
                 if (edit_barcode.getText().toString().equals("")) {      // 중량값이 입력되지 않았을 때
                     Toast.makeText(getApplicationContext(), "중량을 입력하세요.", Toast.LENGTH_SHORT).show();
                     return;
@@ -581,14 +588,14 @@ public class ShipmentActivity extends ScannerActivity {
 
                     String temp_weight = "";
 
-                    if(Common.searchType.equals(SEARCH_TYPE_EMART)) { //이마트 출하대상일경우
+                    if (Common.searchType.equals(SEARCH_TYPE_EMART)) { //이마트 출하대상일경우
                         weight_double = Math.floor(weight_double * 10);
                         Log.i(TAG, "=====================weight_double 1-1==================" + weight_double);
                         weight_double = weight_double / 10.0;
                         Log.i(TAG, "=====================weight_double 1-2==================" + weight_double);
                         Log.i(TAG, "=====================weight_double 2==================" + weight_double);
                         temp_weight = String.format("%.1f", weight_double); //출하일 경우 소숫점 첫째 자리까지 반올림, 위 단계에서 Math.floor로 소숫점 둘째 자리부터 날려서 의미는 없는 코드이나 일단 남겨놓음
-                    }else{ //이노 생산계근 or 홈플러스 추가계근일경우
+                    } else { //이노 생산계근 or 홈플러스 추가계근일경우
                         temp_weight = Double.toString(weight_double); //생산일 경우 그대로 입력
                         Log.i(TAG, "=====================temp_weight production==================" + temp_weight);
                     }
@@ -604,8 +611,8 @@ public class ShipmentActivity extends ScannerActivity {
                     Log.i(TAG, "=====================패커코드 체크==================" + arSM.get(current_work_position).getPACKER_CODE());
                     Log.i(TAG, "=====================스토어코드 체크==================" + arSM.get(current_work_position).getSTORE_CODE());
 
-                    if (arSM.get(current_work_position).getPACKER_CODE().equals(KILKOY_PACKER_CODE) && arSM.get(current_work_position).getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE)) {
-
+                    if (arSM.get(current_work_position).getPACKER_CODE().equals(KILKOY_PACKER_CODE)
+                            && arSM.get(current_work_position).getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE)) {
                           String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
                           String makingTo = work_item_bi_info.getMAKINGDATE_TO();
 
@@ -1155,7 +1162,7 @@ public class ShipmentActivity extends ScannerActivity {
                          */
                         Log.d(TAG, "******************current_work_position:" + arSM.get(current_work_position).getITEM_TYPE());
 
-                        if (arSM.get(current_work_position).getITEM_TYPE().equals("W") || arSM.get(current_work_position).getITEM_TYPE().equals("HW")) {
+                        if (arSM.get(current_work_position).getITEM_TYPE().equals(ITEM_TYPE_W) || arSM.get(current_work_position).getITEM_TYPE().equals(ITEM_TYPE_HW)) {
                             String weight_from = work_item_bi_info.getWEIGHT_FROM();
                             String weight_to = work_item_bi_info.getWEIGHT_TO();
 
@@ -1208,7 +1215,7 @@ public class ShipmentActivity extends ScannerActivity {
                                         Integer.parseInt(work_item_bi_info.getBOXSERIAL_FROM()) - 1, Integer.parseInt(work_item_bi_info.getBOXSERIAL_TO()));
                                 Log.i(TAG, "Type W | 절사한 박스시리얼 : " + item_box_serial);
                             }
-                        } else if (arSM.get(current_work_position).getITEM_TYPE().equals("S")) {
+                        } else if (arSM.get(current_work_position).getITEM_TYPE().equals(ITEM_TYPE_S)) {
                             String weight_from = work_item_bi_info.getWEIGHT_FROM();
                             String weight_to = work_item_bi_info.getWEIGHT_TO();
 
@@ -1259,7 +1266,7 @@ public class ShipmentActivity extends ScannerActivity {
                                         Integer.parseInt(work_item_bi_info.getBOXSERIAL_FROM()) - 1, Integer.parseInt(work_item_bi_info.getBOXSERIAL_TO()));
                                 Log.i(TAG, "Type S | 절사한 박스시리얼 : " + item_box_serial);
                             }
-                        } else if (arSM.get(current_work_position).getITEM_TYPE().equals("J")) {
+                        } else if (arSM.get(current_work_position).getITEM_TYPE().equals(ITEM_TYPE_J)) {
                             // 이마트 ITEM_TYPE J (지정된 중량 입력) | 바코드에서 중량, 제조일, 박스시리얼 X
                             item_weight = arSM.get(current_work_position).getPACKWEIGHT();
                             Log.i(TAG, "Type J | 지정된 중량값 : " + item_weight);
@@ -1270,7 +1277,7 @@ public class ShipmentActivity extends ScannerActivity {
                         }
 
                         // Homeplus 비정량 "B"
-                        if (arSM.get(current_work_position).getITEM_TYPE().equals("B")) {
+                        if (arSM.get(current_work_position).getITEM_TYPE().equals(ITEM_TYPE_B)) {
                             String weight_from = work_item_bi_info.getWEIGHT_FROM();
                             String weight_to = work_item_bi_info.getWEIGHT_TO();
 
@@ -2097,7 +2104,7 @@ public class ShipmentActivity extends ScannerActivity {
         weight_double = Double.parseDouble(print_weight);
 
         // 이마트 상품 W, J 구분
-        if (si.getITEM_TYPE().equals("W") || si.getITEM_TYPE().equals("HW") ) {
+        if (si.getITEM_TYPE().equals(ITEM_TYPE_W) || si.getITEM_TYPE().equals(ITEM_TYPE_HW) ) {
             print_weight_double = weight_double;
             print_weight_str = String.valueOf(print_weight_double);
 
@@ -2105,7 +2112,7 @@ public class ShipmentActivity extends ScannerActivity {
                 Log.d(TAG, "print_weight_str : " + print_weight_str);
                 Log.d(TAG, "ITEM_TYPE : W");
             }
-        } else if (si.getITEM_TYPE().equals("J")) {
+        } else if (si.getITEM_TYPE().equals(ITEM_TYPE_J)) {
             print_weight_str = si.getPACKWEIGHT();
             print_weight_double = Double.parseDouble(print_weight_str);
             if (Common.D) {
@@ -2841,7 +2848,7 @@ public class ShipmentActivity extends ScannerActivity {
             }
 
             byteStream.write(WoosimCmd.PM_setPosition(135, 170));
-            if (si.getITEM_TYPE().equals("B")) {
+            if (si.getITEM_TYPE().equals(ITEM_TYPE_B)) {
                 byteStream.write(WoosimCmd.getTTFcode(155, 155, storeCode.toString()));                    // 점포코드 출력(홈플러스 비정량)
             } else {
                 byteStream.write(WoosimCmd.getTTFcode(155, 155, pointCode.toString()));                    // 지점코드 출력
@@ -2949,7 +2956,7 @@ public class ShipmentActivity extends ScannerActivity {
         }
         weight_double = Double.parseDouble(print_weight);
 
-        if (si.getITEM_TYPE().equals("W") || si.getITEM_TYPE().equals("S")  ) { //롯데용 임시
+        if (si.getITEM_TYPE().equals(ITEM_TYPE_W) || si.getITEM_TYPE().equals(ITEM_TYPE_S)  ) { //롯데용 임시
             print_weight_double = weight_double;
             print_weight_str = String.valueOf(print_weight_double);
 
@@ -2957,7 +2964,7 @@ public class ShipmentActivity extends ScannerActivity {
                 Log.d(TAG, "print_weight_str : " + print_weight_str);
                 Log.d(TAG, "ITEM_TYPE : W");
             }
-        } else if (si.getITEM_TYPE().equals("J")) {
+        } else if (si.getITEM_TYPE().equals(ITEM_TYPE_J)) {
             print_weight_str = si.getPACKWEIGHT();
             print_weight_double = Double.parseDouble(print_weight_str);
             if (Common.D) {
