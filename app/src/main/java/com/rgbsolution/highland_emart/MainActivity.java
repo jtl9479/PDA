@@ -180,18 +180,24 @@ public class MainActivity extends AppCompatActivity {
 
         switch (v.getId()) {
 
+            // ============================================================
+            // 1. 날짜/데이터 관리
+            // ============================================================
+
             // ==================== 날짜 선택 ====================
             case R.id.btnDay:
-                // DatePickerDialog를 표시하여 사용자가 날짜를 선택할 수 있도록 함
                 new DatePickerDialog(MainActivity.this,date,calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
                 break;
 
             // ==================== 계근대상삭제 ====================
             case R.id.buttonDelete:
-                // 로컬 DB의 계근대상 테이블 데이터 삭제
                 DBHandler.deletequeryShipment(getApplicationContext());
                 Toast.makeText(getApplicationContext(), "출하대상이 삭제 되었습니다.", Toast.LENGTH_SHORT).show();
                 break;
+
+            // ============================================================
+            // 2. 다운로드 (서버에서 출하대상 리스트 받기)
+            // ============================================================
 
             // ==================== 이마트 출하대상받기 (searchType: 0) ====================
             case R.id.btnDownload:
@@ -218,26 +224,34 @@ public class MainActivity extends AppCompatActivity {
                 downloadShipmentList("4", "비정량출하대상받기");
                 break;
 
+            // ==================== (비정량)홈플러스 출하대상받기 (searchType: 5) ====================
+            case R.id.btnWetHomeplusNon:
+                downloadShipmentList("5", "홈플러스 비정량 출하대상받기");
+                break;
+
             // ==================== 롯데 출하대상받기 (searchType: 6) ====================
             case R.id.btnDownloadLotte:
                 downloadShipmentList("6", "롯데출하대상받기");
                 break;
 
-            // ==================== (이마트출하) 계근입력시작 (searchType: 0 필요) ====================
-            // 다운로드된 이마트 출하대상 리스트를 기반으로 계근 입력 화면으로 이동
+            // ==================== 생산대상받기(라벨) (searchType: 7) ====================
+            case R.id.btnproductionlist4print:
+                downloadShipmentList("7", "생산대상받기(라벨)");
+                break;
+
+            // ============================================================
+            // 3. 계근입력 (ShipmentActivity로 이동)
+            // ============================================================
+
+            // ==================== 이마트 계근입력시작 (searchType: 0) ====================
             case R.id.btnWet:
-                // searchType 검증 - 출하대상 데이터가 다운로드되었는지 확인
                 if (!Common.searchType.equals("0")) {
                     Toast.makeText(getApplicationContext(), "출하를 위해 출하 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);  // 에러 피드백
+                    vibrator.vibrate(300);
                     break;
                 }
-
                 Common.searchType = "0";
-                // 로컬 DB에서 출하대상 리스트 조회
                 ArrayList<Shipments_Info> list_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-
-                // 리스트가 있으면 ShipmentActivity로 이동, 없으면 에러 메시지 표시
                 if (list_si.size() > 0) {
                     i = new Intent(this, ShipmentActivity.class);
                     startActivity(i);
@@ -247,40 +261,15 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
-            // ==================== (도매업체) 계근입력시작 (searchType: 3 필요) ====================
-            case R.id.btnWetWholesale:
-                // searchType 검증
-                if (!Common.searchType.equals("3")) {
-                    Toast.makeText(getApplicationContext(), "출하를 위해 출하 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                    break;
-                }
-
-                Common.searchType = "3";
-                ArrayList<Shipments_Info> list_wholesale_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-
-                if (list_wholesale_si.size() > 0) {
-                    i = new Intent(this, ShipmentActivity.class);
-                    startActivity(i);
-                } else {
-                    Toast.makeText(getApplicationContext(), "출하대상 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
-                    vibrator.vibrate(300);
-                }
-                break;
-
-            // ==================== 생산계근입력시작 (searchType: 1 필요) ====================
+            // ==================== 생산 계근입력시작 (searchType: 1) ====================
             case R.id.btnProdWet:
-
-                // searchType 검증
                 if (!Common.searchType.equals("1")) {
                     Toast.makeText(getApplicationContext(), "생산 계근을 위해 생산 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
                     vibrator.vibrate(300);
                     break;
                 }
-
                 Common.searchType = "1";
                 ArrayList<Shipments_Info> list_prod_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-
                 if (list_prod_si.size() > 0) {
                     i = new Intent(this, ShipmentActivity.class);
                     startActivity(i);
@@ -290,20 +279,15 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
-            // ==================== (홈플러스하이퍼출하) 계근입력시작 (searchType: 2 필요) ====================
+            // ==================== 홈플러스 계근입력시작 (searchType: 2) ====================
             case R.id.btnWetHomeplus:
-
-                // searchType 검증
                 if (!Common.searchType.equals("2")) {
                     Toast.makeText(getApplicationContext(), "홈플러스 출고분 계근을 위해 홈플러스 하이퍼 출고 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
                     vibrator.vibrate(300);
                     break;
                 }
-
                 Common.searchType = "2";
-
                 ArrayList<Shipments_Info> list_homeplus_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-
                 if (list_homeplus_si.size() > 0) {
                     i = new Intent(this, ShipmentActivity.class);
                     startActivity(i);
@@ -313,49 +297,33 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
-            // ==================== (비정량)홈플러스 출하대상받기 (searchType: 5) ====================
-            case R.id.btnWetHomeplusNon:
-                downloadShipmentList("5", "홈플러스 비정량 출하대상받기");
-                break;
-
-            // ==================== (비정량)홈플러스 계근입력시작 (searchType: 5 필요) ====================
-            case R.id.btnWetHomeplusNon2:
-
-                // searchType 검증
-                if (!Common.searchType.equals("5")) {
-                    Toast.makeText(getApplicationContext(), "홈플러스 출고분 계근을 위해 홈플러스 비정량 출고 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
+            // ==================== 도매업체 계근입력시작 (searchType: 3) ====================
+            case R.id.btnWetWholesale:
+                if (!Common.searchType.equals("3")) {
+                    Toast.makeText(getApplicationContext(), "출하를 위해 출하 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
                     vibrator.vibrate(300);
                     break;
                 }
-
-                Common.searchType = "5";
-
-                ArrayList<Shipments_Info> list_homeplus_si2 = DBHandler.selectqueryAllShipment(MainActivity.this);
-
-                if (list_homeplus_si2.size() > 0) {
+                Common.searchType = "3";
+                ArrayList<Shipments_Info> list_wholesale_si = DBHandler.selectqueryAllShipment(MainActivity.this);
+                if (list_wholesale_si.size() > 0) {
                     i = new Intent(this, ShipmentActivity.class);
                     startActivity(i);
                 } else {
-                    Toast.makeText(getApplicationContext(), "홈플러스 비정량 출고 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "출하대상 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
                     vibrator.vibrate(300);
                 }
-
                 break;
 
-            // ==================== (비정량)출하계근입력시작 (searchType: 4 필요) ====================
+            // ==================== 비정량 계근입력시작 (searchType: 4) ====================
             case R.id.btnProdNonfixedWet:
-
-                // searchType 검증
                 if (!Common.searchType.equals("4")) {
                     Toast.makeText(getApplicationContext(), "비정량 출고분 계근을 위해 비정량 출고 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
                     vibrator.vibrate(300);
                     break;
                 }
-
                 Common.searchType = "4";
-
                 ArrayList<Shipments_Info> list_prodNonfixed_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-
                 if (list_prodNonfixed_si.size() > 0) {
                     i = new Intent(this, ShipmentActivity.class);
                     startActivity(i);
@@ -365,20 +333,33 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
-            // ==================== (롯데출하) 계근입력시작 (searchType: 6 필요) ====================
-            case R.id.btnWetLotte:
+            // ==================== 홈플러스 비정량 계근입력시작 (searchType: 5) ====================
+            case R.id.btnWetHomeplusNon2:
+                if (!Common.searchType.equals("5")) {
+                    Toast.makeText(getApplicationContext(), "홈플러스 출고분 계근을 위해 홈플러스 비정량 출고 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
+                    vibrator.vibrate(300);
+                    break;
+                }
+                Common.searchType = "5";
+                ArrayList<Shipments_Info> list_homeplus_si2 = DBHandler.selectqueryAllShipment(MainActivity.this);
+                if (list_homeplus_si2.size() > 0) {
+                    i = new Intent(this, ShipmentActivity.class);
+                    startActivity(i);
+                } else {
+                    Toast.makeText(getApplicationContext(), "홈플러스 비정량 출고 리스트가 없습니다.\n리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
+                    vibrator.vibrate(300);
+                }
+                break;
 
-                // searchType 검증
+            // ==================== 롯데 계근입력시작 (searchType: 6) ====================
+            case R.id.btnWetLotte:
                 if (!Common.searchType.equals("6")) {
                     Toast.makeText(getApplicationContext(), "롯데 출고분 계근을 위해 롯데 출고 리스트를 받아주세요.", Toast.LENGTH_SHORT).show();
                     vibrator.vibrate(300);
                     break;
                 }
-
                 Common.searchType = "6";
-
                 ArrayList<Shipments_Info> list_Lotte_si = DBHandler.selectqueryAllShipment(MainActivity.this);
-
                 if (list_Lotte_si.size() > 0) {
                     i = new Intent(this, ShipmentActivity.class);
                     startActivity(i);
@@ -388,26 +369,16 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
-            // ==================== 생산대상받기(라벨) (searchType: 7) ====================
-            case R.id.btnproductionlist4print:
-                downloadShipmentList("7", "생산대상받기(라벨)");
-                break;
-
-            // ==================== 생산입력시작(라벨) (searchType: 7 필요) ====================
+            // ==================== 생산(라벨) 계근입력시작 (searchType: 7) ====================
             case R.id.btnProdWet4print:
-
                 Log.i(TAG, TAG + "=====================생산입력시작(라벨)======================" + Common.selectDay);
-
-                // searchType 검증
                 if (!Common.searchType.equals("7")) {
                     Toast.makeText(getApplicationContext(), "생산 계근을 위해 생산 리스트(라벨)를 받아주세요.", Toast.LENGTH_SHORT).show();
                     vibrator.vibrate(300);
                     break;
                 }
-
                 Common.searchType = "7";
                 ArrayList<Shipments_Info> list_prod_si2 = DBHandler.selectqueryAllShipment(MainActivity.this);
-
                 if (list_prod_si2.size() > 0) {
                     i = new Intent(this, ShipmentActivity.class);
                     startActivity(i);
@@ -417,24 +388,23 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
-            // ==================== 생산계근계산시작 ====================
-            // ProductionActivity로 이동 (생산계근계산 기능)
-            case R.id.btnProdWetCalc:
+            // ============================================================
+            // 4. 기타
+            // ============================================================
 
+            // ==================== 생산계근계산시작 ====================
+            case R.id.btnProdWetCalc:
                 i = new Intent(this, ProductionActivity.class);
                 startActivity(i);
-
                 break;
 
             // ==================== 설정 화면 ====================
-            // SettingActivity로 이동
             case R.id.action_daysettings:
                 i = new Intent(this, SettingActivity.class);
                 startActivity(i);
                 break;
 
             // ==================== 종료 ====================
-            // 종료 확인 다이얼로그 표시
             case R.id.btnClose:
                 exitDialog();
                 break;
