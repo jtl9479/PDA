@@ -177,6 +177,19 @@ public class ShipmentActivity extends ScannerActivity {
     // 롯데 박스 순번 관련 상수
     private static final int LOTTE_BOX_ORDER_MAX = 9999;             // 롯데 박스 순번 최대값
 
+    // 바코드 타입 상수
+    private static final String BARCODE_TYPE_M0 = "M0";
+    private static final String BARCODE_TYPE_M1 = "M1";
+    private static final String BARCODE_TYPE_M3 = "M3";
+    private static final String BARCODE_TYPE_M4 = "M4";
+    private static final String BARCODE_TYPE_M8 = "M8";
+    private static final String BARCODE_TYPE_M9 = "M9";
+    private static final String BARCODE_TYPE_E0 = "E0";
+    private static final String BARCODE_TYPE_E1 = "E1";
+    private static final String BARCODE_TYPE_E2 = "E2";
+    private static final String BARCODE_TYPE_E3 = "E3";
+    private static final String BARCODE_TYPE_P0 = "P0";
+
     /** Handler 메시지 타입 - 리스트 행 체크 완료 */
     private final int MESSAGE_ROWCHECK = 1000;
     /** Handler 메시지 타입 - 계근 작업 완료 */
@@ -2010,7 +2023,7 @@ public class ShipmentActivity extends ScannerActivity {
 
             String YYYYMMDD = YYYY+"-"+MM+"-"+DD;
 
-            if(arSM.get(current_work_position).getBARCODE_TYPE().equals("M3") || arSM.get(current_work_position).getBARCODE_TYPE().equals("M4")){
+            if(arSM.get(current_work_position).getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || arSM.get(current_work_position).getBARCODE_TYPE().equals(BARCODE_TYPE_M4)){
                 expiryDayConvert = "소비기한: "+YYYYMMDD;
             }else{
                 expiryDayConvert = "/소비기한 : "+YYYYMMDD;
@@ -2048,7 +2061,7 @@ public class ShipmentActivity extends ScannerActivity {
 
                 String YYYYMMDD = YYYY+"-"+MM+"-"+DD;
 
-                if(arSM.get(current_work_position).getBARCODE_TYPE().equals("M3") || arSM.get(current_work_position).getBARCODE_TYPE().equals("M4")){
+                if(arSM.get(current_work_position).getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || arSM.get(current_work_position).getBARCODE_TYPE().equals(BARCODE_TYPE_M4)){
                     expiryDayConvert = "소비기한: "+YYYYMMDD;
                 }else{
                     expiryDayConvert = "/소비기한: "+YYYYMMDD;
@@ -2348,9 +2361,9 @@ public class ShipmentActivity extends ScannerActivity {
                     Log.i(TAG, "센터명 <= 7 ,  size 40");
             }
 
-            if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
 
-            } else if(si.getBARCODE_TYPE().equals("M9")){
+            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
                 String vendorName = "[" + COMPANY_NAME + "]";
                 byteStream.write(WoosimCmd.PM_setPosition(330, 13));
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, vendorName));       // 업체명 출력
@@ -2387,9 +2400,9 @@ public class ShipmentActivity extends ScannerActivity {
             }
 
             //상품명 위치
-            if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 byteStream.write(WoosimCmd.PM_setPosition(15, 65));
-            }else if(si.getBARCODE_TYPE().equals("M9")){
+            }else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
                 byteStream.write(WoosimCmd.PM_setPosition(15, 70));
             }else {
                 byteStream.write(WoosimCmd.PM_setPosition(80, 120)); //check point 2 15,75
@@ -2409,7 +2422,7 @@ public class ShipmentActivity extends ScannerActivity {
 
             Log.i(TAG, "===============sBarcode============" + sBarcode);
 
-            if (!si.getBARCODE_TYPE().equals("M9")){
+            if (!si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
                 byteStream.write(WoosimCmd.PM_setPosition(420, 20));
                 byteStream.write(STORECODE128);
             }
@@ -2418,7 +2431,7 @@ public class ShipmentActivity extends ScannerActivity {
 
             Log.i(TAG, "===============sBarcode2============" + sBarcodeStr);
 
-            if (!si.getBARCODE_TYPE().equals("M9")){
+            if (!si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
                 byteStream.write(WoosimCmd.PM_setPosition(450, 80));    // E3 Position(25)
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, sBarcodeStr));                                // 바코드번호(숫자) 출력
             }
@@ -2432,20 +2445,20 @@ public class ShipmentActivity extends ScannerActivity {
             Log.i(TAG, "===============pBarcode2============" + pBarcode2);
 
             //이마트 바코드 타입에 따른 바코드 출력 위치 설정
-            if (si.getBARCODE_TYPE().equals("M0") || si.getBARCODE_TYPE().equals("E0")
-                    || si.getBARCODE_TYPE().equals("E1") || si.getBARCODE_TYPE().equals("M8")) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0)
+                    || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
                 byteStream.write(WoosimCmd.PM_setPosition(80, 170)); // check point 3 60,155
-            } else if (si.getBARCODE_TYPE().equals("M1")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M1)) {
                 byteStream.write(WoosimCmd.PM_setPosition(145, 170));
-            } else if (si.getBARCODE_TYPE().equals("E2")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E2)) {
                 byteStream.write(WoosimCmd.PM_setPosition(90, 170));    // E2 Position (25)
-            } else if (si.getBARCODE_TYPE().equals("E3")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E3)) {
                 byteStream.write(WoosimCmd.PM_setPosition(160, 170));
-            } else if (si.getBARCODE_TYPE().equals("M3")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
                 byteStream.write(WoosimCmd.PM_setPosition(70, 115));
-            } else if (si.getBARCODE_TYPE().equals("M4")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 byteStream.write(WoosimCmd.PM_setPosition(145, 115));
-            }else if(si.getBARCODE_TYPE().equals("M9")){
+            }else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
                 byteStream.write(WoosimCmd.PM_setPosition(90, 125));
             }
 
@@ -2458,38 +2471,38 @@ public class ShipmentActivity extends ScannerActivity {
 //            Log.i(TAG, "===============EMARTLOGIS_NAME============" + si.EMARTLOGIS_NAME);
 
             //이마트 바코드 타입에 따른 바코드번호(숫자) 출력 위치 설정
-            if (si.getBARCODE_TYPE().equals("M0") || si.getBARCODE_TYPE().equals("E0") || si.getBARCODE_TYPE().equals("E1") || si.getBARCODE_TYPE().equals("M8")) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
                 byteStream.write(WoosimCmd.PM_setPosition(75, 240)); //75,225     // M0, E0, E1 Position(31)
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr));
-            } if (si.getBARCODE_TYPE().equals("M1")) {
+            } if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M1)) {
                 byteStream.write(WoosimCmd.PM_setPosition(147, 240));    // M1 Position(18)
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr));                                // 바코드번호(숫자) 출력
-            } else if (si.getBARCODE_TYPE().equals("E2")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E2)) {
                 byteStream.write(WoosimCmd.PM_setPosition(100, 240));    // E2 Position(25)
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr));                                // 바코드번호(숫자) 출력
-            } else if (si.getBARCODE_TYPE().equals("E3")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E3)) {
                 byteStream.write(WoosimCmd.PM_setPosition(190, 240));    // E3 Position(25)
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr));                                // 바코드번호(숫자) 출력
-            } else if (si.getBARCODE_TYPE().equals("M3")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
                 byteStream.write(WoosimCmd.PM_setPosition(25, 175));    // M0, E0, E1 Position(31)
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr + "  PC매입"));                                // 바코드번호(숫자) 출력
-            } else if (si.getBARCODE_TYPE().equals("M4")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 byteStream.write(WoosimCmd.PM_setPosition(117, 175));    // M1 Position(18)
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr + "  PC매입"));                                // 바코드번호(숫자) 출력
-            }else if (si.getBARCODE_TYPE().equals("M9")) {
+            }else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
                 byteStream.write(WoosimCmd.PM_setPosition(90, 192));    // M1 Position(18)
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr ));                                // 바코드번호(숫자) 출력
             }
 
-            if (si.getBARCODE_TYPE().equals("M3")) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
                 byteStream.write(WoosimCmd.PM_setPosition(70, 205));
                 Log.i(TAG, "===============LOGISCODE128============" + LOGISCODE128);
                 byteStream.write(LOGISCODE128);
-            } else if (si.getBARCODE_TYPE().equals("M4")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 byteStream.write(WoosimCmd.PM_setPosition(145, 205));
                 Log.i(TAG, "===============LOGISCODE128============" + LOGISCODE128);
                 byteStream.write(LOGISCODE128);
-            } else if(si.getBARCODE_TYPE().equals("M9")){ //m9하단코드
+            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){ //m9하단코드
                 byteStream.write(WoosimCmd.PM_setPosition(125, 325));
                 Log.i(TAG, "===============LOGISCODE128============" + LOGISCODE128);
                 byteStream.write(LOGISCODE128);
@@ -2506,16 +2519,16 @@ public class ShipmentActivity extends ScannerActivity {
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, belowBarcodeString ));
             }
 
-            if (si.getBARCODE_TYPE().equals("M3")) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
                 byteStream.write(WoosimCmd.PM_setPosition(25, 265));    // M0, E0, E1 Position(31)
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr2 + "  PC출하"));                                // 바코드번호(숫자) 출력
-            } else if (si.getBARCODE_TYPE().equals("M4")) {
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 byteStream.write(WoosimCmd.PM_setPosition(117, 265));    // M1 Position(18)
                 Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
                 byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr2 + "  PC출하"));                                // 바코드번호(숫자) 출력
             }
 
-            if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 byteStream.write(WoosimCmd.PM_setPosition(15, 300));
                 byteStream.write(WoosimCmd.getTTFcode(40, 40, "중     량 : "));                            // 중량 출력
                 byteStream.write(WoosimCmd.PM_setPosition(175, 300));
@@ -2534,7 +2547,7 @@ public class ShipmentActivity extends ScannerActivity {
                 byteStream.write(WoosimCmd.PM_setPosition(15, 428));
                 byteStream.write(WoosimCmd.getTTFcode(30, 30, expiryDayConvert));
 
-            }else if(si.getBARCODE_TYPE().equals("M9")) {
+            }else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
 
                 byteStream.write(WoosimCmd.PM_setPosition(90, 220));
                 Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
@@ -2571,7 +2584,7 @@ public class ShipmentActivity extends ScannerActivity {
                 byteStream.write(WoosimCmd.getTTFcode(65, 65, whArea));
             }
 
-            if(si.getBARCODE_TYPE().equals("M9")) {
+            if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
                 byteStream.write(WoosimImage.drawLine(0, 260, 560, 260, 5));            //M9은 가로선 하나만 그린다.
             }
 
@@ -2579,13 +2592,13 @@ public class ShipmentActivity extends ScannerActivity {
             byteStream.write(WoosimCmd.PM_printData());
             byteStream.write(WoosimCmd.PM_setStdMode());
 
-            if( !si.getBARCODE_TYPE().equals("P0") ) {
+            if( !si.getBARCODE_TYPE().equals(BARCODE_TYPE_P0) ) {
                 sendData(byteStream.toByteArray());
                 sendData(WoosimCmd.feedToMark());
             }
 
             // // todo 이마트 미트센터 +공장코드
-            if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && !si.getEMART_PLANT_CODE().equals("")) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && !si.getEMART_PLANT_CODE().equals("")) {
                 byteStream.reset(); // clear
 
                 System.out.println(">>>>>>>>>>>>>>> 이마트 미트센터 +공장코드 >>>>>>>>>>>>>>>");
@@ -2665,7 +2678,7 @@ public class ShipmentActivity extends ScannerActivity {
             }
 
             // todo 이마트 미트센터
-            if (si.getBARCODE_TYPE().equals("M0") && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && !si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && si.getEMART_PLANT_CODE().equals("")) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && !si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && si.getEMART_PLANT_CODE().equals("")) {
                 byteStream.reset(); // clear
 
                 try {
@@ -3057,7 +3070,7 @@ public class ShipmentActivity extends ScannerActivity {
 //                //byteStream.write(WoosimCmd.PM_setPosition(260, 13));
 //                //byteStream.write(WoosimCmd.getTTFcode(35, 35, si.getCT_CODE()));                    // 원앤원은 지점자리에 원산지(표시안함)
 //            }else{
-//                if (si.getBARCODE_TYPE().equals("M3") || si.getBARCODE_TYPE().equals("M4")) {
+//                if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
 //
 //                } else {
 //                    if (11 < si.CLIENTNAME.toString().length()) {

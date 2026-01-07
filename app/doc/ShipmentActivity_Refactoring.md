@@ -158,6 +158,103 @@
 
 ---
 
+## 추가 리팩토링 항목 (2026-01-07 분석)
+
+### Step 6. BARCODE_TYPE 상수화 ✅ 완료 (2026-01-07)
+
+**현황**: 바코드 타입 문자열이 46회 반복 사용됨
+
+- [x] `BARCODE_TYPE_M0 = "M0"`
+- [x] `BARCODE_TYPE_M1 = "M1"`
+- [x] `BARCODE_TYPE_M3 = "M3"`
+- [x] `BARCODE_TYPE_M4 = "M4"`
+- [x] `BARCODE_TYPE_M8 = "M8"`
+- [x] `BARCODE_TYPE_M9 = "M9"`
+- [x] `BARCODE_TYPE_E0 = "E0"`
+- [x] `BARCODE_TYPE_E1 = "E1"`
+- [x] `BARCODE_TYPE_E2 = "E2"`
+- [x] `BARCODE_TYPE_E3 = "E3"`
+- [x] `BARCODE_TYPE_P0 = "P0"`
+
+**변경 내역**: 180~191줄에 11개 상수 정의, 46회 사용처 변경
+
+---
+
+### Step 7. ITEM_TYPE 상수화 (미진행)
+
+**현황**: 계근 방식 문자열이 20회 이상 반복 사용됨
+
+- [ ] `ITEM_TYPE_W = "W"` - 바코드 계근
+- [ ] `ITEM_TYPE_HW = "HW"` - 바코드 계근 (확장)
+- [ ] `ITEM_TYPE_S = "S"` - 저울 계근
+- [ ] `ITEM_TYPE_J = "J"` - 지정 중량
+- [ ] `ITEM_TYPE_B = "B"` - 박스 계근
+
+**예상 효과**: 5개 상수, 20회+ 사용처 변경
+
+---
+
+### Step 8. Intent 데이터 키 상수화 (미진행)
+
+**현황**: Intent 키가 지역 변수로 중복 정의됨 (601~604줄, 621~624줄)
+
+- [ ] `EXTRA_WEIGHT_STR = "weightStrKey"`
+- [ ] `EXTRA_WEIGHT_DBL = "weightDblKey"`
+- [ ] `EXTRA_MAKING_FROM = "makingFromKey"`
+- [ ] `EXTRA_MAKING_TO = "makingToKey"`
+- [ ] `EXTRA_ENTERED_WEIGHT_STR = "enteredWeightSend"`
+- [ ] `EXTRA_ENTERED_WEIGHT_DBL = "enteredWeightDblSend"`
+- [ ] `EXTRA_ENTERED_MAKING_DATE = "enteredMakingDateSend"`
+
+**예상 효과**: 7개 상수, 중복 정의 제거
+
+---
+
+### Step 9. 비트 연산자 수정 (미진행)
+
+**현황**: 비트 OR(`|`)가 논리 OR(`||`) 대신 사용됨
+
+- [ ] 1150줄: `weight_from.equals("0") | weight_to.equals("0")` → `||`
+- [ ] 1203줄: 동일 패턴 → `||`
+- [ ] 1265줄: 동일 패턴 → `||`
+
+**동작 변경**: 없음 (결과는 동일하나 의도 명확화)
+
+---
+
+### Step 10. 미사용 상수 삭제 (미진행)
+
+**현황**: 선언만 되고 사용되지 않는 상수
+
+- [ ] 213줄: `public static final String makingDateInput = "";` 삭제
+
+---
+
+### Step 11. 센터명 상수화 (미진행)
+
+**현황**: 센터명 문자열이 반복 사용됨
+
+- [ ] `CENTER_NAME_TRD = "TRD"` - 614줄, 1072줄 등
+- [ ] `CENTER_NAME_WET = "WET"` - 1072줄, 2022줄 등
+- [ ] `CENTER_NAME_ET = "E/T"` - 1072줄, 2314줄 등
+
+**예상 효과**: 3개 상수, 가독성 향상
+
+---
+
+## 추가 리팩토링 우선순위
+
+| 순위 | Step | 항목 | 동작 변경 | 난이도 |
+|-----|------|------|----------|-------|
+| 1 | Step 6 | BARCODE_TYPE 상수화 | 없음 | 낮음 |
+| 2 | Step 7 | ITEM_TYPE 상수화 | 없음 | 낮음 |
+| 3 | Step 8 | Intent 키 상수화 | 없음 | 낮음 |
+| 4 | Step 9 | 비트 연산자 수정 | 없음 | 낮음 |
+| 5 | Step 10 | 미사용 상수 삭제 | 없음 | 낮음 |
+| 6 | Step 11 | 센터명 상수화 | 없음 | 낮음 |
+
+---
+
 ## 리팩토링 우선순위
 
 ### 높음 (즉시 적용 가능, 안전)
@@ -224,6 +321,7 @@
 | Step 3 | 문자열 비교 수정 | - | **보류** (기존 동작 변경됨) |
 | Step 4 | Lambda 표현식 변환 | 2026-01-07 | 12개 익명 클래스 변환, 약 36줄 감소 |
 | Step 5 | 코드 정리 | 2026-01-07 | 미사용 변수 finish_flag 삭제 |
+| Step 6 | BARCODE_TYPE 상수화 | 2026-01-07 | 11개 상수, 46회 사용처 변경 |
 | - | 리팩토링 계획 문서 작성 | 2026-01-07 | 전체 소스 확인 후 재작성 |
 | - | 주석 처리 코드 삭제 (Cleanup) | 2026-01-06 | 약 155줄 삭제 완료 |
 
