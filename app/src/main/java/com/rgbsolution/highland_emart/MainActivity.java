@@ -194,154 +194,33 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             // ==================== 이마트 출하대상받기 (searchType: 0) ====================
-            // 서버에서 이마트 출하대상 리스트를 다운로드하여 로컬 DB에 저장
             case R.id.btnDownload:
-                Log.i(TAG, TAG + "=====================출하대상받기======================" + Common.selectDay);
-
-                Common.searchType = "0";  // 서버 통신 시 사용되는 검색 타입
-
-                // 기존 출하대상 데이터 삭제 (새 데이터 다운로드 전 초기화)
-                DBHandler.deletequeryShipment(getApplicationContext());
-
-                // 날짜가 선택되지 않은 경우 현재 날짜로 설정
-                if(Common.selectDay == ""){
-                    calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
-                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
-                    calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-                    Common.selectDay = formatDateYYYYMMDD();
-                }
-
-                Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
-                Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
-
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
-                DBHandler.deletequeryGoodsWet(getApplicationContext());
-                new ProgressDlgShipSearch(this).execute();
-
+                downloadShipmentList("0", "출하대상받기");
                 break;
 
             // ==================== 생산계근대상받기 (searchType: 1) ====================
-            // 서버에서 생산계근대상 리스트를 다운로드하여 로컬 DB에 저장
             case R.id.btnproductionlist:
-                Log.i(TAG, TAG + "=====================생산대상받기======================" + Common.selectDay);
-
-                Common.searchType = "1";  // 서버 통신 시 사용되는 검색 타입
-
-                DBHandler.deletequeryShipment(getApplicationContext());
-
-                if(Common.selectDay == ""){
-                    calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
-                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
-                    calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-                    Common.selectDay = formatDateYYYYMMDD();
-                }
-
-                Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
-                Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
-
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
-                DBHandler.deletequeryGoodsWet(getApplicationContext());
-                new ProgressDlgShipSearch(this).execute();
-
+                downloadShipmentList("1", "생산대상받기");
                 break;
 
             // ==================== 홈플러스하이퍼 출하대상받기 (searchType: 2) ====================
-            // 서버에서 홈플러스하이퍼 출하대상 리스트를 다운로드
             case R.id.btnDownloadHomeplus:
-                Log.i(TAG, TAG + "=====================홈플러스출하대상받기======================" + Common.selectDay);
-
-                Common.searchType = "2";
-
-                DBHandler.deletequeryShipment(getApplicationContext());
-
-                if(Common.selectDay == ""){
-                    calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
-                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
-                    calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-                    Common.selectDay = formatDateYYYYMMDD();
-                }
-
-                Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
-                Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
-
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
-                DBHandler.deletequeryGoodsWet(getApplicationContext());
-                new ProgressDlgShipSearch(this).execute();
-
+                downloadShipmentList("2", "홈플러스출하대상받기");
                 break;
 
             // ==================== 도매업체 출하대상받기 (searchType: 3) ====================
-            // 서버에서 도매업체 출하대상 리스트를 다운로드
             case R.id.btnDownloadWholesale:
-                Log.i(TAG, TAG + "=====================도매업체출하대상받기======================" + Common.selectDay);
-                Common.searchType = "3";
-
-                DBHandler.deletequeryShipment(getApplicationContext());
-
-                if(Common.selectDay == ""){
-                    calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
-                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
-                    calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-                    Common.selectDay = formatDateYYYYMMDD();
-                }
-
-                Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
-                Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
-
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
-                DBHandler.deletequeryGoodsWet(getApplicationContext());
-                new ProgressDlgShipSearch(this).execute();
-
+                downloadShipmentList("3", "도매업체출하대상받기");
                 break;
 
             // ==================== (비정량)출하계근대상받기 (searchType: 4) ====================
-            // 서버에서 비정량 출하계근대상 리스트를 다운로드
             case R.id.btnproductionNonfixedlist:
-                Log.i(TAG, TAG + "=====================비정량출하대상받기======================" + Common.selectDay);
-                Common.searchType = "4";
-
-                DBHandler.deletequeryShipment(getApplicationContext());
-
-                if(Common.selectDay == ""){
-                    calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
-                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
-                    calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-                    Common.selectDay = formatDateYYYYMMDD();
-                }
-
-                Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
-                Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
-
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
-                DBHandler.deletequeryGoodsWet(getApplicationContext());
-                new ProgressDlgShipSearch(this).execute();
-
+                downloadShipmentList("4", "비정량출하대상받기");
                 break;
 
             // ==================== 롯데 출하대상받기 (searchType: 6) ====================
-            // 서버에서 롯데 출하대상 리스트를 다운로드
-            // 주의: searchType "5"는 홈플러스 비정량용으로 예약됨
             case R.id.btnDownloadLotte:
-                Log.i(TAG, TAG + "=====================롯데출하대상받기======================" + Common.selectDay);
-
-                Common.searchType = "6";
-
-                DBHandler.deletequeryShipment(getApplicationContext());
-
-                if(Common.selectDay == ""){
-                    calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
-                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
-                    calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-                    Common.selectDay = formatDateYYYYMMDD();
-                }
-
-                Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
-                Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
-
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
-                DBHandler.deletequeryGoodsWet(getApplicationContext());
-                new ProgressDlgShipSearch(this).execute();
-
+                downloadShipmentList("6", "롯데출하대상받기");
                 break;
 
             // ==================== (이마트출하) 계근입력시작 (searchType: 0 필요) ====================
@@ -435,29 +314,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             // ==================== (비정량)홈플러스 출하대상받기 (searchType: 5) ====================
-            // 서버에서 홈플러스 비정량 출하대상 리스트를 다운로드
             case R.id.btnWetHomeplusNon:
-
-                Log.i(TAG, TAG + "=====================홈플러스 비정량 출하대상받기======================" + Common.selectDay);
-
-                Common.searchType = "5";
-
-                DBHandler.deletequeryShipment(getApplicationContext());
-
-                if(Common.selectDay == ""){
-                    calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
-                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
-                    calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-                    Common.selectDay = formatDateYYYYMMDD();
-                }
-
-                Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
-                Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
-
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
-                DBHandler.deletequeryGoodsWet(getApplicationContext());
-                new ProgressDlgShipSearch(this).execute();
-
+                downloadShipmentList("5", "홈플러스 비정량 출하대상받기");
                 break;
 
             // ==================== (비정량)홈플러스 계근입력시작 (searchType: 5 필요) ====================
@@ -531,28 +389,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             // ==================== 생산대상받기(라벨) (searchType: 7) ====================
-            // 서버에서 라벨 출력용 생산대상 리스트를 다운로드
             case R.id.btnproductionlist4print:
-                Log.i(TAG, TAG + "=====================생산대상받기(라벨)======================" + Common.selectDay);
-
-                Common.searchType = "7";
-
-                DBHandler.deletequeryShipment(getApplicationContext());
-
-                if(Common.selectDay == ""){
-                    calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
-                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
-                    calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-                    Common.selectDay = formatDateYYYYMMDD();
-                }
-
-                Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
-                Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
-
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
-                DBHandler.deletequeryGoodsWet(getApplicationContext());
-                new ProgressDlgShipSearch(this).execute();
-
+                downloadShipmentList("7", "생산대상받기(라벨)");
                 break;
 
             // ==================== 생산입력시작(라벨) (searchType: 7 필요) ====================
@@ -654,6 +492,34 @@ public class MainActivity extends AppCompatActivity {
             exitDialog();
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    /**
+     * 출하/생산 대상 리스트 다운로드
+     *
+     * @param searchType 검색 타입 ("0"~"7")
+     * @param logMessage 로그에 출력할 메시지
+     */
+    private void downloadShipmentList(String searchType, String logMessage) {
+        Log.i(TAG, TAG + "=====================" + logMessage + "======================" + Common.selectDay);
+
+        Common.searchType = searchType;
+
+        DBHandler.deletequeryShipment(getApplicationContext());
+
+        if(Common.selectDay == ""){
+            calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
+            calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
+            calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
+            Common.selectDay = formatDateYYYYMMDD();
+        }
+
+        Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
+        Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
+
+        DBHandler.deletequeryBarcodeInfo(getApplicationContext());
+        DBHandler.deletequeryGoodsWet(getApplicationContext());
+        new ProgressDlgShipSearch(this).execute();
     }
 
     /**
