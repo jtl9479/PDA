@@ -110,29 +110,37 @@
 
 ---
 
-### Step 3. 문자열 비교 수정
+### Step 3. 문자열 비교 수정 ❌ 보류
 
 현재 소스에서 `Common.searchType.equals("0")` 형태로 **이미 올바르게** `.equals()` 사용 중.
 
-**수정 필요 항목**:
-- [ ] `whArea != null || !whArea.equals("")` (2564줄) - 논리 오류 (`||` → `&&` 검토)
-- [ ] `work_item_barcodegoods == ""` (3335줄) - `.equals()` 변경 필요
-- [ ] `packet ==""` (3763줄) - `.equals()` 변경 필요
+**수정 대상 항목** (기존 동작 변경으로 보류):
+- [ ] `whArea != null || !whArea.equals("")` (4곳) - 수정 시 빈 문자열 처리 동작 변경됨
+- [ ] `getBL_NO() == ""` (1808줄) - 수정 시 alert 동작 변경됨
+- [ ] `work_item_barcodegoods == ""` (3358줄) - 수정 시 alert 동작 변경됨
+- [ ] `packet ==""` (3786줄) - 수정 시 전송 동작 변경됨
+
+**보류 사유**: 기존 동작과 100% 동일해야 하는 원칙에 따라 보류. 버그 수정이지만 운영 중인 동작을 변경하게 됨.
 
 ---
 
-### Step 4. Lambda 표현식 변환 가능 항목
+### Step 4. Lambda 표현식 변환 ✅ 완료 (2026-01-07)
 
-| 위치 | 현재 코드 | 변환 가능 |
-|-----|----------|----------|
-| 4126줄 | `detail_btn_back.setOnClickListener(new View.OnClickListener()...)` | O |
-| 4152줄 | `detail_btn_delete.setOnClickListener(new View.OnClickListener()...)` | O |
-| 4180줄 | `detail_btn_sum.setOnClickListener(new View.OnClickListener()...)` | O |
-| 4286줄 | `new DialogInterface.OnClickListener()` (deleteQuestionDialog) | O |
-| 4351줄 | `new DialogInterface.OnClickListener()` (show_sendFinishDialog) | O |
-| 4381줄 | `new DialogInterface.OnClickListener()` (show_wetNextDialog) | O |
-| 4418줄 | `new DialogInterface.OnClickListener()` (show_wetFinishDialog) | O |
-| 4457줄 | `new DialogInterface.OnClickListener()` (showAlertDialog) | O |
+**View.OnClickListener 변환 (3곳)**:
+- [x] `detail_btn_back.setOnClickListener(v -> {...})`
+- [x] `detail_btn_delete.setOnClickListener(v -> {...})`
+- [x] `detail_btn_sum.setOnClickListener(v -> {...})`
+
+**DialogInterface.OnClickListener 변환 (9곳)**:
+- [x] sendBtnListener - setPositiveButton, setNegativeButton
+- [x] setBarcodeMsg() 내 다이얼로그 - setPositiveButton, setNegativeButton
+- [x] deleteQuestionDialog - setPositiveButton
+- [x] show_sendFinishDialog - setPositiveButton
+- [x] show_wetNextDialog - setPositiveButton
+- [x] show_wetFinishDialog - setPositiveButton
+- [x] showAlertDialog - setNeutralButton
+
+**변경 내역**: 총 12개 익명 클래스 → Lambda 변환, 약 36줄 감소
 
 ---
 
@@ -207,6 +215,8 @@
 |-----|----------|----------|------|
 | Step 1 | searchType 상수 정의 | 2026-01-07 | 8개 상수, 47개 사용처 변경 |
 | Step 2 | 매직 넘버 상수화 | 2026-01-07 | 7개 상수 정의, 모든 사용처 변경 |
+| Step 3 | 문자열 비교 수정 | - | **보류** (기존 동작 변경됨) |
+| Step 4 | Lambda 표현식 변환 | 2026-01-07 | 12개 익명 클래스 변환, 약 36줄 감소 |
 | - | 리팩토링 계획 문서 작성 | 2026-01-07 | 전체 소스 확인 후 재작성 |
 | - | 주석 처리 코드 삭제 (Cleanup) | 2026-01-06 | 약 155줄 삭제 완료 |
 

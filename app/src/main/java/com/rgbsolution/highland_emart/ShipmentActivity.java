@@ -685,18 +685,12 @@ public class ShipmentActivity extends ScannerActivity {
                     .setTitle(R.string.shipment_wet_send)
                     .setMessage(R.string.shipment_wet_send_msg)
                     .setCancelable(false)
-                    .setPositiveButton(R.string.shipment_wet_yes, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // 전송시작
-                            dialog_flag = false;
-                            new ProgressDlgShipmentSend(ShipmentActivity.this).execute();
-                        }
-                    }).setNegativeButton(R.string.shipment_wet_no, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog_flag = false;
-                }
+                    .setPositiveButton(R.string.shipment_wet_yes, (dialog, which) -> {
+                        // 전송시작
+                        dialog_flag = false;
+                        new ProgressDlgShipmentSend(ShipmentActivity.this).execute();
+                    }).setNegativeButton(R.string.shipment_wet_no, (dialog, which) -> {
+                dialog_flag = false;
             }).show();
         }
     };
@@ -1024,25 +1018,15 @@ public class ShipmentActivity extends ScannerActivity {
                                     .setTitle(R.string.shipment_wet_other)
                                     .setMessage(R.string.shipment_wet_other_msg)
                                     .setCancelable(false)
-                                    .setPositiveButton(R.string.shipment_wet_yes,
-                                            new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    dialog_flag = false;
-                                                    work_ppcode = find_ppcode;
-                                                    work_item_fullbarcode = msg;
-                                                    new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
-                                                }
-                                            }
-                                    )
-                                    .setNegativeButton(R.string.shipment_wet_no,
-                                            new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    dialog_flag = false;
-                                                }
-                                            }
-                                    )
+                                    .setPositiveButton(R.string.shipment_wet_yes, (dialog, which) -> {
+                                        dialog_flag = false;
+                                        work_ppcode = find_ppcode;
+                                        work_item_fullbarcode = msg;
+                                        new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
+                                    })
+                                    .setNegativeButton(R.string.shipment_wet_no, (dialog, which) -> {
+                                        dialog_flag = false;
+                                    })
                                     .show();
                         }
                     }
@@ -4146,135 +4130,126 @@ public class ShipmentActivity extends ScannerActivity {
             detail_dialog = dlog.create();
             detail_dialog.show();
 
-            detail_btn_back.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    detail_dialog.dismiss();
-                    dialog_flag = false;
-                    for (int i = 0; i < sListAdapter.cbStatus.size(); i++) {
-                        sListAdapter.cbStatus.set(i, false);
-                    }
-                    edit_barcode.setText("");
-                    edit_wet_count.setText("");
-                    edit_wet_weight.setText("");
-                    if (work_flag == 1) {
-                        new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true).execute();
-                        //setBarcodeMsg(msg);
-                    } else if (work_flag == 0){
-                        //Toast.makeText(getApplicationContext(), "수기로 중량을 입력해주세요.", Toast.LENGTH_SHORT).show();
-                        //vibrator.vibrate(500);
-                        Log.e(TAG, "수기일때 뒤로가기 = " + work_bl_no);
-                        // BL코드로 계근 리스트 조회하기
-                        new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
-                    } else if (work_flag == 2){
-                        new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
-                    }
+            detail_btn_back.setOnClickListener(v -> {
+                detail_dialog.dismiss();
+                dialog_flag = false;
+                for (int i = 0; i < sListAdapter.cbStatus.size(); i++) {
+                    sListAdapter.cbStatus.set(i, false);
+                }
+                edit_barcode.setText("");
+                edit_wet_count.setText("");
+                edit_wet_weight.setText("");
+                if (work_flag == 1) {
+                    new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true).execute();
+                    //setBarcodeMsg(msg);
+                } else if (work_flag == 0){
+                    //Toast.makeText(getApplicationContext(), "수기로 중량을 입력해주세요.", Toast.LENGTH_SHORT).show();
+                    //vibrator.vibrate(500);
+                    Log.e(TAG, "수기일때 뒤로가기 = " + work_bl_no);
+                    // BL코드로 계근 리스트 조회하기
+                    new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
+                } else if (work_flag == 2){
+                    new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
                 }
             });
 
-            detail_btn_delete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // 선택된 Items 삭제
-                    try {
-                        if (list_gi_info.size() == 0) {
-                            Toast.makeText(getApplicationContext(), "삭제할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
-                            vibrator.vibrate(1000);
-                        } else if (list_gi_info.size() > 0) {
-                            ArrayList<Goodswets_Info> list_delete = new ArrayList<Goodswets_Info>();
-                            for (int i = 0; i < detailAdapter.cbStatus.size(); i++) {
-                                if (detailAdapter.cbStatus.get(i))
-                                    list_delete.add(list_gi_info.get(i));
-                            }
-                            if (list_delete.size() > 0) {
-                                deleteQuestionDialog(getSelect_Shipment(getSelect_Position()), list_delete);
-                            } else {
-                                Toast.makeText(getApplicationContext(), "삭제할 항목을 선택하세요.", Toast.LENGTH_SHORT).show();
-                                vibrator.vibrate(1000);
-                            }
+            detail_btn_delete.setOnClickListener(v -> {
+                // 선택된 Items 삭제
+                try {
+                    if (list_gi_info.size() == 0) {
+                        Toast.makeText(getApplicationContext(), "삭제할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
+                        vibrator.vibrate(1000);
+                    } else if (list_gi_info.size() > 0) {
+                        ArrayList<Goodswets_Info> list_delete = new ArrayList<Goodswets_Info>();
+                        for (int i = 0; i < detailAdapter.cbStatus.size(); i++) {
+                            if (detailAdapter.cbStatus.get(i))
+                                list_delete.add(list_gi_info.get(i));
                         }
-                    } catch (Exception ex) {
-                        Log.e(TAG, "==== detail_btn_delete Exception ====");
-                        Log.e(TAG, ex.getMessage().toString());
+                        if (list_delete.size() > 0) {
+                            deleteQuestionDialog(getSelect_Shipment(getSelect_Position()), list_delete);
+                        } else {
+                            Toast.makeText(getApplicationContext(), "삭제할 항목을 선택하세요.", Toast.LENGTH_SHORT).show();
+                            vibrator.vibrate(1000);
+                        }
                     }
+                } catch (Exception ex) {
+                    Log.e(TAG, "==== detail_btn_delete Exception ====");
+                    Log.e(TAG, ex.getMessage().toString());
                 }
             });
 
-            detail_btn_sum.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // 전체 리스트 합
-                    try {
-                        if (list_gi_info.size() == 0) {
-                            Toast.makeText(getApplicationContext(), "합산할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
-                            vibrator.vibrate(1000);
-                        } else if (list_gi_info.size() > 0) {
-                            try {
-                                ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                                byteStream.write(WoosimCmd.initPrinter());                                // 프린터 설정 초기화
-                                byteStream.write(WoosimCmd.setPageMode());
-                                byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
-                                byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
+            detail_btn_sum.setOnClickListener(v -> {
+                // 전체 리스트 합
+                try {
+                    if (list_gi_info.size() == 0) {
+                        Toast.makeText(getApplicationContext(), "합산할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
+                        vibrator.vibrate(1000);
+                    } else if (list_gi_info.size() > 0) {
+                        try {
+                            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                            byteStream.write(WoosimCmd.initPrinter());                                // 프린터 설정 초기화
+                            byteStream.write(WoosimCmd.setPageMode());
+                            byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
+                            byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
 
-                                double weight_sum = 0;
-                                int p_weight = 0;
-                                int p_hight = 0;
+                            double weight_sum = 0;
+                            int p_weight = 0;
+                            int p_hight = 0;
 
-                                for (int i = 0; i < list_gi_info.size(); i++) {
-                                    p_hight = 10+(i/6*50)-(i/36*300);
-                                    p_weight = 100 * (i%6);
+                            for (int i = 0; i < list_gi_info.size(); i++) {
+                                p_hight = 10+(i/6*50)-(i/36*300);
+                                p_weight = 100 * (i%6);
 
-                                    byteStream.write(WoosimCmd.PM_setPosition(p_weight, p_hight));
-                                    byteStream.write(WoosimCmd.getTTFcode(40, 40, list_gi_info.get(i).getWEIGHT()));
+                                byteStream.write(WoosimCmd.PM_setPosition(p_weight, p_hight));
+                                byteStream.write(WoosimCmd.getTTFcode(40, 40, list_gi_info.get(i).getWEIGHT()));
 
-                                    weight_sum += Double.parseDouble(list_gi_info.get(i).getWEIGHT());
+                                weight_sum += Double.parseDouble(list_gi_info.get(i).getWEIGHT());
 
-                                    if((i+1)%36 == 0){
-                                        weight_sum = Math.floor(weight_sum * 100);
-                                        weight_sum = weight_sum / 100.0;
+                                if((i+1)%36 == 0){
+                                    weight_sum = Math.floor(weight_sum * 100);
+                                    weight_sum = weight_sum / 100.0;
 
-                                        String temp_weight = String.format("%.1f", weight_sum);
-                                        weight_sum = Double.parseDouble(temp_weight);
+                                    String temp_weight = String.format("%.1f", weight_sum);
+                                    weight_sum = Double.parseDouble(temp_weight);
 
-                                        byteStream.write(WoosimCmd.PM_setPosition(100, 350));
-                                        byteStream.write(WoosimCmd.getTTFcode(60, 60, ((i+1)/36) + "번 총 중량 : " + Double.toString(weight_sum)));
-                                        byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));    // 0.6인치 : 115.2
+                                    byteStream.write(WoosimCmd.PM_setPosition(100, 350));
+                                    byteStream.write(WoosimCmd.getTTFcode(60, 60, ((i+1)/36) + "번 총 중량 : " + Double.toString(weight_sum)));
+                                    byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));    // 0.6인치 : 115.2
 
-                                        sendData(byteStream.toByteArray());
-                                        sendData(WoosimCmd.feedToMark());
+                                    sendData(byteStream.toByteArray());
+                                    sendData(WoosimCmd.feedToMark());
 
-                                        byteStream.reset();
-                                        byteStream.write(WoosimCmd.initPrinter());                                // 프린터 설정 초기화
-                                        byteStream.write(WoosimCmd.setPageMode());
-                                        byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
-                                        byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
-                                        weight_sum =0;
-                                    }else if((i+1) == list_gi_info.size()){
-                                        weight_sum = Math.floor(weight_sum * 100);
-                                        weight_sum = weight_sum / 100.0;
+                                    byteStream.reset();
+                                    byteStream.write(WoosimCmd.initPrinter());                                // 프린터 설정 초기화
+                                    byteStream.write(WoosimCmd.setPageMode());
+                                    byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
+                                    byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
+                                    weight_sum =0;
+                                }else if((i+1) == list_gi_info.size()){
+                                    weight_sum = Math.floor(weight_sum * 100);
+                                    weight_sum = weight_sum / 100.0;
 
-                                        String temp_weight = String.format("%.1f", weight_sum);
-                                        weight_sum = Double.parseDouble(temp_weight);
+                                    String temp_weight = String.format("%.1f", weight_sum);
+                                    weight_sum = Double.parseDouble(temp_weight);
 
-                                        byteStream.write(WoosimCmd.PM_setPosition(100, 350));
-                                        byteStream.write(WoosimCmd.getTTFcode(60, 60, (((i+1)/36)+1) + "번 총 중량 : " + Double.toString(weight_sum)));
-                                        byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));    // 0.6인치 : 115.2
+                                    byteStream.write(WoosimCmd.PM_setPosition(100, 350));
+                                    byteStream.write(WoosimCmd.getTTFcode(60, 60, (((i+1)/36)+1) + "번 총 중량 : " + Double.toString(weight_sum)));
+                                    byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));    // 0.6인치 : 115.2
 
-                                        sendData(byteStream.toByteArray());
-                                        sendData(WoosimCmd.feedToMark());
-                                    }
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                if (Common.D) {
-                                    Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
+                                    sendData(byteStream.toByteArray());
+                                    sendData(WoosimCmd.feedToMark());
                                 }
                             }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            if (Common.D) {
+                                Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
+                            }
                         }
-                    } catch (Exception ex) {
-                        Log.e(TAG, "==== detail_btn_sum Exception ====");
-                        Log.e(TAG, ex.getMessage().toString());
                     }
+                } catch (Exception ex) {
+                    Log.e(TAG, "==== detail_btn_sum Exception ====");
+                    Log.e(TAG, ex.getMessage().toString());
                 }
             });
 
@@ -4306,48 +4281,44 @@ public class ShipmentActivity extends ScannerActivity {
                 .setTitle(alertTitle)
                 .setMessage(buttonMessage)
                 .setCancelable(false)
-                .setPositiveButton(buttonYes,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                try {
-                                    if (Common.D) {
-                                        Log.d(TAG, "삭제할 계근상품 수 : " + list_delete.size());
-                                    }
-                                    for (int i = list_delete.size()-1; i >= 0; i--) {
-                                        // List 삭제 & SQLite 삭제
-                                        Log.i(TAG, "삭제 i count : " + i);
-                                        Log.i(TAG, "삭제 row position : " + list_delete.get(i).getBOX_CNT());
-                                        String delete_box = list_delete.get(i).getBOX_CNT();
+                .setPositiveButton(buttonYes, (dialog, which) -> {
+                    try {
+                        if (Common.D) {
+                            Log.d(TAG, "삭제할 계근상품 수 : " + list_delete.size());
+                        }
+                        for (int i = list_delete.size()-1; i >= 0; i--) {
+                            // List 삭제 & SQLite 삭제
+                            Log.i(TAG, "삭제 i count : " + i);
+                            Log.i(TAG, "삭제 row position : " + list_delete.get(i).getBOX_CNT());
+                            String delete_box = list_delete.get(i).getBOX_CNT();
 
-                                        DBHandler.deletequerySelectGoodsWet(getApplicationContext(),
-                                                list_delete.get(i).getGI_D_ID(), list_delete.get(i).getBARCODE(), Integer.parseInt(delete_box));
-                                        refresh_delete(list_delete.get(i).getWEIGHT());
+                            DBHandler.deletequerySelectGoodsWet(getApplicationContext(),
+                                    list_delete.get(i).getGI_D_ID(), list_delete.get(i).getBARCODE(), Integer.parseInt(delete_box));
+                            refresh_delete(list_delete.get(i).getWEIGHT());
 
-                                    /*    int removeindex = Integer.parseInt(delete_box)-1;
-                                        detailAdapter.remove(removeindex);*/
-                                    }
-                                    /*detailAdapter.notifyDataSetChanged();*/
+                        /*    int removeindex = Integer.parseInt(delete_box)-1;
+                            detailAdapter.remove(removeindex);*/
+                        }
+                        /*detailAdapter.notifyDataSetChanged();*/
 
-                                    vibrator.vibrate(500);
-                                    btn_send.setEnabled(false);
-                                    btn_send.setBackgroundResource(R.drawable.disable_round_button);
+                        vibrator.vibrate(500);
+                        btn_send.setEnabled(false);
+                        btn_send.setBackgroundResource(R.drawable.disable_round_button);
 
-                                    detail_btn_back.performClick();
+                        detail_btn_back.performClick();
 
-                                    if (Common.D) {
-                                        Log.d(TAG, "계근 선택항목 삭제 성공 !");
-                                    }
-                                    Toast.makeText(getApplicationContext(), "삭제 성공", Toast.LENGTH_SHORT).show();
+                        if (Common.D) {
+                            Log.d(TAG, "계근 선택항목 삭제 성공 !");
+                        }
+                        Toast.makeText(getApplicationContext(), "삭제 성공", Toast.LENGTH_SHORT).show();
 
-                                } catch (Exception ex) {
-                                    if (Common.D) {
-                                        Log.d(TAG, "계근 선택항목 삭제 실패 -> " + ex.getMessage().toString());
-                                    }
-                                    Toast.makeText(getApplicationContext(), "삭제 실패", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        }).setNegativeButton(buttonNo, null)
+                    } catch (Exception ex) {
+                        if (Common.D) {
+                            Log.d(TAG, "계근 선택항목 삭제 실패 -> " + ex.getMessage().toString());
+                        }
+                        Toast.makeText(getApplicationContext(), "삭제 실패", Toast.LENGTH_SHORT).show();
+                    }
+                }).setNegativeButton(buttonNo, null)
                 .show();
     }
 
@@ -4370,26 +4341,22 @@ public class ShipmentActivity extends ScannerActivity {
                 .setTitle(R.string.shipment_wet_send_finish)
                 .setMessage(R.string.shipment_wet_send_finish_msg)
                 .setCancelable(false)
-                .setPositiveButton("확인",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                finish_flag = true;
-                                btn_send.setEnabled(false);
-                                btn_send.setBackgroundResource(R.drawable.disable_round_button);
-                                dialog_flag = false;
-                                if (work_flag == 1) {
-                                    scanFlag_init();
-                                } else if (work_flag == 0){
-                                    set_scanFlag(false);
-                                } else if (work_flag == 2){
-                                    scanFlag_init();
-                                }
-                                edit_barcode.setText("");
-                                work_item_fullbarcode = "";
-                                work_item_barcodegoods = "";
-                            }
-                        }).show();
+                .setPositiveButton("확인", (dialog, which) -> {
+                    finish_flag = true;
+                    btn_send.setEnabled(false);
+                    btn_send.setBackgroundResource(R.drawable.disable_round_button);
+                    dialog_flag = false;
+                    if (work_flag == 1) {
+                        scanFlag_init();
+                    } else if (work_flag == 0){
+                        set_scanFlag(false);
+                    } else if (work_flag == 2){
+                        scanFlag_init();
+                    }
+                    edit_barcode.setText("");
+                    work_item_fullbarcode = "";
+                    work_item_barcodegoods = "";
+                }).show();
     }
 
     // 다음 지점 계근을 묻는 Dialog
@@ -4400,34 +4367,29 @@ public class ShipmentActivity extends ScannerActivity {
                 .setTitle(R.string.shipment_wet_finish)
                 .setMessage(R.string.shipment_wet_next_msg)
                 .setCancelable(false)
-                .setPositiveButton(R.string.shipment_wet_ok,
-                        new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.shipment_wet_ok, (dialog, which) -> {
+                    // 다음 지점 선택
+                    if (work_flag == 1) {
+                        scanFlag_init();
+                    } else if (work_flag == 0){
+                        set_scanFlag(false);
+                    } else if (work_flag == 2){
+                        scanFlag_init();
+                    }
+                    select_flag = false;
 
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                // 다음 지점 선택
-                                if (work_flag == 1) {
-                                    scanFlag_init();
-                                } else if (work_flag == 0){
-                                    set_scanFlag(false);
-                                } else if (work_flag == 2){
-                                    scanFlag_init();
-                                }
-                                select_flag = false;
-
-                                work_item_fullbarcode = "";
-                                edit_barcode.setText("");
-                                //edit_wet_count.setText("0 / 0");
-                                //edit_wet_weight.setText("0 / 0");
-                                btn_send.setEnabled(false);
-                                btn_send.setBackgroundResource(R.drawable.disable_round_button);
-                                dialog_flag = false;
-                                //for (int i = 0; i < arSM.size(); i++) {
-                                //    arSM.get(i).setWORK_FLAG(false);
-                                //}
-                                sListAdapter.notifyDataSetChanged();
-                            }
-                        }).show();
+                    work_item_fullbarcode = "";
+                    edit_barcode.setText("");
+                    //edit_wet_count.setText("0 / 0");
+                    //edit_wet_weight.setText("0 / 0");
+                    btn_send.setEnabled(false);
+                    btn_send.setBackgroundResource(R.drawable.disable_round_button);
+                    dialog_flag = false;
+                    //for (int i = 0; i < arSM.size(); i++) {
+                    //    arSM.get(i).setWORK_FLAG(false);
+                    //}
+                    sListAdapter.notifyDataSetChanged();
+                }).show();
     }
 
     // 계근이 끝났음을 알리는 Dialog
@@ -4438,26 +4400,22 @@ public class ShipmentActivity extends ScannerActivity {
                 .setTitle(R.string.shipment_wet_finish)
                 .setMessage(R.string.shipment_wet_finish_msg)
                 .setCancelable(false)
-                .setPositiveButton("확인",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                finish_flag = true;
-                                btn_send.setEnabled(true);
-                                btn_send.setBackgroundResource(R.drawable.round_button);
-                                dialog_flag = false;
-                                if (work_flag == 1) {
-                                    scanFlag_init();
-                                } else if (work_flag == 0){
-                                    set_scanFlag(false);
-                                } else if (work_flag == 2){
-                                    scanFlag_init();
-                                }
-                                edit_barcode.setText("");
-                                //work_item_fullbarcode = "";
-                                //work_item_barcodegoods = "";
-                            }
-                        }).show();
+                .setPositiveButton("확인", (dialog, which) -> {
+                    finish_flag = true;
+                    btn_send.setEnabled(true);
+                    btn_send.setBackgroundResource(R.drawable.round_button);
+                    dialog_flag = false;
+                    if (work_flag == 1) {
+                        scanFlag_init();
+                    } else if (work_flag == 0){
+                        set_scanFlag(false);
+                    } else if (work_flag == 2){
+                        scanFlag_init();
+                    }
+                    edit_barcode.setText("");
+                    //work_item_fullbarcode = "";
+                    //work_item_barcodegoods = "";
+                }).show();
     }
 
     // 에러가 났을 때, 알림창 표시 showAelrtDialog 추가
@@ -4477,11 +4435,9 @@ public class ShipmentActivity extends ScannerActivity {
                 } else if (s.equals("bl")) {
                     builder.setMessage(i + "번 상품의 bl정보가 없습니다.");
                 }
-                builder.setNeutralButton("확인", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        alert_flag = false;
-                        alert.dismiss();
-                    }
+                builder.setNeutralButton("확인", (dialog, id) -> {
+                    alert_flag = false;
+                    alert.dismiss();
                 });
                 alert = builder.create();
                 alert.setCanceledOnTouchOutside(false);
