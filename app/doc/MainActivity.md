@@ -1131,3 +1131,4 @@ Toast.makeText(getApplicationContext(), getString(R.string.msg_shipment_deleted)
 | 2025-10-31 | 문서 최초 작성 |
 | 2026-01-06 | `chkProdShip` 변수 삭제 반영, 주석 코드 삭제 반영 |
 | 2026-01-06 | 라인 번호 전체 업데이트 (813줄 기준) |
+| 2026-01-06 | 리팩토링 분석 별도 문서로 분리 → `MainActivity_Refactoring.md` |

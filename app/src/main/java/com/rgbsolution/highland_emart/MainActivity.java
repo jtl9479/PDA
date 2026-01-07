@@ -71,21 +71,7 @@ public class MainActivity extends AppCompatActivity {
             calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
             // 날짜를 YYYYMMDD 형식 문자열로 변환
-            String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
-
-            // 월 포맷팅 (1-9월은 앞에 0 추가)
-            if(calendar.get(Calendar.MONTH)+1 < 10) {
-                inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
-            }else{
-                inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
-            }
-
-            // 일 포맷팅 (1-9일은 앞에 0 추가)
-            if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
-                inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-            }else{
-                inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-            }
+            String inPutDay = formatDateYYYYMMDD();
 
             // 전역 변수에 선택된 날짜 저장
             Common.selectDay = inPutDay;
@@ -218,36 +204,18 @@ public class MainActivity extends AppCompatActivity {
                 DBHandler.deletequeryShipment(getApplicationContext());
 
                 // 날짜가 선택되지 않은 경우 현재 날짜로 설정
-                // TODO: "==" 대신 "".equals() 사용 권장 (Java 문자열 비교)
                 if(Common.selectDay == ""){
                     calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
                     calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-
-                    // YYYYMMDD 형식으로 날짜 포맷팅
-                    String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
-                    if(calendar.get(Calendar.MONTH)+1 < 10) {
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }
-
-                    if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }
-                    Common.selectDay = inPutDay;
+                    Common.selectDay = formatDateYYYYMMDD();
                 }
 
                 Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
                 Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
 
-                // 관련 데이터 초기화
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());  // 바코드정보 삭제
-                DBHandler.deletequeryGoodsWet(getApplicationContext());     // 계근정보 삭제
-
-                // 서버 통신 시작 - AsyncTask로 백그라운드에서 데이터 다운로드
+                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
+                DBHandler.deletequeryGoodsWet(getApplicationContext());
                 new ProgressDlgShipSearch(this).execute();
 
                 break;
@@ -261,33 +229,19 @@ public class MainActivity extends AppCompatActivity {
 
                 DBHandler.deletequeryShipment(getApplicationContext());
 
-                // 날짜가 선택되지 않은 경우 현재 날짜로 설정
                 if(Common.selectDay == ""){
                     calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
                     calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-
-                    String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
-                    if(calendar.get(Calendar.MONTH)+1 < 10) {
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }
-
-                    if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }
-                    Common.selectDay = inPutDay;
+                    Common.selectDay = formatDateYYYYMMDD();
                 }
 
                 Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
                 Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
 
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());  // 바코드정보 삭제
-                DBHandler.deletequeryGoodsWet(getApplicationContext());     // 계근정보 삭제
-                new ProgressDlgShipSearch(this).execute();  // 서버 통신 시작
+                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
+                DBHandler.deletequeryGoodsWet(getApplicationContext());
+                new ProgressDlgShipSearch(this).execute();
 
                 break;
 
@@ -300,33 +254,19 @@ public class MainActivity extends AppCompatActivity {
 
                 DBHandler.deletequeryShipment(getApplicationContext());
 
-                // 날짜가 선택되지 않은 경우 현재 날짜로 설정
                 if(Common.selectDay == ""){
                     calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
                     calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-
-                    String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
-                    if(calendar.get(Calendar.MONTH)+1 < 10) {
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }
-
-                    if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }
-                    Common.selectDay = inPutDay;
+                    Common.selectDay = formatDateYYYYMMDD();
                 }
 
                 Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
                 Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
 
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());  // 바코드정보 삭제
-                DBHandler.deletequeryGoodsWet(getApplicationContext());     // 계근정보 삭제
-                new ProgressDlgShipSearch(this).execute();  // 서버 통신 시작
+                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
+                DBHandler.deletequeryGoodsWet(getApplicationContext());
+                new ProgressDlgShipSearch(this).execute();
 
                 break;
 
@@ -338,33 +278,19 @@ public class MainActivity extends AppCompatActivity {
 
                 DBHandler.deletequeryShipment(getApplicationContext());
 
-                // 날짜가 선택되지 않은 경우 현재 날짜로 설정
                 if(Common.selectDay == ""){
                     calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
                     calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-
-                    String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
-                    if(calendar.get(Calendar.MONTH)+1 < 10) {
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }
-
-                    if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }
-                    Common.selectDay = inPutDay;
+                    Common.selectDay = formatDateYYYYMMDD();
                 }
 
                 Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
                 Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
 
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());  // 바코드정보 삭제
-                DBHandler.deletequeryGoodsWet(getApplicationContext());     // 계근정보 삭제
-                new ProgressDlgShipSearch(this).execute();  // 서버 통신 시작
+                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
+                DBHandler.deletequeryGoodsWet(getApplicationContext());
+                new ProgressDlgShipSearch(this).execute();
 
                 break;
 
@@ -376,33 +302,19 @@ public class MainActivity extends AppCompatActivity {
 
                 DBHandler.deletequeryShipment(getApplicationContext());
 
-                // 날짜가 선택되지 않은 경우 현재 날짜로 설정
                 if(Common.selectDay == ""){
                     calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
                     calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-
-                    String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
-                    if(calendar.get(Calendar.MONTH)+1 < 10) {
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }
-
-                    if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }
-                    Common.selectDay = inPutDay;
+                    Common.selectDay = formatDateYYYYMMDD();
                 }
 
                 Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
                 Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
 
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());  // 바코드정보 삭제
-                DBHandler.deletequeryGoodsWet(getApplicationContext());     // 계근정보 삭제
-                new ProgressDlgShipSearch(this).execute();  // 서버 통신 시작
+                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
+                DBHandler.deletequeryGoodsWet(getApplicationContext());
+                new ProgressDlgShipSearch(this).execute();
 
                 break;
 
@@ -416,33 +328,19 @@ public class MainActivity extends AppCompatActivity {
 
                 DBHandler.deletequeryShipment(getApplicationContext());
 
-                // 날짜가 선택되지 않은 경우 현재 날짜로 설정
                 if(Common.selectDay == ""){
                     calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
                     calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-
-                    String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
-                    if(calendar.get(Calendar.MONTH)+1 < 10) {
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }
-
-                    if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }
-                    Common.selectDay = inPutDay;
+                    Common.selectDay = formatDateYYYYMMDD();
                 }
 
                 Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
                 Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
 
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());  // 바코드정보 삭제
-                DBHandler.deletequeryGoodsWet(getApplicationContext());     // 계근정보 삭제
-                new ProgressDlgShipSearch(this).execute();  // 서버 통신 시작
+                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
+                DBHandler.deletequeryGoodsWet(getApplicationContext());
+                new ProgressDlgShipSearch(this).execute();
 
                 break;
 
@@ -546,33 +444,19 @@ public class MainActivity extends AppCompatActivity {
 
                 DBHandler.deletequeryShipment(getApplicationContext());
 
-                // 날짜가 선택되지 않은 경우 현재 날짜로 설정
                 if(Common.selectDay == ""){
                     calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
                     calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-
-                    String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
-                    if(calendar.get(Calendar.MONTH)+1 < 10) {
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }
-
-                    if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }
-                    Common.selectDay = inPutDay;
+                    Common.selectDay = formatDateYYYYMMDD();
                 }
 
                 Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
                 Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
 
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());  // 바코드정보 삭제
-                DBHandler.deletequeryGoodsWet(getApplicationContext());     // 계근정보 삭제
-                new ProgressDlgShipSearch(this).execute();  // 서버 통신 시작
+                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
+                DBHandler.deletequeryGoodsWet(getApplicationContext());
+                new ProgressDlgShipSearch(this).execute();
 
                 break;
 
@@ -651,37 +535,23 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btnproductionlist4print:
                 Log.i(TAG, TAG + "=====================생산대상받기(라벨)======================" + Common.selectDay);
 
-                Common.searchType = "7";  // 라벨용 생산
+                Common.searchType = "7";
 
                 DBHandler.deletequeryShipment(getApplicationContext());
 
-                // 날짜가 선택되지 않은 경우 현재 날짜로 설정
                 if(Common.selectDay == ""){
                     calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR));
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH));
                     calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
-
-                    String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
-                    if(calendar.get(Calendar.MONTH)+1 < 10) {
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
-                    }
-
-                    if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
-                        inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }else{
-                        inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-                    }
-                    Common.selectDay = inPutDay;
+                    Common.selectDay = formatDateYYYYMMDD();
                 }
 
                 Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
                 Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
 
-                DBHandler.deletequeryBarcodeInfo(getApplicationContext());  // 바코드정보 삭제
-                DBHandler.deletequeryGoodsWet(getApplicationContext());     // 계근정보 삭제
-                new ProgressDlgShipSearch(this).execute();  // 서버 통신 시작
+                DBHandler.deletequeryBarcodeInfo(getApplicationContext());
+                DBHandler.deletequeryGoodsWet(getApplicationContext());
+                new ProgressDlgShipSearch(this).execute();
 
                 break;
 
@@ -784,6 +654,26 @@ public class MainActivity extends AppCompatActivity {
             exitDialog();
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    /**
+     * 날짜를 YYYYMMDD 형식 문자열로 변환
+     *
+     * @return YYYYMMDD 형식의 날짜 문자열 (예: "20260107")
+     */
+    private String formatDateYYYYMMDD() {
+        String inPutDay = String.valueOf(calendar.get(Calendar.YEAR));
+        if(calendar.get(Calendar.MONTH)+1 < 10) {
+            inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.MONTH)+1);
+        }else{
+            inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.MONTH)+1);
+        }
+        if(calendar.get(Calendar.DAY_OF_MONTH) < 10){
+            inPutDay = inPutDay + "0" + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+        }else{
+            inPutDay = inPutDay + String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+        }
+        return inPutDay;
     }
 
     /**

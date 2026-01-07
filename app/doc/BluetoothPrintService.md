@@ -227,3 +227,56 @@ printService.stop();
 - 모든 public 메서드는 `synchronized`로 보호됩니다.
 - 스레드 간 참조는 동기화 블록 내에서만 공유됩니다.
 - 각 스레드는 독립적인 소켓 인스턴스를 사용합니다.
+
+---
+
+## 코드 검토 기록
+
+### 작업 일자
+2026-01-06
+
+### 분석 결과
+
+#### 1. 주석 처리된 코드
+없음 - 모든 주석이 설명 주석
+
+#### 2. 미사용 변수/파라미터 (미정리)
+
+| 위치 | 항목 | 타입 | 설명 |
+|------|------|------|------|
+| 41행 | `context` | Context (파라미터) | 생성자에서 받지만 사용하지 않음 |
+
+```java
+public BluetoothPrintService(Context context, Handler handler) {
+    mAdapter = BluetoothAdapter.getDefaultAdapter();
+    mState = STATE_NONE;
+    mHandler = handler;
+    // context는 사용되지 않음
+}
+```
+
+#### 3. 비효율적 코드 (미정리)
+
+| 위치 | 내용 | 설명 |
+|------|------|------|
+| 286-287행 | 불필요한 배열 초기화 | 배열 생성 후 바로 덮어씀 |
+
+```java
+// 현재 코드:
+byte[] rcvData = new byte[bytes];
+rcvData = Arrays.copyOf(buffer, bytes);
+
+// 개선 가능:
+byte[] rcvData = Arrays.copyOf(buffer, bytes);
+```
+
+#### 4. 분석 요약
+
+| 항목 | 수량 | 상태 |
+|------|------|------|
+| 주석 처리된 코드 | 0줄 | - |
+| 미사용 파라미터 | 1개 | 미정리 |
+| 비효율적 코드 | 1건 | 미정리 |
+
+#### 5. 미정리 사유
+사용자 요청에 따라 수정하지 않음
