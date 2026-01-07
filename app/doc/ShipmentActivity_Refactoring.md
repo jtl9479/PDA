@@ -194,31 +194,22 @@
 
 ---
 
-### Step 8. Intent 데이터 키 상수화 (미진행)
+### Step 8. Intent 데이터 키 상수화 ❌ 제외
 
-**현황**: Intent 키가 지역 변수로 중복 정의됨 (601~604줄, 621~624줄)
-
-- [ ] `EXTRA_WEIGHT_STR = "weightStrKey"`
-- [ ] `EXTRA_WEIGHT_DBL = "weightDblKey"`
-- [ ] `EXTRA_MAKING_FROM = "makingFromKey"`
-- [ ] `EXTRA_MAKING_TO = "makingToKey"`
-- [ ] `EXTRA_ENTERED_WEIGHT_STR = "enteredWeightSend"`
-- [ ] `EXTRA_ENTERED_WEIGHT_DBL = "enteredWeightDblSend"`
-- [ ] `EXTRA_ENTERED_MAKING_DATE = "enteredMakingDateSend"`
-
-**예상 효과**: 7개 상수, 중복 정의 제거
+**제외 사유**: ExpiryEnterActivity.java와 연관됨 (ShipmentActivity 단독 수정 불가)
 
 ---
 
-### Step 9. 비트 연산자 수정 (미진행)
+### Step 9. Eager OR 연산자 수정 ✅ 완료 (2026-01-07)
 
-**현황**: 비트 OR(`|`)가 논리 OR(`||`) 대신 사용됨
+**현황**: Eager OR(`|`)가 Short-circuit OR(`||`) 대신 사용됨
 
-- [ ] 1150줄: `weight_from.equals("0") | weight_to.equals("0")` → `||`
-- [ ] 1203줄: 동일 패턴 → `||`
-- [ ] 1265줄: 동일 패턴 → `||`
+- [x] 1170줄: `weight_from.equals("0") | weight_to.equals("0")` → `||`
+- [x] 1223줄: 동일 패턴 → `||`
+- [x] 1285줄: 동일 패턴 → `||`
 
-**동작 변경**: 없음 (결과는 동일하나 의도 명확화)
+**참고**: `|`는 boolean 컨텍스트에서 논리 OR로 동작 (양쪽 모두 평가)
+**동작 변경**: 없음 (WEIGHT_TO는 Common.nullCheck로 null 불가, 결과값 동일)
 
 ---
 
@@ -248,10 +239,10 @@
 |-----|------|------|----------|-------|
 | 1 | Step 6 | BARCODE_TYPE 상수화 | 없음 | 낮음 |
 | 2 | Step 7 | ITEM_TYPE 상수화 | 없음 | 낮음 |
-| 3 | Step 8 | Intent 키 상수화 | 없음 | 낮음 |
-| 4 | Step 9 | 비트 연산자 수정 | 없음 | 낮음 |
-| 5 | Step 10 | 미사용 상수 삭제 | 없음 | 낮음 |
-| 6 | Step 11 | 센터명 상수화 | 없음 | 낮음 |
+| - | Step 8 | Intent 키 상수화 | - | **제외** |
+| 3 | Step 9 | Eager OR 연산자 수정 | 없음 | 낮음 |
+| 4 | Step 10 | 미사용 상수 삭제 | 없음 | 낮음 |
+| 5 | Step 11 | 센터명 상수화 | 없음 | 낮음 |
 
 ---
 
@@ -323,6 +314,7 @@
 | Step 5 | 코드 정리 | 2026-01-07 | 미사용 변수 finish_flag 삭제 |
 | Step 6 | BARCODE_TYPE 상수화 | 2026-01-07 | 11개 상수, 46회 사용처 변경 |
 | Step 7 | ITEM_TYPE 상수화 | 2026-01-07 | 5개 상수, 12회 사용처 변경 |
+| Step 9 | Eager OR 연산자 수정 | 2026-01-07 | 3곳 `|` → `||` 변경 |
 | - | 리팩토링 계획 문서 작성 | 2026-01-07 | 전체 소스 확인 후 재작성 |
 | - | 주석 처리 코드 삭제 (Cleanup) | 2026-01-06 | 약 155줄 삭제 완료 |
 

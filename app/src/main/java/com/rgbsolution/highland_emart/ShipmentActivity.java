@@ -1167,7 +1167,7 @@ public class ShipmentActivity extends ScannerActivity {
                             String weight_to = work_item_bi_info.getWEIGHT_TO();
 
                             Log.d(TAG, "weightfrom,to:" + weight_from + ":" + weight_to + ":");
-                            if (weight_from.equals("0") | weight_to.equals("0")) {
+                            if (weight_from.equals("0") || weight_to.equals("0")) {
                                 showAlertDialog("weight", 0);
                                 alert_flag = true;
                             }
@@ -1220,7 +1220,7 @@ public class ShipmentActivity extends ScannerActivity {
                             String weight_to = work_item_bi_info.getWEIGHT_TO();
 
                             Log.d(TAG, "weightfrom,to:" + weight_from + ":" + weight_to + ":");
-                            if (weight_from.equals("0") | weight_to.equals("0")) {
+                            if (weight_from.equals("0") || weight_to.equals("0")) {
                                 showAlertDialog("weight", 0);
                                 alert_flag = true;
                             }
@@ -1282,7 +1282,7 @@ public class ShipmentActivity extends ScannerActivity {
                             String weight_to = work_item_bi_info.getWEIGHT_TO();
 
                             Log.d(TAG, "weightfrom,to:" + weight_from + ":" + weight_to + ":");
-                            if (weight_from.equals("0") | weight_to.equals("0")) {
+                            if (weight_from.equals("0") || weight_to.equals("0")) {
                                 showAlertDialog("weight", 0);
                                 alert_flag = true;
                             }
