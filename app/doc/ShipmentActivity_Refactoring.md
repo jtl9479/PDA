@@ -213,11 +213,17 @@
 
 ---
 
-### Step 10. 미사용 상수 삭제 (미진행)
+### Step 10. 미사용 변수/상수 삭제 ✅ 완료 (2026-01-07)
 
-**현황**: 선언만 되고 사용되지 않는 상수
+**현황**: 선언만 되고 사용되지 않는 변수 4개
 
-- [ ] 213줄: `public static final String makingDateInput = "";` 삭제
+- [x] `public static final String makingDateInput = "";` - 미사용 상수
+- [x] `private ArrayList<Goodswets_Info> arBcode;` - 미사용 ArrayList
+- [x] `private Toast toast;` - 미사용 Toast 변수
+- [x] `private String storeCode = LoginActivity.store[0];` - 미사용 (지역변수로 shadowing)
+
+**변경 내역**: 4개 미사용 변수/상수 삭제, 약 10줄 감소
+**동작 변경**: 없음 (사용되지 않는 변수 삭제)
 
 ---
 
@@ -241,7 +247,7 @@
 | 2 | Step 7 | ITEM_TYPE 상수화 | 없음 | 낮음 |
 | - | Step 8 | Intent 키 상수화 | - | **제외** |
 | 3 | Step 9 | Eager OR 연산자 수정 | 없음 | 낮음 |
-| 4 | Step 10 | 미사용 상수 삭제 | 없음 | 낮음 |
+| 4 | Step 10 | 미사용 변수/상수 삭제 (4개) | 없음 | 낮음 |
 | 5 | Step 11 | 센터명 상수화 | 없음 | 낮음 |
 
 ---
@@ -315,6 +321,7 @@
 | Step 6 | BARCODE_TYPE 상수화 | 2026-01-07 | 11개 상수, 46회 사용처 변경 |
 | Step 7 | ITEM_TYPE 상수화 | 2026-01-07 | 5개 상수, 12회 사용처 변경 |
 | Step 9 | Eager OR 연산자 수정 | 2026-01-07 | 3곳 `|` → `||` 변경 |
+| Step 10 | 미사용 변수/상수 삭제 | 2026-01-07 | 4개 변수 삭제, 약 10줄 감소 |
 | - | 리팩토링 계획 문서 작성 | 2026-01-07 | 전체 소스 확인 후 재작성 |
 | - | 주석 처리 코드 삭제 (Cleanup) | 2026-01-06 | 약 155줄 삭제 완료 |
 

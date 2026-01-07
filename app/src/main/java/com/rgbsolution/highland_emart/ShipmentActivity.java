@@ -229,9 +229,6 @@ public class ShipmentActivity extends ScannerActivity {
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
 
-    /** 제조일자 입력값 (소비기한 계산용) */
-    public static final String makingDateInput = "";
-
     /** 비보안 모드 프린터 연결 요청 코드 */
     private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
     /** 블루투스 활성화 요청 코드 */
@@ -270,11 +267,6 @@ public class ShipmentActivity extends ScannerActivity {
      * @see Shipments_Info
      */
     private ArrayList<Shipments_Info> arSM;
-    /**
-     * 계근 데이터 리스트 - 계근 완료된 상품 정보
-     * @see Goodswets_Info
-     */
-    private ArrayList<Goodswets_Info> arBcode;
 
     /** 작업 모드 선택 스피너 (바코드스캔/수기입력/상품코드) */
     private Spinner sp_work;
@@ -355,18 +347,11 @@ public class ShipmentActivity extends ScannerActivity {
 
     /** 진동 알림 */
     private Vibrator vibrator;
-    private Toast toast;
     AlertDialog alert;
     /** 다이얼로그 중복 표시 방지 플래그 */
     boolean alert_flag = false;
     /** 제조일자 입력 플래그 (킬코이 미트센터용) */
     boolean makingdateInputFlag = false;
-
-    /**
-     * 현재 로그인한 스토어 코드
-     * 프린터 활성화 여부 판단에 사용 (생산 계근 시 프린터 비활성화)
-     */
-    private String storeCode = LoginActivity.store[0];
 
     // ========================================================================================
     // Activity 생명주기 메서드
