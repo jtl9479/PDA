@@ -23,31 +23,12 @@
 
 ---
 
-## 현재 코드 구조 (실제 라인 기준)
-
-| 영역 | 라인 범위 | 줄 수 | 설명 |
-|-----|----------|------|------|
-| import 및 클래스 선언 | 1~53 | 53 | 패키지, import, 클래스 Javadoc |
-| 상수 | 55~62 | 8 | TAG, RECEIVE_PM80 |
-| PM80 SDK 변수 | 64~72 | 9 | mScanner, mDecodeResult |
-| UI 컴포넌트 | 74~82 | 9 | btn_init, swt_print |
-| ScanResultReceiver | 84~120 | 37 | PM80 SDK 결과 수신 |
-| initScanner() | 122~161 | 40 | PM80 스캐너 초기화 |
-| Activity 생명주기 | 163~269 | 107 | onCreate, onResume, onDestroy 등 |
-| 바코드 수신 콜백 | 271~285 | 15 | setMessage() |
-| m_brc | 287~316 | 30 | 내부 브로드캐스트 수신 |
-
----
-
 ## 리팩토링 체크리스트
 
-### Step 1. 미사용 import 삭제
+### Step 1. 미사용 import 삭제 ✅ 완료
 
-**현재 코드 (삭제 대상)**:
-```java
-import android.app.Activity;              // line 3 - 미사용
-import android.content.SharedPreferences; // line 8 - 미사용
-```
+- [x] `import android.app.Activity;` (line 3) - 미사용
+- [x] `import android.content.SharedPreferences;` (line 8) - 미사용
 
 **동작 변경**: 없음
 
@@ -63,14 +44,11 @@ import android.content.SharedPreferences; // line 8 - 미사용
 | `"BARCODE"` | Intent Extra 키 | line 114, 311 |
 
 **변경 내용**:
-```java
-// 상수 섹션에 추가
-/** 스캔 실패 결과 문자열 */
-private static final String SCAN_RESULT_FAIL = "READ_FAIL";
-
-/** 바코드 데이터 Intent Extra 키 */
-private static final String EXTRA_BARCODE = "BARCODE";
-```
+- [ ] `SCAN_RESULT_FAIL = "READ_FAIL"` - 스캔 실패 결과 문자열
+- [ ] `EXTRA_BARCODE = "BARCODE"` - 바코드 데이터 Intent Extra 키
+- [ ] line 112 사용처 변경
+- [ ] line 114 사용처 변경
+- [ ] line 311 사용처 변경
 
 **동작 변경**: 없음
 
@@ -89,16 +67,8 @@ if (!isChecked) {
 }
 ```
 
-**변경 후**:
-```java
-if (!isChecked) {
-    Toast.makeText(getApplicationContext(), "인쇄 : OFF", Toast.LENGTH_SHORT).show();
-    Common.print_bool = false;
-} else {
-    Toast.makeText(getApplicationContext(), "인쇄 : ON", Toast.LENGTH_SHORT).show();
-    Common.print_bool = true;
-}
-```
+**변경 내용**:
+- [ ] `else if (isChecked)` → `else` 변경
 
 **동작 변경**: 없음 (논리적으로 동일)
 
@@ -115,10 +85,8 @@ if (Common.print_bool) {
 }
 ```
 
-**변경 후**:
-```java
-swt_print.setChecked(Common.print_bool);
-```
+**변경 내용**:
+- [ ] `swt_print.setChecked(Common.print_bool);` 로 간소화
 
 **동작 변경**: 없음 (논리적으로 동일)
 
@@ -169,7 +137,7 @@ swt_print.setChecked(Common.print_bool);
 |-----|----------|----------|------|
 | - | 주석 추가 | 2026-01-09 | 클래스, 멤버 변수, 메서드 주석 |
 | - | 리팩토링 계획 문서 작성 | 2026-01-09 | 전체 소스 확인 후 작성 |
-| Step 1 | 미사용 import 삭제 | - | - |
+| Step 1 | 미사용 import 삭제 | 2026-01-09 | 완료 |
 | Step 2 | 매직 문자열 상수화 | - | - |
 | Step 3 | 불필요한 조건문 정리 | - | - |
 | Step 4 | 인쇄 스위치 초기값 간소화 | - | - |

@@ -1,4 +1,4 @@
-package com.rgbsolution.highland_emart.print;
+ package com.rgbsolution.highland_emart.print;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

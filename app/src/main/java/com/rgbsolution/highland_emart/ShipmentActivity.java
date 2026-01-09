@@ -244,6 +244,7 @@ public class ShipmentActivity extends ScannerActivity {
     private BluetoothAdapter mBluetoothAdapter = null;
     /** 블루투스 프린터 서비스 */
     private BluetoothPrintService mPrintService = null;
+
     /** Woosim 프린터 서비스 (라벨 인쇄 명령어 생성) */
     private WoosimService mWoosim = null;
 
