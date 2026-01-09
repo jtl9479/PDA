@@ -198,11 +198,7 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
         swt_print = (SwitchCompat) mCustomView.findViewById(R.id.swt_print);
 
         // 인쇄 스위치 초기값 설정
-        if (Common.print_bool) {
-            swt_print.setChecked(true);
-        } else {
-            swt_print.setChecked(false);
-        }
+        swt_print.setChecked(Common.print_bool);
     }
 
     @Override

@@ -71,7 +71,7 @@ if (!isChecked) {
 
 ---
 
-### Step 4. 인쇄 스위치 초기값 설정 간소화
+### Step 4. 인쇄 스위치 초기값 설정 간소화 ✅ 완료
 
 **현재 코드** (line 201-206):
 ```java
@@ -83,7 +83,7 @@ if (Common.print_bool) {
 ```
 
 **변경 내용**:
-- [ ] `swt_print.setChecked(Common.print_bool);` 로 간소화
+- [x] `swt_print.setChecked(Common.print_bool);` 로 간소화
 
 **동작 변경**: 없음 (논리적으로 동일)
 
@@ -137,7 +137,7 @@ if (Common.print_bool) {
 | Step 1 | 미사용 import 삭제 | 2026-01-09 | 완료 |
 | Step 2 | 매직 문자열 상수화 | 2026-01-09 | 완료 |
 | Step 3 | 불필요한 조건문 정리 | 2026-01-09 | 완료 |
-| Step 4 | 인쇄 스위치 초기값 간소화 | - | - |
+| Step 4 | 인쇄 스위치 초기값 간소화 | 2026-01-09 | 완료 |
 
 ---
 
