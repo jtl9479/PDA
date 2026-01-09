@@ -57,6 +57,9 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
     /** 내부 브로드캐스트 Action (ScanResultReceiver → m_brc) */
     private static final String RECEIVE_PM80 = "ACTION_RECEIVE_PM80";
 
+    /** 바코드 데이터 Intent Extra 키 */
+    private static final String EXTRA_BARCODE = "BARCODE";
+
     // ========================================================================================
     // PM80 스캐너 SDK (Point Mobile)
     // ========================================================================================
@@ -107,7 +110,7 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
                 // 스캔 성공 시 내부 브로드캐스트로 전달
                 if (!barcode.equals("READ_FAIL")) {
                     Intent i = new Intent();
-                    i.putExtra("BARCODE", barcode);
+                    i.putExtra(EXTRA_BARCODE, barcode);
                     i.setAction(RECEIVE_PM80);
                     context.sendBroadcast(i);
                 }
@@ -304,7 +307,7 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
                     Log.e(TAG, "===== Receiver action From PM80 =====");
                 }
                 // 바코드 데이터 추출 및 콜백 호출
-                String receive_data = intent.getStringExtra("BARCODE");
+                String receive_data = intent.getStringExtra(EXTRA_BARCODE);
                 setMessage(receive_data);
             }
         }
