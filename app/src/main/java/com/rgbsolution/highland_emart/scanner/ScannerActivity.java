@@ -1,11 +1,9 @@
 package com.rgbsolution.highland_emart.scanner;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -47,8 +45,6 @@ import device.sdk.ScanManager;
  * - 초기화 버튼 (btn_init)
  * - 인쇄 ON/OFF 스위치 (swt_print)
  *
- * @see ShipmentActivity 출하 계근 Activity
- * @see ProductionActivity 생산 계근 계산기 Activity
  */
 public class ScannerActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
 
