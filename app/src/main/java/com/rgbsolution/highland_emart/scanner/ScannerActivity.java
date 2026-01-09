@@ -223,7 +223,7 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
                 if (!isChecked) {
                     Toast.makeText(getApplicationContext(), "인쇄 : OFF", Toast.LENGTH_SHORT).show();
                     Common.print_bool = false;
-                } else if (isChecked) {
+                } else {
                     Toast.makeText(getApplicationContext(), "인쇄 : ON", Toast.LENGTH_SHORT).show();
                     Common.print_bool = true;
                 }
