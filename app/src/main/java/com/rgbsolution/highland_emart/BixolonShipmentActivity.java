@@ -1927,54 +1927,45 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         Log.d(TAG, "** 바코드 :상품코드 + 중량 + 00 + 연월일시분초 = " + si.getEMARTITEM_CODE() + " + " + print_weight_str + " + 00 + " + now);
 
 
-        //모바일프린터 출력 Data 설정
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        // ========== SLCS 명령어로 라벨 인쇄 (Bixolon 프린터) ==========
         try {
-            byteStream.write(WoosimCmd.initPrinter());                                // 프린터 설정 초기화
-            byteStream.write(WoosimCmd.setPageMode());
-            byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
-            byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
+            StringBuilder slcsCmd = new StringBuilder();
 
+            // 프린터 초기화 (버퍼 클리어 + 한글 설정)
+            slcsCmd.append(slcsInit());
+
+            // 라벨 크기 설정 (너비 576, 높이 460)
+            slcsCmd.append(slcsLabelSize(576, 460));
 
             //------------------------상품명 / 냉장냉동------------------------
-            byteStream.write(WoosimCmd.PM_setPosition(50, 120)); //check point 2 15,75
-            //상품명이 일정 길이 이상 넘어갈 경우 2줄로 출력되므로	글자 크기 조절                                 // 상품명 출력
+            // 상품명이 일정 길이 이상 넘어갈 경우 글자 크기 조절
             if (si.EMARTITEM.length() > 14) {
-                byteStream.write(WoosimCmd.getTTFcode(35, 35, si.EMARTITEM + " / " + si.ITEM_SPEC));
+                slcsCmd.append(slcsText(50, 120, 35, 35, si.EMARTITEM + " / " + si.ITEM_SPEC));
             } else {
-                byteStream.write(WoosimCmd.getTTFcode(40, 40, si.EMARTITEM + " / " + si.ITEM_SPEC));
+                slcsCmd.append(slcsText(50, 120, 40, 40, si.EMARTITEM + " / " + si.ITEM_SPEC));
             }
             Log.i(TAG, "write------------------------------------>상품명 / 냉장냉동 : " + si.EMARTITEM + " / " + si.ITEM_SPEC);
 
-
             //------------------------바코드------------------------
-            byte[] CODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, pBarcode.getBytes());
-            byteStream.write(WoosimCmd.PM_setPosition(50, 190)); // check point 3 60,155
-            byteStream.write(CODE128);
-            Log.i(TAG, "write------------------------------------>바코드 : " + pBarcode.getBytes());
-
+            slcsCmd.append(slcsBarcode(50, 190, 60, pBarcode));
+            Log.i(TAG, "write------------------------------------>바코드 : " + pBarcode);
 
             //------------------------바코드 번호------------------------
-            byteStream.write(WoosimCmd.PM_setPosition(45, 260)); //75,225     // M0, E0, E1 Position(31)
-            byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr));
+            slcsCmd.append(slcsText(45, 260, 25, 25, pBarcodeStr));
             Log.i(TAG, "write------------------------------------>바코드번호 : " + pBarcodeStr);
 
-
             //------------------------중량------------------------
-            byteStream.write(WoosimCmd.PM_setPosition(50, 340)); // check point 4 15,265
-            byteStream.write(WoosimCmd.getTTFcode(40, 40, "중      량   :   " + weight_str + " KG"));
+            slcsCmd.append(slcsText(50, 340, 40, 40, "중      량   :   " + weight_str + " KG"));
             Log.i(TAG, "write------------------------------------>중량 : " + weight_str);
 
+            // 인쇄 실행 (1장)
+            slcsCmd.append(slcsPrint(1));
 
-            byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));    // 0.6인치 : 115.2
-            byteStream.write(WoosimCmd.PM_printData());
-            byteStream.write(WoosimCmd.PM_setStdMode());
-
-            sendData(byteStream.toByteArray());
-            sendData(WoosimCmd.feedToMark());
+            // SLCS 명령어 전송
+            sendData(slcsCmd.toString().getBytes("EUC-KR"));
 
             edit_barcode.setText("");
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             if (Common.D) {
                 Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());

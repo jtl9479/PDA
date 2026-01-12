@@ -183,10 +183,18 @@ P1                       // 1장 인쇄
 > - **현재 상태**: Woosim 코드가 남아있어 컴파일 가능하나, SLCS 메서드는 미사용 상태
 > - **해결 시점**: Step 3~7 완료 후 인쇄 블록에서 SLCS 메서드 호출 시 테스트 가능
 
-#### Step 3. 인쇄 블록 1 변환 (이마트 기본 라벨)
-- [ ] 라인 1938~ 분석
-- [ ] Woosim 명령어 → SLCS 변환
-- [ ] 컴파일 확인
+#### Step 3. 인쇄 블록 1 변환 (이마트 기본 라벨) ✅ 완료
+- [x] 라인 1930~1970 분석
+- [x] Woosim 명령어 → SLCS 변환 (StringBuilder + slcs 헬퍼 메서드 사용)
+- [x] 컴파일 확인: BUILD SUCCESSFUL
+- [x] 단위테스트: SLCS 메서드 호출 확인 (라인 1935, 1943, 1945, 1950, 1954, 1958, 1962)
+- [x] 회귀테스트 Step 1: mWoosim 주석 처리 유지 확인
+- [x] 회귀테스트 Step 2: SLCS 헬퍼 메서드 7개 존재 확인
+
+**변경 내용**:
+- **무엇을**: ByteArrayOutputStream + Woosim 명령어 → StringBuilder + SLCS 명령어
+- **왜**: Bixolon 프린터는 SLCS 명령어 사용
+- **어떻게**: slcsInit(), slcsLabelSize(), slcsText(), slcsBarcode(), slcsPrint() 호출
 
 #### Step 4. 인쇄 블록 2 변환 (이마트 확장 라벨 E0~E3)
 - [ ] 라인 2385~ 분석
