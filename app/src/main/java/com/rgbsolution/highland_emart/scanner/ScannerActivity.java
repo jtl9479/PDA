@@ -47,7 +47,6 @@ import device.sdk.ScanManager;
  *
  */
 public class ScannerActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
-
     private static final String TAG = "ScannerActivity";
 
     // ========================================================================================
@@ -100,13 +99,16 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
                 Log.v(TAG, "Scan Receive !");
                 Log.v(TAG, "=============== ResultReceiver's    Context = " + context + " ====");
             }
+
             if (mScanner != null) {
                 // PM80 SDK에서 디코딩 결과 조회
                 mScanner.aDecodeGetResult(mDecodeResult);
                 String barcode = mDecodeResult.toString();
+
                 if (Common.D) {
                     Log.v(TAG, "mScanner is not NULL, barcode is " + barcode.toString());
                 }
+
                 // 스캔 성공 시 내부 브로드캐스트로 전달
                 if (!barcode.equals("READ_FAIL")) {
                     Intent i = new Intent();
@@ -150,6 +152,7 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
         // 스캐너 API 초기화 및 설정
         if (mScanner != null) {
             mScanner.aDecodeAPIInit();
+
             try {
                 Thread.sleep(500);  // SDK 초기화 대기
             } catch (InterruptedException e) {
@@ -254,6 +257,7 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+
         switch (id) {
             case android.R.id.home:
                 finish();
@@ -295,6 +299,7 @@ public class ScannerActivity extends AppCompatActivity implements CompoundButton
             if (Common.D) {
                 Log.v(TAG, "Context : " + context + "Intent : " + intent);
             }
+
             String action = intent.getAction();
 
             // PM80 내부 브로드캐스트 수신

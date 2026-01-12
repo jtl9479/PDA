@@ -37,7 +37,7 @@ import com.rgbsolution.highland_emart.items.Goodswets_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 import com.rgbsolution.highland_emart.print.BluetoothPrintService;
 import com.rgbsolution.highland_emart.print.DeviceListActivity;
-import com.rgbsolution.highland_emart.scanner.ScannerActivity;
+import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
 import com.woosim.printer.WoosimBarcode;
 import com.woosim.printer.WoosimCmd;
 import com.woosim.printer.WoosimImage;
@@ -146,7 +146,7 @@ import static com.rgbsolution.highland_emart.R.id.sp_center;
  * @see LoginActivity 로그인 및 출하 유형 선택
  * @see MainActivity 메인 화면
  */
-public class ShipmentActivity extends ScannerActivity {
+public class ShipmentActivity extends HoneywellScannerActivity {
 
     // ========================================================================================
     // 상수 정의
