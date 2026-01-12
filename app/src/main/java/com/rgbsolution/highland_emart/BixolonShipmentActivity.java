@@ -246,9 +246,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /** 블루투스 프린터 서비스 */
     private BixolonSocketPrinter mBixolonPrinter = null;
 
-    private WoosimService mWoosim = null;
-
-    /** Woosim 프린터 서비스 (라벨 인쇄 명령어 생성) */
+    // mWoosim 제거됨 - Bixolon SLCS 명령어로 대체
     /** 효과음 풀 */
     protected SoundPool sound_pool;
     /** 성공 효과음 ID */
@@ -486,7 +484,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             if (Common.printer_setting && !Common.searchType.equals(SEARCH_TYPE_PRODUCTION)) {  //메인화면 프린터설정에서 ON으로 하면 아래 로직을 탄다, 이노이천에서 생산 계근일떄는 물어보지 않도록 변경
                 if (mBixolonPrinter == null) {
                     mBixolonPrinter = new BixolonSocketPrinter(BixolonShipmentActivity.this, mBixolonHandler);
-                    mWoosim = new WoosimService(mHandler);
+                    // mWoosim 제거됨 - Bixolon SLCS 명령어로 대체
 
                     if (Common.printer_address.equals("")) {
                         Intent i = new Intent(BixolonShipmentActivity.this, DeviceListActivity.class);
@@ -842,12 +840,12 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         }
                         break;
                     case MESSAGE_READ:
-                        mWoosim.processRcvData((byte[]) msg.obj, msg.arg1);
+                        // mWoosim.processRcvData 제거됨 - Bixolon은 별도 처리 불필요
                         break;
                     case MESSAGE_SEARCH:
                         if (mBixolonPrinter == null) {
                             mBixolonPrinter = new BixolonSocketPrinter(BixolonShipmentActivity.this, mBixolonHandler);
-                            mWoosim = new WoosimService(mHandler);
+                            // mWoosim 제거됨 - Bixolon SLCS 명령어로 대체
                             Intent i = new Intent(BixolonShipmentActivity.this, DeviceListActivity.class);
                             startActivityForResult(i, REQUEST_CONNECT_DEVICE);
                         }
@@ -872,12 +870,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         }
 
                         break;
-                    case WoosimService.MESSAGE_PRINTER:
-                        switch (msg.arg1) {
-                            case WoosimService.MSR:
-                                break;
-                        }
-                        break;
+                    // WoosimService.MESSAGE_PRINTER 제거됨 - Bixolon은 별도 Handler 사용
                 }
             } catch (Exception e) {
                 if (Common.D) {

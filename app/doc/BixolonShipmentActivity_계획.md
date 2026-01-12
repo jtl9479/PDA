@@ -197,52 +197,54 @@ P1                       // 1장 인쇄
 
 ---
 
-### 단계별 작업 계획 (체크리스트)
+### 단계별 작업 계획 (체크리스트) - 방법 B
 
-#### Step 1. Woosim import 제거
-- [ ] `import com.woosim.printer.WoosimBarcode;` 삭제
-- [ ] `import com.woosim.printer.WoosimCmd;` 삭제
-- [ ] `import com.woosim.printer.WoosimImage;` 삭제
-- [ ] `import com.woosim.printer.WoosimService;` 삭제
+> **방법 B**: 사용 코드 먼저 변환 → 마지막에 import 삭제
 
-#### Step 2. mWoosim 변수 및 관련 코드 제거
-- [ ] `private WoosimService mWoosim = null;` 삭제 (라인 249)
-- [ ] `mWoosim = new WoosimService(mHandler);` 삭제 (라인 489, 850)
-- [ ] `mWoosim.processRcvData(...)` 삭제 (라인 845)
-- [ ] `WoosimService.MESSAGE_PRINTER` 관련 코드 삭제 (라인 875)
-- [ ] `WoosimService.MSR` 관련 코드 삭제 (라인 877)
+#### Step 1. mWoosim 변수 및 관련 코드 제거 ✅ 완료
+- [x] `private WoosimService mWoosim = null;` 삭제 (라인 249) → 주석으로 대체
+- [x] `mWoosim = new WoosimService(mHandler);` 삭제 (라인 487, 848) → 주석으로 대체
+- [x] `mWoosim.processRcvData(...)` 삭제 (라인 843) → 주석으로 대체
+- [x] `WoosimService.MESSAGE_PRINTER` 관련 코드 삭제 (라인 873) → 주석으로 대체
+- [x] `WoosimService.MSR` 관련 코드 삭제 → 상위 블록과 함께 제거
 
-#### Step 3. SLCS 헬퍼 메서드 생성
+#### Step 2. SLCS 헬퍼 메서드 생성
 - [ ] 텍스트 출력 메서드 생성 (WoosimCmd.getTTFcode 대체)
 - [ ] 바코드 생성 메서드 생성 (WoosimBarcode.createBarcode 대체)
 - [ ] 선/박스 그리기 메서드 생성 (WoosimImage 대체)
 - [ ] 라벨 초기화 메서드 생성 (WoosimCmd.initPrinter 대체)
 - [ ] 인쇄 실행 메서드 생성 (WoosimCmd.PM_printData 대체)
 
-#### Step 4. 인쇄 블록 1 변환 (이마트 기본 라벨)
+#### Step 3. 인쇄 블록 1 변환 (이마트 기본 라벨)
 - [ ] 라인 1938~ 분석
 - [ ] Woosim 명령어 → SLCS 변환
 - [ ] 컴파일 확인
 
-#### Step 5. 인쇄 블록 2 변환 (이마트 확장 라벨 E0~E3)
+#### Step 4. 인쇄 블록 2 변환 (이마트 확장 라벨 E0~E3)
 - [ ] 라인 2385~ 분석
 - [ ] Woosim 명령어 → SLCS 변환
 - [ ] 컴파일 확인
 
-#### Step 6. 인쇄 블록 3 변환 (홈플러스 라벨)
+#### Step 5. 인쇄 블록 3 변환 (홈플러스 라벨)
 - [ ] 라인 2863~ 분석
 - [ ] Woosim 명령어 → SLCS 변환
 - [ ] 컴파일 확인
 
-#### Step 7. 인쇄 블록 4 변환 (롯데 라벨)
+#### Step 6. 인쇄 블록 4 변환 (롯데 라벨)
 - [ ] 라인 3096~ 분석
 - [ ] Woosim 명령어 → SLCS 변환
 - [ ] 컴파일 확인
 
-#### Step 8. 인쇄 블록 5 변환 (기타 라벨)
+#### Step 7. 인쇄 블록 5 변환 (기타 라벨)
 - [ ] 라인 4240~ 분석
 - [ ] Woosim 명령어 → SLCS 변환
 - [ ] 컴파일 확인
+
+#### Step 8. Woosim import 제거
+- [ ] `import com.woosim.printer.WoosimBarcode;` 삭제
+- [ ] `import com.woosim.printer.WoosimCmd;` 삭제
+- [ ] `import com.woosim.printer.WoosimImage;` 삭제
+- [ ] `import com.woosim.printer.WoosimService;` 삭제
 
 #### Step 9. 빌드 및 통합 테스트
 - [ ] 전체 빌드 성공 확인
