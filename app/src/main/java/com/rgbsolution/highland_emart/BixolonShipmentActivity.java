@@ -246,6 +246,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private BluetoothAdapter mBluetoothAdapter = null;
     /** 블루투스 프린터 서비스 */
     private BixolonSocketPrinter mBixolonPrinter = null;
+    /** Bixolon 프린터 이전 상태 (연결 실패 판단용) */
+    private int mPreviousBixolonState = BixolonSocketPrinter.STATE_NONE;
 
     // mWoosim 제거됨 - Bixolon SLCS 명령어로 대체
     /** 효과음 풀 */
@@ -476,6 +478,25 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         super.onStart();
         Log.i(TAG, TAG + " onStart");
         // 출하대상 불러오기 끝, Print 연결 시작
+
+        // ============================================================
+        // Bixolon 프린터 첫 사용 시 기존 Woosim MAC 주소 초기화
+        // - BixolonShipmentActivity 최초 진입 시 1회만 실행
+        // - 이후에는 Bixolon 프린터 주소 저장/재사용
+        // ============================================================
+        SharedPreferences spfBluetooth = getSharedPreferences("spfBluetooth", Activity.MODE_PRIVATE);
+        boolean bixolonInitialized = spfBluetooth.getBoolean("bixolon_initialized", false);
+
+        if (!bixolonInitialized) {
+            // 첫 사용: 기존 프린터 주소 초기화 및 플래그 설정
+            SharedPreferences.Editor editor = spfBluetooth.edit();
+            editor.putString("printer_address", "");
+            editor.putBoolean("bixolon_initialized", true);
+            editor.apply();
+
+            Common.printer_address = "";
+            Log.i(TAG, "Bixolon 첫 사용: 기존 프린터 주소 초기화 완료");
+        }
 
         if (!mBluetoothAdapter.isEnabled() && !Common.searchType.equals(SEARCH_TYPE_PRODUCTION)) {  //안드로이드 디바이스에서 블루투스 ON 여부, 이노이천에서 생산 계근일때는 블루투스 on 여부 묻지 않는다
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -884,16 +905,34 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /**
      * Bixolon Handler
      */
+    /**
+     * Bixolon 프린터 Handler
+     * <p>
+     * BixolonSocketPrinter로부터 연결 상태 변경, 디바이스명, 인쇄 완료 등의 메시지를 수신한다.
+     * 기존 ShipmentActivity의 mHandler와 동일한 동작을 유지한다.
+     * </p>
+     * <p>
+     * STATE_NONE 처리 시 주의사항:
+     * - connect() 호출 시 내부에서 disconnect()가 먼저 호출되어 STATE_NONE이 발생함
+     * - 이때 실패 메시지를 표시하면 안 됨 (아직 연결 시도 전이므로)
+     * - STATE_CONNECTING → STATE_NONE 일 때만 실제 연결 실패로 판단
+     * </p>
+     */
     private final Handler mBixolonHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case BixolonSocketPrinter.MESSAGE_STATE_CHANGE:
-                    switch (msg.arg1) {
+                    int newState = msg.arg1;
+                    Log.d(TAG, "Bixolon state: " + mPreviousBixolonState + " -> " + newState);
+
+                    switch (newState) {
                         case BixolonSocketPrinter.STATE_CONNECTED:
+                            // 연결 성공 시 다이얼로그 닫기 (Toast와 성공음은 MESSAGE_DEVICE_NAME에서 처리)
+                            if (cDialog != null && cDialog.isShowing()) {
+                                cDialog.dismiss();
+                            }
                             Log.d(TAG, "Bixolon connected");
-                            Toast.makeText(BixolonShipmentActivity.this, "Printer connected!", Toast.LENGTH_SHORT).show();
-                            sound_pool.play(sound_success, 1.0f, 1.0f, 0, 0, 1.0f);
                             if (getSupportActionBar() != null) {
                                 getSupportActionBar().setSubtitle("Printer Connected");
                             }
@@ -904,14 +943,33 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             }
                             break;
                         case BixolonSocketPrinter.STATE_NONE:
+                            // 연결 실패 판단: STATE_CONNECTING에서 STATE_NONE으로 변경된 경우만 실패
+                            // (connect() 시작 시 disconnect()에서 발생하는 STATE_NONE은 무시)
+                            if (mPreviousBixolonState == BixolonSocketPrinter.STATE_CONNECTING) {
+                                // 실제 연결 시도 후 실패한 경우
+                                if (cDialog != null && cDialog.isShowing()) {
+                                    cDialog.dismiss();
+                                }
+                                // 연결 실패 시 Toast + 실패음 (기존 ShipmentActivity와 동일)
+                                Toast.makeText(getApplicationContext(), "접속이 원할하지 않습니다\n스캐너의 상태를 확인해주세요.", Toast.LENGTH_SHORT).show();
+                                sound_pool.play(sound_fail, 1.0f, 1.0f, 0, 0, 1.0f);
+                            }
                             if (getSupportActionBar() != null) {
                                 getSupportActionBar().setSubtitle("Not Connected");
                             }
                             break;
                     }
+                    // 이전 상태 저장
+                    mPreviousBixolonState = newState;
                     break;
                 case BixolonSocketPrinter.MESSAGE_DEVICE_NAME:
-                    Log.d(TAG, "Device: " + msg.obj);
+                    // 연결된 프린터 디바이스명 저장 및 연결 성공 알림 (기존 ShipmentActivity와 동일)
+                    mConnectedDeviceName = (String) msg.obj;
+                    if (Common.D) {
+                        Log.d(TAG, "MESSAGE_DEVICE_NAME : " + mConnectedDeviceName);
+                    }
+                    Toast.makeText(getApplicationContext(), "Connected to " + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+                    sound_pool.play(sound_success, 1.0f, 1.0f, 0, 0, 1.0f);
                     break;
                 case BixolonSocketPrinter.MESSAGE_PRINT_COMPLETE:
                     Log.d(TAG, "Print complete");

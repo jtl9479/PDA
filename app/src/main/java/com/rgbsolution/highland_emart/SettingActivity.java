@@ -190,9 +190,10 @@ public class SettingActivity extends AppCompatActivity {
             editor.putBoolean("printer_setting", true);
             editor.commit();
         } else {
-            // OFF: 프린터 미사용, 주소도 초기화
+            // OFF: 프린터 미사용, 주소 및 Bixolon 초기화 플래그도 초기화
             editor.putBoolean("printer_setting", false);
             editor.putString("printer_address", "");
+            editor.putBoolean("bixolon_initialized", false);  // Bixolon 초기화 플래그 리셋
             editor.commit();
             Common.printer_address = "";
         }
