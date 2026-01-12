@@ -115,44 +115,6 @@ BixolonShipmentActivity (Bixolon 전용) - 신규 생성
 
 ---
 
-## 마이그레이션 체크리스트
-
-### Step 1. BixolonShipmentActivity.java 생성
-
-- [ ] ShipmentActivity.java 복사
-- [ ] 클래스명 변경: ShipmentActivity → BixolonShipmentActivity
-- [ ] Woosim import 제거
-- [ ] BixolonSocketPrinter import 추가
-
-### Step 2. 프린터 관련 코드 교체
-
-- [ ] mWoosim 제거 → mBixolonPrinter 추가
-- [ ] BluetoothPrintService → BixolonSocketPrinter
-- [ ] WoosimCmd.* → SLCS 명령어
-
-### Step 3. 인쇄 메서드 변환
-
-- [ ] setPrinting() - 이마트 라벨
-- [ ] setHomeplusPrinting() - 홈플러스 라벨
-- [ ] setPrintingLotte() - 롯데 라벨
-- [ ] setPrinting_prod() - 생산 라벨
-
-### Step 4. AndroidManifest.xml 수정
-
-- [ ] BixolonShipmentActivity 등록
-
-### Step 5. MainActivity.java 수정
-
-- [ ] ShipmentActivity → BixolonShipmentActivity 호출
-
-### Step 6. 테스트
-
-- [ ] 프린터 연결 테스트
-- [ ] 바코드 스캔 테스트
-- [ ] 라벨 인쇄 테스트
-
----
-
 ## Bixolon SLCS 명령어 예시
 
 ```
