@@ -170,12 +170,18 @@ P1                       // 1장 인쇄
 - [x] `WoosimService.MESSAGE_PRINTER` 관련 코드 삭제 (라인 873) → 주석으로 대체
 - [x] `WoosimService.MSR` 관련 코드 삭제 → 상위 블록과 함께 제거
 
-#### Step 2. SLCS 헬퍼 메서드 생성
-- [ ] 텍스트 출력 메서드 생성 (WoosimCmd.getTTFcode 대체)
-- [ ] 바코드 생성 메서드 생성 (WoosimBarcode.createBarcode 대체)
-- [ ] 선/박스 그리기 메서드 생성 (WoosimImage 대체)
-- [ ] 라벨 초기화 메서드 생성 (WoosimCmd.initPrinter 대체)
-- [ ] 인쇄 실행 메서드 생성 (WoosimCmd.PM_printData 대체)
+#### Step 2. SLCS 헬퍼 메서드 생성 ✅ 완료
+- [x] 텍스트 출력 메서드 생성 → `slcsText(x, y, w, h, text)` (라인 3246)
+- [x] 바코드 생성 메서드 생성 → `slcsBarcode(x, y, h, data)` (라인 3261)
+- [x] 선/박스 그리기 메서드 생성 → `slcsLine()`, `slcsBox()` (라인 3277, 3292)
+- [x] 라벨 초기화 메서드 생성 → `slcsInit()` (라인 3220)
+- [x] 인쇄 실행 메서드 생성 → `slcsPrint(copies)` (라인 3303)
+- [x] 라벨 크기 설정 메서드 추가 → `slcsLabelSize(w, h)` (라인 3231)
+
+> **[예외] Step 2 단위테스트 불가**
+> - **오류 원인**: SLCS 헬퍼 메서드만 생성됨. 아직 인쇄 블록(Step 3~7)에서 호출되지 않음
+> - **현재 상태**: Woosim 코드가 남아있어 컴파일 가능하나, SLCS 메서드는 미사용 상태
+> - **해결 시점**: Step 3~7 완료 후 인쇄 블록에서 SLCS 메서드 호출 시 테스트 가능
 
 #### Step 3. 인쇄 블록 1 변환 (이마트 기본 라벨)
 - [ ] 라인 1938~ 분석

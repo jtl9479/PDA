@@ -3206,6 +3206,108 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         return String.valueOf(print_weight_double);
     }
 
+    // ========================================================================================
+    // SLCS 헬퍼 메서드 - Bixolon 라벨 프린터 명령어 생성
+    // ========================================================================================
+
+    /**
+     * SLCS 라벨 초기화
+     * - 버퍼 클리어 (CB)
+     * - 문자셋 설정 (CS13,0 = 한글)
+     *
+     * @return SLCS 초기화 명령어 문자열
+     */
+    private String slcsInit() {
+        return "CB\r\n" + "CS13,0\r\n";
+    }
+
+    /**
+     * SLCS 라벨 크기 설정
+     *
+     * @param width  라벨 너비 (도트)
+     * @param height 라벨 높이 (도트)
+     * @return SLCS 라벨 크기 명령어 문자열
+     */
+    private String slcsLabelSize(int width, int height) {
+        return "SW" + width + "\r\n" + "SL" + height + "\r\n";
+    }
+
+    /**
+     * SLCS 텍스트 출력
+     * - V 명령어 사용 (벡터 폰트)
+     *
+     * @param x      X 좌표
+     * @param y      Y 좌표
+     * @param width  폰트 너비
+     * @param height 폰트 높이
+     * @param text   출력할 텍스트
+     * @return SLCS 텍스트 명령어 문자열
+     */
+    private String slcsText(int x, int y, int width, int height, String text) {
+        // V x,y,K,w,h,0,N,B,N,0,L,0,'text'
+        // K: 한글, 0: 회전없음, N: 일반, B: 굵게, N: 이탤릭없음, 0: 자간, L: 왼쪽정렬, 0: 줄간격
+        return "V" + x + "," + y + ",K," + width + "," + height + ",0,N,B,N,0,L,0,'" + text + "'\r\n";
+    }
+
+    /**
+     * SLCS CODE128 바코드 생성
+     *
+     * @param x      X 좌표
+     * @param y      Y 좌표
+     * @param height 바코드 높이
+     * @param data   바코드 데이터
+     * @return SLCS 바코드 명령어 문자열
+     */
+    private String slcsBarcode(int x, int y, int height, String data) {
+        // BD x,y,barcode_type,narrow,wide,height,rotation,HRI,quiet_zone,'data'
+        // CODE128, narrow=2, wide=4, HRI=0(없음), quiet_zone=0
+        return "BD" + x + "," + y + ",CODE128,2,4," + height + ",0,0,0,'" + data + "'\r\n";
+    }
+
+    /**
+     * SLCS 선 그리기
+     *
+     * @param x1    시작 X 좌표
+     * @param y1    시작 Y 좌표
+     * @param x2    끝 X 좌표
+     * @param y2    끝 Y 좌표
+     * @param width 선 두께
+     * @return SLCS 선 명령어 문자열
+     */
+    private String slcsLine(int x1, int y1, int x2, int y2, int width) {
+        // LS x1,y1,x2,y2,width
+        return "LS" + x1 + "," + y1 + "," + x2 + "," + y2 + "," + width + "\r\n";
+    }
+
+    /**
+     * SLCS 박스 그리기
+     *
+     * @param x         X 좌표
+     * @param y         Y 좌표
+     * @param width     박스 너비
+     * @param height    박스 높이
+     * @param thickness 선 두께
+     * @return SLCS 박스 명령어 문자열
+     */
+    private String slcsBox(int x, int y, int width, int height, int thickness) {
+        // LB x1,y1,x2,y2,thickness
+        return "LB" + x + "," + y + "," + (x + width) + "," + (y + height) + "," + thickness + "\r\n";
+    }
+
+    /**
+     * SLCS 인쇄 실행
+     *
+     * @param copies 인쇄 매수
+     * @return SLCS 인쇄 명령어 문자열
+     */
+    private String slcsPrint(int copies) {
+        return "P" + copies + "\r\n";
+    }
+
+    // ========================================================================================
+    // 프린터 데이터 전송
+    // ========================================================================================
+
     private void sendData(byte[] data) {
         // Check that we're actually connected before trying printing
         if (mBixolonPrinter.getState() != BixolonSocketPrinter.STATE_CONNECTED) {
