@@ -159,6 +159,36 @@ P1                       // 1장 인쇄
 
 ---
 
+### 인쇄 블록 분석 템플릿
+
+각 인쇄 블록(Step 3~7) 분석 시 아래 형식을 사용한다.
+
+```
+**Step N-1. 분석**
+- 메서드: [메서드명]
+- 범위: 라인 [시작]~[끝]
+- Woosim 호출: WoosimCmd [N]회, WoosimBarcode [N]회, WoosimImage [N]회
+
+| # | 출력 항목 | 위치 | 크기 | 내용 |
+|---|----------|------|------|------|
+| 1 | [항목명] | (x, y) | [w]x[h] | [출력 내용] |
+| ... | ... | ... | ... | ... |
+
+- [ ] Step N-1: 분석 완료 확인
+- [ ] Step N-2: Woosim 명령어 → SLCS 변환
+- [ ] Step N-3: 컴파일 확인
+- [ ] Step N-4: 단위테스트
+- [ ] Step N-5: 회귀테스트 (Step 1~N-1)
+- [ ] Step N-6: 주석 보강
+
+**변경 내용** (변환 완료 후 작성):
+- **무엇을**: [변환 대상]
+- **왜**: [변환 이유]
+- **어떻게**: [변환 방법]
+```
+
+---
+
 ### 단계별 작업 계획 (체크리스트) - 방법 B
 
 > **방법 B**: 사용 코드 먼저 변환 → 마지막에 import 삭제
@@ -226,9 +256,68 @@ P1                       // 1장 인쇄
 - **어떻게**: slcsInit/LabelSize/Text/Print 호출 (지점명, 점포코드, 상품명, BOX, CT코드, 중량, 납품일자, 업체명)
 
 #### Step 6. 인쇄 블록 4 변환 (롯데 라벨)
-- [ ] 라인 3096~ 분석
-- [ ] Woosim 명령어 → SLCS 변환
-- [ ] 컴파일 확인
+
+**Part 1. 분석**
+- 메서드: setPrintingLotte()
+- 범위: 라인 2960~3077
+- 호출 수: WoosimCmd 약 20회, WoosimBarcode 2회, WoosimImage 4회
+
+| # | 항목 | 위치 | 크기 | 내용 |
+|---|------|------|------|------|
+| 1 | 상품명 | (10, 12) | 35x35 | si.EMARTITEM |
+| 2 | 바코드1 (중량) | (100, 80) | h=60 | pBarcode (CODE128) |
+| 3 | 바코드1 숫자 | (114, 139) | 25x25 | pBarcodeStr |
+| 4 | 바코드2 (이력번호) | (150, 350) | h=60 | pBarcode2 (CODE128) |
+| 5 | 이력번호 숫자 | (155, 410) | 25x25 | pBarcode2 |
+| 6 | 중량 라벨 | (15, 180) | 40x40 | "중      량 : " |
+| 7 | 중량 값 | (175, 180) | 40x40 | print_weight_double + " KG" |
+| 8 | 납품처 | (15, 228) | 30x30 | pCompName |
+| 9 | 제조일자 | (15, 268) | 30x30 | tempDate |
+| 10 | 이력(묶음)번호 | (15, 313) | 30x30 | si.getIMPORT_ID_NO() |
+| 11 | WH_AREA | (385, 305) | 65x65 | whArea |
+| 12 | 겉 테두리 | (0,0)-(560,440) | 두께3 | drawBox |
+| 13 | 가로선1 | y=60 | 두께3 | drawLine |
+| 14 | 가로선2 | y=180 | 두께3 | drawLine |
+| 15 | 가로선3 | y=345 | 두께3 | drawLine |
+
+**Part 2. 변환 계획**
+- 변환 방식: ByteArrayOutputStream + Woosim → StringBuilder + SLCS
+- 사용할 헬퍼 메서드: slcsInit, slcsLabelSize, slcsText, slcsBarcode, slcsBox, slcsLine, slcsPrint
+- 명령어 매핑:
+  | 기존 (Woosim) | 변환 후 (SLCS) |
+  |---------------|----------------|
+  | WoosimCmd.initPrinter() | slcsInit() |
+  | WoosimCmd.PM_setArea() | slcsLabelSize() |
+  | WoosimCmd.PM_setPosition() + getTTFcode() | slcsText() |
+  | WoosimBarcode.createBarcode() | slcsBarcode() |
+  | WoosimImage.drawBox() | slcsBox() |
+  | WoosimImage.drawLine() | slcsLine() |
+  | WoosimCmd.PM_printData() | slcsPrint() |
+- 주의사항:
+  - L0 바코드 타입만 처리 (롯데 전용)
+  - 박스/선 그리기 포함 (이마트/홈플러스와 다름)
+  - 바코드 2개 출력 (중량바코드, 이력번호바코드)
+
+**체크리스트**
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 (BUILD SUCCESSFUL)
+- [x] Part 5: 단위테스트 (SLCS 메서드 약 20회 호출: slcsInit 1, slcsLabelSize 1, slcsText 11, slcsBarcode 2, slcsLine 3, slcsBox 1, slcsPrint 1)
+- [x] Part 6: 회귀테스트 (Step 1~5 모두 통과)
+  - Step 1: mWoosim 주석 처리 유지 (라인 249, 487, 843, 848)
+  - Step 2: SLCS 헬퍼 메서드 7개 존재 (라인 3093~3176)
+  - Step 3: 인쇄 블록 1 존재 (라인 1930)
+  - Step 4: 인쇄 블록 2 존재 (라인 2368)
+  - Step 5: 인쇄 블록 3 존재 (라인 2727)
+- [x] Part 7: 주석 보강 (15개 출력 항목 번호, 좌표, 원본 Woosim 대응 주석 추가)
+- [x] Part 8: 변경 내용 작성
+
+**Part 8. 변경 내용**:
+- **무엇을**: setPrintingLotte() 메서드 내 Woosim 코드 (라인 2960~3077)
+- **왜**: Bixolon 프린터는 SLCS 명령어를 사용하므로 Woosim → SLCS 변환 필요
+- **어떻게**: ByteArrayOutputStream + WoosimCmd/WoosimBarcode/WoosimImage → StringBuilder + slcsInit/slcsLabelSize/slcsText/slcsBarcode/slcsLine/slcsBox/slcsPrint/slcsFeedToMark 헬퍼 메서드 호출로 변환. L0 바코드 타입(롯데 전용) 조건문 내 15개 출력 항목 (상품명, 바코드2개, 중량, 납품처, 제조일자, 이력번호, WH_AREA, 테두리 박스, 가로선 3개) 모두 SLCS로 변환 완료.
+- **추가 수정**: slcsFeedToMark() 헬퍼 메서드 추가 (WoosimCmd.feedToMark() 대응, SLCS T 명령어)
 
 #### Step 7. 인쇄 블록 5 변환 (기타 라벨)
 - [ ] 라인 4240~ 분석

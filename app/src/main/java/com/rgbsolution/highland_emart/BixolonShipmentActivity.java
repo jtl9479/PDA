@@ -2957,122 +2957,127 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             Log.d(TAG, "print Weight : " + print_weight_str);
         }
 
-        //모바일프린터 출력 Data 설정
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        // ========== SLCS 명령어로 롯데(원앤원) 라벨 인쇄 (Bixolon 프린터) ==========
+        // 원본: Woosim ByteArrayOutputStream + WoosimCmd/WoosimBarcode/WoosimImage 명령어
+        // 변환: StringBuilder + SLCS 헬퍼 메서드
+        // 출력 항목:
+        //   [1] 상품명 (10,12) 35x35 - si.EMARTITEM
+        //   [2] 바코드1 - 중량바코드 (100,80) CODE128 h=60
+        //   [3] 바코드1 숫자 (114,139) 25x25 - pBarcodeStr
+        //   [4] 바코드2 - 이력번호바코드 (150,350) CODE128 h=60
+        //   [5] 이력번호 숫자 (155,410) 25x25 - pBarcode2
+        //   [6] 중량 라벨 (15,180) 40x40 - "중      량 : "
+        //   [7] 중량 값 (175,180) 40x40 - print_weight_double + " KG"
+        //   [8] 납품처 (15,228) 30x30 - pCompName
+        //   [9] 제조일자 (15,268) 30x30 - tempDate
+        //   [10] 이력(묶음)번호 (15,313) 30x30 - si.getIMPORT_ID_NO()
+        //   [11] WH_AREA (385,305) 65x65 - whArea
+        //   [12] 겉 테두리 박스 (0,0)-(560,440) 두께3
+        //   [13~15] 가로선 3개 y=60, y=180, y=345 두께3
         try {
-            byteStream.write(WoosimCmd.initPrinter());                                // 프린터 설정 초기화
-            byteStream.write(WoosimCmd.setPageMode());
-            byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
-            byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
+            StringBuilder slcsCmd = new StringBuilder();
 
-            //상품명 출력
-            byteStream.write(WoosimCmd.PM_setPosition(10, 12));
-            byteStream.write(WoosimCmd.getTTFcode(35, 35, si.EMARTITEM));
+            // 초기화: CB(버퍼클리어) + CS13,0(한글문자셋)
+            // 원본: WoosimCmd.initPrinter() + setPageMode() + selectTTF()
+            slcsCmd.append(slcsInit());
+
+            // 라벨 크기 설정: 576x460 도트
+            // 원본: WoosimCmd.PM_setArea(0, 0, 576, 460)
+            slcsCmd.append(slcsLabelSize(576, 460));
 
             Log.i(TAG, "===============EMARTITEM============" + si.EMARTITEM);
 
-//            if(Common.searchType.equals(SEARCH_TYPE_LOTTE)) { //원앤원
-//                //byteStream.write(WoosimCmd.PM_setPosition(260, 13));
-//                //byteStream.write(WoosimCmd.getTTFcode(35, 35, si.getCT_CODE()));                    // 원앤원은 지점자리에 원산지(표시안함)
-//            }else{
-//                if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-//
-//                } else {
-//                    if (11 < si.CLIENTNAME.toString().length()) {
-//                        byteStream.write(WoosimCmd.PM_setPosition(260, 13));
-//                        byteStream.write(WoosimCmd.getTTFcode(35, 35, pointName.toString()));                    // 지점명 출력
-//                        if (Common.D)
-//                            Log.i(TAG, "지점명 > 11 ,  size 30");
-//                    } else {
-//                        byteStream.write(WoosimCmd.PM_setPosition(260, 10));
-//                        byteStream.write(WoosimCmd.getTTFcode(40, 40, pointName.toString()));                    // 지점명 출력
-//                        if (Common.D)
-//                            Log.i(TAG, "지점명 <= 11 ,  size 40");
-//                    }
-//                }
-//            }
-
-
-            byte[] CODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, pBarcode.getBytes());
+            // [1] 상품명 출력 (x=10, y=12, 폰트크기 35x35)
+            // 원본: PM_setPosition(10, 12) + getTTFcode(35, 35, si.EMARTITEM)
+            slcsCmd.append(slcsText(10, 12, 35, 35, si.EMARTITEM));
 
             Log.i(TAG, "===============pBarcode============" + pBarcode);
-
-            //바코드 타입에 따른 바코드 출력 위치 설정
-            if(si.getBARCODE_TYPE().equals("L0")){
-                byteStream.write(WoosimCmd.PM_setPosition(100, 80)); //원앤원, 중량바코드 위치 설정 // 이력번호와 바코드 위치변경
-            }
-
-            Log.i(TAG, "===============바코드============" + CODE128);
-
-            byteStream.write(CODE128);
-
-            byte[] CODE128_2 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, pBarcode2.getBytes());
-
             Log.i(TAG, "===============이력번호============" + pBarcode2);
 
-            //이마트 바코드 타입에 따른 바코드번호(숫자) 출력 위치 설정
-            if (si.getBARCODE_TYPE().equals("L0")){ // 원앤원
-                byteStream.write(WoosimCmd.PM_setPosition(114, 139));    // M0, E0, E1 Position(31)
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr));                                // 바코드번호(숫자) 출력
-            }
+            // L0 바코드 타입 (롯데/원앤원 전용)
+            if (si.getBARCODE_TYPE().equals("L0")) {
+                // [2] 중량바코드 출력 (x=100, y=80, CODE128, 높이60)
+                // 원본: WoosimBarcode.createBarcode(CODE128, 2, 60, false, pBarcode.getBytes()) at (100,80)
+                slcsCmd.append(slcsBarcode(100, 80, 60, pBarcode));
 
-            if (si.getBARCODE_TYPE().equals("L0")) { //원앤원 이력번호
-                byteStream.write(WoosimCmd.PM_setPosition(150, 350));
-                Log.i(TAG, "===============LOGISCODE128============" + CODE128_2);
-                byteStream.write(CODE128_2);
-                // 원앤원 이력번호(숫자) 출력
-                byteStream.write(WoosimCmd.PM_setPosition(155, 410));
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcode2));
-            }
+                // [3] 바코드1 숫자 (중량바코드 아래) (x=114, y=139, 폰트크기 25x25)
+                // 원본: PM_setPosition(114, 139) + getTTFcode(25, 25, pBarcodeStr)
+                slcsCmd.append(slcsText(114, 139, 25, 25, pBarcodeStr));
 
+                Log.i(TAG, "===============LOGISCODE128============");
 
-            if (si.getBARCODE_TYPE().equals("L0")){ //원앤원
-                byteStream.write(WoosimCmd.PM_setPosition(15, 180));
-                byteStream.write(WoosimCmd.getTTFcode(40, 40, "중      량 : "));                            // 중량 출력
-                byteStream.write(WoosimCmd.PM_setPosition(175, 180));
-                byteStream.write(WoosimCmd.getTTFcode(40, 40, String.valueOf(print_weight_double) + " KG"));
-                byteStream.write(WoosimCmd.PM_setPosition(15, 228));
-                byteStream.write(WoosimCmd.getTTFcode(30, 30, "납품처 : " + pCompName));        // 납품처 출력
-                byteStream.write(WoosimCmd.PM_setPosition(15, 268));
+                // [4] 이력번호 바코드 출력 (x=150, y=350, CODE128, 높이60)
+                // 원본: WoosimBarcode.createBarcode(CODE128, 2, 60, false, pBarcode2.getBytes()) at (150,350)
+                slcsCmd.append(slcsBarcode(150, 350, 60, pBarcode2));
+
+                // [5] 이력번호 숫자 (바코드2 아래) (x=155, y=410, 폰트크기 25x25)
+                // 원본: PM_setPosition(155, 410) + getTTFcode(25, 25, pBarcode2)
+                slcsCmd.append(slcsText(155, 410, 25, 25, pBarcode2));
+
+                // [6] 중량 라벨 (x=15, y=180, 폰트크기 40x40)
+                // 원본: PM_setPosition(15, 180) + getTTFcode(40, 40, "중      량 : ")
+                slcsCmd.append(slcsText(15, 180, 40, 40, "중      량 : "));
+
+                // [7] 중량 값 (x=175, y=180, 폰트크기 40x40)
+                // 원본: PM_setPosition(175, 180) + getTTFcode(40, 40, weight + " KG")
+                slcsCmd.append(slcsText(175, 180, 40, 40, String.valueOf(print_weight_double) + " KG"));
+
+                // [8] 납품처 (x=15, y=228, 폰트크기 30x30)
+                // 원본: PM_setPosition(15, 228) + getTTFcode(30, 30, "납품처 : " + pCompName)
+                slcsCmd.append(slcsText(15, 228, 30, 30, "납품처 : " + pCompName));
+
+                // 재인쇄 표시
                 if (reprint) {
                     pCompName = pCompName + "  *";
                 }
+
                 Log.i(TAG, "=====================제조일자==================" + making_date);
-                String tempDate = "20"+ making_date.substring(0,2) + "년 " + making_date.substring(2,4) + "월 " + making_date.substring(4,6) + "일";
-                byteStream.write(WoosimCmd.getTTFcode(30, 30, "제조일자 : " + tempDate));                                  // 업체코드 출력
-                byteStream.write(WoosimCmd.PM_setPosition(15, 313));
-                byteStream.write(WoosimCmd.getTTFcode(30, 30, "이력(묶음)번호 : " + si.getIMPORT_ID_NO()));                                  // 업체명 출력
+
+                // [9] 제조일자 (x=15, y=268, 폰트크기 30x30)
+                // 원본: PM_setPosition(15, 268) + getTTFcode(30, 30, "제조일자 : " + tempDate)
+                String tempDate = "20" + making_date.substring(0, 2) + "년 " + making_date.substring(2, 4) + "월 " + making_date.substring(4, 6) + "일";
+                slcsCmd.append(slcsText(15, 268, 30, 30, "제조일자 : " + tempDate));
+
+                // [10] 이력(묶음)번호 (x=15, y=313, 폰트크기 30x30)
+                // 원본: PM_setPosition(15, 313) + getTTFcode(30, 30, "이력(묶음)번호 : " + ...)
+                slcsCmd.append(slcsText(15, 313, 30, 30, "이력(묶음)번호 : " + si.getIMPORT_ID_NO()));
+
+                // [13~15] 가로선 3개 (L0 바코드 타입 전용)
+                // 원본: WoosimImage.drawLine(0, 60, 560, 60, 3) 등
+                slcsCmd.append(slcsLine(0, 60, 560, 60, 3));     // 가로선1 (상품명 아래)
+                slcsCmd.append(slcsLine(0, 180, 560, 180, 3));   // 가로선2 (바코드1 아래)
+                slcsCmd.append(slcsLine(0, 345, 560, 345, 3));   // 가로선3 (중량정보 아래)
             }
-            //wh_area 추가
+
+            // [11] WH_AREA 출력 (x=385, y=305, 폰트크기 65x65) - 창고구역 코드
+            // 원본: PM_setPosition(385, 305) + getTTFcode(65, 65, whArea)
             whArea = si.getWH_AREA();
+            Log.e(TAG, "::::::::: whArea check44 ::::::::" + whArea);
 
-            Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
-
-            if(whArea != null || !whArea.equals("")){
-                byteStream.write(WoosimCmd.PM_setPosition(385, 305));
-                byteStream.write(WoosimCmd.getTTFcode(65, 65, whArea));
+            if (whArea != null && !whArea.equals("")) {
+                slcsCmd.append(slcsText(385, 305, 65, 65, whArea));
             }
 
-            byteStream.write(WoosimImage.drawBox(0, 0, 560, 440, 3));                // 겉 테두리
+            // [12] 겉 테두리 박스 (0,0)에서 (560,440) 크기, 두께 3
+            // 원본: WoosimImage.drawBox(0, 0, 560, 440, 3)
+            slcsCmd.append(slcsBox(0, 0, 560, 440, 3));
 
-            if(si.getBARCODE_TYPE().equals("L0")) { // 원앤원
-                byteStream.write(WoosimImage.drawLine(0, 60, 560, 60, 3));
-                byteStream.write(WoosimImage.drawLine(0, 180, 560, 180, 3));
-                byteStream.write(WoosimImage.drawLine(0, 345, 560, 345, 3));
-            }
+            // 인쇄 실행 (1장)
+            // 원본: WoosimCmd.PM_printData()
+            slcsCmd.append(slcsPrint(1));
 
-            byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));    // 0.6인치 : 115.2
-            byteStream.write(WoosimCmd.PM_printData());
-            byteStream.write(WoosimCmd.PM_setStdMode());
+            // 라벨 피드 (마크 위치로 이동)
+            // 원본: WoosimCmd.feedToMark()
+            slcsCmd.append(slcsFeedToMark());
 
-            sendData(byteStream.toByteArray());
-            sendData(WoosimCmd.feedToMark());
+            // 전송
+            sendData(slcsCmd.toString().getBytes("EUC-KR"));
 
             edit_barcode.setText("");
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             if (Common.D) {
-                Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
+                Log.d(TAG, "setPrintingLotte Exception\n" + e.getMessage().toString());
             }
         }
         return String.valueOf(print_weight_double);
@@ -3174,6 +3179,17 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      */
     private String slcsPrint(int copies) {
         return "P" + copies + "\r\n";
+    }
+
+    /**
+     * SLCS 라벨 피드 (마크 위치로 이동)
+     * - 원본: WoosimCmd.feedToMark()에 대응
+     * - SLCS T 명령어: Tear-off 위치로 라벨 이동
+     *
+     * @return SLCS 피드 명령어 문자열
+     */
+    private String slcsFeedToMark() {
+        return "T\r\n";
     }
 
     // ========================================================================================
