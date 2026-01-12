@@ -196,15 +196,34 @@ P1                       // 1장 인쇄
 - **왜**: Bixolon 프린터는 SLCS 명령어 사용
 - **어떻게**: slcsInit(), slcsLabelSize(), slcsText(), slcsBarcode(), slcsPrint() 호출
 
-#### Step 4. 인쇄 블록 2 변환 (이마트 확장 라벨 E0~E3)
-- [ ] 라인 2385~ 분석
-- [ ] Woosim 명령어 → SLCS 변환
-- [ ] 컴파일 확인
+#### Step 4. 인쇄 블록 2 변환 (이마트 확장 라벨 E0~E3) ✅ 완료
+- [x] 라인 2368~2694 분석 (메인 라벨 + 미트센터+공장코드 + 미트센터)
+- [x] Woosim 명령어 → SLCS 변환 (3개 서브블록 모두 변환)
+- [x] 컴파일 확인: BUILD SUCCESSFUL
+- [x] 단위테스트: SLCS 메서드 약 80회 호출 확인
+- [x] 회귀테스트 Step 1~3: 모두 통과
 
-#### Step 5. 인쇄 블록 3 변환 (홈플러스 라벨)
-- [ ] 라인 2863~ 분석
-- [ ] Woosim 명령어 → SLCS 변환
-- [ ] 컴파일 확인
+**변경 내용**:
+- **무엇을**: 메인 라벨, 미트센터+공장코드, 미트센터 3개 서브블록 Woosim → SLCS 변환
+- **왜**: Bixolon 프린터 SLCS 명령어 사용
+- **어떻게**: 각 서브블록에서 StringBuilder 사용, slcsInit/LabelSize/Text/Barcode/Line/Print 호출
+
+#### Step 5. 인쇄 블록 3 변환 (홈플러스 라벨) ✅ 완료
+- [x] 라인 2727~2795 분석 (setHomeplusPrinting 메서드 내)
+- [x] Woosim 명령어 → SLCS 변환 (StringBuilder + slcs 헬퍼 메서드)
+- [x] 컴파일 확인: BUILD SUCCESSFUL
+- [x] 단위테스트: SLCS 메서드 14회 호출 확인
+- [x] 회귀테스트:
+  - Step 1: mWoosim 주석 처리 유지 (라인 249, 487, 848)
+  - Step 2: SLCS 헬퍼 메서드 7개 존재 (라인 3079~3162)
+  - Step 3: 인쇄 블록 1 존재 (라인 1930)
+  - Step 4: 인쇄 블록 2 존재 (라인 2368)
+- [x] 주석 보강: 원본 Woosim 대응, 좌표/크기 의미, 출력 항목별 번호 부여
+
+**변경 내용**:
+- **무엇을**: setHomeplusPrinting() 내 Woosim → SLCS 변환
+- **왜**: Bixolon 프린터 SLCS 명령어 사용
+- **어떻게**: slcsInit/LabelSize/Text/Print 호출 (지점명, 점포코드, 상품명, BOX, CT코드, 중량, 납품일자, 업체명)
 
 #### Step 6. 인쇄 블록 4 변환 (롯데 라벨)
 - [ ] 라인 3096~ 분석
