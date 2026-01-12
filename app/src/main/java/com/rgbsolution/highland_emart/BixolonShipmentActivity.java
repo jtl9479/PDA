@@ -36,10 +36,11 @@ import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Goodswets_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 import com.rgbsolution.highland_emart.print.BixolonSocketPrinter;
-import com.woosim.printer.WoosimBarcode;
-import com.woosim.printer.WoosimCmd;
-import com.woosim.printer.WoosimImage;
-import com.woosim.printer.WoosimService;
+// Woosim import 제거됨 - Bixolon SLCS 명령어로 대체
+// 원본: import com.woosim.printer.WoosimBarcode;
+// 원본: import com.woosim.printer.WoosimCmd;
+// 원본: import com.woosim.printer.WoosimImage;
+// 원본: import com.woosim.printer.WoosimService;
 import com.rgbsolution.highland_emart.print.DeviceListActivity;
 import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
 

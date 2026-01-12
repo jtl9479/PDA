@@ -375,10 +375,53 @@ P1                       // 1장 인쇄
 - **어떻게**: ByteArrayOutputStream + WoosimCmd → StringBuilder + slcsInit/slcsLabelSize/slcsText/slcsPrint/slcsFeedToMark 헬퍼 메서드 호출로 변환. 36개 항목 단위 루프 내 동적 좌표 계산 로직 유지, byteStream.reset() → slcsCmd.setLength(0)로 대체.
 
 #### Step 8. Woosim import 제거
-- [ ] `import com.woosim.printer.WoosimBarcode;` 삭제
-- [ ] `import com.woosim.printer.WoosimCmd;` 삭제
-- [ ] `import com.woosim.printer.WoosimImage;` 삭제
-- [ ] `import com.woosim.printer.WoosimService;` 삭제
+
+**Part 1. 분석**
+- 메서드: import 선언부
+- 범위: 라인 39~42
+- 용도: Woosim 프린터 라이브러리 import (더 이상 사용하지 않음)
+- 주의할 점:
+  - 모든 Woosim 코드가 SLCS로 변환되었는지 확인 필요
+  - 주석 내 Woosim 언급은 유지 (원본 대응 설명용)
+- 호출 수: import 4개
+
+| # | import | 라인 | 사용 여부 |
+|---|--------|------|----------|
+| 1 | com.woosim.printer.WoosimBarcode | 39 | 미사용 (주석만 존재) |
+| 2 | com.woosim.printer.WoosimCmd | 40 | 미사용 (주석만 존재) |
+| 3 | com.woosim.printer.WoosimImage | 41 | 미사용 (주석만 존재) |
+| 4 | com.woosim.printer.WoosimService | 42 | 미사용 (주석만 존재) |
+
+**Part 2. 변환 계획**
+- 변환 방식: import 문 4개 삭제
+- 사용할 헬퍼 메서드: 해당 없음
+- 명령어 매핑: 해당 없음
+- 주의사항:
+  - 삭제 전 실제 사용 코드 없음 확인 완료
+  - 주석 내 Woosim 언급은 유지 (원본 코드 참조용)
+  - 삭제 후 컴파일 성공 필수
+
+**체크리스트**
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 (BUILD SUCCESSFUL)
+- [x] Part 5: 단위테스트 (실제 import 0개, 주석 4개)
+- [x] Part 6: 회귀테스트 (Step 1~7 모두 통과)
+  - Step 1: mWoosim 주석 처리 유지 (라인 250, 488, 849)
+  - Step 2: SLCS 헬퍼 메서드 8개 존재 (라인 3098~3192)
+  - Step 3: 인쇄 블록 1 존재 (라인 1931)
+  - Step 4: 인쇄 블록 2 존재 (라인 2369)
+  - Step 5: 인쇄 블록 3 존재 (라인 2728)
+  - Step 6: 인쇄 블록 4 존재 (라인 2961)
+  - Step 7: 인쇄 블록 5 존재 (라인 4223)
+- [x] Part 7: 주석 보강 (원본 import 주석으로 유지)
+- [x] Part 8: 변경 내용 작성
+
+**Part 8. 변경 내용**:
+- **무엇을**: Woosim import 4개 (라인 39~42)
+- **왜**: 모든 Woosim 코드가 SLCS로 변환되어 더 이상 사용하지 않음
+- **어떻게**: import 문을 주석으로 대체하여 원본 참조 유지
 
 #### Step 9. 빌드 및 통합 테스트
 - [ ] 전체 빌드 성공 확인
