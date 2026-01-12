@@ -4219,62 +4219,90 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         Toast.makeText(getApplicationContext(), "합산할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
                         vibrator.vibrate(1000);
                     } else if (list_gi_info.size() > 0) {
+                        // ========== SLCS 명령어로 합계 라벨 인쇄 (Bixolon 프린터) ==========
+                        // 원본: Woosim ByteArrayOutputStream + WoosimCmd 명령어
+                        // 변환: StringBuilder + SLCS 헬퍼 메서드
+                        // 용도: 계근 내역 합계 버튼 클릭 시 중량 합산 라벨 인쇄
+                        // 출력 항목:
+                        //   [1] 개별 중량 - 동적 좌표(p_weight, p_hight) 40x40
+                        //   [2] 페이지별 총 중량 - (100, 350) 60x60
+                        // 주의: 36개 항목 단위로 라벨 1장 인쇄 (6열 x 6행)
                         try {
-                            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                            byteStream.write(WoosimCmd.initPrinter());                                // 프린터 설정 초기화
-                            byteStream.write(WoosimCmd.setPageMode());
-                            byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
-                            byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
+                            StringBuilder slcsCmd = new StringBuilder();
+
+                            // 초기화: CB(버퍼클리어) + CS13,0(한글문자셋)
+                            // 원본: WoosimCmd.initPrinter() + setPageMode() + selectTTF() + setTextStyle()
+                            slcsCmd.append(slcsInit());
+
+                            // 라벨 크기 설정: 576x460 도트
+                            // 원본: WoosimCmd.PM_setArea(0, 0, 576, 460)
+                            slcsCmd.append(slcsLabelSize(576, 460));
 
                             double weight_sum = 0;
                             int p_weight = 0;
                             int p_hight = 0;
 
                             for (int i = 0; i < list_gi_info.size(); i++) {
-                                p_hight = 10+(i/6*50)-(i/36*300);
-                                p_weight = 100 * (i%6);
+                                // 동적 좌표 계산 (6열 x 6행 = 36개 단위)
+                                // p_hight: 행 위치 (0~5행 반복, 36개마다 리셋)
+                                // p_weight: 열 위치 (0~5열 반복)
+                                p_hight = 10 + (i / 6 * 50) - (i / 36 * 300);
+                                p_weight = 100 * (i % 6);
 
-                                byteStream.write(WoosimCmd.PM_setPosition(p_weight, p_hight));
-                                byteStream.write(WoosimCmd.getTTFcode(40, 40, list_gi_info.get(i).getWEIGHT()));
+                                // [1] 개별 중량 출력 (동적 좌표, 폰트크기 40x40)
+                                // 원본: PM_setPosition(p_weight, p_hight) + getTTFcode(40, 40, weight)
+                                slcsCmd.append(slcsText(p_weight, p_hight, 40, 40, list_gi_info.get(i).getWEIGHT()));
 
                                 weight_sum += Double.parseDouble(list_gi_info.get(i).getWEIGHT());
 
-                                if((i+1)%36 == 0){
+                                // 36개 단위 완료 시 라벨 인쇄
+                                if ((i + 1) % 36 == 0) {
                                     weight_sum = Math.floor(weight_sum * 100);
                                     weight_sum = weight_sum / 100.0;
 
                                     String temp_weight = String.format("%.1f", weight_sum);
                                     weight_sum = Double.parseDouble(temp_weight);
 
-                                    byteStream.write(WoosimCmd.PM_setPosition(100, 350));
-                                    byteStream.write(WoosimCmd.getTTFcode(60, 60, ((i+1)/36) + "번 총 중량 : " + Double.toString(weight_sum)));
-                                    byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));    // 0.6인치 : 115.2
+                                    // [2] 페이지별 총 중량 (x=100, y=350, 폰트크기 60x60)
+                                    // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
+                                    slcsCmd.append(slcsText(100, 350, 60, 60, ((i + 1) / 36) + "번 총 중량 : " + Double.toString(weight_sum)));
 
-                                    sendData(byteStream.toByteArray());
-                                    sendData(WoosimCmd.feedToMark());
+                                    // 인쇄 실행 + 라벨 피드
+                                    // 원본: PM_printData() + feedToMark()
+                                    slcsCmd.append(slcsPrint(1));
+                                    slcsCmd.append(slcsFeedToMark());
 
-                                    byteStream.reset();
-                                    byteStream.write(WoosimCmd.initPrinter());                                // 프린터 설정 초기화
-                                    byteStream.write(WoosimCmd.setPageMode());
-                                    byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
-                                    byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
-                                    weight_sum =0;
-                                }else if((i+1) == list_gi_info.size()){
+                                    // 전송
+                                    sendData(slcsCmd.toString().getBytes("EUC-KR"));
+
+                                    // StringBuilder 초기화 (원본: byteStream.reset())
+                                    slcsCmd.setLength(0);
+                                    slcsCmd.append(slcsInit());
+                                    slcsCmd.append(slcsLabelSize(576, 460));
+                                    weight_sum = 0;
+
+                                } else if ((i + 1) == list_gi_info.size()) {
+                                    // 마지막 항목 처리 (36개 미만인 경우)
                                     weight_sum = Math.floor(weight_sum * 100);
                                     weight_sum = weight_sum / 100.0;
 
                                     String temp_weight = String.format("%.1f", weight_sum);
                                     weight_sum = Double.parseDouble(temp_weight);
 
-                                    byteStream.write(WoosimCmd.PM_setPosition(100, 350));
-                                    byteStream.write(WoosimCmd.getTTFcode(60, 60, (((i+1)/36)+1) + "번 총 중량 : " + Double.toString(weight_sum)));
-                                    byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));    // 0.6인치 : 115.2
+                                    // [2] 페이지별 총 중량 (마지막 페이지)
+                                    // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
+                                    slcsCmd.append(slcsText(100, 350, 60, 60, (((i + 1) / 36) + 1) + "번 총 중량 : " + Double.toString(weight_sum)));
 
-                                    sendData(byteStream.toByteArray());
-                                    sendData(WoosimCmd.feedToMark());
+                                    // 인쇄 실행 + 라벨 피드
+                                    // 원본: PM_printData() + feedToMark()
+                                    slcsCmd.append(slcsPrint(1));
+                                    slcsCmd.append(slcsFeedToMark());
+
+                                    // 전송
+                                    sendData(slcsCmd.toString().getBytes("EUC-KR"));
                                 }
                             }
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                             if (Common.D) {
                                 Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());

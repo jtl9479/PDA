@@ -319,10 +319,60 @@ P1                       // 1장 인쇄
 - **어떻게**: ByteArrayOutputStream + WoosimCmd/WoosimBarcode/WoosimImage → StringBuilder + slcsInit/slcsLabelSize/slcsText/slcsBarcode/slcsLine/slcsBox/slcsPrint/slcsFeedToMark 헬퍼 메서드 호출로 변환. L0 바코드 타입(롯데 전용) 조건문 내 15개 출력 항목 (상품명, 바코드2개, 중량, 납품처, 제조일자, 이력번호, WH_AREA, 테두리 박스, 가로선 3개) 모두 SLCS로 변환 완료.
 - **추가 수정**: slcsFeedToMark() 헬퍼 메서드 추가 (WoosimCmd.feedToMark() 대응, SLCS T 명령어)
 
-#### Step 7. 인쇄 블록 5 변환 (기타 라벨)
-- [ ] 라인 4240~ 분석
-- [ ] Woosim 명령어 → SLCS 변환
-- [ ] 컴파일 확인
+#### Step 7. 인쇄 블록 5 변환 (합계 라벨)
+
+**Part 1. 분석**
+- 메서드: show_wetDetailDialog() 내부 detail_btn_sum.setOnClickListener()
+- 범위: 라인 4223~4275
+- 용도: 계근 내역 상세 다이얼로그에서 "합계" 버튼 클릭 시 중량 합산 라벨 인쇄
+- 주의할 점:
+  - 36개 항목 단위로 라벨 1장 인쇄 (6열 x 6행 = 36개)
+  - 동적 좌표 계산 (p_weight = 100 * (i%6), p_hight = 10+(i/6*50)-(i/36*300))
+  - 루프 내에서 여러 장 인쇄 가능
+  - byteStream.reset() 사용하여 새 라벨 시작
+- 호출 수: WoosimCmd 약 14회 (initPrinter 2, setPageMode 2, selectTTF 2, setTextStyle 2, PM_setPosition 3, getTTFcode 3, PM_setArea 2, feedToMark 2)
+
+| # | 항목 | 위치 | 크기 | 내용 |
+|---|------|------|------|------|
+| 1 | 개별 중량 | 동적(p_weight, p_hight) | 40x40 | list_gi_info.get(i).getWEIGHT() |
+| 2 | 페이지별 총 중량 | (100, 350) | 60x60 | "N번 총 중량 : XX.X" |
+
+**Part 2. 변환 계획**
+- 변환 방식: ByteArrayOutputStream + Woosim → StringBuilder + SLCS
+- 사용할 헬퍼 메서드: slcsInit, slcsLabelSize, slcsText, slcsPrint, slcsFeedToMark
+- 명령어 매핑:
+  | 기존 (Woosim) | 변환 후 (SLCS) |
+  |---------------|----------------|
+  | WoosimCmd.initPrinter() | slcsInit() |
+  | WoosimCmd.PM_setArea() | slcsLabelSize() |
+  | WoosimCmd.PM_setPosition() + getTTFcode() | slcsText() |
+  | WoosimCmd.PM_printData() | slcsPrint() |
+  | WoosimCmd.feedToMark() | slcsFeedToMark() |
+- 주의사항:
+  - 루프 내 동적 좌표 계산 로직 유지
+  - 36개 단위 또는 마지막 항목에서 라벨 인쇄
+  - StringBuilder.setLength(0) 또는 새 StringBuilder로 reset 대체
+
+**체크리스트**
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 (BUILD SUCCESSFUL)
+- [x] Part 5: 단위테스트 (SLCS 메서드 호출: slcsInit 3, slcsLabelSize 3, slcsText 루프내, slcsPrint 2, slcsFeedToMark 2)
+- [x] Part 6: 회귀테스트 (Step 1~6 모두 통과)
+  - Step 1: mWoosim 주석 처리 유지 (라인 249, 487, 848)
+  - Step 2: SLCS 헬퍼 메서드 8개 존재 (라인 3097~3191)
+  - Step 3: 인쇄 블록 1 존재 (라인 1930)
+  - Step 4: 인쇄 블록 2 존재 (라인 2368)
+  - Step 5: 인쇄 블록 3 존재 (라인 2727)
+  - Step 6: 인쇄 블록 4 존재 (라인 2960)
+- [x] Part 7: 주석 보강 (용도, 출력 항목 번호, 좌표, 원본 Woosim 대응 주석 추가)
+- [x] Part 8: 변경 내용 작성
+
+**Part 8. 변경 내용**:
+- **무엇을**: show_wetDetailDialog() 내부 detail_btn_sum.setOnClickListener()의 Woosim 코드 (라인 4223~4275)
+- **왜**: Bixolon 프린터는 SLCS 명령어를 사용하므로 Woosim → SLCS 변환 필요
+- **어떻게**: ByteArrayOutputStream + WoosimCmd → StringBuilder + slcsInit/slcsLabelSize/slcsText/slcsPrint/slcsFeedToMark 헬퍼 메서드 호출로 변환. 36개 항목 단위 루프 내 동적 좌표 계산 로직 유지, byteStream.reset() → slcsCmd.setLength(0)로 대체.
 
 #### Step 8. Woosim import 제거
 - [ ] `import com.woosim.printer.WoosimBarcode;` 삭제
