@@ -1,92 +1,135 @@
-# ScannerActivity
+# ScannerActivity.java 분석 문서
+
+---
 
 ## 개요
-PM80 스캐너 연동을 위한 기본 Activity 클래스입니다. 바코드 스캔 결과를 BroadcastReceiver를 통해 수신하고 처리하는 기능을 제공합니다.
 
-**파일 위치**: `D:\PDA\PDA-INNO\app\src\main\java\com\rgbsolution\highland_emart\scanner\ScannerActivity.java`
-**전체 라인 수**: 207줄
+- **파일 위치**: `app/src/main/java/com/rgbsolution/highland_emart/scanner/ScannerActivity.java`
+- **현재 코드 라인**: 311줄
+- **작성일**: 2026-01-09
+- **마지막 수정**: 2026-01-09 (리팩토링 완료)
 
-## 클래스 구조
+---
 
-### 상속 및 구현
-```java
-public class ScannerActivity extends AppCompatActivity
-    implements CompoundButton.OnCheckedChangeListener
+## 클래스 설명
+
+바코드 스캐너 기능을 제공하는 기본 Activity.
+
+PDA 디바이스의 바코드 스캐너를 초기화하고 스캔 결과를 수신하는 기능을 제공한다.
+계근 관련 Activity들(ShipmentActivity, ProductionActivity 등)이 이 클래스를 상속받아
+바코드 스캔 기능을 사용한다.
+
+### 상속 구조
+
+```
+AppCompatActivity
+    └── ScannerActivity (implements CompoundButton.OnCheckedChangeListener)
+            ├── ShipmentActivity
+            └── ProductionActivity
 ```
 
-### 주요 필드
+---
 
-#### Static 필드
-- `TAG` (String): 로그 태그 - "ScannerActivity"
-- `RECEIVE_PM80` (String): 브로드캐스트 액션명 - "ACTION_RECEIVE_PM80"
-- `mScanner` (ScanManager): PM80 스캐너 관리 객체 (static)
-- `mDecodeResult` (DecodeResult): 스캔 결과 저장 객체 (static)
+## 현재 코드 구조
 
-#### Instance 필드
-- `btn_init` (Button): 초기화 버튼
-- `swt_print` (SwitchCompat): 인쇄 ON/OFF 스위치
-- `m_brc` (BroadcastReceiver): 스캔 결과 수신용 리시버
+| 영역 | 라인 범위 | 설명 |
+|-----|----------|------|
+| import | 1~25 | 패키지, import 문 |
+| 클래스 Javadoc | 27~48 | 클래스 설명 주석 |
+| 클래스 선언 | 49 | ScannerActivity 선언 |
+| 상수 | 51~61 | TAG, RECEIVE_PM80, EXTRA_BARCODE |
+| PM80 SDK 변수 | 63~71 | mScanner, mDecodeResult |
+| UI 컴포넌트 | 73~81 | btn_init, swt_print |
+| ScanResultReceiver | 83~119 | PM80 SDK 결과 수신 |
+| initScanner() | 121~160 | PM80 스캐너 초기화 |
+| Activity 생명주기 | 162~264 | onCreate, onResume, onDestroy 등 |
+| setMessage() | 266~280 | 바코드 수신 콜백 |
+| m_brc | 282~310 | 내부 브로드캐스트 수신 |
+
+---
+
+## 상수
+
+| 상수명 | 값 | 설명 | 라인 |
+|--------|---|------|------|
+| TAG | "ScannerActivity" | 로그 태그 | 51 |
+| RECEIVE_PM80 | "ACTION_RECEIVE_PM80" | 내부 브로드캐스트 Action | 58 |
+| EXTRA_BARCODE | "BARCODE" | 바코드 데이터 Intent Extra 키 | 61 |
+
+---
+
+## 멤버 변수
+
+### PM80 SDK 변수
+
+| 변수명 | 타입 | 접근제어자 | 설명 | 라인 |
+|--------|------|-----------|------|------|
+| mScanner | ScanManager | public static | PM80 스캐너 매니저 (싱글톤) | 68 |
+| mDecodeResult | DecodeResult | private static | PM80 바코드 디코딩 결과 저장 객체 | 71 |
+
+### UI 컴포넌트
+
+| 변수명 | 타입 | 접근제어자 | 설명 | 라인 |
+|--------|------|-----------|------|------|
+| btn_init | Button | protected | 초기화 버튼 | 78 |
+| swt_print | SwitchCompat | protected | 인쇄 ON/OFF 스위치 | 81 |
+
+---
 
 ## 주요 메서드
 
-### 1. ScanResultReceiver (내부 클래스)
-**위치**: 40-63줄
+### ScanResultReceiver (내부 클래스)
 
-PM80 스캐너의 스캔 결과를 최초로 받아오는 BroadcastReceiver입니다.
+**위치**: line 96~119
 
-```java
-public static class ScanResultReceiver extends BroadcastReceiver
-```
+PM80 스캐너 결과 수신 BroadcastReceiver.
+AndroidManifest.xml에 등록되어 PM80 SDK로부터 스캔 결과를 수신한다.
 
 **동작 과정**:
-1. 스캔 이벤트 수신
+1. PM80 SDK에서 `device.common.USERMSG` Action으로 브로드캐스트 수신
 2. `mScanner.aDecodeGetResult(mDecodeResult)`로 결과 획득
 3. 바코드 값이 "READ_FAIL"이 아닌 경우
-4. Intent에 바코드 값을 담아 `RECEIVE_PM80` 액션으로 브로드캐스트 전송
+4. 내부 브로드캐스트(`RECEIVE_PM80`)로 재전송
 
-**핵심 코드** (48-60줄):
-```java
-mScanner.aDecodeGetResult(mDecodeResult);
-String barcode = mDecodeResult.toString();
-if (!barcode.equals("READ_FAIL")) {
-    Intent i = new Intent();
-    i.putExtra("BARCODE", barcode);
-    i.setAction(RECEIVE_PM80);
-    context.sendBroadcast(i);
-}
-```
+---
 
-### 2. initScanner()
-**위치**: 66-101줄
+### initScanner()
 
-PDA 스캐너를 초기화하는 메서드입니다.
+**위치**: line 131~160
+
+PM80 스캐너를 초기화하는 메서드.
 
 **초기화 순서**:
-1. `ScanManager` 객체 생성 (68-73줄)
-2. `DecodeResult` 객체 생성 (74-79줄)
-3. API 초기화: `aDecodeAPIInit()` (81줄)
-4. 500ms 대기 (82-85줄)
-5. 디코드 활성화: `aDecodeSetDecodeEnable(1)` (86줄)
-6. 결과 타입 설정: `aDecodeSetResultType(ScanConst.ResultType.DCD_RESULT_USERMSG)` (87줄)
+1. ScanManager 객체 생성 (싱글톤)
+2. DecodeResult 객체 생성
+3. `aDecodeAPIInit()` 호출
+4. 500ms 대기 (SDK 초기화 대기)
+5. `aDecodeSetDecodeEnable(1)` - 스캐너 활성화
+6. `aDecodeSetResultType(ScanConst.ResultType.DCD_RESULT_USERMSG)` - 결과 타입 설정
 
-### 3. onCreate()
-**위치**: 104-134줄
+---
 
-Activity 생성 시 초기화 작업을 수행합니다.
+### onCreate()
+
+**위치**: line 173~202
+
+Activity 생성 시 호출.
 
 **초기화 작업**:
-1. 레이아웃 설정: `R.layout.activity_scanner` (106줄)
-2. 스캐너 초기화 호출 (111줄)
-3. BroadcastReceiver 등록 (112-113줄)
-   ```java
-   IntentFilter filter = new IntentFilter(RECEIVE_PM80);
-   this.registerReceiver(m_brc, filter);
-   ```
-4. ActionBar 커스텀뷰 설정 (115-124줄)
-5. 버튼 및 스위치 초기화 (126-132줄)
+1. 레이아웃 설정: `R.layout.activity_scanner`
+2. PM80 스캐너 초기화: `initScanner()`
+3. BroadcastReceiver 등록: `RECEIVE_PM80` Action
+4. ActionBar 커스텀뷰 설정
+5. UI 컴포넌트 초기화 (btn_init, swt_print)
+6. 인쇄 스위치 초기값 설정: `swt_print.setChecked(Common.print_bool)`
 
-### 4. setMessage() - 추상 메서드
-**위치**: 186-187줄
+---
+
+### setMessage()
+
+**위치**: line 279~280
+
+바코드 수신 콜백 메서드 (하위 Activity에서 오버라이드).
 
 ```java
 protected void setMessage(String msg) {
@@ -94,146 +137,97 @@ protected void setMessage(String msg) {
 ```
 
 **특징**:
-- 빈 구현체로 정의되어 있음
-- 하위 클래스에서 오버라이드하여 스캔된 바코드를 처리
-- `m_brc` 리시버에서 호출됨 (203줄)
+- 빈 구현체로 정의
+- 하위 클래스에서 오버라이드하여 바코드 처리 로직 구현
+- `m_brc` 리시버에서 호출됨
 
-**사용 패턴**:
-```java
-String receive_data = intent.getStringExtra("BARCODE");
-setMessage(receive_data);
-```
+---
 
-### 5. m_brc (BroadcastReceiver)
-**위치**: 190-206줄
+### m_brc (BroadcastReceiver)
 
-`ScanResultReceiver`에서 전달한 바코드 값을 최종적으로 수신하는 리시버입니다.
+**위치**: line 292~310
+
+내부 브로드캐스트 수신 Receiver.
+ScanResultReceiver에서 전달된 바코드를 수신하여 setMessage()를 호출한다.
 
 **처리 과정**:
-1. Intent에서 액션 확인 (196줄)
-2. `RECEIVE_PM80` 액션인 경우 (198줄)
-3. "BARCODE" Extra 데이터 추출 (202줄)
-4. `setMessage(receive_data)` 호출하여 하위 클래스에 전달 (203줄)
+1. Intent에서 Action 확인
+2. `RECEIVE_PM80` Action인 경우
+3. `EXTRA_BARCODE` Extra 데이터 추출
+4. `setMessage(receive_data)` 호출
 
-### 6. onCheckedChanged()
-**위치**: 142-156줄
+---
 
-인쇄 ON/OFF 스위치 상태 변경 시 호출됩니다.
+### onDestroy()
 
-**동작**:
-- 스위치 OFF: `Common.print_bool = false` (149줄)
-- 스위치 ON: `Common.print_bool = true` (152줄)
-- Toast 메시지로 상태 표시
+**위치**: line 243~247
 
-### 7. onDestroy()
-**위치**: 165-169줄
-
-Activity 종료 시 리소스 정리를 수행합니다.
+Activity 종료 시 호출.
 
 **정리 작업**:
-1. 스캐너 객체 null 처리 (167줄)
-2. BroadcastReceiver 등록 해제 (168줄)
+1. `mScanner = null` - 스캐너 참조 해제
+2. `unregisterReceiver(m_brc)` - BroadcastReceiver 등록 해제
 
-## BroadcastReceiver 처리 흐름
+---
+
+## 바코드 수신 흐름
 
 ```
-[PM80 스캐너]
+[PM80 스캐너 버튼]
     ↓
-[ScanResultReceiver] (static 내부 클래스)
-    ↓ (스캔 결과 획득)
-    ↓ (RECEIVE_PM80 액션으로 브로드캐스트)
+[PM80 SDK] - device.sdk.ScanManager가 바코드 디코딩
     ↓
-[m_brc] (인스턴스 리시버)
+[ScanResultReceiver] - AndroidManifest에 등록, Action: device.common.USERMSG
+    ↓ mScanner.aDecodeGetResult(mDecodeResult)
+    ↓ context.sendBroadcast(RECEIVE_PM80)
+[m_brc] - 내부 브로드캐스트 수신, Action: ACTION_RECEIVE_PM80
     ↓
-[setMessage()] (추상 메서드)
-    ↓
-[하위 클래스에서 구현]
+[setMessage()] - 하위 Activity에서 오버라이드
 ```
 
-## 설정 및 상태 관리
+---
 
-### SharedPreferences
-- `spfBluetooth` (143줄): 블루투스 설정 저장용
+## ActionBar 구성
 
-### 전역 상태
-- `Common.print_bool`: 인쇄 ON/OFF 상태
-- `Common.D`: 디버그 모드 플래그
+| 항목 | 설명 |
+|------|------|
+| 뒤로가기 버튼 | `setDisplayHomeAsUpEnabled(true)` |
+| 초기화 버튼 | btn_init (커스텀뷰) |
+| 인쇄 스위치 | swt_print (커스텀뷰) |
+
+---
 
 ## 사용 방법
 
 ### 상속 예시
+
 ```java
 public class MyActivity extends ScannerActivity {
     @Override
     protected void setMessage(String msg) {
         // 스캔된 바코드(msg) 처리 로직 구현
         Log.d(TAG, "Scanned barcode: " + msg);
-        // 바코드 값을 이용한 검색, 조회 등 수행
     }
 }
 ```
 
-### 주요 특징
-1. **Static Scanner 객체**: 앱 전체에서 하나의 스캐너 인스턴스 공유
-2. **이중 BroadcastReceiver 구조**:
-   - `ScanResultReceiver`: 스캐너 SDK로부터 직접 수신
-   - `m_brc`: Activity 내부에서 처리
-3. **템플릿 메서드 패턴**: `setMessage()`를 하위 클래스에서 구현
+---
 
-## 코드 위치 요약
+## 관련 문서
 
-| 항목 | 라인 |
-|------|------|
-| 클래스 선언 | 29 |
-| ScanResultReceiver | 40-63 |
-| initScanner() | 66-101 |
-| onCreate() | 104-134 |
-| onCheckedChanged() | 142-156 |
-| onResume() | 159-162 |
-| onDestroy() | 165-169 |
-| setMessage() | 186-187 |
-| m_brc 리시버 | 190-206 |
+- [ScannerActivity_Refactoring.md](ScannerActivity_Refactoring.md) - 리팩토링 계획
+- [ScannerActivity_Migration_EDA51.md](ScannerActivity_Migration_EDA51.md) - EDA51 마이그레이션 계획
 
 ---
 
-## 코드 정리 기록
+## 수정 이력
 
-### 작업 일자
-2026-01-06
+| 일자 | 작업 내용 | 비고 |
+|-----|----------|------|
+| 2026-01-06 | 미사용 코드 정리 | 주석 처리 코드, 미사용 변수 삭제 |
+| 2026-01-09 | 주석 추가 | 클래스, 멤버 변수, 메서드 주석 |
+| 2026-01-09 | 리팩토링 | Step 1~4 완료 |
 
-### 개요
-ScannerActivity.java에서 불필요한 주석 처리된 코드와 미사용 변수를 삭제하였습니다.
+---
 
-### 1. 삭제된 주석 처리 코드
-
-| 원래 위치 | 삭제된 코드 | 설명 |
-|-----------|-------------|------|
-| 89-99행 | `/*if (mScanner.aDecodeGetTriggerMode()... mBeepOption.setChecked(false); }*/` | 트리거 모드/비프 설정 관련 블록 주석 (11줄) |
-| 108-109행 | `//getSupportActionBar().setDisplayHomeAsUpEnabled(true);` 등 | 중복 코드 (121-122행에서 동일 호출) |
-| 116행 | `//actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);` | 미사용 네비게이션 모드 설정 |
-
-### 2. 삭제된 미사용 변수
-
-| 변수명 | 타입 | 원래 위치 | 메서드 | 삭제 사유 |
-|--------|------|-----------|--------|-----------|
-| `spfBluetooth` | `SharedPreferences` | 143행 | onCheckedChanged() | 선언만 되고 사용되지 않음 |
-| `editor` | `SharedPreferences.Editor` | 144행 | onCheckedChanged() | 선언만 되고 사용되지 않음 |
-
-### 3. 정리 요약
-
-| 항목 | 수량 |
-|------|------|
-| 삭제된 주석 처리 코드 | 약 15줄 |
-| 삭제된 미사용 변수 | 2개 |
-| 정리 후 파일 라인 수 | 189줄 |
-
-### 4. 미정리 항목 (검토 필요)
-
-| 위치 | 내용 | 비고 |
-|------|------|------|
-| 84-85행 | `catch (InterruptedException e) { }` | 빈 catch 블록 - 로그 추가 검토 필요 |
-
-### 5. 참고 사항
-
-- 모든 설명 주석은 유지되었습니다.
-- 빈 catch 블록은 의도적으로 남겨두었습니다 (Thread.sleep 인터럽트 무시가 일반적 패턴).
+**최종 수정일**: 2026-01-09

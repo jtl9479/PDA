@@ -5,7 +5,7 @@
 ## 개요
 
 - **파일 위치**: `app/src/main/java/com/rgbsolution/highland_emart/scanner/ScannerActivity.java`
-- **현재 코드 라인**: 316줄
+- **현재 코드 라인**: 311줄
 - **작성일**: 2026-01-09
 - **마이그레이션 사유**: PDA 디바이스 변경 (Point Mobile PM80 → Honeywell EDA51)
 
@@ -90,28 +90,22 @@ String barcode = intent.getStringExtra("barcode_string");
 
 ### Step 2. PM80 SDK import 제거
 
-**현재 import (삭제 대상)**:
-```java
-import device.common.DecodeResult;   // line 25 - 삭제
-import device.common.ScanConst;      // line 26 - 삭제
-import device.sdk.ScanManager;       // line 27 - 삭제
-```
+- [ ] `import device.common.DecodeResult;` (line 23) - 삭제
+- [ ] `import device.common.ScanConst;` (line 24) - 삭제
+- [ ] `import device.sdk.ScanManager;` (line 25) - 삭제
 
 ---
 
 ### Step 3. PM80 SDK 변수 제거
 
-**현재 변수 (삭제 대상)**:
-```java
-public static ScanManager mScanner = null;       // line 69 - 삭제
-private static DecodeResult mDecodeResult = null; // line 72 - 삭제
-```
+- [ ] `public static ScanManager mScanner = null;` (line 68) - 삭제
+- [ ] `private static DecodeResult mDecodeResult = null;` (line 71) - 삭제
 
 ---
 
 ### Step 4. ScanResultReceiver 클래스 삭제
 
-**현재 코드 (삭제 대상)**: line 84~120
+- [ ] ScanResultReceiver 클래스 전체 삭제 (line 83~119)
 
 PM80 SDK에서 바코드를 수신하여 내부 브로드캐스트로 전달하는 역할.
 Honeywell은 직접 Intent를 발송하므로 불필요.
@@ -120,7 +114,7 @@ Honeywell은 직접 Intent를 발송하므로 불필요.
 
 ### Step 5. initScanner() 메서드 삭제
 
-**현재 코드 (삭제 대상)**: line 122~161
+- [ ] initScanner() 메서드 전체 삭제 (line 121~160)
 
 PM80 SDK 초기화 메서드.
 Honeywell은 SDK 초기화 불필요.
@@ -129,26 +123,25 @@ Honeywell은 SDK 초기화 불필요.
 
 ### Step 6. onCreate() 수정
 
+- [ ] `initScanner();` 호출 삭제
+- [ ] IntentFilter를 Honeywell Action으로 변경
+
 **현재 코드**:
 ```java
-// PM80 스캐너 초기화
 initScanner();  // 삭제
-
-// 내부 브로드캐스트 수신을 위한 Receiver 등록
 IntentFilter filter = new IntentFilter(RECEIVE_PM80);  // 수정
-this.registerReceiver(m_brc, filter);
 ```
 
 **변경 후**:
 ```java
-// Honeywell 바코드 수신을 위한 Receiver 등록
-IntentFilter filter = new IntentFilter(ACTION_BARCODE_DATA);  // Honeywell Action
-this.registerReceiver(m_brc, filter);
+IntentFilter filter = new IntentFilter(ACTION_BARCODE_DATA);
 ```
 
 ---
 
 ### Step 7. onDestroy() 수정
+
+- [ ] `mScanner = null;` 삭제
 
 **현재 코드**:
 ```java
@@ -165,10 +158,13 @@ unregisterReceiver(m_brc);
 
 ### Step 8. m_brc BroadcastReceiver 수정
 
+- [ ] Action 비교 대상 변경
+- [ ] 바코드 데이터 Extra 키 변경
+
 **현재 코드**:
 ```java
 if (RECEIVE_PM80.equals(action)) {
-    String receive_data = intent.getStringExtra("BARCODE");
+    String receive_data = intent.getStringExtra(EXTRA_BARCODE);
     setMessage(receive_data);
 }
 ```
@@ -176,7 +172,7 @@ if (RECEIVE_PM80.equals(action)) {
 **변경 후**:
 ```java
 if (ACTION_BARCODE_DATA.equals(action)) {
-    String receive_data = intent.getStringExtra("data");  // Honeywell Extra 키
+    String receive_data = intent.getStringExtra(EXTRA_BARCODE_DATA);
     setMessage(receive_data);
 }
 ```
@@ -185,17 +181,22 @@ if (ACTION_BARCODE_DATA.equals(action)) {
 
 ### Step 9. 상수 변경
 
+- [ ] `RECEIVE_PM80` 상수 삭제
+- [ ] `EXTRA_BARCODE` 상수를 `EXTRA_BARCODE_DATA`로 변경
+- [ ] `ACTION_BARCODE_DATA` 상수 추가
+
 **현재 상수**:
 ```java
 private static final String RECEIVE_PM80 = "ACTION_RECEIVE_PM80";
+private static final String EXTRA_BARCODE = "BARCODE";
 ```
 
 **변경 후**:
 ```java
-// Honeywell EDA51 바코드 스캔 Action (실제 값 확인 필요)
+/** Honeywell EDA51 바코드 스캔 Action */
 private static final String ACTION_BARCODE_DATA = "com.honeywell.sample.action.BARCODE_DATA";
 
-// Honeywell EDA51 바코드 데이터 Extra 키 (실제 값 확인 필요)
+/** Honeywell EDA51 바코드 데이터 Extra 키 */
 private static final String EXTRA_BARCODE_DATA = "data";
 ```
 
@@ -203,7 +204,9 @@ private static final String EXTRA_BARCODE_DATA = "data";
 
 ### Step 10. AndroidManifest.xml 수정
 
-**현재 코드 (삭제)**: line 60~68
+- [ ] ScanResultReceiver 등록 삭제 (line 60~68)
+
+**현재 코드 (삭제)**:
 ```xml
 <receiver
     android:name="com.rgbsolution.highland_emart.scanner.ScannerActivity$ScanResultReceiver"
@@ -215,8 +218,6 @@ private static final String EXTRA_BARCODE_DATA = "data";
     </intent-filter>
 </receiver>
 ```
-
-**변경 후**: 삭제 (ScanResultReceiver 클래스 삭제)
 
 ---
 

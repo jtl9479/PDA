@@ -2,15 +2,15 @@
 
 ## VIEW 목록
 
-| VIEW명 | 용도 | searchType | 스키마 | 총 컬럼 | 사용 | 미사용 |
-|--------|------|------------|--------|---------|------|--------|
-| VW_PDA_WID_LIST | 이마트 계근 | 0 | HIGHLAND | 41 | 37 | 4 |
-| VW_PDA_WID_PRO_LIST | 생산투입 계근 | 1 | INNO | 33 | 28 | 5 |
-| VW_PDA_WID_HOMEPLUS_LIST | 홈플러스 계근 | 2 | HIGHLAND | 34 | 28 | 6 |
-| VW_PDA_WID_WHOLESALE_LIST | 도매 계근 | 3 | HIGHLAND | 34 | 28 | 6 |
-| VW_PDA_WID_LIST_NONFIXED | 이마트 비정량 | 4 | INNO | 38 | 33 | 5 |
-| VW_PDA_WID_LIST_NONFIXED_HP | 홈플러스 비정량 | 5 | INNO | 39 | 28 | 11 |
-| VW_PDA_WID_LIST_LOTTE | 롯데마트 계근 | 6 | INNO | 35 | 30 | 5 |
+| VIEW명                       | 용도       | searchType | 스키마      | 총 컬럼 | 사용  | 미사용 |
+| --------------------------- | -------- | ---------- | -------- | ---- | --- | --- |
+| VW_PDA_WID_LIST             | 이마트 계근   | 0          | HIGHLAND | 41   | 37  | 4   |
+| VW_PDA_WID_PRO_LIST         | 생산투입 계근  | 1          | INNO     | 33   | 28  | 5   |
+| VW_PDA_WID_HOMEPLUS_LIST    | 홈플러스 계근  | 2          | HIGHLAND | 34   | 28  | 6   |
+| VW_PDA_WID_WHOLESALE_LIST   | 도매 계근    | 3          | HIGHLAND | 34   | 28  | 6   |
+| VW_PDA_WID_LIST_NONFIXED    | 이마트 비정량  | 4          | INNO     | 38   | 33  | 5   |
+| VW_PDA_WID_LIST_NONFIXED_HP | 홈플러스 비정량 | 5          | INNO     | 39   | 28  | 11  |
+| VW_PDA_WID_LIST_LOTTE       | 롯데마트 계근  | 6          | INNO     | 35   | 30  | 5   |
 
 ---
 
@@ -27,21 +27,21 @@
 
 ## 2. 일부 VIEW에서 미사용 컬럼
 
-| 컬럼명 | LIST | PRO | HP | WHOLE | NONFIX | NONFIX_HP | LOTTE |
-|--------|:----:|:---:|:--:|:-----:|:------:|:---------:|:-----:|
-| AMOUNT | X | X | X | X | X | X | X |
-| GR_REF_NO | X | X | X | X | X | X | X |
-| BRANDNAME | X | X | X | X | X | X | X |
-| PACKERNAME | X | X | X | X | X | X | X |
-| EMARTLOGIS_NAME | - | X | X | X | X | X | X |
-| GR_WAREHOUSE_CODE | O | O | X | O | O | O | O |
-| CLIENT_CODE | X | O | O | O | O | O | O |
-| CONTAINER_TYPE | X | - | - | - | - | - | - |
-| GOODS_R_ID | O | O | O | X | O | O | O |
-| PACKWEIGHT | O | O | O | O | O | X | O |
-| WH_AREA | O | - | - | O | O | X | O |
-| STORE_NAME | - | - | - | - | - | X | - |
-| EMARTLOGIS_CODE | O | O | O | O | O | X | O |
+| 컬럼명               | LIST | PRO | HP  | WHOLE | NONFIX | NONFIX_HP | LOTTE |
+| ----------------- | :--: | :-: | :-: | :---: | :----: | :-------: | :---: |
+| AMOUNT            |  X   |  X  |  X  |   X   |   X    |     X     |   X   |
+| GR_REF_NO         |  X   |  X  |  X  |   X   |   X    |     X     |   X   |
+| BRANDNAME         |  X   |  X  |  X  |   X   |   X    |     X     |   X   |
+| PACKERNAME        |  X   |  X  |  X  |   X   |   X    |     X     |   X   |
+| EMARTLOGIS_NAME   |  -   |  X  |  X  |   X   |   X    |     X     |   X   |
+| GR_WAREHOUSE_CODE |  O   |  O  |  X  |   O   |   O    |     O     |   O   |
+| CLIENT_CODE       |  X   |  O  |  O  |   O   |   O    |     O     |   O   |
+| CONTAINER_TYPE    |  X   |  -  |  -  |   -   |   -    |     -     |   -   |
+| GOODS_R_ID        |  O   |  O  |  O  |   X   |   O    |     O     |   O   |
+| PACKWEIGHT        |  O   |  O  |  O  |   O   |   O    |     X     |   O   |
+| WH_AREA           |  O   |  -  |  -  |   O   |   O    |     X     |   O   |
+| STORE_NAME        |  -   |  -  |  -  |   -   |   -    |     X     |   -   |
+| EMARTLOGIS_CODE   |  O   |  O  |  O  |   O   |   O    |     X     |   O   |
 
 **범례**: O=사용, X=미사용, -=해당 컬럼 없음
 
@@ -96,17 +96,17 @@
 | EMARTLOGIS_NAME | 미사용 |
 
 ### VW_PDA_WID_LIST_NONFIXED_HP (홈플러스 비정량) - 11개 미사용
-| 컬럼명 | 판정 |
-|--------|------|
-| AMOUNT | 미사용 |
-| GR_REF_NO | 미사용 |
-| BRANDNAME | 미사용 |
-| PACKERNAME | 미사용 |
-| PACKWEIGHT | 미사용 |
+| 컬럼명             | 판정  |
+| --------------- | --- |
+| AMOUNT          | 미사용 |
+| GR_REF_NO       | 미사용 |
+| BRANDNAME       | 미사용 |
+| PACKERNAME      | 미사용 |
+| PACKWEIGHT      | 미사용 |
 | EMARTLOGIS_CODE | 미사용 |
 | EMARTLOGIS_NAME | 미사용 |
-| WH_AREA | 미사용 |
-| STORE_NAME | 미사용 |
+| WH_AREA         | 미사용 |
+| STORE_NAME      | 미사용 |
 
 ### VW_PDA_WID_LIST_LOTTE (롯데) - 5개 미사용
 | 컬럼명 | 판정 |
@@ -182,32 +182,32 @@
 
 ## 7. 공통 사용 컬럼 (모든 VIEW에서 사용)
 
-| 컬럼명 | 용도 |
-|--------|------|
-| GI_H_ID | 출고 Header ID (JOIN 조건) |
-| GI_D_ID | 출고 상세 ID (핵심 키) |
-| EOI_ID | 발주번호 |
-| ITEM_CODE | 상품코드 |
-| ITEM_NAME | 상품명 |
-| EMARTITEM_CODE | 마트 상품코드 |
-| EMARTITEM | 마트 상품명 |
-| GI_REQ_PKG | 요청수량 |
-| GI_REQ_QTY | 요청중량 |
-| GI_REQ_DATE | 요청일자 |
-| BL_NO | BL번호 |
-| BRAND_CODE | 브랜드코드 |
-| CLIENTNAME | 출고업체명 |
-| CENTERNAME | 센터명 |
-| ITEM_SPEC | 스펙 |
-| CT_CODE | 원산지 |
-| PACKER_CODE | 패커코드 |
-| IMPORT_ID_NO | 수입식별번호 |
-| PACKER_PRODUCT_CODE | 패커 상품코드 |
-| BARCODE_TYPE | 바코드유형 |
-| ITEM_TYPE | 상품타입 |
-| BARCODEGOODS | 바코드 상품코드 |
-| STORE_IN_DATE | 납품일자 |
-| EMARTLOGIS_CODE | 물류코드 |
+| 컬럼명                 | 용도                     |
+| ------------------- | ---------------------- |
+| GI_H_ID             | 출고 Header ID (JOIN 조건) |
+| GI_D_ID             | 출고 상세 ID (핵심 키)        |
+| EOI_ID              | 발주번호                   |
+| ITEM_CODE           | 상품코드                   |
+| ITEM_NAME           | 상품명                    |
+| EMARTITEM_CODE      | 마트 상품코드                |
+| EMARTITEM           | 마트 상품명                 |
+| GI_REQ_PKG          | 요청수량                   |
+| GI_REQ_QTY          | 요청중량                   |
+| GI_REQ_DATE         | 요청일자                   |
+| BL_NO               | BL번호                   |
+| BRAND_CODE          | 브랜드코드                  |
+| CLIENTNAME          | 출고업체명                  |
+| CENTERNAME          | 센터명                    |
+| ITEM_SPEC           | 스펙                     |
+| CT_CODE             | 원산지                    |
+| PACKER_CODE         | 패커코드                   |
+| IMPORT_ID_NO        | 수입식별번호                 |
+| PACKER_PRODUCT_CODE | 패커 상품코드                |
+| BARCODE_TYPE        | 바코드유형                  |
+| ITEM_TYPE           | 상품타입                   |
+| BARCODEGOODS        | 바코드 상품코드               |
+| STORE_IN_DATE       | 납품일자                   |
+| EMARTLOGIS_CODE     | 물류코드                   |
 
 ---
 
