@@ -2365,423 +2365,304 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
 
 
-        //모바일프린터 출력 Data 설정
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        // ========== SLCS 명령어로 이마트 확장 라벨 인쇄 (Bixolon 프린터) ==========
         try {
-            byteStream.write(WoosimCmd.initPrinter());                                // 프린터 설정 초기화
-            byteStream.write(WoosimCmd.setPageMode());
-            byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
-            byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
+            StringBuilder slcsCmd = new StringBuilder();
+            slcsCmd.append(slcsInit());                                              // 프린터 초기화
+            slcsCmd.append(slcsLabelSize(576, 460));                                 // 라벨 크기 설정
 
+            // 센터명 출력
             if (7 < si.CENTERNAME.length()) {
-                byteStream.write(WoosimCmd.PM_setPosition(10, 12));
-                byteStream.write(WoosimCmd.getTTFcode(35, 35, si.CENTERNAME));                                    // 센터명 출력
+                slcsCmd.append(slcsText(10, 12, 35, 35, si.CENTERNAME));
                 if (Common.D)
                     Log.i(TAG, "센터명 > 7 ,  size 30");
             } else {
-                byteStream.write(WoosimCmd.PM_setPosition(10, 10));
-                byteStream.write(WoosimCmd.getTTFcode(40, 40, si.CENTERNAME));                                    // 센터명 출력
+                slcsCmd.append(slcsText(10, 10, 40, 40, si.CENTERNAME));
                 if (Common.D)
                     Log.i(TAG, "센터명 <= 7 ,  size 40");
             }
 
+            // 바코드 타입별 업체명/지점명 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-
+                // M3, M4는 여기서 출력 없음
             } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
                 String vendorName = "[" + COMPANY_NAME + "]";
-                byteStream.write(WoosimCmd.PM_setPosition(330, 13));
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, vendorName));       // 업체명 출력
+                slcsCmd.append(slcsText(330, 13, 25, 25, vendorName));                // 업체명 출력
 
                 String storeNamePlusCode = pointName + "(" +  si.getSTORE_CODE() +")";
 
                 if (11 < si.CLIENTNAME.toString().length()) {
-                    byteStream.write(WoosimCmd.PM_setPosition(10, 270));
-                    byteStream.write(WoosimCmd.getTTFcode(35, 35, storeNamePlusCode.toString()));                    // 지점명 출력
+                    slcsCmd.append(slcsText(10, 270, 35, 35, storeNamePlusCode.toString()));  // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 > 11 ,  size 30");
                 } else {
-                    byteStream.write(WoosimCmd.PM_setPosition(10, 270));
-                    byteStream.write(WoosimCmd.getTTFcode(40, 40, storeNamePlusCode.toString()));                    // 지점명 출력
+                    slcsCmd.append(slcsText(10, 270, 40, 40, storeNamePlusCode.toString()));  // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 <= 11 ,  size 40");
                 }
-                //저울스캔용 까지 여기서 출력
+                // 저울스캔용 표시
                 String usePurpose = "[저울 스캔용]";
-                byteStream.write(WoosimCmd.PM_setPosition(400, 270));
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, usePurpose));                         // 저울스캔용 표시
-            }else {
+                slcsCmd.append(slcsText(400, 270, 25, 25, usePurpose));
+            } else {
                 if (11 < si.CLIENTNAME.toString().length()) {
-                    byteStream.write(WoosimCmd.PM_setPosition(10, 60));
-                    byteStream.write(WoosimCmd.getTTFcode(35, 35, pointName.toString()));                    // 지점명 출력
+                    slcsCmd.append(slcsText(10, 60, 35, 35, pointName.toString()));          // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 > 11 ,  size 30");
                 } else {
-                    byteStream.write(WoosimCmd.PM_setPosition(10, 60));
-                    byteStream.write(WoosimCmd.getTTFcode(40, 40, pointName.toString())); //check point 1                   // 지점명 출력
+                    slcsCmd.append(slcsText(10, 60, 40, 40, pointName.toString()));          // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 <= 11 ,  size 40");
                 }
             }
 
-            //상품명 위치
+            // 상품명 출력 (바코드 타입별 위치, 크기)
+            int itemX = 80, itemY = 120;  // 기본 위치
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                byteStream.write(WoosimCmd.PM_setPosition(15, 65));
-            }else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                byteStream.write(WoosimCmd.PM_setPosition(15, 70));
-            }else {
-                byteStream.write(WoosimCmd.PM_setPosition(80, 120)); //check point 2 15,75
+                itemX = 15; itemY = 65;
+            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
+                itemX = 15; itemY = 70;
             }
-
-
-            //상품명이 일정 길이 이상 넘어갈 경우 2줄로 출력되므로	글자 크기 조절                                 // 상품명 출력
             if (si.EMARTITEM.length() > 14) {
-                byteStream.write(WoosimCmd.getTTFcode(35, 35, si.EMARTITEM));
+                slcsCmd.append(slcsText(itemX, itemY, 35, 35, si.EMARTITEM));
             } else {
-                byteStream.write(WoosimCmd.getTTFcode(40, 40, si.EMARTITEM));
+                slcsCmd.append(slcsText(itemX, itemY, 40, 40, si.EMARTITEM));
             }
 
             Log.i(TAG, "===============EMARTITEM============" + si.EMARTITEM);
-
-            byte[] STORECODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, sBarcode.getBytes());
-
             Log.i(TAG, "===============sBarcode============" + sBarcode);
 
+            // sBarcode 바코드 출력 (M9 제외)
             if (!si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                byteStream.write(WoosimCmd.PM_setPosition(420, 20));
-                byteStream.write(STORECODE128);
+                slcsCmd.append(slcsBarcode(420, 20, 60, sBarcode));
             }
-
-            byte[] LOGICSTORECODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, sBarcodeStr.getBytes());
 
             Log.i(TAG, "===============sBarcode2============" + sBarcodeStr);
 
+            // sBarcodeStr 텍스트 출력 (M9 제외)
             if (!si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                byteStream.write(WoosimCmd.PM_setPosition(450, 80));    // E3 Position(25)
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, sBarcodeStr));                                // 바코드번호(숫자) 출력
+                slcsCmd.append(slcsText(450, 80, 25, 25, sBarcodeStr));               // 바코드번호(숫자) 출력
             }
-
-            byte[] CODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, pBarcode.getBytes());
 
             Log.i(TAG, "===============pBarcode============" + pBarcode);
-
-            byte[] LOGISCODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, pBarcode2.getBytes());
-
             Log.i(TAG, "===============pBarcode2============" + pBarcode2);
 
-            //이마트 바코드 타입에 따른 바코드 출력 위치 설정
+            // 바코드 타입별 메인 바코드 출력 위치 설정
+            int barcodeX = 80, barcodeY = 170;  // 기본 위치
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0)
                     || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
-                byteStream.write(WoosimCmd.PM_setPosition(80, 170)); // check point 3 60,155
+                barcodeX = 80; barcodeY = 170;
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M1)) {
-                byteStream.write(WoosimCmd.PM_setPosition(145, 170));
+                barcodeX = 145; barcodeY = 170;
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E2)) {
-                byteStream.write(WoosimCmd.PM_setPosition(90, 170));    // E2 Position (25)
+                barcodeX = 90; barcodeY = 170;
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E3)) {
-                byteStream.write(WoosimCmd.PM_setPosition(160, 170));
+                barcodeX = 160; barcodeY = 170;
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                byteStream.write(WoosimCmd.PM_setPosition(70, 115));
+                barcodeX = 70; barcodeY = 115;
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                byteStream.write(WoosimCmd.PM_setPosition(145, 115));
-            }else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                byteStream.write(WoosimCmd.PM_setPosition(90, 125));
+                barcodeX = 145; barcodeY = 115;
+            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
+                barcodeX = 90; barcodeY = 125;
             }
+            slcsCmd.append(slcsBarcode(barcodeX, barcodeY, 60, pBarcode));
 
-            Log.i(TAG, "===============CODE128============" + CODE128);
-
-            byteStream.write(CODE128);
-
-//            Log.i(TAG, "===============LOGISCODE128============" + LOGISCODE128);
-//            byteStream.write(LOGISCODE128);
-//            Log.i(TAG, "===============EMARTLOGIS_NAME============" + si.EMARTLOGIS_NAME);
-
-            //이마트 바코드 타입에 따른 바코드번호(숫자) 출력 위치 설정
+            // 바코드 타입별 바코드번호(숫자) 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
-                byteStream.write(WoosimCmd.PM_setPosition(75, 240)); //75,225     // M0, E0, E1 Position(31)
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr));
-            } if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M1)) {
-                byteStream.write(WoosimCmd.PM_setPosition(147, 240));    // M1 Position(18)
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr));                                // 바코드번호(숫자) 출력
+                slcsCmd.append(slcsText(75, 240, 25, 25, pBarcodeStr));
+            }
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M1)) {
+                slcsCmd.append(slcsText(147, 240, 25, 25, pBarcodeStr));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E2)) {
-                byteStream.write(WoosimCmd.PM_setPosition(100, 240));    // E2 Position(25)
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr));                                // 바코드번호(숫자) 출력
+                slcsCmd.append(slcsText(100, 240, 25, 25, pBarcodeStr));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E3)) {
-                byteStream.write(WoosimCmd.PM_setPosition(190, 240));    // E3 Position(25)
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr));                                // 바코드번호(숫자) 출력
+                slcsCmd.append(slcsText(190, 240, 25, 25, pBarcodeStr));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                byteStream.write(WoosimCmd.PM_setPosition(25, 175));    // M0, E0, E1 Position(31)
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr + "  PC매입"));                                // 바코드번호(숫자) 출력
+                slcsCmd.append(slcsText(25, 175, 25, 25, pBarcodeStr + "  PC매입"));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                byteStream.write(WoosimCmd.PM_setPosition(117, 175));    // M1 Position(18)
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr + "  PC매입"));                                // 바코드번호(숫자) 출력
-            }else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
-                byteStream.write(WoosimCmd.PM_setPosition(90, 192));    // M1 Position(18)
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr ));                                // 바코드번호(숫자) 출력
+                slcsCmd.append(slcsText(117, 175, 25, 25, pBarcodeStr + "  PC매입"));
+            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
+                slcsCmd.append(slcsText(90, 192, 25, 25, pBarcodeStr));
             }
 
+            // M3, M4, M9 추가 바코드 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                byteStream.write(WoosimCmd.PM_setPosition(70, 205));
-                Log.i(TAG, "===============LOGISCODE128============" + LOGISCODE128);
-                byteStream.write(LOGISCODE128);
+                slcsCmd.append(slcsBarcode(70, 205, 60, pBarcode2));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                byteStream.write(WoosimCmd.PM_setPosition(145, 205));
-                Log.i(TAG, "===============LOGISCODE128============" + LOGISCODE128);
-                byteStream.write(LOGISCODE128);
-            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){ //m9하단코드
-                byteStream.write(WoosimCmd.PM_setPosition(125, 325));
-                Log.i(TAG, "===============LOGISCODE128============" + LOGISCODE128);
-                byteStream.write(LOGISCODE128);
-
-                byteStream.write(WoosimCmd.PM_setPosition(450, 330));
+                slcsCmd.append(slcsBarcode(145, 205, 60, pBarcode2));
+            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
+                slcsCmd.append(slcsBarcode(125, 325, 60, pBarcode2));
                 String ctName = si.getCT_NAME();
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, ctName ));
-
-                byteStream.write(WoosimCmd.PM_setPosition(125, 390));
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr2 ));
-
-                byteStream.write(WoosimCmd.PM_setPosition(80, 420));
+                slcsCmd.append(slcsText(450, 330, 25, 25, ctName));
+                slcsCmd.append(slcsText(125, 390, 25, 25, pBarcodeStr2));
                 String belowBarcodeString = si.EMARTITEM +","+si.getUSE_NAME();
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, belowBarcodeString ));
+                slcsCmd.append(slcsText(80, 420, 25, 25, belowBarcodeString));
             }
 
+            // M3, M4 PC출하 텍스트 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                byteStream.write(WoosimCmd.PM_setPosition(25, 265));    // M0, E0, E1 Position(31)
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr2 + "  PC출하"));                                // 바코드번호(숫자) 출력
+                slcsCmd.append(slcsText(25, 265, 25, 25, pBarcodeStr2 + "  PC출하"));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                byteStream.write(WoosimCmd.PM_setPosition(117, 265));    // M1 Position(18)
                 Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
-                byteStream.write(WoosimCmd.getTTFcode(25, 25, pBarcodeStr2 + "  PC출하"));                                // 바코드번호(숫자) 출력
+                slcsCmd.append(slcsText(117, 265, 25, 25, pBarcodeStr2 + "  PC출하"));
             }
 
+            // 바코드 타입별 중량, 납품일자, 업체 정보 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                byteStream.write(WoosimCmd.PM_setPosition(15, 300));
-                byteStream.write(WoosimCmd.getTTFcode(40, 40, "중     량 : "));                            // 중량 출력
-                byteStream.write(WoosimCmd.PM_setPosition(175, 300));
-                byteStream.write(WoosimCmd.getTTFcode(40, 40, String.valueOf(print_weight_double) + " KG"));
-                byteStream.write(WoosimCmd.PM_setPosition(15, 348));
+                slcsCmd.append(slcsText(15, 300, 40, 40, "중     량 : "));
+                slcsCmd.append(slcsText(175, 300, 40, 40, String.valueOf(print_weight_double) + " KG"));
                 String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-
-                byteStream.write(WoosimCmd.getTTFcode(30, 30, "납품일자 : " + tempDate));        // 납품일자 출력
-                byteStream.write(WoosimCmd.PM_setPosition(15, 388));
-
+                slcsCmd.append(slcsText(15, 348, 30, 30, "납품일자 : " + tempDate));
                 if (reprint) {
                     pCompName = pCompName + "  *";
                 }
-                byteStream.write(WoosimCmd.getTTFcode(30, 30, "업        체 : " + pCompCode + "   " + pCompName));                  // 업체코드 출력
-                //소비기한 신규 추가
-                byteStream.write(WoosimCmd.PM_setPosition(15, 428));
-                byteStream.write(WoosimCmd.getTTFcode(30, 30, expiryDayConvert));
+                slcsCmd.append(slcsText(15, 388, 30, 30, "업        체 : " + pCompCode + "   " + pCompName));
+                slcsCmd.append(slcsText(15, 428, 30, 30, expiryDayConvert));          // 소비기한
 
-            }else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
-
-                byteStream.write(WoosimCmd.PM_setPosition(90, 220));
+            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
                 Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
                 String tempDate = si.getSTORE_IN_DATE().substring(0, 4) + "년 " + si.getSTORE_IN_DATE().substring(4, 6) + "월 " + si.getSTORE_IN_DATE().substring(6, 8) + "일";
-                byteStream.write(WoosimCmd.getTTFcode(30, 30, "납품일 : " + tempDate));        // 납품일자 출력
+                slcsCmd.append(slcsText(90, 220, 30, 30, "납품일 : " + tempDate));
 
             } else {
-                byteStream.write(WoosimCmd.PM_setPosition(15, 280)); // check point 4 15,265
-                byteStream.write(WoosimCmd.getTTFcode(40, 40, "중      량 : "));                            // 중량 출력
-                byteStream.write(WoosimCmd.PM_setPosition(175, 280));
-                byteStream.write(WoosimCmd.getTTFcode(40, 40, String.valueOf(print_weight_double) + " KG"));
-                byteStream.write(WoosimCmd.PM_setPosition(15, 328)); //check point 4-1 15,313
+                slcsCmd.append(slcsText(15, 280, 40, 40, "중      량 : "));
+                slcsCmd.append(slcsText(175, 280, 40, 40, String.valueOf(print_weight_double) + " KG"));
                 Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
                 String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-
-                byteStream.write(WoosimCmd.getTTFcode(30, 30, "납품일자 : " + tempDate));        // 납품일자 출력
-                byteStream.write(WoosimCmd.PM_setPosition(15, 368)); // check point 5 15,353
-
+                slcsCmd.append(slcsText(15, 328, 30, 30, "납품일자 : " + tempDate));
                 if (reprint) {
                     pCompName = pCompName + "  *";
                 }
-                byteStream.write(WoosimCmd.getTTFcode(30, 30, "업체코드 : " + pCompCode + expiryDayConvert));                  // 업체코드 출력
-                byteStream.write(WoosimCmd.PM_setPosition(15, 408)); // check point 6 15,393
-                byteStream.write(WoosimCmd.getTTFcode(30, 30, "업 체 명 : " + pCompName));                                  // 업체명 출력
+                slcsCmd.append(slcsText(15, 368, 30, 30, "업체코드 : " + pCompCode + expiryDayConvert));
+                slcsCmd.append(slcsText(15, 408, 30, 30, "업 체 명 : " + pCompName));
             }
 
-            //wh_area 추가
+            // WH_AREA 출력
             whArea = si.getWH_AREA();
-
             Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
-
             if(whArea != null || !whArea.equals("")){
-                byteStream.write(WoosimCmd.PM_setPosition(430, 385));
-                byteStream.write(WoosimCmd.getTTFcode(65, 65, whArea));
+                slcsCmd.append(slcsText(430, 385, 65, 65, whArea));
             }
 
+            // M9 가로선 그리기
             if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
-                byteStream.write(WoosimImage.drawLine(0, 260, 560, 260, 5));            //M9은 가로선 하나만 그린다.
+                slcsCmd.append(slcsLine(0, 260, 560, 260, 5));
             }
 
-            byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));    // 0.6인치 : 115.2
-            byteStream.write(WoosimCmd.PM_printData());
-            byteStream.write(WoosimCmd.PM_setStdMode());
+            // 인쇄 실행
+            slcsCmd.append(slcsPrint(1));
 
             if( !si.getBARCODE_TYPE().equals(BARCODE_TYPE_P0) ) {
-                sendData(byteStream.toByteArray());
-                sendData(WoosimCmd.feedToMark());
+                sendData(slcsCmd.toString().getBytes("EUC-KR"));
             }
 
-            // // todo 이마트 미트센터 +공장코드
+            // ========== 이마트 미트센터 +공장코드 라벨 (SLCS) ==========
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && !si.getEMART_PLANT_CODE().equals("")) {
-                byteStream.reset(); // clear
-
                 System.out.println(">>>>>>>>>>>>>>> 이마트 미트센터 +공장코드 >>>>>>>>>>>>>>>");
 
                 try {
+                    StringBuilder slcsMeat = new StringBuilder();
+                    slcsMeat.append(slcsInit());
+                    slcsMeat.append(slcsLabelSize(576, 460));
+
                     String meatCenterTitle = "ERP-미트센터출하코드";
                     String meatCenterCode = MEAT_CENTER_CODE;
-
                     String meatCenterBarcodeStr = "";
 
-                    byteStream.write(WoosimCmd.initPrinter());
-                    byteStream.write(WoosimCmd.setPageMode());
-                    byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
-                    byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
-
-                    byteStream.write(WoosimCmd.PM_setPosition(120, 35));
-
-                    byteStream.write(WoosimCmd.getTTFcode(40, 40, meatCenterTitle));
-
-                    byteStream.write(WoosimCmd.PM_setPosition(115, 120));
+                    slcsMeat.append(slcsText(120, 35, 40, 40, meatCenterTitle));
 
                     if (si.EMARTITEM.length() > 14) {
-                        byteStream.write(WoosimCmd.getTTFcode(35, 35, si.EMARTITEM));
+                        slcsMeat.append(slcsText(115, 120, 35, 35, si.EMARTITEM));
                     } else {
-                        byteStream.write(WoosimCmd.getTTFcode(40, 40, si.EMARTITEM));
+                        slcsMeat.append(slcsText(115, 120, 40, 40, si.EMARTITEM));
                     }
 
-                    byteStream.write(WoosimCmd.PM_setPosition(35, 170));
-
-                    meatCenterBarcode = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + meatCenterCode + si.getIMPORT_ID_NO() + si.getEMART_PLANT_CODE(); // todo EMART_PLANT_CODE
-                    meatCenterBarcodeStr = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + meatCenterCode + " " + si.getIMPORT_ID_NO() + " " + si.getEMART_PLANT_CODE();  // todo EMART_PLANT_CODE
-
-                    byte[] MEATCENTERBARCODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, meatCenterBarcode.getBytes());
+                    meatCenterBarcode = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + meatCenterCode + si.getIMPORT_ID_NO() + si.getEMART_PLANT_CODE();
+                    meatCenterBarcodeStr = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + meatCenterCode + " " + si.getIMPORT_ID_NO() + " " + si.getEMART_PLANT_CODE();
 
                     Log.i(TAG, "===============MEATCENTERBARCODE128============" + meatCenterBarcode);
 
-                    byteStream.write(MEATCENTERBARCODE128);
+                    slcsMeat.append(slcsBarcode(35, 170, 60, meatCenterBarcode));
+                    slcsMeat.append(slcsText(40, 240, 25, 25, meatCenterBarcodeStr));
 
-                    byteStream.write(WoosimCmd.PM_setPosition(40, 240));
-                    byteStream.write(WoosimCmd.getTTFcode(25, 25, meatCenterBarcodeStr));
-
-                    byteStream.write(WoosimCmd.PM_setPosition(15, 280));
-                    byteStream.write(WoosimCmd.getTTFcode(40, 40, "중      량 : "));                            // 중량 출력
-                    byteStream.write(WoosimCmd.PM_setPosition(175, 280));
-                    byteStream.write(WoosimCmd.getTTFcode(40, 40, String.valueOf(print_weight_double) + " KG"));
-                    byteStream.write(WoosimCmd.PM_setPosition(15, 328)); //check point 4-1 15,313
+                    slcsMeat.append(slcsText(15, 280, 40, 40, "중      량 : "));
+                    slcsMeat.append(slcsText(175, 280, 40, 40, String.valueOf(print_weight_double) + " KG"));
 
                     Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
                     String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-                    byteStream.write(WoosimCmd.getTTFcode(30, 30, "납품일자 : " + tempDate));        // 납품일자 출력
-                    byteStream.write(WoosimCmd.PM_setPosition(15, 368));
+                    slcsMeat.append(slcsText(15, 328, 30, 30, "납품일자 : " + tempDate));
 
-                    byteStream.write(WoosimCmd.getTTFcode(30, 30, "업체코드 : " + meatCenterCode + expiryDayConvert));                  // 업체코드 출력
-                    byteStream.write(WoosimCmd.PM_setPosition(15, 408));
-
-                    byteStream.write(WoosimCmd.getTTFcode(30, 30, "업 체 명 : " + pCompName));
+                    slcsMeat.append(slcsText(15, 368, 30, 30, "업체코드 : " + meatCenterCode + expiryDayConvert));
+                    slcsMeat.append(slcsText(15, 408, 30, 30, "업 체 명 : " + pCompName));
 
                     whArea = si.getWH_AREA();
-
                     Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
-
                     if(whArea != null || !whArea.equals("")){
-                        byteStream.write(WoosimCmd.PM_setPosition(430, 385));
-                        byteStream.write(WoosimCmd.getTTFcode(65, 65, whArea));
+                        slcsMeat.append(slcsText(430, 385, 65, 65, whArea));
                     }
 
-                    byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));
-                    byteStream.write(WoosimCmd.PM_printData());
-                    byteStream.write(WoosimCmd.PM_setStdMode());
-
-                    sendData(byteStream.toByteArray());
-                    sendData(WoosimCmd.feedToMark());
-                } catch (IOException e) {
+                    slcsMeat.append(slcsPrint(1));
+                    sendData(slcsMeat.toString().getBytes("EUC-KR"));
+                } catch (Exception e) {
                     Log.d(TAG, "이마트 공장코드 출력 오류 " +  e.getMessage());
                     e.printStackTrace();
                 }
             }
 
-            // todo 이마트 미트센터
+            // ========== 이마트 미트센터 라벨 (SLCS) ==========
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && !si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && si.getEMART_PLANT_CODE().equals("")) {
-                byteStream.reset(); // clear
-
                 try {
+                    StringBuilder slcsMeat2 = new StringBuilder();
+                    slcsMeat2.append(slcsInit());
+                    slcsMeat2.append(slcsLabelSize(576, 460));
+
                     String meatCenterTitle = "미트센터출하코드";
                     String meatCenterCode = MEAT_CENTER_CODE;
                     String meatCenterBarcodeStr = "";
 
-                    byteStream.write(WoosimCmd.initPrinter());
-                    byteStream.write(WoosimCmd.setPageMode());
-                    byteStream.write(WoosimCmd.selectTTF("HYWULM.TTF"));
-                    byteStream.write(WoosimCmd.setTextStyle(true, false, false, 1, 1));
-
-                    byteStream.write(WoosimCmd.PM_setPosition(150, 35));
-
-                    byteStream.write(WoosimCmd.getTTFcode(40, 40, meatCenterTitle));
-
-                    byteStream.write(WoosimCmd.PM_setPosition(80, 120)); //check point 2 15,75
+                    slcsMeat2.append(slcsText(150, 35, 40, 40, meatCenterTitle));
 
                     if (si.EMARTITEM.length() > 14) {
-                        byteStream.write(WoosimCmd.getTTFcode(35, 35, si.EMARTITEM));
+                        slcsMeat2.append(slcsText(80, 120, 35, 35, si.EMARTITEM));
                     } else {
-                        byteStream.write(WoosimCmd.getTTFcode(40, 40, si.EMARTITEM));
+                        slcsMeat2.append(slcsText(80, 120, 40, 40, si.EMARTITEM));
                     }
-
-                    byteStream.write(WoosimCmd.PM_setPosition(80, 170)); // check point 3 60,155
 
                     meatCenterBarcode = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + meatCenterCode + si.getIMPORT_ID_NO();
                     meatCenterBarcodeStr = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + meatCenterCode + " " + si.getIMPORT_ID_NO();
 
-                    byte[] MEATCENTERBARCODE128 = WoosimBarcode.createBarcode(WoosimBarcode.CODE128, 2, 60, false, meatCenterBarcode.getBytes());
-
                     Log.i(TAG, "===============MEATCENTERBARCODE128============" + meatCenterBarcode);
 
-                    byteStream.write(MEATCENTERBARCODE128);
+                    slcsMeat2.append(slcsBarcode(80, 170, 60, meatCenterBarcode));
+                    slcsMeat2.append(slcsText(75, 240, 25, 25, meatCenterBarcodeStr));
 
-                    byteStream.write(WoosimCmd.PM_setPosition(75, 240)); //75,225     // M0, E0, E1 Position(31)
-                    byteStream.write(WoosimCmd.getTTFcode(25, 25, meatCenterBarcodeStr));
-
-                    byteStream.write(WoosimCmd.PM_setPosition(15, 280)); // check point 4 15,265
-                    byteStream.write(WoosimCmd.getTTFcode(40, 40, "중      량 : "));                            // 중량 출력
-                    byteStream.write(WoosimCmd.PM_setPosition(175, 280));
-                    byteStream.write(WoosimCmd.getTTFcode(40, 40, String.valueOf(print_weight_double) + " KG"));
-                    byteStream.write(WoosimCmd.PM_setPosition(15, 328)); //check point 4-1 15,313
+                    slcsMeat2.append(slcsText(15, 280, 40, 40, "중      량 : "));
+                    slcsMeat2.append(slcsText(175, 280, 40, 40, String.valueOf(print_weight_double) + " KG"));
 
                     Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
                     String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-                    byteStream.write(WoosimCmd.getTTFcode(30, 30, "납품일자 : " + tempDate));        // 납품일자 출력
-                    byteStream.write(WoosimCmd.PM_setPosition(15, 368)); // check point 5 15,353
+                    slcsMeat2.append(slcsText(15, 328, 30, 30, "납품일자 : " + tempDate));
 
-                    byteStream.write(WoosimCmd.getTTFcode(30, 30, "업체코드 : " + meatCenterCode + expiryDayConvert));                  // 업체코드 출력
-                    byteStream.write(WoosimCmd.PM_setPosition(15, 408)); // check point 6 15,393
-
-                    byteStream.write(WoosimCmd.getTTFcode(30, 30, "업 체 명 : " + pCompName));
+                    slcsMeat2.append(slcsText(15, 368, 30, 30, "업체코드 : " + meatCenterCode + expiryDayConvert));
+                    slcsMeat2.append(slcsText(15, 408, 30, 30, "업 체 명 : " + pCompName));
 
                     whArea = si.getWH_AREA();
-
                     Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
-
                     if(whArea != null || !whArea.equals("")){
-                        byteStream.write(WoosimCmd.PM_setPosition(430, 385));
-                        byteStream.write(WoosimCmd.getTTFcode(65, 65, whArea));
+                        slcsMeat2.append(slcsText(430, 385, 65, 65, whArea));
                     }
 
-                    byteStream.write(WoosimCmd.PM_setArea(0, 0, 576, 460));
-                    byteStream.write(WoosimCmd.PM_printData());
-                    byteStream.write(WoosimCmd.PM_setStdMode());
-
-                    sendData(byteStream.toByteArray());
-                    sendData(WoosimCmd.feedToMark());
-                } catch (IOException e) {
+                    slcsMeat2.append(slcsPrint(1));
+                    sendData(slcsMeat2.toString().getBytes("EUC-KR"));
+                } catch (Exception e) {
                     Log.d(TAG, "이마트 미트센터 출력 오류 " +  e.getMessage());
                     e.printStackTrace();
                 }
             }
             edit_barcode.setText("");
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             if (Common.D) {
-                Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
+                Log.d(TAG, "setPrinting Exception\n" + e.getMessage());
             }
         }
         return String.valueOf(print_weight_double);
