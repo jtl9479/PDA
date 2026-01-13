@@ -103,7 +103,7 @@ public class DBHandler {
             }
 
             // 선택 날짜 지정
-            qry_condition = qry_condition + " AND GI_REQ_DATE = " + Common.selectDay;
+            qry_condition = qry_condition + " AND GI_REQ_DATE = '" + Common.selectDay + "'";
 
             sqlStr = "SELECT "
                     + DBInfo.SHIPMENT_ID + ", "

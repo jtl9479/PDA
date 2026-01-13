@@ -2797,48 +2797,48 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             // 원본: PM_setPosition(30, 170) + getTTFcode(70 or 100)
             // 6자 초과 시 크기 70, 이하 시 크기 100 (긴 이름은 작게)
             if(pointName.length() > 6) {
-                slcsCmd.append(slcsText(30, 170, 70, 70, pointName.toString()));     // 6자 초과: 크기 70
+                slcsCmd.append(slcsText(170, 30, 70, 70, pointName.toString()));     // 6자 초과: 크기 70
             } else {
-                slcsCmd.append(slcsText(30, 170, 100, 100, pointName.toString()));   // 6자 이하: 크기 100
+                slcsCmd.append(slcsText(170, 30, 100, 100, pointName.toString()));   // 6자 이하: 크기 100
             }
 
             // [2] 점포코드/지점코드 출력 - 위치(135, 170), 크기 155
             // 원본: PM_setPosition(135, 170) + getTTFcode(155, 155)
             // ITEM_TYPE_B(비정량)이면 storeCode, 아니면 pointCode 출력
             if (si.getITEM_TYPE().equals(ITEM_TYPE_B)) {
-                slcsCmd.append(slcsText(135, 170, 155, 155, storeCode.toString()));  // 비정량: 점포코드(STORE_CODE)
+                slcsCmd.append(slcsText(170, 135, 155, 155, storeCode.toString()));  // 비정량: 점포코드(STORE_CODE)
             } else {
-                slcsCmd.append(slcsText(135, 170, 155, 155, pointCode.toString()));  // 정량: 지점코드(EMARTLOGIS_CODE)
+                slcsCmd.append(slcsText(170, 135, 155, 155, pointCode.toString()));  // 정량: 지점코드(EMARTLOGIS_CODE)
             }
 
             // [3] 상품명 출력 - 위치(287 or 283, 170)
             // 원본: PM_setPosition + getTTFcode
             // 17자 초과 시 크기 25, 이하 시 크기 30 (긴 상품명은 작게)
             if (si.EMARTITEM.length() > 17) {
-                slcsCmd.append(slcsText(287, 170, 25, 25, si.EMARTITEM));            // 17자 초과: 크기 25
+                slcsCmd.append(slcsText(170, 287, 25, 25, si.EMARTITEM));            // 17자 초과: 크기 25
             } else {
-                slcsCmd.append(slcsText(283, 170, 30, 30, si.EMARTITEM));            // 17자 이하: 크기 30
+                slcsCmd.append(slcsText(170, 283, 30, 30, si.EMARTITEM));            // 17자 이하: 크기 30
             }
 
             // [4] BOX 텍스트 - 위치(322, 170), 크기 40
-            slcsCmd.append(slcsText(322, 170, 40, 40, "BOX"));
+            slcsCmd.append(slcsText(170, 322, 40, 40, "BOX"));
 
             // [5] CT코드 (차량코드) - 위치(361, 170), 크기 40
-            slcsCmd.append(slcsText(361, 170, 40, 40, String.valueOf(si.getCT_CODE())));
+            slcsCmd.append(slcsText(170, 361, 40, 40, String.valueOf(si.getCT_CODE())));
 
             // [6] 중량/수입식별번호 - 위치(361, 380), 크기 40
             // 형식: "중량/수입식별번호 뒤 4자리"
-            slcsCmd.append(slcsText(361, 380, 40, 40, String.valueOf(print_weight_double) + "/"+si.getIMPORT_ID_NO().substring(8, 12)));
+            slcsCmd.append(slcsText(380, 361, 40, 40, String.valueOf(print_weight_double) + "/"+si.getIMPORT_ID_NO().substring(8, 12)));
 
             // [7] 납품일자 - 위치(402, 170), 크기 40
             // 형식: "YYYY년 MM월 DD일"
             Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
             String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-            slcsCmd.append(slcsText(402, 170, 40, 40, tempDate));
+            slcsCmd.append(slcsText(170, 402, 40, 40, tempDate));
 
             // [8] 업체명 - 위치(441, 170), 크기 40
             // 값: COMPANY_NAME 상수 ("(주)하이랜드이노베이션")
-            slcsCmd.append(slcsText(441, 170, 40, 40, pCompName));
+            slcsCmd.append(slcsText(170, 441, 40, 40, pCompName));
 
             // [9] 인쇄 실행 - 1장 출력
             slcsCmd.append(slcsPrint(1));

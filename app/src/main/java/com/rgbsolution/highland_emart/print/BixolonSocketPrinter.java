@@ -283,7 +283,8 @@ public class BixolonSocketPrinter {
     }
 
     /**
-     * SLCS 명령어 전송
+     * SLCS 명령어 전송 (문자열)
+     * - EUC-KR 인코딩으로 전송 (SLCS 프린터 표준)
      */
     public void sendCommand(String command) {
         if (!isConnected()) {
@@ -292,15 +293,39 @@ public class BixolonSocketPrinter {
         }
 
         try {
-            byte[] data = command.getBytes("UTF-8");
+            // SLCS 프린터는 EUC-KR 인코딩 사용
+            byte[] data = command.getBytes("EUC-KR");
             write(data);
-            Log.d(TAG, "명령어 전송 완료");
+            Log.d(TAG, "명령어 전송 완료 (EUC-KR, " + data.length + " bytes)");
 
             if (mHandler != null) {
                 mHandler.sendEmptyMessage(MESSAGE_PRINT_COMPLETE);
             }
         } catch (IOException e) {
             Log.e(TAG, "sendCommand error: " + e.getMessage(), e);
+            sendToast("명령어 전송 오류: " + e.getMessage());
+        }
+    }
+
+    /**
+     * SLCS 명령어 전송 (바이트 배열)
+     * - 이미 인코딩된 바이트 배열 직접 전송
+     */
+    public void sendCommandBytes(byte[] data) {
+        if (!isConnected()) {
+            sendToast("프린터가 연결되지 않았습니다.");
+            return;
+        }
+
+        try {
+            write(data);
+            Log.d(TAG, "명령어 전송 완료 (bytes, " + data.length + " bytes)");
+
+            if (mHandler != null) {
+                mHandler.sendEmptyMessage(MESSAGE_PRINT_COMPLETE);
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "sendCommandBytes error: " + e.getMessage(), e);
             sendToast("명령어 전송 오류: " + e.getMessage());
         }
     }

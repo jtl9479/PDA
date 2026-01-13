@@ -54,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
     // 빅솔론 프린터 (소켓 통신 방식)
     private BixolonSocketPrinter mBixolonPrinter = null;
 
-    static final String[] store = {"부산센터","이천1센터","삼일냉장","SWC","탑로지스"};
+    static final String[] store = {"부산2","이천1센터","삼일냉장","SWC","탑로지스"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +82,10 @@ public class LoginActivity extends AppCompatActivity {
 
         editID = (EditText) findViewById(R.id.editID);
         editPWD = (EditText) findViewById(R.id.editPWD);
+
+        // 기본값 설정
+        editID.setText("12345678");
+        editPWD.setText("5411");
 
         ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_spinner_item,store);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
