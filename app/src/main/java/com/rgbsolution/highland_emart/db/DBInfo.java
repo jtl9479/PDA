@@ -21,22 +21,16 @@ public class DBInfo {
 
 	//	::::::::::::::: ↓ SHIPMENT Columns ↓ ::::::::::::::::::
 	public static final String SHIPMENT_ID					= "SHIPMENT_ID";				// 출하대상 ID
-	public static final String GI_H_ID 						= "GI_H_ID";					// GI_H_ID
 	//	public static final String GI_D_ID 						= "GI_D_ID";					// 출고번호(출고상세번호id 값)
-	public static final String EOI_ID						= "EOI_ID";						// 이마트 출하번호(발주번호)
 	public static final String ITEM_CODE 					= "ITEM_CODE";					// 상품코드
 	public static final String ITEM_NAME 					= "ITEM_NAME";					// 상품명
 	public static final String EMARTITEM_CODE				= "EMARTITEM_CODE";				// 이마트 상품코드
 	public static final String EMARTITEM					= "EMARTITEM";					// 이마트 상품명
 	public static final String GI_REQ_PKG 					= "GI_REQ_PKG";					// 출하요청수량
 	public static final String GI_REQ_QTY					= "GI_REQ_QTY";					// 출하요청중량
-	public static final String AMOUNT 						= "AMOUNT";						// 출하상품금액
-	public static final String GOODS_R_ID 					= "GOODS_R_ID";					// 입고번호
-	public static final String GR_REF_NO 					= "GR_REF_NO";					// 창고입고번호
 	public static final String GI_REQ_DATE 					= "GI_REQ_DATE";				// 출하요청일
 	public static final String BL_NO						= "BL_NO";						// BL 번호
 	//	public static final String BRAND_CODE 					= "BRAND_CODE";					// 브랜드코드
-	public static final String BRANDNAME 					= "BRANDNAME";					// 브랜드명
 	public static final String CLIENT_CODE 					= "CLIENT_CODE";				// 출고업체코드
 	public static final String CLIENTNAME 					= "CLIENTNAME";					// 출고업체명
 	public static final String CENTERNAME					= "CENTERNAME";					// 센터명
@@ -44,7 +38,6 @@ public class DBInfo {
 	public static final String CT_CODE 						= "CT_CODE";					// 원산지
 	public static final String IMPORT_ID_NO					= "IMPORT_ID_NO";				// 수입식별번호
 	public static final String PACKER_CODE 					= "PACKER_CODE";				// 패커 코드
-	public static final String PACKERNAME 					= "PACKERNAME";					// 패커 이름
 	//	public static final String PACKER_PRODUCT_CODE 			= "PACKER_PRODUCT_CODE";		// 패커 상품코드
 	public static final String BARCODE_TYPE					= "BARCODE_TYPE";				// 바코드 유형
 	public static final String ITEM_TYPE					= "ITEM_TYPE";					// 상품 타입
@@ -54,7 +47,6 @@ public class DBInfo {
 	public static final String PACKING_QTY					= "PACKING_QTY";				// 계근 수량
 	public static final String STORE_IN_DATE				= "STORE_IN_DATE";				// 납품일자
 	public static final String EMARTLOGIS_CODE				= "EMARTLOGIS_CODE";			// 납품코드
-	public static final String EMARTLOGIS_NAME				= "EMARTLOGIS_NAME";			// 납품명
 	public static final String SAVE_TYPE 					= "SAVE_TYPE";		     		// 저장 여부
 	public static final String EMART_PLANT_CODE 			= "EMART_PLANT_CODE";		   	// 이마트 가공장 코드
 	//	::::::::::::::: ↑ SHIPMENT Columns ↑ ::::::::::::::::::
