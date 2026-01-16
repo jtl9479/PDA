@@ -1,22 +1,16 @@
 [홈플러스 계근시 사용]
 
-  CREATE OR REPLACE FORCE EDITIONABLE VIEW "HIGHLAND"."VW_PDA_WID_HOMEPLUS_LIST" ("GI_H_ID", "GI_D_ID", "EOI_ID", "ITEM_CODE", "ITEM_NAME", "EMARTITEM_CODE", "EMARTITEM", "GI_REQ_PKG", "GI_REQ_QTY", "AMOUNT", "GOODS_R_ID", "GR_REF_NO", "GI_REQ_DATE", "BL_NO", "BRAND_CODE", "BRANDNAME", "CLIENT_CODE", "CLIENTNAME", "CENTERNAME", "ITEM_SPEC", "CT_CODE", "PACKER_CODE", "IMPORT_ID_NO", "PACKERNAME", "PACKER_PRODUCT_CODE", "BARCODE_TYPE", "ITEM_TYPE", "PACKWEIGHT", "BARCODEGOODS", "STORE_IN_DATE", "GR_WAREHOUSE_CODE", "EMARTLOGIS_CODE", "EMARTLOGIS_NAME", "HOMPLUS_STORE_CODE") AS
-  SELECT "GI_H_ID",
-          "GI_D_ID",
-          "EOI_ID",
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "HIGHLAND"."VW_PDA_WID_HOMEPLUS_LIST" ("GI_D_ID", "ITEM_CODE", "ITEM_NAME", "EMARTITEM_CODE", "EMARTITEM", "GI_REQ_PKG", "GI_REQ_QTY", "GI_REQ_DATE", "BL_NO", "BRAND_CODE", "CLIENT_CODE", "CLIENTNAME", "CENTERNAME", "ITEM_SPEC", "CT_CODE", "PACKER_CODE", "IMPORT_ID_NO", "PACKER_PRODUCT_CODE", "BARCODE_TYPE", "ITEM_TYPE", "PACKWEIGHT", "BARCODEGOODS", "STORE_IN_DATE", "GR_WAREHOUSE_CODE", "EMARTLOGIS_CODE", "HOMPLUS_STORE_CODE") AS
+  SELECT "GI_D_ID",
           "ITEM_CODE",
           "ITEM_NAME",
           "EMARTITEM_CODE",
           "EMARTITEM",
           "GI_REQ_PKG",
           "GI_REQ_QTY",
-          "AMOUNT",
-          "GOODS_R_ID",
-          "GR_REF_NO",
           "GI_REQ_DATE",
           "BL_NO",
           "BRAND_CODE",
-          "BRANDNAME",
           "CLIENT_CODE",
           "CLIENTNAME",
           "CENTERNAME",
@@ -24,7 +18,6 @@
           "CT_CODE",
           "PACKER_CODE",
           "IMPORT_ID_NO",
-          "PACKERNAME",
           "PACKER_PRODUCT_CODE",
           "BARCODE_TYPE",
           "ITEM_TYPE",
@@ -33,14 +26,10 @@
           "STORE_IN_DATE",
           "GR_WAREHOUSE_CODE",
           "EMARTLOGIS_CODE",
-          "EMARTLOGIS_NAME",
           "HOMPLUS_STORE_CODE"
      FROM (                                                  -- 해외 매입으로 입고된 경우
-           SELECT IH.GI_H_ID,                            -- 출고 Header ID
-                  ID.GI_D_ID                                -- 출고 번호 (출고상세번호id 값)
+           SELECT ID.GI_D_ID                                -- 출고 번호 (출고상세번호id 값)
                             ,
-                  ID.EOI_ID AS EOI_ID                              -- 이마트 출하번호
-                                     ,
                   ID.ITEM_CODE                                         -- 상품코드
                               ,
                   DECODE (EO.ITEM_NAME,
@@ -55,20 +44,12 @@
                                ,
                   ID.GI_REQ_QTY                                      -- 출하요청중량
                                ,
-                  ID.AMOUNT                                          -- 출하상품금액
-                           ,
-                  WR.GOODS_R_ID                                        -- 입고번호
-                               ,
-                  WR.GR_REF_NO                                       -- 창고입고번호
-                              ,
                   GI_REQ_DATE                                         -- 출하요청일
                              ,
                   DECODE (WR.IMPORT_ID_NO, NULL, WR.BL_NO, WR.IMPORT_ID_NO)
                      BL_NO,                                            -- BL번호(BL_NO 컬럼에 이력번호를 넣어준다)
                   ID.BRAND_CODE                                       -- 브랜드코드
                                ,
-                  DE_COMMON ('BRAND', ID.BRAND_CODE) AS BRANDNAME      -- 브랜드명
-                                                                 ,
                   IH.CLIENT_CODE                                     -- 출고업체코드
                                 ,
                   DECODE (
@@ -85,7 +66,6 @@
                   (SELECT CT.CT_NAME FROM B_COUNTRY CT WHERE CT.CT_CODE = WR.CT_CODE) AS CT_CODE,
                   BD.PACKER_CODE,                                         -- 패커
                   NVL(WR.IMPORT_ID_NO,'            ') IMPORT_ID_NO,        -- 수입이력번호  ( null exception 오류에러방지)
-                  DE_CLIENT (BD.PACKER_CODE) AS PACKERNAME,               -- 패커이름
                   BD.PACKER_PRODUCT_CODE,                                 -- 패커 상품코드
                   EO.BARCODE_TYPE,
                   --EO.ITEM_TYPE,
@@ -101,7 +81,6 @@
                     STORE_IN_DATE,
                    WR.GR_WAREHOUSE_CODE,
                    EO.STORECODE AS EMARTLOGIS_CODE,
-                   DECODE(EO.EMARTLOGIS_NAME,NULL,'정보없음',EO.EMARTLOGIS_NAME) AS EMARTLOGIS_NAME,
                    EO.STORECODE AS HOMPLUS_STORE_CODE
              FROM W_GOODS_IH IH
                   INNER JOIN W_GOODS_ID ID
@@ -120,8 +99,7 @@
                                      EB.PACKWEIGHT,
                                      BCC.CODE_NAME CENTERNAME,
                                      EOI.STORE_IN_DATE,
-                                     EB.EMARTLOGIS_CODE,
-                                     (SELECT BE.EMRTITEM_NAME FROM B_EMART_BARCODE BE WHERE BE.EMARTITEM_CODE = EB.EMARTLOGIS_CODE) AS EMARTLOGIS_NAME
+                                     EB.EMARTLOGIS_CODE
                                 --,EOI.*
                                 FROM W_E_ORDER_ITEM EOI
                                      INNER JOIN B_EMART_BARCODE EB
@@ -142,11 +120,8 @@
                   AND IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')
            -- 국내매출처에서 매입으로 입고된 경우
            UNION ALL
-           SELECT IH.GI_H_ID,
-                  ID.GI_D_ID                             -- 출고 번호 (출고상세번호id 값)
+           SELECT ID.GI_D_ID                             -- 출고 번호 (출고상세번호id 값)
                             ,
-                  ID.EOI_ID AS EOI_ID                              -- 이마트 출고번호
-                                     ,
                   ID.ITEM_CODE                                         -- 상품코드
                               ,
                   DE_ITEM (ID.ITEM_CODE)                                -- 상품명
@@ -158,20 +133,12 @@
                                ,
                   ID.GI_REQ_QTY                                      -- 출하요청중량
                                ,
-                  ID.AMOUNT                                          -- 출하상품금액
-                           ,
-                  WR.GOODS_R_ID                                        -- 입고번호
-                               ,
-                  WR.GR_REF_NO                                       -- 창고입고번호
-                              ,
                   GI_REQ_DATE                                         -- 출하요청일
                              ,
                   DECODE (WR.IMPORT_ID_NO, NULL, WR.BL_NO, WR.IMPORT_ID_NO)
                      BL_NO,                                            -- BL번호
                   ID.BRAND_CODE                                       -- 브랜드코드
                                ,
-                  DE_COMMON ('BRAND', ID.BRAND_CODE) AS BRANDNAME      -- 브랜드명
-                                                                 ,
                   IH.CLIENT_CODE                                     -- 출고업체코드
                                 ,
                   DECODE (
@@ -191,8 +158,6 @@
                             ,
                   OD.PACKER_CODE,
                   NVL(WR.IMPORT_ID_NO,'            ') IMPORT_ID_NO ,   -- 수입이력번호  ( null exception 오류에러방지)
-                  DE_CLIENT (OD.PACKER_CODE) AS PACKERNAME             -- 패커이름
-                                                          ,
                   DECODE (OD.PACKER_PRODUCT_CODE,
                           NULL, ID.ITEM_CODE,
                           OD.PACKER_PRODUCT_CODE)
@@ -216,7 +181,6 @@
                    STORE_IN_DATE,
                    WR.GR_WAREHOUSE_CODE,
                    EO.STORECODE AS EMARTLOGIS_CODE,
-                   DECODE(EO.EMARTLOGIS_NAME,NULL,'정보없음',EO.EMARTLOGIS_NAME) AS EMARTLOGIS_NAME,
                    EO.STORECODE AS HOMPLUS_STORE_CODE
              FROM W_GOODS_IH IH
                   INNER JOIN W_GOODS_ID ID
@@ -236,8 +200,7 @@
                                      'S' AS ITEM_TYPE, --PDA에서 소수점 2자리 계근 가능한 경우는 ITEM_TYPE S아님 J일 경우임 J는 제품의 의미로 사용하고 있기때문에 S로 하드코딩
                                      EB.PACKWEIGHT,
                                      eoi.STORE_IN_DATE,
-                   					 EB.EMARTLOGIS_CODE,
-                   					(SELECT BE.EMRTITEM_NAME FROM B_EMART_BARCODE BE WHERE BE.EMARTITEM_CODE = EB.EMARTLOGIS_CODE) AS EMARTLOGIS_NAME
+                   					 EB.EMARTLOGIS_CODE
                                 FROM W_E_ORDER_ITEM EOI
                                      INNER JOIN B_EMART_BARCODE EB
                                         ON     EB.EMARTITEM_CODE =

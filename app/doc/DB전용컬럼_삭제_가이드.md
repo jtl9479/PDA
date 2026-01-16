@@ -154,7 +154,7 @@
 
 | Step | 파일 | 작업 | 완료 |
 | :--: | --- | --- | :-: |
-| S-1 | VIEW 7개 | 8개 컬럼 SELECT 삭제 | |
+| S-1 | VIEW 7개 | 8개 컬럼 SELECT 삭제 | ✅ |
 | S-2 | JSP 17개 | rs.getString() 8개 컬럼 삭제 | |
 
 #### 앱 수정
@@ -654,13 +654,13 @@ si.setEMART_PLANT_CODE(temp[29].toString()); // 37 → 29
 === 서버 수정 ===
 
 Step S-1. VIEW 수정 [VIEW 7개]
-    [ ] VW_PDA_WID_LIST
-    [ ] VW_PDA_WID_PRO_LIST
-    [ ] VW_PDA_WID_HOMEPLUS_LIST
-    [ ] VW_PDA_WID_WHOLESALE_LIST
-    [ ] VW_PDA_WID_LIST_NONFIXED
-    [ ] VW_PDA_WID_LIST_NONFIXED_HP
-    [ ] VW_PDA_WID_LIST_LOTTE
+    [x] VW_PDA_WID_LIST
+    [x] VW_PDA_WID_PRO_LIST
+    [x] VW_PDA_WID_HOMEPLUS_LIST
+    [x] VW_PDA_WID_WHOLESALE_LIST
+    [x] VW_PDA_WID_LIST_NONFIXED
+    [x] VW_PDA_WID_LIST_NONFIXED_HP
+    [x] VW_PDA_WID_LIST_LOTTE
 
 Step S-2. JSP 수정 [JSP 17개 파일]
     [ ] search_shipment.jsp
