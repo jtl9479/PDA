@@ -3,22 +3,16 @@ package com.rgbsolution.highland_emart.items;
 public class Shipments_Info {
 
     public String SHIPMENT_ID					= "";				    // 출하대상 ID
-    public String GI_H_ID 						= "";					// GI_H_ID
     public String GI_D_ID 						= "";					// 출고번호(출고상세번호id 값)
-    public String EOI_ID						= "";					// 이마트 출하번호(발주번호)
     public String ITEM_CODE 					= "";					// 상품코드
     public String ITEM_NAME 					= "";					// 상품명
     public String EMARTITEM_CODE				= "";				    // 이마트 상품코드
     public String EMARTITEM					    = "";					// 이마트 상품명
     public String GI_REQ_PKG 					= "";					// 출하요청수량
     public String GI_REQ_QTY					= "";					// 출하요청중량
-    public String AMOUNT 						= "";					// 출하상품금액
-    public String GOODS_R_ID 					= "";					// 입고번호
-    public String GR_REF_NO 					= "";					// 창고입고번호
     public String GI_REQ_DATE 					= "";				    // 출하요청일
     public String BL_NO						    = "";					// BL 번호
     public String BRAND_CODE 					= "";					// 브랜드코드
-    public String BRANDNAME 					= "";					// 브랜드명
     public String CLIENT_CODE 					= "";				    // 출고업체코드
     public String CLIENTNAME 					= "";				    // 출고업체명
     public String CENTERNAME					= "";					// 센터명
@@ -26,7 +20,6 @@ public class Shipments_Info {
     public String CT_CODE 						= "";					// 원산지
     public String IMPORT_ID_NO					= "";				    // 수입식별번호
     public String PACKER_CODE 					= "";				    // 패커 코드
-    public String PACKERNAME 					= "";				    // 패커 이름
     public String PACKER_PRODUCT_CODE 			= "";		            // 패커 상품코드
     public String BARCODE_TYPE					= "";				    // 바코드 유형
     public String ITEM_TYPE					    = "";					// 삼품 타입
@@ -39,7 +32,6 @@ public class Shipments_Info {
     public String SAVE_TYPE 					= "";		     		// 저장 여부
     public int WORK_FLAG                        = 0;                    // 현재 작업 여부
     public String EMARTLOGIS_CODE               = "";                   // 납품코드
-    public String EMARTLOGIS_NAME               = "";                   // 납품명
 
     public String WH_AREA                       = "";
     public String USE_NAME                       = "";
@@ -68,10 +60,6 @@ public class Shipments_Info {
 
     public void setEMARTLOGIS_CODE(String EMARTLOGIS_CODE) { this.EMARTLOGIS_CODE = EMARTLOGIS_CODE; }
 
-    public String getEMARTLOGIS_NAME() { return EMARTLOGIS_NAME; }
-
-    public void setEMARTLOGIS_NAME(String EMARTLOGIS_NAME) { this.EMARTLOGIS_NAME = EMARTLOGIS_NAME; }
-
     public String getSTORE_IN_DATE() { return STORE_IN_DATE; }
 
     public void setSTORE_IN_DATE(String STORE_IN_DATE) { this.STORE_IN_DATE = STORE_IN_DATE; }
@@ -84,28 +72,12 @@ public class Shipments_Info {
         this.WORK_FLAG = WORK_FLAG;
     }
 
-    public String getGI_H_ID() {
-        return GI_H_ID;
-    }
-
-    public void setGI_H_ID(String GI_H_ID) {
-        this.GI_H_ID = GI_H_ID;
-    }
-
     public String getGI_D_ID() {
         return GI_D_ID;
     }
 
     public void setGI_D_ID(String GI_D_ID) {
         this.GI_D_ID = GI_D_ID;
-    }
-
-    public String getEOI_ID() {
-        return EOI_ID;
-    }
-
-    public void setEOI_ID(String EOI_ID) {
-        this.EOI_ID = EOI_ID;
     }
 
     public String getITEM_CODE() {
@@ -156,30 +128,6 @@ public class Shipments_Info {
         this.GI_REQ_QTY = GI_REQ_QTY;
     }
 
-    public String getAMOUNT() {
-        return AMOUNT;
-    }
-
-    public void setAMOUNT(String AMOUNT) {
-        this.AMOUNT = AMOUNT;
-    }
-
-    public String getGOODS_R_ID() {
-        return GOODS_R_ID;
-    }
-
-    public void setGOODS_R_ID(String GOODS_R_ID) {
-        this.GOODS_R_ID = GOODS_R_ID;
-    }
-
-    public String getGR_REF_NO() {
-        return GR_REF_NO;
-    }
-
-    public void setGR_REF_NO(String GR_REF_NO) {
-        this.GR_REF_NO = GR_REF_NO;
-    }
-
     public String getGI_REQ_DATE() {
         return GI_REQ_DATE;
     }
@@ -202,14 +150,6 @@ public class Shipments_Info {
 
     public void setBRAND_CODE(String BRAND_CODE) {
         this.BRAND_CODE = BRAND_CODE;
-    }
-
-    public String getBRANDNAME() {
-        return BRANDNAME;
-    }
-
-    public void setBRANDNAME(String BRAND_NAME) {
-        this.BRANDNAME = BRAND_NAME;
     }
 
     public String getCLIENT_CODE() {
@@ -266,14 +206,6 @@ public class Shipments_Info {
 
     public void setPACKER_CODE(String PACKER_CODE) {
         this.PACKER_CODE = PACKER_CODE;
-    }
-
-    public String getPACKERNAME() {
-        return PACKERNAME;
-    }
-
-    public void setPACKERNAME(String PACKER_NAME) {
-        this.PACKERNAME = PACKER_NAME;
     }
 
     public String getPACKER_PRODUCT_CODE() {

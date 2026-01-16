@@ -168,7 +168,7 @@
 | 2-4  | DBHandler.java                                      | selectqueryAllShipment 수정  |  ✅  |
 |  3   | DBHandler.java                                      | INSERT 쿼리 수정               |  ✅  |
 |  4   | DBHelper.java                                       | DB 마이그레이션                  |  ✅  |
-|  5   | Shipments_Info.java                                 | 필드/getter/setter 삭제        |     |
+|  5   | Shipments_Info.java                                 | 필드/getter/setter 삭제        |  ✅  |
 |  6   | ProgressDlgShipSearch.java                          | temp[] 인덱스 재조정             |     |
 |  7   | TestDataHelper.java                                 | setter 호출 삭제               |     |
 |  8   | DBInfo.java                                         | 상수 삭제                      |     |
@@ -700,9 +700,9 @@ Step 4. DB 마이그레이션 [DBHelper.java]
     [x] onUpgrade() 수정 (라인 40-65)
 
 Step 5. 필드/getter/setter 삭제 [Shipments_Info.java]
-    [ ] 8개 필드 삭제
-    [ ] 8개 getter 삭제
-    [ ] 8개 setter 삭제
+    [x] 8개 필드 삭제
+    [x] 8개 getter 삭제
+    [x] 8개 setter 삭제
 
 Step 6. temp[] 인덱스 재조정 [ProgressDlgShipSearch.java]
     [ ] 8개 setter 호출 삭제
