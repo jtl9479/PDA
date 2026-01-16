@@ -102,6 +102,8 @@ DBHandler.createqueryGoodsWetProductionCalc(getApplicationContext()); // Line 68
 | 39  | STORE_CODE          | TEXT    |    -     | 72  |  Y   | 미트센터 판별                  |
 | 40  | EMART_PLANT_CODE    | TEXT    |    -     | 73  |  Y   | 바코드 생성 (가공장코드)           |
 | 41  | LAST_BOX_ORDER      | INTEGER |    -     | 74  |  Y   | 롯데 박스순서 (Log 출력)         |
+|     |                     |         |          |     |      |                          |
+|     |                     |         |          |     |      |                          |
 
 **사용여부 범례**: Y=사용, DB=저장만(읽기 없음), N=미사용
 

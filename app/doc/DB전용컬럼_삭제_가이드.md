@@ -155,7 +155,7 @@
 | Step | 파일 | 작업 | 완료 |
 | :--: | --- | --- | :-: |
 | S-1 | VIEW 7개 | 8개 컬럼 SELECT 삭제 | ✅ |
-| S-2 | JSP 17개 | rs.getString() 8개 컬럼 삭제 | |
+| S-2 | JSP 17개 | rs.getString() 8개 컬럼 삭제 | ✅ |
 
 #### 앱 수정
 
@@ -663,23 +663,23 @@ Step S-1. VIEW 수정 [VIEW 7개]
     [x] VW_PDA_WID_LIST_LOTTE
 
 Step S-2. JSP 수정 [JSP 17개 파일]
-    [ ] search_shipment.jsp
-    [ ] search_shipment_homeplus.jsp
-    [ ] search_shipment_lotte.jsp
-    [ ] search_shipment_ono.jsp
-    [ ] search_shipment_ono_temp.jsp
-    [ ] search_shipment_ono_temp_diff_prd.jsp
-    [ ] search_shipment_wholesale.jsp
-    [ ] search_homeplus_nonfixed.jsp
-    [ ] search_homeplus_nonfixed2.jsp
-    [ ] search_production.jsp
-    [ ] search_production_4label.jsp
-    [ ] search_production_nonfixed.jsp
-    [ ] search_barcode_info.jsp
-    [ ] search_barcode_info_temp.jsp
-    [ ] search_barcode_info_temp_diff_prd.jsp
-    [ ] search_barcode_info_nonfixed.jsp
-    [ ] search_goods_wet.jsp
+    [x] search_shipment.jsp
+    [x] search_shipment_homeplus.jsp
+    [x] search_shipment_lotte.jsp
+    [x] search_shipment_ono.jsp
+    [x] search_shipment_ono_temp.jsp
+    [x] search_shipment_ono_temp_diff_prd.jsp
+    [x] search_shipment_wholesale.jsp
+    [x] search_homeplus_nonfixed.jsp
+    [x] search_homeplus_nonfixed2.jsp (주석만 있어 수정 불필요)
+    [x] search_production.jsp
+    [x] search_production_4label.jsp
+    [x] search_production_nonfixed.jsp
+    [x] search_barcode_info.jsp (주석만 있어 수정 불필요)
+    [x] search_barcode_info_temp.jsp (주석만 있어 수정 불필요)
+    [x] search_barcode_info_temp_diff_prd.jsp
+    [x] search_barcode_info_nonfixed.jsp (주석만 있어 수정 불필요)
+    [x] search_goods_wet.jsp (주석만 있어 수정 불필요)
 
 === 앱 수정 ===
 
