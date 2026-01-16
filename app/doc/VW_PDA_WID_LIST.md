@@ -175,97 +175,97 @@ si.get컬럼명()          // DB INSERT만
 
 ### 3.1 VIEW 정의 순서 (CREATE VIEW 문)
 
-| Index | 컬럼명                 | 데이터 출처                                                   | 설명              | 용도                    | 여부  |
-| :---: | ------------------- | -------------------------------------------------------- | --------------- | --------------------- | --- |
-|   0   | GI_H_ID             | IH.GI_H_ID                                               | 출고헤더ID          | 미사용(로컬DB저장)           | O   |
-|   1   | GI_D_ID             | ID.GI_D_ID                                               | 출고상세ID (PK)     | 서버전송(PK)              | O   |
-|   2   | EOI_ID              | ID.EOI_ID                                                | 이마트 주문ID        | 미사용(로컬DB저장)           | O   |
-|   3   | ITEM_CODE           | ID.ITEM_CODE                                             | 상품코드            | 서버전송                  | O   |
-|   4   | ITEM_NAME           | DECODE(EO.ITEM_NAME, NULL, DE_ITEM())                    | 상품명             | 화면표시                  | O   |
-|   5   | EMARTITEM_CODE      | EO.ITEM_CODE                                             | 이마트 상품코드        | 바코드생성                 | O   |
-|   6   | EMARTITEM           | EO.ITEM_NAME                                             | 이마트 상품명         | 라벨출력                  | O   |
-|   7   | GI_REQ_PKG          | ID.GI_REQ_PKG                                            | 출하요청수량          | 화면표시, 로직분기            | O   |
-|   8   | GI_REQ_QTY          | ID.GI_REQ_QTY                                            | 출하요청중량          | 화면표시(진행률)             | O   |
-|   9   | AMOUNT              | ID.AMOUNT                                                | 출하상품금액          | 미사용                   | O   |
-|  10   | GOODS_R_ID          | WR.GOODS_R_ID                                            | 입고ID            | 미사용                   | O   |
-|  11   | GR_REF_NO           | WR.GR_REF_NO                                             | 창고입고번호          | 미사용                   | X   |
+| Index | 컬럼명                 | 데이터 출처                                                   | 설명              | 용도                           | 여부  |
+| :---: | ------------------- | -------------------------------------------------------- | --------------- | ---------------------------- | --- |
+|   0   | GI_H_ID             | IH.GI_H_ID                                               | 출고헤더ID          | 미사용(로컬DB저장)                  | O   |
+|   1   | GI_D_ID             | ID.GI_D_ID                                               | 출고상세ID (PK)     | 서버전송(PK)                     | O   |
+|   2   | EOI_ID              | ID.EOI_ID                                                | 이마트 주문ID        | 미사용(로컬DB저장)                  | O   |
+|   3   | ITEM_CODE           | ID.ITEM_CODE                                             | 상품코드            | 서버전송                         | O   |
+|   4   | ITEM_NAME           | DECODE(EO.ITEM_NAME, NULL, DE_ITEM())                    | 상품명             | 화면표시                         | O   |
+|   5   | EMARTITEM_CODE      | EO.ITEM_CODE                                             | 이마트 상품코드        | 바코드생성                        | O   |
+|   6   | EMARTITEM           | EO.ITEM_NAME                                             | 이마트 상품명         | 라벨출력                         | O   |
+|   7   | GI_REQ_PKG          | ID.GI_REQ_PKG                                            | 출하요청수량          | 화면표시, 로직분기                   | O   |
+|   8   | GI_REQ_QTY          | ID.GI_REQ_QTY                                            | 출하요청중량          | 화면표시(진행률)                    | O   |
+|   9   | AMOUNT              | ID.AMOUNT                                                | 출하상품금액          | 미사용                          | O   |
+|  10   | GOODS_R_ID          | WR.GOODS_R_ID                                            | 입고ID            | 미사용                          | O   |
+|  11   | GR_REF_NO           | WR.GR_REF_NO                                             | 창고입고번호          | 미사용                          | X   |
 |  12   | GI_REQ_DATE         | GI_REQ_DATE                                              | 출하요청일           | 미사용(WHERE는 Common.selectDay) | O   |
-|  13   | BL_NO               | DECODE(WR.IMPORT_ID_NO, NULL, WR.BL_NO, WR.IMPORT_ID_NO) | BL번호            | 화면표시, 중복스캔방지          | O   |
-|  14   | BRAND_CODE          | ID.BRAND_CODE                                            | 브랜드코드           | 서버전송 (JSP 미사용)        | O   |
-|  15   | BRANDNAME           | DE_COMMON('BRAND', ID.BRAND_CODE)                        | 브랜드명            | 미사용                   |     |
-|  16   | CLIENT_CODE         | IH.CLIENT_CODE                                           | 출고업체코드          | 로직분기(DB조회조건)          | O   |
-|  17   | CLIENTNAME          | DECODE(SUBSTR(EO.CENTERNAME,1,2),'CJ',...)               | 출고업체명           | 화면표시, 라벨출력            | O   |
-|  18   | CENTERNAME          | EO.CENTERNAME                                            | 센터명             | 로직분기, 라벨출력            |     |
-|  19   | ITEM_SPEC           | WR.ITEM_SPEC                                             | 상품규격            | 라벨출력                  |     |
-|  20   | CT_CODE             | WR.CT_CODE                                               | 원산지코드           | 라벨출력                  |     |
-|  21   | PACKER_CODE         | BD.PACKER_CODE / OD.PACKER_CODE                          | 패커코드            | 로직분기(킬코이30228)        |     |
-|  22   | IMPORT_ID_NO        | WR.IMPORT_ID_NO                                          | 수입식별번호          | 바코드생성, 라벨출력           |     |
-|  23   | PACKERNAME          | DE_CLIENT(BD.PACKER_CODE)                                | 패커명             | 미사용                   |     |
-|  24   | PACKER_PRODUCT_CODE | BD.PACKER_PRODUCT_CODE                                   | 패커상품코드          | 화면표시, 서버전송            |     |
-|  25   | BARCODE_TYPE        | DECODE(CENTER_SCALE_USE_YN,...)                          | 바코드타입           | 로직분기(M0/M3/M4/M9)     |     |
-|  26   | ITEM_TYPE           | EO.ITEM_TYPE                                             | 아이템타입 (W/S/J/B) | 로직분기(계근방식)            |     |
-|  27   | PACKWEIGHT          | EO.PACKWEIGHT                                            | 포장중량            | 제품(J)계근               |     |
-|  28   | BARCODEGOODS        | (SELECT FROM S_BARCODE_INFO)                             | 바코드상품코드         | 아이템검색                 |     |
-|  29   | STORE_IN_DATE       | STORE_IN_DATE                                            | 입고일자            | 라벨출력(납품일자)            |     |
-|  30   | GR_WAREHOUSE_CODE   | WR.GR_WAREHOUSE_CODE                                     | 창고코드            | WHERE조건(앱미전달)         |     |
-|  31   | EMARTLOGIS_CODE     | DECODE(EO.EMARTLOGIS_CODE,NULL,'0000000',...)            | 이마트물류코드         | 바코드생성, 라벨출력, 로직분기     |     |
-|  32   | EMARTLOGIS_NAME     | DECODE(EO.EMARTLOGIS_NAME,NULL,'정보없음',...)               | 이마트물류명          | 미사용                   |     |
-|  33   | WH_AREA             | WH_AREA                                                  | 창고구역            | 라벨출력                  |     |
-|  34   | USE_NAME            | EO.USE_NAME                                              | 용도명             | 라벨출력                  |     |
-|  35   | USE_CODE            | EO.USE_CODE                                              | 용도코드            | 바코드생성                 |     |
-|  36   | CT_NAME             | (SELECT FROM B_COMMON_CODE)\|\|'산'                       | 원산지명            | 라벨출력                  |     |
-|  37   | STORE_CODE          | EO.STORECODE                                             | 점포코드            | 로직분기, 바코드생성, 라벨출력     |     |
-|  38   | EMART_PLANT_CODE    | DECODE(EO.STORECODE,'9820',BSI.EMART_PLANT_CODE,NULL)    | 이마트공장코드         | 바코드생성, 로직분기           |     |
-|  39   | MAJOR_CATEGORY      | BI.MAJOR_CATEGORY                                        | 대분류(축종)         | 앱미전달                  |     |
-|  40   | CONTAINER_TYPE      | BI.CONTAINER_TYPE                                        | 컨테이너타입(냉장/냉동)   | 앱미전달                  |     |
+|  13   | BL_NO               | DECODE(WR.IMPORT_ID_NO, NULL, WR.BL_NO, WR.IMPORT_ID_NO) | BL번호            | 화면표시, 중복스캔방지                 | O   |
+|  14   | BRAND_CODE          | ID.BRAND_CODE                                            | 브랜드코드           | 서버전송 (JSP 미사용)               | O   |
+|  15   | BRANDNAME           | DE_COMMON('BRAND', ID.BRAND_CODE)                        | 브랜드명            | 미사용                          |     |
+|  16   | CLIENT_CODE         | IH.CLIENT_CODE                                           | 출고업체코드          | 로직분기(DB조회조건)                 | O   |
+|  17   | CLIENTNAME          | DECODE(SUBSTR(EO.CENTERNAME,1,2),'CJ',...)               | 출고업체명           | 화면표시, 라벨출력                   | O   |
+|  18   | CENTERNAME          | EO.CENTERNAME                                            | 센터명             | 로직분기, 라벨출력                   |     |
+|  19   | ITEM_SPEC           | WR.ITEM_SPEC                                             | 상품규격            | 라벨출력                         |     |
+|  20   | CT_CODE             | WR.CT_CODE                                               | 원산지코드           | 라벨출력                         |     |
+|  21   | PACKER_CODE         | BD.PACKER_CODE / OD.PACKER_CODE                          | 패커코드            | 로직분기(킬코이30228)               |     |
+|  22   | IMPORT_ID_NO        | WR.IMPORT_ID_NO                                          | 수입식별번호          | 바코드생성, 라벨출력                  |     |
+|  23   | PACKERNAME          | DE_CLIENT(BD.PACKER_CODE)                                | 패커명             | 미사용                          |     |
+|  24   | PACKER_PRODUCT_CODE | BD.PACKER_PRODUCT_CODE                                   | 패커상품코드          | 화면표시, 서버전송                   |     |
+|  25   | BARCODE_TYPE        | DECODE(CENTER_SCALE_USE_YN,...)                          | 바코드타입           | 로직분기(M0/M3/M4/M9)            |     |
+|  26   | ITEM_TYPE           | EO.ITEM_TYPE                                             | 아이템타입 (W/S/J/B) | 로직분기(계근방식)                   |     |
+|  27   | PACKWEIGHT          | EO.PACKWEIGHT                                            | 포장중량            | 제품(J)계근                      |     |
+|  28   | BARCODEGOODS        | (SELECT FROM S_BARCODE_INFO)                             | 바코드상품코드         | 아이템검색                        |     |
+|  29   | STORE_IN_DATE       | STORE_IN_DATE                                            | 입고일자            | 라벨출력(납품일자)                   |     |
+|  30   | GR_WAREHOUSE_CODE   | WR.GR_WAREHOUSE_CODE                                     | 창고코드            | WHERE조건(앱미전달)                |     |
+|  31   | EMARTLOGIS_CODE     | DECODE(EO.EMARTLOGIS_CODE,NULL,'0000000',...)            | 이마트물류코드         | 바코드생성, 라벨출력, 로직분기            |     |
+|  32   | EMARTLOGIS_NAME     | DECODE(EO.EMARTLOGIS_NAME,NULL,'정보없음',...)               | 이마트물류명          | 미사용                          |     |
+|  33   | WH_AREA             | WH_AREA                                                  | 창고구역            | 라벨출력                         |     |
+|  34   | USE_NAME            | EO.USE_NAME                                              | 용도명             | 라벨출력                         |     |
+|  35   | USE_CODE            | EO.USE_CODE                                              | 용도코드            | 바코드생성                        |     |
+|  36   | CT_NAME             | (SELECT FROM B_COMMON_CODE)\|\|'산'                       | 원산지명            | 라벨출력                         |     |
+|  37   | STORE_CODE          | EO.STORECODE                                             | 점포코드            | 로직분기, 바코드생성, 라벨출력            |     |
+|  38   | EMART_PLANT_CODE    | DECODE(EO.STORECODE,'9820',BSI.EMART_PLANT_CODE,NULL)    | 이마트공장코드         | 바코드생성, 로직분기                  |     |
+|  39   | MAJOR_CATEGORY      | BI.MAJOR_CATEGORY                                        | 대분류(축종)         | 앱미전달                         |     |
+|  40   | CONTAINER_TYPE      | BI.CONTAINER_TYPE                                        | 컨테이너타입(냉장/냉동)   | 앱미전달                         |     |
 
 ### 3.2 용도별 컬럼 분류
 
 #### 3.2.0 용도별 체크표 (전체 41개)
 
-| Index | 컬럼명                 | 서버전송 | 화면표시 | 바코드 | 라벨  | 로직분기 | 기타  | 미사용 | 앱미전달 | 비고          |
-| :---: | ------------------- | :--: | :--: | :-: | :-: | :--: | :-: | :-: | :--: | ----------- |
-|   0   | GI_H_ID             |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만     |
-|   1   | GI_D_ID             |  ✓   |      |     |     |      |     |     |      | PK          |
-|   2   | EOI_ID              |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만     |
-|   3   | ITEM_CODE           |  ✓   |      |     |     |      |     |     |      | 상품코드        |
-|   4   | ITEM_NAME           |      |  ✓   |     |     |      |     |     |      | 상품명         |
-|   5   | EMARTITEM_CODE      |      |      |  ✓  |     |      |     |     |      | 앞6자리        |
-|   6   | EMARTITEM           |      |      |     |  ✓  |      |     |     |      | 이마트상품명      |
-|   7   | GI_REQ_PKG          |      |  ✓   |     |     |  ✓   |     |     |      | 진행률+완료체크    |
-|   8   | GI_REQ_QTY          |      |  ✓   |     |     |      |     |     |      | 진행률(중량)     |
-|   9   | AMOUNT              |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만     |
-|  10   | GOODS_R_ID          |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만     |
-|  11   | GR_REF_NO           |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만     |
-|  12   | GI_REQ_DATE         |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만(WHERE는 Common.selectDay) |
-|  13   | BL_NO               |      |  ✓   |     |     |      |  ✓  |     |      | 리스트+중복방지    |
-|  14   | BRAND_CODE          |  ✓   |      |     |     |      |     |     |      | 서버전송됨       |
-|  15   | BRANDNAME           |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만     |
-|  16   | CLIENT_CODE         |      |      |     |     |  ✓   |     |     |      | DB조회조건      |
-|  17   | CLIENTNAME          |      |  ✓   |     |  ✓  |      |     |     |      | 점포명         |
-|  18   | CENTERNAME          |      |      |     |  ✓  |  ✓   |     |     |      | TRD/WET/E/T |
-|  19   | ITEM_SPEC           |      |      |     |  ✓  |      |     |     |      | 라벨출력        |
-|  20   | CT_CODE             |      |      |     |  ✓  |      |     |     |      | 라벨인쇄        |
-|  21   | PACKER_CODE         |      |      |     |     |  ✓   |     |     |      | 킬코이30228    |
-|  22   | IMPORT_ID_NO        |      |      |  ✓  |  ✓  |      |     |     |      | 수입식별번호      |
-|  23   | PACKERNAME          |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만     |
-|  24   | PACKER_PRODUCT_CODE |  ✓   |  ✓   |     |     |      |     |     |      | 패커상품코드      |
-|  25   | BARCODE_TYPE        |      |      |     |     |  ✓   |     |     |      | M0/M3/M4/M9 |
-|  26   | ITEM_TYPE           |      |      |     |     |  ✓   |     |     |      | W/J/B/S     |
-|  27   | PACKWEIGHT          |      |      |     |  ✓  |      |  ✓  |     |      | 제품(J)계근     |
-|  28   | BARCODEGOODS        |      |      |     |     |      |  ✓  |     |      | 아이템검색       |
-|  29   | STORE_IN_DATE       |      |      |     |  ✓  |      |     |     |      | 라벨납품일자      |
-|  30   | GR_WAREHOUSE_CODE   |      |      |     |     |      |     |     |  ✓   | WHERE조건     |
-|  31   | EMARTLOGIS_CODE     |      |      |  ✓  |  ✓  |  ✓   |     |     |      | 물류+지점+분기    |
-|  32   | EMARTLOGIS_NAME     |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만     |
-|  33   | WH_AREA             |      |      |     |  ✓  |      |     |     |      | 창고구역        |
-|  34   | USE_NAME            |      |      |     |  ✓  |      |     |     |      | 용도명         |
-|  35   | USE_CODE            |      |      |  ✓  |     |      |     |     |      | 용도코드        |
-|  36   | CT_NAME             |      |      |     |  ✓  |      |     |     |      | 원산지명        |
-|  37   | STORE_CODE          |      |      |  ✓  |  ✓  |  ✓   |     |     |      | 미트센터9231    |
-|  38   | EMART_PLANT_CODE    |      |      |  ✓  |     |  ✓   |     |     |      | 가공장코드       |
-|  39   | MAJOR_CATEGORY      |      |      |     |     |      |     |     |  ✓   | 축종          |
-|  40   | CONTAINER_TYPE      |      |      |     |     |      |     |     |  ✓   | 냉장/냉동       |
+| Index | 컬럼명                 | 서버전송 | 화면표시 | 바코드 | 라벨  | 로직분기 | 기타  | 미사용 | 앱미전달 | 비고                               |     |     |
+| :---: | ------------------- | :--: | :--: | :-: | :-: | :--: | :-: | :-: | :--: | -------------------------------- | --- | --- |
+|   0   | GI_H_ID             |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만                          |     |     |
+|   1   | GI_D_ID             |  ✓   |      |     |     |      |     |     |      | PK                               |     |     |
+|   2   | EOI_ID              |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만                          |     |     |
+|   3   | ITEM_CODE           |  ✓   |      |     |     |      |     |     |      | 상품코드                             |     |     |
+|   4   | ITEM_NAME           |      |  ✓   |     |     |      |     |     |      | 상품명                              |     |     |
+|   5   | EMARTITEM_CODE      |      |      |  ✓  |     |      |     |     |      | 앞6자리                             |     |     |
+|   6   | EMARTITEM           |      |      |     |  ✓  |      |     |     |      | 이마트상품명                           |     |     |
+|   7   | GI_REQ_PKG          |      |  ✓   |     |     |  ✓   |     |     |      | 진행률+완료체크                         |     |     |
+|   8   | GI_REQ_QTY          |      |  ✓   |     |     |      |     |     |      | 진행률(중량)                          |     |     |
+|   9   | AMOUNT              |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만                          |     |     |
+|  10   | GOODS_R_ID          |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만                          |     |     |
+|  11   | GR_REF_NO           |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만                          |     |     |
+|  12   | GI_REQ_DATE         |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만(WHERE는 Common.selectDay) |     |     |
+|  13   | BL_NO               |      |  ✓   |     |     |      |  ✓  |     |      | 리스트+중복방지                         |     |     |
+|  14   | BRAND_CODE          |  ✓   |      |     |     |      |     |     |      | 서버전송됨                            |     |     |
+|  15   | BRANDNAME           |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만                          |     |     |
+|  16   | CLIENT_CODE         |      |      |     |     |  ✓   |     |     |      | DB조회조건                           |     |     |
+|  17   | CLIENTNAME          |      |  ✓   |     |  ✓  |      |     |     |      | 점포명                              |     |     |
+|  18   | CENTERNAME          |      |      |     |  ✓  |  ✓   |     |     |      | TRD/WET/E/T                      |     |     |
+|  19   | ITEM_SPEC           |      |      |     |  ✓  |      |     |     |      | 라벨출력                             |     |     |
+|  20   | CT_CODE             |      |      |     |  ✓  |      |     |     |      | 라벨인쇄                             |     |     |
+|  21   | PACKER_CODE         |      |      |     |     |  ✓   |     |     |      | 킬코이30228                         |     |     |
+|  22   | IMPORT_ID_NO        |      |      |  ✓  |  ✓  |      |     |     |      | 수입식별번호                           |     |     |
+|  23   | PACKERNAME          |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만                          |     |     |
+|  24   | PACKER_PRODUCT_CODE |  ✓   |  ✓   |     |     |      |     |     |      | 패커상품코드                           |     |     |
+|  25   | BARCODE_TYPE        |      |      |     |     |  ✓   |     |     |      | M0/M3/M4/M9                      |     |     |
+|  26   | ITEM_TYPE           |      |      |     |     |  ✓   |     |     |      | W/J/B/S                          |     |     |
+|  27   | PACKWEIGHT          |      |      |     |  ✓  |      |  ✓  |     |      | 제품(J)계근                          |     |     |
+|  28   | BARCODEGOODS        |      |      |     |     |      |  ✓  |     |      | 아이템검색                            |     |     |
+|  29   | STORE_IN_DATE       |      |      |     |  ✓  |      |     |     |      | 라벨납품일자                           |     |     |
+|  30   | GR_WAREHOUSE_CODE   |      |      |     |     |      |     |     |  ✓   | WHERE조건                          |     |     |
+|  31   | EMARTLOGIS_CODE     |      |      |  ✓  |  ✓  |  ✓   |     |     |      | 물류+지점+분기                         |     |     |
+|  32   | EMARTLOGIS_NAME     |      |      |     |     |      |     |  ✓  |      | 로컬DB저장만                          |     |     |
+|  33   | WH_AREA             |      |      |     |  ✓  |      |     |     |      | 창고구역                             |     |     |
+|  34   | USE_NAME            |      |      |     |  ✓  |      |     |     |      | 용도명                              |     |     |
+|  35   | USE_CODE            |      |      |  ✓  |     |      |     |     |      | 용도코드                             |     |     |
+|  36   | CT_NAME             |      |      |     |  ✓  |      |     |     |      | 원산지명                             |     |     |
+|  37   | STORE_CODE          |      |      |  ✓  |  ✓  |  ✓   |     |     |      | 미트센터9231                         |     |     |
+|  38   | EMART_PLANT_CODE    |      |      |  ✓  |     |  ✓   |     |     |      | 가공장코드                            |     |     |
+|  39   | MAJOR_CATEGORY      |      |      |     |     |      |     |     |  ✓   | 축종                               |     |     |
+|  40   | CONTAINER_TYPE      |      |      |     |     |      |     |     |  ✓   | 냉장/냉동                            |     |     |
 
 **용도별 컬럼 수:**
 
@@ -363,15 +363,16 @@ PDA 화면에 표시되는 데이터
 |  37   | STORE_CODE       | 9231               | 이마트 미트센터 판별                          |
 |  38   | EMART_PLANT_CODE | 공백 여부              | 미트센터 납품 시 가공장코드 유무 분기                |
 
-#### 3.2.6 기타 (3개)
+#### 3.2.6 기타 (4개)
 
 | Index | 컬럼명          | 용도                     |
 | :---: | ------------ | ---------------------- |
+|  12   | GI_REQ_DATE  | 조회조건 (출하요청일)           |
 |  13   | BL_NO        | 중복스캔방지                 |
 |  27   | PACKWEIGHT   | 제품(J) 계근 시 포장중량        |
 |  28   | BARCODEGOODS | 아이템검색 (바코드 스캔 시 상품 매칭) |
 
-#### 3.2.7 미사용 컬럼 (9개)
+#### 3.2.7 미사용 컬럼 (8개)
 
 로컬 DB에 저장만 되고 실제 사용되지 않는 컬럼
 
@@ -381,7 +382,6 @@ PDA 화면에 표시되는 데이터
 |   2   | EOI_ID          | 이마트주문ID | 서버 수신 → 로컬DB 저장만 |
 |   9   | AMOUNT          | 출하상품금액  | 서버 수신 → 로컬DB 저장만 |
 |  10   | GOODS_R_ID      | 입고ID    | 서버 수신 → 로컬DB 저장만 |
-|  12   | GI_REQ_DATE     | 출하요청일   | WHERE는 Common.selectDay 사용 |
 |  11   | GR_REF_NO       | 창고입고번호  | 서버 수신 → 로컬DB 저장만 |
 |  15   | BRANDNAME       | 브랜드명    | 서버 수신 → 로컬DB 저장만 |
 |  23   | PACKERNAME      | 패커명     | 서버 수신 → 로컬DB 저장만 |
