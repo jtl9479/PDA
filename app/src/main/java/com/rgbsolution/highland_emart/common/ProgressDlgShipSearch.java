@@ -237,89 +237,81 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
                     temp = s.split("::");
                     si = new Shipments_Info();
 
-                    // ----- 기본 필드 설정 (0~7) -----
-                    si.setGI_H_ID(temp[0].toString());           // 출하헤더ID
-                    si.setGI_D_ID(temp[1].toString());           // 출하상세ID (PK)
-                    si.setEOI_ID(temp[2].toString());            // 주문ID
-                    si.setITEM_CODE(temp[3].toString());         // 품목코드
-                    si.setITEM_NAME(temp[4].toString());         // 품목명
-                    si.setEMARTITEM_CODE(temp[5].toString());    // 이마트품목코드
-                    si.setEMARTITEM(temp[6].toString());         // 이마트품목명
-                    si.setGI_REQ_PKG(temp[7].toString());        // 요청수량 (박스)
+                    // ----- 기본 필드 설정 (0~5) -----
+                    si.setGI_D_ID(temp[0].toString());           // 출하상세ID (PK)
+                    si.setITEM_CODE(temp[1].toString());         // 품목코드
+                    si.setITEM_NAME(temp[2].toString());         // 품목명
+                    si.setEMARTITEM_CODE(temp[3].toString());    // 이마트품목코드
+                    si.setEMARTITEM(temp[4].toString());         // 이마트품목명
+                    si.setGI_REQ_PKG(temp[5].toString());        // 요청수량 (박스)
 
-                    // ----- 요청중량 소수점 처리 (8) -----
+                    // ----- 요청중량 소수점 처리 (6) -----
                     // 소수점 4자리 이상이면 1자리로 절사
-                    String[] split_qty = temp[8].split("[.]");
+                    String[] split_qty = temp[6].split("[.]");
                     if (split_qty.length > 1) {
                         if (split_qty[1].length() > 3) {
-                            double double_qty = Double.parseDouble(temp[8].toString());
+                            double double_qty = Double.parseDouble(temp[6].toString());
                             if (Common.D) {
-                                Log.d(TAG, "string_qty : " + temp[8].toString());
+                                Log.d(TAG, "string_qty : " + temp[6].toString());
                                 Log.d(TAG, "double_qty : " + double_qty);
                             }
                             // 소수점 1자리까지 절사 (예: 12.3456 → 12.3)
                             double_qty = Math.floor(double_qty * 10);
                             double result_qty = double_qty / 10.0;
-                            temp[8] = String.valueOf(result_qty);
+                            temp[6] = String.valueOf(result_qty);
                             if (Common.D) {
                                 Log.d(TAG, "result_qty : " + result_qty);
-                                Log.d(TAG, "result_string_qty : " + temp[8].toString());
+                                Log.d(TAG, "result_string_qty : " + temp[6].toString());
                             }
                         } else {
                             if (Common.D) {
-                                Log.d(TAG, "3자리이하_qty : " + temp[8].toString());
+                                Log.d(TAG, "3자리이하_qty : " + temp[6].toString());
                             }
                         }
                     }
 
-                    // ----- 추가 필드 설정 (8~31) -----
-                    si.setGI_REQ_QTY(temp[8].toString());        // 요청중량 (kg)
-                    si.setAMOUNT(temp[9].toString());            // 금액
-                    si.setGOODS_R_ID(temp[10].toString());       // 입고ID
-                    si.setGR_REF_NO(temp[11].toString());        // 입고참조번호
-                    si.setGI_REQ_DATE(temp[12].toString());      // 요청일자
-                    si.setBL_NO(temp[13].toString());            // BL번호
-                    si.setBRAND_CODE(temp[14].toString());       // 브랜드코드
-                    si.setBRANDNAME(temp[15].toString());        // 브랜드명
-                    si.setCLIENT_CODE(temp[16].toString());      // 거래처코드
-                    si.setCLIENTNAME(temp[17].toString());       // 거래처명 (지점명)
-                    si.setCENTERNAME(temp[18].toString());       // 센터명
-                    si.setITEM_SPEC(temp[19].toString());        // 품목규격
-                    si.setCT_CODE(temp[20].toString());          // CT코드
-                    si.setIMPORT_ID_NO(temp[21].toString());     // 수입신고번호
-                    si.setPACKER_CODE(temp[22].toString());      // 패커코드
-                    si.setPACKERNAME(temp[23].toString());       // 패커명
-                    si.setPACKER_PRODUCT_CODE(temp[24].toString()); // 패커상품코드
-                    si.setBARCODE_TYPE(temp[25].toString());     // 바코드타입 (M0~M9, E0~E3, L0 등)
-                    si.setITEM_TYPE(temp[26].toString());        // 아이템타입 (W, S, J, B 등)
-                    si.setPACKWEIGHT(temp[27].toString());       // 포장중량
-                    si.setBARCODEGOODS(temp[28].toString());     // 바코드상품코드
-                    si.setSTORE_IN_DATE(temp[29].toString());    // 입고일자
-                    si.setEMARTLOGIS_CODE(temp[30].toString());  // 이마트물류코드
-                    si.setEMARTLOGIS_NAME(temp[31].toString());  // 이마트물류명
+                    // ----- 추가 필드 설정 (6~23) -----
+                    si.setGI_REQ_QTY(temp[6].toString());        // 요청중량 (kg)
+                    si.setGI_REQ_DATE(temp[7].toString());       // 요청일자
+                    si.setBL_NO(temp[8].toString());             // BL번호
+                    si.setBRAND_CODE(temp[9].toString());        // 브랜드코드
+                    si.setCLIENT_CODE(temp[10].toString());      // 거래처코드
+                    si.setCLIENTNAME(temp[11].toString());       // 거래처명 (지점명)
+                    si.setCENTERNAME(temp[12].toString());       // 센터명
+                    si.setITEM_SPEC(temp[13].toString());        // 품목규격
+                    si.setCT_CODE(temp[14].toString());          // CT코드
+                    si.setIMPORT_ID_NO(temp[15].toString());     // 수입신고번호
+                    si.setPACKER_CODE(temp[16].toString());      // 패커코드
+                    si.setPACKER_PRODUCT_CODE(temp[17].toString()); // 패커상품코드
+                    si.setBARCODE_TYPE(temp[18].toString());     // 바코드타입 (M0~M9, E0~E3, L0 등)
+                    si.setITEM_TYPE(temp[19].toString());        // 아이템타입 (W, S, J, B 등)
+                    si.setPACKWEIGHT(temp[20].toString());       // 포장중량
+                    si.setBARCODEGOODS(temp[21].toString());     // 바코드상품코드
+                    si.setSTORE_IN_DATE(temp[22].toString());    // 입고일자
+                    si.setEMARTLOGIS_CODE(temp[23].toString());  // 이마트물류코드
 
-                    // ----- searchType별 추가 필드 설정 (32~) -----
+                    // ----- searchType별 추가 필드 설정 (24~) -----
                     // 이마트(0), 비정량(4): 추가 6개 필드
                     if(Common.searchType.equals("0") || Common.searchType.equals("4")) {
-                        si.setWH_AREA(temp[32].toString());          // 창고구역
-                        si.setUSE_NAME(temp[33].toString());         // 용도명
-                        si.setUSE_CODE(temp[34].toString());         // 용도코드
-                        si.setCT_NAME(temp[35].toString());          // CT명
-                        si.setSTORE_CODE(temp[36].toString());       // 점포코드
-                        si.setEMART_PLANT_CODE(temp[37].toString()); // 이마트공장코드
+                        si.setWH_AREA(temp[24].toString());          // 창고구역
+                        si.setUSE_NAME(temp[25].toString());         // 용도명
+                        si.setUSE_CODE(temp[26].toString());         // 용도코드
+                        si.setCT_NAME(temp[27].toString());          // CT명
+                        si.setSTORE_CODE(temp[28].toString());       // 점포코드
+                        si.setEMART_PLANT_CODE(temp[29].toString()); // 이마트공장코드
 
                     // 홈플러스 비정량(5): 추가 5개 필드
                     } else if(Common.searchType.equals("5")) {
-                        si.setWH_AREA(temp[32].toString());          // 창고구역
-                        si.setUSE_NAME(temp[33].toString());         // 용도명
-                        si.setUSE_CODE(temp[34].toString());         // 용도코드
-                        si.setCT_NAME(temp[35].toString());          // CT명
-                        si.setSTORE_CODE(temp[36].toString());       // 점포코드
+                        si.setWH_AREA(temp[24].toString());          // 창고구역
+                        si.setUSE_NAME(temp[25].toString());         // 용도명
+                        si.setUSE_CODE(temp[26].toString());         // 용도코드
+                        si.setCT_NAME(temp[27].toString());          // CT명
+                        si.setSTORE_CODE(temp[28].toString());       // 점포코드
 
                     // 롯데(6): 추가 2개 필드
                     } else if(Common.searchType.equals("6")) {
-                        si.setWH_AREA(temp[32].toString());          // 창고구역
-                        si.setLAST_BOX_ORDER(temp[33].toString());   // 마지막 박스순번 (1~9999 순환)
+                        si.setWH_AREA(temp[24].toString());          // 창고구역
+                        si.setLAST_BOX_ORDER(temp[25].toString());   // 마지막 박스순번 (1~9999 순환)
                     }
 
                     // 저장상태: "F" = 미전송 (False)

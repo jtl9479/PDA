@@ -169,7 +169,7 @@
 |  3   | DBHandler.java                                      | INSERT 쿼리 수정               |  ✅  |
 |  4   | DBHelper.java                                       | DB 마이그레이션                  |  ✅  |
 |  5   | Shipments_Info.java                                 | 필드/getter/setter 삭제        |  ✅  |
-|  6   | ProgressDlgShipSearch.java                          | temp[] 인덱스 재조정             |     |
+|  6   | ProgressDlgShipSearch.java                          | temp[] 인덱스 재조정             |  ✅  |
 |  7   | TestDataHelper.java                                 | setter 호출 삭제               |     |
 |  8   | DBInfo.java                                         | 상수 삭제                      |     |
 |  9   | ShipmentActivity.java, BixolonShipmentActivity.java | 주석 정리 (선택)                 |     |
@@ -705,8 +705,8 @@ Step 5. 필드/getter/setter 삭제 [Shipments_Info.java]
     [x] 8개 setter 삭제
 
 Step 6. temp[] 인덱스 재조정 [ProgressDlgShipSearch.java]
-    [ ] 8개 setter 호출 삭제
-    [ ] 30개 setter temp[] 인덱스 재조정
+    [x] 8개 setter 호출 삭제
+    [x] 30개 setter temp[] 인덱스 재조정
 
 Step 7. 테스트 데이터 [TestDataHelper.java]
     [ ] WHERE 조건 변경 + setter 제거
