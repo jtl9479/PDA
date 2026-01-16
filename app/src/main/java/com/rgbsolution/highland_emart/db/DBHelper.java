@@ -19,7 +19,7 @@ public class DBHelper {
 
     private static final String DATABASE_NAME = "HIGHLAND";
 
-    private static final int DATABASE_VERSION = 27; /*-- 업그레이드를 필요로 할 경우에 버전의 값을 올려주면 된다.  --*/
+    private static final int DATABASE_VERSION = 28; /*-- 업그레이드를 필요로 할 경우에 버전의 값을 올려주면 된다.  --*/
 
     private final Context mCtx;
 
@@ -51,6 +51,13 @@ public class DBHelper {
                     //db.execSQL("ALTER TABLE TB_SHIPMENT ADD COLUMN WH_AREA  text");
                     //db.execSQL("ALTER TABLE TB_GOODS_WET ADD COLUMN  BOX_ORDER Integer DEFAULT 0");
                     //db.execSQL("ALTER TABLE TB_SHIPMENT ADD COLUMN LAST_BOX_ORDER INTEGER");
+
+                    // v28: 8개 컬럼 삭제 (GI_H_ID, EOI_ID, AMOUNT, GOODS_R_ID, GR_REF_NO, BRANDNAME, PACKERNAME, EMARTLOGIS_NAME)
+                    if (oldVersion < 28) {
+                        db.execSQL("DROP TABLE IF EXISTS TB_SHIPMENT");
+                        db.execSQL(DBHandler.createqueryShipment);
+                    }
+
                     db.setTransactionSuccessful();
                 } catch (IllegalStateException e) {
                     Log.d(TAG, "onUpgrade exception -> " + e.getMessage().toString());
