@@ -464,45 +464,6 @@ public class DBHandler {
         return list_si;
     }
 
-    //	생산대상 검색
-    public static ArrayList<Shipments_Info> selectqueryAllProduction(Context context) {//
-        ArrayList<Shipments_Info> list_si = new ArrayList<Shipments_Info>();
-        DBHelper mDbHelper = new DBHelper(context);
-        mDbHelper.open();
-
-        try {
-            Cursor cursor;
-            String sqlStr = "SELECT "
-                    + DBInfo.GI_D_ID + ", "
-                    + DBInfo.EOI_ID
-                    + " FROM "
-                    + DBInfo.TABLE_NAME_PRODUCTION
-                    + " ORDER BY EOI_ID ASC";
-
-            cursor = mDbHelper.selectSql(sqlStr);
-            if (Common.D) {
-                Log.v(TAG, "selectqueryAllProduction -> " + sqlStr);
-                Log.v(TAG, "selectqueryAllProduction ->" + cursor.getCount());
-            }
-
-            Shipments_Info si;
-            while (cursor.moveToNext()) {
-                si = new Shipments_Info();
-                si.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
-                si.setEOI_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EOI_ID")), ""));
-
-                list_si.add(si);
-            }
-            cursor.close();
-        } catch (Exception e) {
-            if (Common.D) {
-                Log.v(TAG, "selectqueryAllProduction exception -> " + e.getMessage().toString());
-            }
-        }
-        mDbHelper.close();
-        return list_si;
-    }
-
     // 출하대상's Packer_Product_Code list SELECT
     public static ArrayList<String[]> selectqueryCodeList(Context context) {
         ArrayList<String[]> list_code_info = new ArrayList<String[]>();

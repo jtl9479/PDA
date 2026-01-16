@@ -3,11 +3,9 @@ package com.rgbsolution.highland_emart.db;
 public class DBInfo {
 
 	public static final String TABLE_NAME_SHIPMENT 			= "TB_SHIPMENT";
-	public static final String TABLE_NAME_PRODUCTION		= "TB_PRODUCTION";
 	public static final String TABLE_NAME_BARCODE_INFO 		= "TB_BARCODE_INFO";
 	public static final String TABLE_NAME_GOODS_WET 		= "TB_GOODS_WET";
 	public static final String TABLE_NAME_GOODS_WET_PRODUCTION_CALC = "TB_GOODS_WET_PRODUCTION_CALC";
-	public static final String TABLE_NAME_COMPLETE_ITEM		= "TB_COMPLETE_ITEM";
 
 	//	::::::::::::::: ↓ 공통 Columns ↓ ::::::::::::::::::
 	public static final String GI_D_ID 						= "GI_D_ID";					// 출고번호(출고상세번호id 값)
