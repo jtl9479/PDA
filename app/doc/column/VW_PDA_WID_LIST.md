@@ -7,6 +7,58 @@
 
 ---
 
+## VIEW 정의 순서 (SELECT 컬럼)
+
+**소스 기준**: ProgressDlgShipSearch.java:241-322 (temp[] 배열 매핑)
+
+| idx | 컬럼명 | 로컬DB # | 설명 |
+|:---:|--------|:-------:|------|
+| 0 | GI_H_ID | 2 | 출하헤더ID |
+| 1 | GI_D_ID | 3 | 출하상세ID (PK) |
+| 2 | EOI_ID | 4 | 주문ID |
+| 3 | ITEM_CODE | 5 | 품목코드 |
+| 4 | ITEM_NAME | 6 | 품목명 |
+| 5 | EMARTITEM_CODE | 7 | 이마트품목코드 |
+| 6 | EMARTITEM | 8 | 이마트품목명 |
+| 7 | GI_REQ_PKG | 9 | 요청수량 (박스) |
+| 8 | GI_REQ_QTY | 10 | 요청중량 (kg) |
+| 9 | AMOUNT | 11 | 금액 |
+| 10 | GOODS_R_ID | 12 | 입고ID |
+| 11 | GR_REF_NO | 13 | 입고참조번호 |
+| 12 | GI_REQ_DATE | 14 | 요청일자 |
+| 13 | BL_NO | 15 | BL번호 |
+| 14 | BRAND_CODE | 16 | 브랜드코드 |
+| 15 | BRANDNAME | 17 | 브랜드명 |
+| 16 | CLIENT_CODE | 18 | 거래처코드 |
+| 17 | CLIENTNAME | 19 | 거래처명 (지점명) |
+| 18 | CENTERNAME | 20 | 센터명 |
+| 19 | ITEM_SPEC | 21 | 품목규격 |
+| 20 | CT_CODE | 22 | CT코드 (원산지) |
+| 21 | IMPORT_ID_NO | 23 | 수입신고번호 |
+| 22 | PACKER_CODE | 24 | 패커코드 |
+| 23 | PACKERNAME | 25 | 패커명 |
+| 24 | PACKER_PRODUCT_CODE | 26 | 패커상품코드 |
+| 25 | BARCODE_TYPE | 27 | 바코드타입 (M0~M9, E0~E3 등) |
+| 26 | ITEM_TYPE | 28 | 아이템타입 (W, S, J, B 등) |
+| 27 | PACKWEIGHT | 29 | 포장중량 |
+| 28 | BARCODEGOODS | 30 | 바코드상품코드 |
+| 29 | STORE_IN_DATE | 31 | 입고일자 |
+| 30 | EMARTLOGIS_CODE | 32 | 이마트물류코드 |
+| 31 | EMARTLOGIS_NAME | 33 | 이마트물류명 |
+| 32 | WH_AREA | 35 | 창고구역 |
+| 33 | USE_NAME | 36 | 용도명 |
+| 34 | USE_CODE | 37 | 용도코드 |
+| 35 | CT_NAME | 38 | CT명 (원산지명) |
+| 36 | STORE_CODE | 39 | 점포코드 |
+| 37 | EMART_PLANT_CODE | 40 | 이마트공장코드 |
+
+**로컬 전용 컬럼** (VIEW 미포함):
+- #1 SHIPMENT_ID: 로컬 PK (자동생성)
+- #34 SAVE_TYPE: 전송 여부 (로컬 관리)
+- #41 LAST_BOX_ORDER: 롯데 박스순서 (searchType=6에서만 VIEW 수신)
+
+---
+
 ## 컬럼 분석 결과
 
 | 컬럼명                                         | UI 노출 | VIEW 내부 | 안드로이드 소스 | DDL 사용 | 비즈니스 영향 | 판정                    |

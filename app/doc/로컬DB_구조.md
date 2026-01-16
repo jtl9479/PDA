@@ -17,14 +17,16 @@
 
 ## 2. 테이블 정의 현황
 
-### 2.1 DBInfo.java 정의 (4개)
+### 2.1 DBInfo.java 정의 (6개)
 
-| 테이블명 | 상수명 | CREATE 위치 |
-|----------|--------|-------------|
-| TB_SHIPMENT | TABLE_NAME_SHIPMENT | DBHandler.java:32-75 |
-| TB_BARCODE_INFO | TABLE_NAME_BARCODE_INFO | DBHandler.java:816-844 |
-| TB_GOODS_WET | TABLE_NAME_GOODS_WET | DBHandler.java:1169-1193 |
-| TB_GOODS_WET_PRODUCTION_CALC | TABLE_NAME_GOODS_WET_PRODUCTION_CALC | DBHandler.java:1938-1941 |
+| 테이블명 | 상수명 | CREATE 위치 | 상태 |
+|----------|--------|-------------|------|
+| TB_SHIPMENT | TABLE_NAME_SHIPMENT | DBHandler.java:32-75 | 사용 |
+| TB_BARCODE_INFO | TABLE_NAME_BARCODE_INFO | DBHandler.java:816-844 | 사용 |
+| TB_GOODS_WET | TABLE_NAME_GOODS_WET | DBHandler.java:1169-1193 | 사용 |
+| TB_GOODS_WET_PRODUCTION_CALC | TABLE_NAME_GOODS_WET_PRODUCTION_CALC | DBHandler.java:1938-1941 | 사용 |
+| TB_PRODUCTION | ~~TABLE_NAME_PRODUCTION~~ | - | **삭제됨** |
+| TB_COMPLETE_ITEM | ~~TABLE_NAME_COMPLETE_ITEM~~ | - | **삭제됨** |
 
 ### 2.2 실제 사용 테이블 (4개)
 
@@ -57,51 +59,296 @@ DBHandler.createqueryGoodsWetProductionCalc(getApplicationContext()); // Line 68
 
 ### 3.1 컬럼 목록
 
-| # | 컬럼명 | 타입 | NOT NULL | 라인 |
-|---|--------|------|:--------:|------|
-| 1 | SHIPMENT_ID | INTEGER | PK, AUTO | 34 |
-| 2 | GI_H_ID | TEXT | O | 35 |
-| 3 | GI_D_ID | TEXT | O | 36 |
-| 4 | EOI_ID | TEXT | O | 37 |
-| 5 | ITEM_CODE | TEXT | O | 38 |
-| 6 | ITEM_NAME | TEXT | O | 39 |
-| 7 | EMARTITEM_CODE | TEXT | - | 40 |
-| 8 | EMARTITEM | TEXT | - | 41 |
-| 9 | GI_REQ_PKG | TEXT | O | 42 |
-| 10 | GI_REQ_QTY | TEXT | O | 43 |
-| 11 | AMOUNT | TEXT | O | 44 |
-| 12 | GOODS_R_ID | TEXT | O | 45 |
-| 13 | GR_REF_NO | TEXT | O | 46 |
-| 14 | GI_REQ_DATE | TEXT | O | 47 |
-| 15 | BL_NO | TEXT | O | 48 |
-| 16 | BRAND_CODE | TEXT | O | 49 |
-| 17 | BRANDNAME | TEXT | O | 50 |
-| 18 | CLIENT_CODE | TEXT | O | 51 |
-| 19 | CLIENTNAME | TEXT | O | 52 |
-| 20 | CENTERNAME | TEXT | - | 53 |
-| 21 | ITEM_SPEC | TEXT | O | 54 |
-| 22 | CT_CODE | TEXT | O | 55 |
-| 23 | IMPORT_ID_NO | TEXT | O | 56 |
-| 24 | PACKER_CODE | TEXT | O | 57 |
-| 25 | PACKERNAME | TEXT | O | 58 |
-| 26 | PACKER_PRODUCT_CODE | TEXT | O | 59 |
-| 27 | BARCODE_TYPE | TEXT | O | 60 |
-| 28 | ITEM_TYPE | TEXT | O | 61 |
-| 29 | PACKWEIGHT | TEXT | - | 62 |
-| 30 | BARCODEGOODS | TEXT | - | 63 |
-| 31 | STORE_IN_DATE | TEXT | - | 64 |
-| 32 | EMARTLOGIS_CODE | TEXT | - | 65 |
-| 33 | EMARTLOGIS_NAME | TEXT | - | 66 |
-| 34 | SAVE_TYPE | TEXT | O | 67 |
-| 35 | WH_AREA | TEXT | - | 68 |
-| 36 | USE_NAME | TEXT | - | 69 |
-| 37 | USE_CODE | TEXT | - | 70 |
-| 38 | CT_NAME | TEXT | - | 71 |
-| 39 | STORE_CODE | TEXT | - | 72 |
-| 40 | EMART_PLANT_CODE | TEXT | - | 73 |
-| 41 | LAST_BOX_ORDER | INTEGER | - | 74 |
+| #   | 컬럼명                 | 타입      | NOT NULL | 라인  | 사용여부 | 비고                       |
+| --- | ------------------- | ------- | :------: | --- | :--: | ------------------------ |
+| 1   | SHIPMENT_ID         | INTEGER | PK, AUTO | 34  |  N   | getter 호출 없음             |
+| 2   | GI_H_ID             | TEXT    |    O     | 35  |  DB  | 저장만                      |
+| 3   | GI_D_ID             | TEXT    |    O     | 36  |  Y   | 출하대상 매칭, 계근 저장/조회, 서버 전송 |
+| 4   | EOI_ID              | TEXT    |    O     | 37  |  DB  | 저장만                      |
+| 5   | ITEM_CODE           | TEXT    |    O     | 38  |  Y   | TB_GOODS_WET 저장, 서버 전송   |
+| 6   | ITEM_NAME           | TEXT    |    O     | 39  |  Y   | 화면 표시 (상품명)              |
+| 7   | EMARTITEM_CODE      | TEXT    |    -     | 40  |  Y   | 바코드 생성 (라벨 인쇄)           |
+| 8   | EMARTITEM           | TEXT    |    -     | 41  |  Y   | TB_GOODS_WET 저장          |
+| 9   | GI_REQ_PKG          | TEXT    |    O     | 42  |  Y   | 화면 표시 (요청수량), 완료 체크      |
+| 10  | GI_REQ_QTY          | TEXT    |    O     | 43  |  Y   | 화면 표시 (요청중량)             |
+| 11  | AMOUNT              | TEXT    |    O     | 44  |  DB  | 저장만                      |
+| 12  | GOODS_R_ID          | TEXT    |    O     | 45  |  DB  | 저장만                      |
+| 13  | GR_REF_NO           | TEXT    |    O     | 46  |  DB  | 저장만                      |
+| 14  | GI_REQ_DATE         | TEXT    |    O     | 47  |  Y   | DB 조회 WHERE 조건           |
+| 15  | BL_NO               | TEXT    |    O     | 48  |  Y   | BL번호 선택/표시, 계근완료 체크      |
+| 16  | BRAND_CODE          | TEXT    |    O     | 49  |  Y   | TB_GOODS_WET 저장, 서버 전송   |
+| 17  | BRANDNAME           | TEXT    |    O     | 50  |  DB  | 저장만                      |
+| 18  | CLIENT_CODE         | TEXT    |    O     | 51  |  DB  | 저장만 (WHERE 미사용)          |
+| 19  | CLIENTNAME          | TEXT    |    O     | 52  |  Y   | 화면 표시 (출하업체명), 리스트       |
+| 20  | CENTERNAME          | TEXT    |    -     | 53  |  Y   | 센터 구분 (트레이더스/이마트 등)      |
+| 21  | ITEM_SPEC           | TEXT    |    O     | 54  |  Y   | 라벨 인쇄 (상품명/냉장냉동)         |
+| 22  | CT_CODE             | TEXT    |    O     | 55  |  Y   | 라벨 인쇄 (원산지)              |
+| 23  | IMPORT_ID_NO        | TEXT    |    O     | 56  |  Y   | 바코드 생성, 라벨 인쇄 (수입식별번호)   |
+| 24  | PACKER_CODE         | TEXT    |    O     | 57  |  Y   | 킬코이 제품 판별 (라벨 분기)        |
+| 25  | PACKERNAME          | TEXT    |    O     | 58  |  DB  | 저장만                      |
+| 26  | PACKER_PRODUCT_CODE | TEXT    |    O     | 59  |  Y   | 바코드 매칭, 계근 조회, 서버 전송     |
+| 27  | BARCODE_TYPE        | TEXT    |    O     | 60  |  Y   | 바코드 유형 판별                |
+| 28  | ITEM_TYPE           | TEXT    |    O     | 61  |  Y   | 상품 타입 판별                 |
+| 29  | PACKWEIGHT          | TEXT    |    -     | 62  |  Y   | 팩 중량                     |
+| 30  | BARCODEGOODS        | TEXT    |    -     | 63  |  Y   | 바코드 매칭                   |
+| 31  | STORE_IN_DATE       | TEXT    |    -     | 64  |  Y   | 납품일자                     |
+| 32  | EMARTLOGIS_CODE     | TEXT    |    -     | 65  |  Y   | 바코드 생성 (납품코드)            |
+| 33  | EMARTLOGIS_NAME     | TEXT    |    -     | 66  |  DB  | 저장만                      |
+| 34  | SAVE_TYPE           | TEXT    |    O     | 67  |  Y   | 전송 여부 판별, 리스트 표시         |
+| 35  | WH_AREA             | TEXT    |    -     | 68  |  Y   | 창고 구역                    |
+| 36  | USE_NAME            | TEXT    |    -     | 69  |  Y   | 용도명                      |
+| 37  | USE_CODE            | TEXT    |    -     | 70  |  Y   | 바코드 생성 (이중바코드)           |
+| 38  | CT_NAME             | TEXT    |    -     | 71  |  Y   | 원산지명                     |
+| 39  | STORE_CODE          | TEXT    |    -     | 72  |  Y   | 미트센터 판별                  |
+| 40  | EMART_PLANT_CODE    | TEXT    |    -     | 73  |  Y   | 바코드 생성 (가공장코드)           |
+| 41  | LAST_BOX_ORDER      | INTEGER |    -     | 74  |  Y   | 롯데 박스순서 (Log 출력)         |
 
-### 3.2 데이터 원본
+**사용여부 범례**: Y=사용, DB=저장만(읽기 없음), N=미사용
+
+#### 3.1.1 컬럼별 상세 사용처
+
+**1. SHIPMENT_ID** (INTEGER, PK) - 미사용
+- getSHIPMENT_ID() 호출 없음
+- PK 자동 생성 컬럼이나 실제 조회에 사용되지 않음
+
+**2. GI_H_ID** (TEXT) - 저장만
+- DBHandler.java:664 - TB_SHIPMENT INSERT 시 저장
+- 출고헤더ID이나 앱에서 읽어서 사용하는 곳 없음 (서버 전송 packet에 미포함)
+
+**3. GI_D_ID** (TEXT)
+- BixolonShipmentActivity.java:827 - 출하대상 매칭 (바코드 스캔 시 gi_d_id 비교)
+- BixolonShipmentActivity.java:1207, 1211 - 중복 체크 조건
+- BixolonShipmentActivity.java:1491 - TB_GOODS_WET INSERT 시 값 복사
+- BixolonShipmentActivity.java:3328, 3519 - selectqueryListGoodsWetInfo() 조회 조건
+- BixolonShipmentActivity.java:3711, 3713 - 서버 전송 WHERE 조건 생성
+- BixolonShipmentActivity.java:3729, 3835 - 서버 전송 packet에 포함
+- BixolonShipmentActivity.java:3768, 3897 - updatequeryGoodsWet() 조건
+- BixolonShipmentActivity.java:3778, 3906 - 완료 문자열 생성 (completeStr)
+- BixolonShipmentActivity.java:3801, 3934 - updatequeryShipment() 호출
+- BixolonShipmentActivity.java:4377, 4417 - selectqueryGoodsWet(), deletequerySelectGoodsWet() 조건
+- ShipmentActivity.java - 동일 패턴
+- ProgressDlgShipSearch.java:345, 352, 365 - 출하대상 동기화 비교
+
+**4. EOI_ID** (TEXT) - 저장만
+- DBHandler.java:665 - TB_SHIPMENT INSERT 시 저장
+- 이마트 출하번호(발주번호)이나 앱에서 읽어서 사용하는 곳 없음 (서버 전송 packet에 미포함)
+
+**5. ITEM_CODE** (TEXT)
+- BixolonShipmentActivity.java:1502 - TB_GOODS_WET INSERT 시 값 복사
+- BixolonShipmentActivity.java:3739, 3845 - 서버 전송 packet에 포함
+- BixolonShipmentActivity.java:3778, 3906 - 완료 문자열 생성 (completeStr)
+- ShipmentActivity.java - 동일 패턴
+
+**6. ITEM_NAME** (TEXT)
+- BixolonShipmentActivity.java:1924 - 화면 표시 (edit_product_name.setText)
+- BixolonShipmentActivity.java:3555 - 화면 표시
+- BixolonShipmentActivity.java:4215 - 상세 화면 표시 (detail_edit_ppname)
+- ShipmentActivity.java:1829, 3470, 4130 - 동일 패턴
+
+**7. EMARTITEM_CODE** (TEXT)
+- BixolonShipmentActivity.java:1500 - TB_GOODS_WET INSERT 시 값 복사
+- BixolonShipmentActivity.java:1983-1984 - 바코드 생성 (생산 라벨)
+- BixolonShipmentActivity.java:2222-2396 - 바코드 생성 (라벨 타입별)
+  - M0 원료육: substring(0,6) + 중량 + 회사코드 + 수입식별번호
+  - E2 냉동: substring(0,6) + 중량 + 회사코드 + 수입식별번호
+  - E3 냉장: substring(0,6) + 중량 + 회사코드
+  - M7 이중바코드: substring(0,6) + 중량 + 회사코드 + 수입식별번호
+  - M8 비정량: 상품코드 전체 + 수입식별번호
+- BixolonShipmentActivity.java:2979-2998 - 롯데 라벨 바코드 생성
+- ShipmentActivity.java - 동일 패턴
+
+**8. EMARTITEM** (TEXT)
+- BixolonShipmentActivity.java:1501 - TB_GOODS_WET INSERT 시 값 복사 (이마트 상품명)
+- ShipmentActivity.java:1406 - 동일
+
+**9. GI_REQ_PKG** (TEXT)
+- BixolonShipmentActivity.java:1148 - BL번호별 계근 완료 체크
+- BixolonShipmentActivity.java:1199, 1480 - 요청수량 == 계근수량 완료 체크
+- BixolonShipmentActivity.java:1581, 1921 - 화면 표시 (edit_wet_count: "요청/완료")
+- BixolonShipmentActivity.java:1618 - 수량 초과 체크
+- BixolonShipmentActivity.java:1829, 3418 - 계근 미완료 항목 필터
+- BixolonShipmentActivity.java:3405, 3569 - 센터 총 요청수량 합산
+- BixolonShipmentActivity.java:3631 - 계근 완료 여부 체크
+- BixolonShipmentActivity.java:3777, 3905 - 전송완료 체크 (SAVE_CNT == GI_REQ_PKG)
+- BixolonShipmentActivity.java:4217, 4453 - 상세 화면 표시
+- ShipmentListAdapter.java:142 - 리스트 아이템 표시
+
+**10. GI_REQ_QTY** (TEXT)
+- BixolonShipmentActivity.java:1582, 1922 - 화면 표시 (edit_wet_weight: "요청/완료")
+- BixolonShipmentActivity.java:3406, 3570 - 센터 총 요청중량 합산
+- BixolonShipmentActivity.java:4218, 4454 - 상세 화면 표시
+- ShipmentListAdapter.java:146 - 리스트 아이템 표시
+
+**11. AMOUNT** (TEXT) - 저장만
+- DBHandler.java:672 - TB_SHIPMENT INSERT 시 저장
+- 출하상품금액이나 앱에서 읽어서 사용하는 곳 없음
+
+**12. GOODS_R_ID** (TEXT) - 저장만
+- DBHandler.java:673 - TB_SHIPMENT INSERT 시 저장
+- 입고번호이나 앱에서 읽어서 사용하는 곳 없음 (서버 전송 packet에 미포함)
+
+**13. GR_REF_NO** (TEXT) - 저장만
+- DBHandler.java:674 - TB_SHIPMENT INSERT 시 저장
+- 창고입고번호이나 앱에서 읽어서 사용하는 곳 없음
+
+**14. GI_REQ_DATE** (TEXT)
+- DBHandler.java:106 - 로컬 DB 조회 시 WHERE 조건으로 사용
+- DBHandler.java:675 - TB_SHIPMENT INSERT 시 저장
+- 출하요청일 기준 데이터 필터링
+
+**15. BL_NO** (TEXT)
+- BixolonShipmentActivity.java:1148 - BL번호 매칭 (temp_bl_no.equals)
+- BixolonShipmentActivity.java:1687 - 현재 작업 BL번호 비교
+- BixolonShipmentActivity.java:1895 - BL번호 빈값 체크
+- BixolonShipmentActivity.java:1915, 1920 - BL번호 리스트 추가, 현재 작업 BL 설정
+- BixolonShipmentActivity.java:3577, 3583, 3599 - BL번호 목록 생성, 스피너 선택
+- ShipmentListAdapter.java:149, 152 - 리스트에 BL번호 뒤 4자리 표시
+
+**16. BRAND_CODE** (TEXT)
+- BixolonShipmentActivity.java:1503 - TB_GOODS_WET INSERT 시 값 복사
+- BixolonShipmentActivity.java:3740, 3846 - 서버 전송 packet에 포함
+- BixolonShipmentActivity.java:3778, 3906 - 완료 문자열 생성 (completeStr)
+- ProgressDlgBarcodeSearch.java:142 - 바코드 정보 로그
+
+**17. BRANDNAME** (TEXT) - 저장만
+- DBHandler.java:678 - TB_SHIPMENT INSERT 시 저장
+- 브랜드명이나 앱에서 읽어서 사용하는 곳 없음
+
+**18. CLIENT_CODE** (TEXT) - 저장만
+- BixolonShipmentActivity.java:3328, 3519 - selectqueryListGoodsWetInfo() 파라미터 전달
+- BixolonShipmentActivity.java:4377 - selectqueryGoodsWet() 파라미터 전달
+- **주의**: 파라미터로 전달되지만 WHERE 조건에 미사용 (DBHandler.java:1196, 1328)
+
+**19. CLIENTNAME** (TEXT)
+- BixolonShipmentActivity.java:3395, 3559 - 출하대상 선택 리스트 표시 (업체명)
+- BixolonShipmentActivity.java:4214 - 상세 화면 표시 (detail_edit_position_name)
+- ShipmentListAdapter.java:141 - 리스트 아이템 표시 (holder.position)
+
+**20. CENTERNAME** (TEXT)
+- BixolonShipmentActivity.java:645, 1167, 1177 - 센터 구분 체크 (트레이더스/웨트/이마트)
+- BixolonShipmentActivity.java:2118 - 라벨 인쇄 분기 (트레이더스 납품분)
+- CENTER_NAME_TRD, CENTER_NAME_WET, CENTER_NAME_ET 상수와 비교
+
+**21. ITEM_SPEC** (TEXT)
+- BixolonShipmentActivity.java:2002-2006 - 라벨 인쇄 (si.EMARTITEM + " / " + si.ITEM_SPEC)
+- ShipmentActivity.java:1907-1911 - 라벨 인쇄 (상품명/냉장냉동 표시)
+- DBHandler.java:682 - TB_SHIPMENT INSERT 시 저장
+
+**22. CT_CODE** (TEXT)
+- BixolonShipmentActivity.java:2827 - 라벨 인쇄 (원산지 텍스트 출력)
+- ShipmentActivity.java:2861 - 라벨 인쇄 (우심 프린터)
+
+**23. IMPORT_ID_NO** (TEXT)
+- BixolonShipmentActivity.java:2225-2399 - 바코드 생성에 수입식별번호 포함
+  - M0, E2, M7, M8 타입 바코드에 수입식별번호 포함
+  - 이중바코드 생성 시 pBarcode2에 포함
+- BixolonShipmentActivity.java:2638-2690 - 미트센터 바코드 생성
+- BixolonShipmentActivity.java:2831 - 라벨 인쇄 (중량/수입식별번호 뒤 4자리)
+- BixolonShipmentActivity.java:3001-3002 - 롯데 라벨 이력번호 바코드
+- BixolonShipmentActivity.java:3102 - 라벨 인쇄 텍스트 ("이력(묶음)번호 : ")
+- BixolonShipmentActivity.java:3395 - 출하대상 선택 리스트 (업체명/수입식별번호)
+
+**24. PACKER_CODE** (TEXT)
+- BixolonShipmentActivity.java:622, 625 - 킬코이 제품 판별 (KILKOY_PACKER_CODE)
+- BixolonShipmentActivity.java:1169, 2079 - 킬코이 + 미트센터 조건 체크
+- 킬코이 제품은 소비기한 변조 출력 처리
+
+**25. PACKERNAME** (TEXT) - 저장만
+- DBHandler.java:686 - TB_SHIPMENT INSERT 시 저장
+- 패커명이나 앱에서 읽어서 사용하는 곳 없음
+
+**26. PACKER_PRODUCT_CODE** (TEXT)
+- BixolonShipmentActivity.java:1211 - 중복 체크 조건 (duplicatequeryGoodsWet)
+- BixolonShipmentActivity.java:3328, 3519, 3611 - 계근 조회/중복 체크 조건
+- BixolonShipmentActivity.java:3801, 3934 - updatequeryShipment() 조건
+- BixolonShipmentActivity.java:4377 - selectqueryGoodsWet() 조회 조건
+- DetailAdapter.java - 상세 표시
+
+**27. BARCODE_TYPE** (TEXT)
+- BixolonShipmentActivity.java - 바코드 유형별 분기 처리
+- 라벨 타입 (E2, E3, M0, M6, M7, M8 등) 결정에 사용
+
+**28. ITEM_TYPE** (TEXT)
+- BixolonShipmentActivity.java - 상품 타입별 분기 처리
+
+**29. PACKWEIGHT** (TEXT)
+- BixolonShipmentActivity.java - 팩 중량 사용
+
+**30. BARCODEGOODS** (TEXT)
+- BixolonShipmentActivity.java - 바코드 상품코드 매칭
+- ProgressDlgBarcodeSearch.java:142 - 바코드 정보 로그
+
+**31. STORE_IN_DATE** (TEXT)
+- BixolonShipmentActivity.java - 납품일자 사용
+
+**32. EMARTLOGIS_CODE** (TEXT)
+- BixolonShipmentActivity.java:2231-2398 - 바코드 생성 (납품코드)
+  - pBarcode2 생성 시 EMARTLOGIS_CODE.substring(0,6) 사용
+- BixolonShipmentActivity.java:2638, 2689 - 미트센터 바코드 생성
+
+**33. EMARTLOGIS_NAME** (TEXT) - 저장만
+- DBHandler.java:694 - TB_SHIPMENT INSERT 시 저장
+- 납품명이나 앱에서 읽어서 사용하는 곳 없음
+
+**34. SAVE_TYPE** (TEXT)
+- BixolonShipmentActivity.java - 전송 여부 판별
+- ShipmentListAdapter.java - 리스트 표시 시 전송 상태 확인
+- DetailAdapter.java - 상세 표시
+
+**35. WH_AREA** (TEXT)
+- BixolonShipmentActivity.java - 창고 구역 사용
+
+**36. USE_NAME** (TEXT)
+- BixolonShipmentActivity.java - 용도명 사용
+
+**37. USE_CODE** (TEXT)
+- BixolonShipmentActivity.java:2376-2377 - 이중바코드 생성 (pBarcode2)
+- ShipmentActivity.java:2290-2291 - 동일 패턴
+
+**38. CT_NAME** (TEXT)
+- BixolonShipmentActivity.java - 원산지명 사용
+
+**39. STORE_CODE** (TEXT)
+- BixolonShipmentActivity.java:1169 - 미트센터 판별 (MEAT_CENTER_STORE_CODE)
+- BixolonShipmentActivity.java:2079 - 킬코이/미트센터 조건 체크
+
+**40. EMART_PLANT_CODE** (TEXT)
+- BixolonShipmentActivity.java:2638-2639 - 미트센터 바코드 생성에 가공장코드 포함
+- ShipmentActivity.java:2628-2629 - 동일 패턴
+
+**41. LAST_BOX_ORDER** (INTEGER)
+- BixolonShipmentActivity.java:3348 - Log.e() 출력용
+- ShipmentActivity.java:3263 - Log.e() 출력용
+- 롯데 마지막 박스 순서, Log 출력에만 사용
+
+### 3.2 VIEW idx ↔ 로컬DB # 인덱스 오프셋
+
+VIEW와 로컬DB 컬럼 순서가 다름. 로컬 전용 컬럼이 삽입되어 오프셋 발생.
+
+#### 로컬 전용 컬럼 (VIEW 미수신)
+
+| 로컬DB # | 컬럼명 | 삽입 위치 |
+|:--------:|--------|----------|
+| 1 | SHIPMENT_ID | 맨 앞 (PK) |
+| 34 | SAVE_TYPE | 중간 (EMARTLOGIS_NAME 다음) |
+| 41 | LAST_BOX_ORDER | 맨 뒤 (롯데만 VIEW 수신) |
+
+#### 오프셋 계산
+
+| 구간 | VIEW idx | 로컬DB # | 오프셋 |
+|------|:--------:|:--------:|:------:|
+| 전반부 | 0 ~ 31 | 2 ~ 33 | +2 |
+| 후반부 | 32 ~ 37 | 35 ~ 40 | +3 |
+
+#### 오프셋 발생 지점 (DBHandler.java:66-68)
+
+```
+#33 EMARTLOGIS_NAME (VIEW idx 31)
+#34 SAVE_TYPE       ← 로컬 전용 삽입
+#35 WH_AREA         (VIEW idx 32, 오프셋 +3)
+```
+
+### 3.3 데이터 원본
 
 | 원본 | VIEW 조회 |
 |------|-----------|
@@ -112,7 +359,7 @@ DBHandler.createqueryGoodsWetProductionCalc(getApplicationContext()); // Line 68
 | 홈플러스 비정량 | VW_PDA_WID_LIST_NONFIXED_HP |
 | 롯데 | VW_PDA_WID_LIST_LOTTE |
 
-### 3.3 주요 CRUD 메서드
+### 3.4 주요 CRUD 메서드
 
 | 메서드                              | 동작                         | 라인        |
 | -------------------------------- | -------------------------- | --------- |
@@ -130,7 +377,7 @@ DBHandler.createqueryGoodsWetProductionCalc(getApplicationContext()); // Line 68
 | deletequeryShipment()            | DELETE ALL                 | 763-783   |
 | refreshShipmentList()            | DELETE + INSERT (갱신)       | 1854-1893 |
 
-### 3.4 CRUD 호출 시점
+### 3.5 CRUD 호출 시점
 
 | 동작     | 시점                           | 위치                                      |
 | ------ | ---------------------------- | --------------------------------------- |
@@ -152,34 +399,167 @@ DBHandler.createqueryGoodsWetProductionCalc(getApplicationContext()); // Line 68
 
 ### 4.1 컬럼 목록
 
-| #   | 컬럼명                  | 타입      | NOT NULL | 라인  |
-| --- | -------------------- | ------- | :------: | --- |
-| 1   | BARCODE_INFO_ID      | INTEGER | PK, AUTO | 818 |
-| 2   | PACKER_CLIENT_CODE   | TEXT    |    O     | 819 |
-| 3   | PACKER_PRODUCT_CODE  | TEXT    |    O     | 820 |
-| 4   | PACKER_PRD_NAME      | TEXT    |    O     | 821 |
-| 5   | ITEM_CODE            | TEXT    |    O     | 822 |
-| 6   | ITEM_NAME_KR         | TEXT    |    -     | 823 |
-| 7   | BRAND_CODE           | TEXT    |    O     | 824 |
-| 8   | BARCODEGOODS         | TEXT    |    O     | 825 |
-| 9   | BASEUNIT             | TEXT    |    O     | 826 |
-| 10  | ZEROPOINT            | TEXT    |    O     | 827 |
-| 11  | PACKER_PRD_CODE_FROM | TEXT    |    -     | 828 |
-| 12  | PACKER_PRD_CODE_TO   | TEXT    |    -     | 829 |
-| 13  | BARCODEGOODS_FROM    | TEXT    |    O     | 830 |
-| 14  | BARCODEGOODS_TO      | TEXT    |    O     | 831 |
-| 15  | WEIGHT_FROM          | TEXT    |    O     | 832 |
-| 16  | WEIGHT_TO            | TEXT    |    O     | 833 |
-| 17  | MAKINGDATE_FROM      | TEXT    |    -     | 834 |
-| 18  | MAKINGDATE_TO        | TEXT    |    -     | 835 |
-| 19  | BOXSERIAL_FROM       | TEXT    |    -     | 836 |
-| 20  | BOXSERIAL_TO         | TEXT    |    -     | 837 |
-| 21  | STATUS               | TEXT    |    -     | 838 |
-| 22  | REG_ID               | TEXT    |    O     | 839 |
-| 23  | REG_DATE             | TEXT    |    -     | 840 |
-| 24  | REG_TIME             | TEXT    |    -     | 841 |
-| 25  | MEMO                 | TEXT    |    -     | 842 |
-| 26  | SHELF_LIFE           | TEXT    |    -     | 843 |
+| #   | 컬럼명                  | 타입      | NOT NULL | 라인  | 사용여부 | 비고  |
+| --- | -------------------- | ------- | :------: | --- | :--: | --- |
+| 1   | BARCODE_INFO_ID      | INTEGER | PK, AUTO | 818 | N    | getter 호출 없음 |
+| 2   | PACKER_CLIENT_CODE   | TEXT    |    O     | 819 | DB   | INSERT/로그만 |
+| 3   | PACKER_PRODUCT_CODE  | TEXT    |    O     | 820 | Y    | 바코드 조회 결과 표시 |
+| 4   | PACKER_PRD_NAME      | TEXT    |    O     | 821 | DB   | INSERT/로그만 |
+| 5   | ITEM_CODE            | TEXT    |    O     | 822 | DB   | INSERT만 |
+| 6   | ITEM_NAME_KR         | TEXT    |    -     | 823 | Y    | 화면 표시 (한글 상품명) |
+| 7   | BRAND_CODE           | TEXT    |    O     | 824 | DB   | INSERT/로그만 |
+| 8   | BARCODEGOODS         | TEXT    |    O     | 825 | Y    | 바코드 매칭 |
+| 9   | BASEUNIT             | TEXT    |    O     | 826 | DB   | INSERT/로그만 |
+| 10  | ZEROPOINT            | TEXT    |    O     | 827 | DB   | INSERT/로그만 |
+| 11  | PACKER_PRD_CODE_FROM | TEXT    |    -     | 828 | DB   | INSERT/로그만 |
+| 12  | PACKER_PRD_CODE_TO   | TEXT    |    -     | 829 | DB   | INSERT/로그만 |
+| 13  | BARCODEGOODS_FROM    | TEXT    |    O     | 830 | Y    | 바코드 파싱 (상품코드 시작) |
+| 14  | BARCODEGOODS_TO      | TEXT    |    O     | 831 | Y    | 바코드 파싱 (상품코드 끝) |
+| 15  | WEIGHT_FROM          | TEXT    |    O     | 832 | DB   | INSERT/로그만 |
+| 16  | WEIGHT_TO            | TEXT    |    O     | 833 | DB   | INSERT/로그만 |
+| 17  | MAKINGDATE_FROM      | TEXT    |    -     | 834 | DB   | INSERT만 |
+| 18  | MAKINGDATE_TO        | TEXT    |    -     | 835 | DB   | INSERT만 |
+| 19  | BOXSERIAL_FROM       | TEXT    |    -     | 836 | DB   | INSERT만 |
+| 20  | BOXSERIAL_TO         | TEXT    |    -     | 837 | DB   | INSERT만 |
+| 21  | STATUS               | TEXT    |    -     | 838 | DB   | INSERT/로그만 |
+| 22  | REG_ID               | TEXT    |    O     | 839 | DB   | INSERT/로그만 |
+| 23  | REG_DATE             | TEXT    |    -     | 840 | DB   | 로그만 |
+| 24  | REG_TIME             | TEXT    |    -     | 841 | DB   | 로그만 |
+| 25  | MEMO                 | TEXT    |    -     | 842 | DB   | 로그만 |
+| 26  | SHELF_LIFE           | TEXT    |    -     | 843 | DB   | INSERT/로그만 |
+
+**사용여부 범례**: Y=사용, DB=저장만(읽기 없음 또는 로그만), N=미사용
+
+#### 4.1.1 컬럼별 상세 사용처
+
+**1. BARCODE_INFO_ID** (INTEGER, PK) - 미사용
+- getBARCODE_INFO_ID() 호출 없음
+- PK 자동 생성 컬럼이나 실제 조회에 사용되지 않음
+
+**2. PACKER_CLIENT_CODE** (TEXT)
+- DBHandler.java:1023 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:141 - 바코드 정보 수신 시 로그 출력용
+- 실제 비즈니스 로직에서 읽어서 사용하는 곳 없음
+
+**3. PACKER_PRODUCT_CODE** (TEXT)
+- BixolonShipmentActivity.java - 바코드 조회 결과 화면 표시
+- ShipmentActivity.java - 동일 패턴
+- DBHandler.java:1024 - TB_BARCODE_INFO INSERT 시 저장
+- 바코드 스캔 시 매칭된 상품정보 표시에 사용
+
+**4. PACKER_PRD_NAME** (TEXT)
+- DBHandler.java:1026 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:141 - 바코드 정보 수신 시 로그 출력용
+- 실제 비즈니스 로직에서 읽어서 사용하는 곳 없음
+
+**5. ITEM_CODE** (TEXT)
+- DBHandler.java:1027 - TB_BARCODE_INFO INSERT 시 저장
+- 실제 비즈니스 로직에서 읽어서 사용하는 곳 없음
+
+**6. ITEM_NAME_KR** (TEXT)
+- BixolonShipmentActivity.java - 바코드 조회 결과 화면 표시 (한글 상품명)
+- ShipmentActivity.java - 동일 패턴
+- DBHandler.java:1028 - TB_BARCODE_INFO INSERT 시 저장
+- 바코드 스캔 시 매칭된 상품의 한글명 표시에 사용
+
+**7. BRAND_CODE** (TEXT)
+- DBHandler.java:1024 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:142 - 바코드 정보 수신 시 로그 출력용
+- 실제 비즈니스 로직에서 읽어서 사용하는 곳 없음
+
+**8. BARCODEGOODS** (TEXT)
+- BixolonShipmentActivity.java - 바코드 매칭 시 상품코드 비교
+- ShipmentActivity.java - 동일 패턴
+- DBHandler.java:1029 - TB_BARCODE_INFO INSERT 시 저장
+- 스캔한 바코드에서 추출한 상품코드와 비교하여 출하대상 매칭
+
+**9. BASEUNIT** (TEXT)
+- DBHandler.java:1030 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:142 - 바코드 정보 수신 시 로그 출력용
+- 중량 단위 (LB, KG) 정보이나 앱에서 직접 사용하지 않음
+
+**10. ZEROPOINT** (TEXT)
+- DBHandler.java:1031 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:143 - 바코드 정보 수신 시 로그 출력용
+- 소수점 자릿수 정보이나 앱에서 직접 사용하지 않음
+
+**11. PACKER_PRD_CODE_FROM** (TEXT)
+- DBHandler.java:1032 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:143 - 바코드 정보 수신 시 로그 출력용
+- 패커 상품코드 추출 시작 위치이나 앱에서 직접 사용하지 않음
+
+**12. PACKER_PRD_CODE_TO** (TEXT)
+- DBHandler.java:1033 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:143 - 바코드 정보 수신 시 로그 출력용
+- 패커 상품코드 추출 끝 위치이나 앱에서 직접 사용하지 않음
+
+**13. BARCODEGOODS_FROM** (TEXT)
+- BixolonShipmentActivity.java - 바코드 파싱 시 상품코드 추출 시작 위치
+- ShipmentActivity.java - 동일 패턴
+- DBHandler.java:1034 - TB_BARCODE_INFO INSERT 시 저장
+- 바코드 문자열에서 상품코드 substring 시작 인덱스
+
+**14. BARCODEGOODS_TO** (TEXT)
+- BixolonShipmentActivity.java - 바코드 파싱 시 상품코드 추출 끝 위치
+- ShipmentActivity.java - 동일 패턴
+- DBHandler.java:1035 - TB_BARCODE_INFO INSERT 시 저장
+- 바코드 문자열에서 상품코드 substring 끝 인덱스
+
+**15. WEIGHT_FROM** (TEXT)
+- DBHandler.java:1036 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:144 - 바코드 정보 수신 시 로그 출력용
+- 중량 추출 시작 위치이나 앱에서 직접 사용하지 않음
+
+**16. WEIGHT_TO** (TEXT)
+- DBHandler.java:1037 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:145 - 바코드 정보 수신 시 로그 출력용
+- 중량 추출 끝 위치이나 앱에서 직접 사용하지 않음
+
+**17. MAKINGDATE_FROM** (TEXT)
+- DBHandler.java:1038 - TB_BARCODE_INFO INSERT 시 저장
+- 제조일 추출 시작 위치이나 앱에서 직접 사용하지 않음
+
+**18. MAKINGDATE_TO** (TEXT)
+- DBHandler.java:1039 - TB_BARCODE_INFO INSERT 시 저장
+- 제조일 추출 끝 위치이나 앱에서 직접 사용하지 않음
+
+**19. BOXSERIAL_FROM** (TEXT)
+- DBHandler.java:1040 - TB_BARCODE_INFO INSERT 시 저장
+- 박스번호 추출 시작 위치이나 앱에서 직접 사용하지 않음
+
+**20. BOXSERIAL_TO** (TEXT)
+- DBHandler.java:1041 - TB_BARCODE_INFO INSERT 시 저장
+- 박스번호 추출 끝 위치이나 앱에서 직접 사용하지 않음
+
+**21. STATUS** (TEXT)
+- DBHandler.java:1042 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:145 - 바코드 정보 수신 시 로그 출력용
+- 사용여부(Y/N) 정보이나 앱에서 필터링에 사용하지 않음
+
+**22. REG_ID** (TEXT)
+- DBHandler.java:1043 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:145 - 바코드 정보 수신 시 로그 출력용
+- 등록자 ID이나 앱에서 직접 사용하지 않음
+
+**23. REG_DATE** (TEXT)
+- ProgressDlgBarcodeSearch.java:145 - 바코드 정보 수신 시 로그 출력용
+- DBHandler INSERT에서는 컬럼 누락 (DB 저장 안함)
+- 등록일자이나 앱에서 직접 사용하지 않음
+
+**24. REG_TIME** (TEXT)
+- ProgressDlgBarcodeSearch.java:145 - 바코드 정보 수신 시 로그 출력용
+- DBHandler INSERT에서는 컬럼 누락 (DB 저장 안함)
+- 등록시간이나 앱에서 직접 사용하지 않음
+
+**25. MEMO** (TEXT)
+- ProgressDlgBarcodeSearch.java:145 - 바코드 정보 수신 시 로그 출력용
+- DBHandler INSERT에서는 컬럼 누락 (DB 저장 안함)
+- 메모이나 앱에서 직접 사용하지 않음
+
+**26. SHELF_LIFE** (TEXT)
+- DBHandler.java:1044 - TB_BARCODE_INFO INSERT 시 저장
+- ProgressDlgBarcodeSearch.java:145 - 바코드 정보 수신 시 로그 출력용
+- 유통기한 정보이나 앱에서 직접 사용하지 않음
 
 ### 4.2 바코드 파싱 컬럼 설명
 
@@ -343,7 +723,48 @@ TB_GOODS_WET에서 서버로 전송되는 필드:
 
 ---
 
-## 7. 테이블 관계도
+## 7. 삭제된 테이블 (미사용)
+
+아래 테이블들은 DBInfo.java에 상수 정의만 있었고, 실제로 사용되지 않아 **2026-01-15에 소스에서 삭제됨**.
+
+### 7.1 TB_PRODUCTION
+
+| 항목 | 내용 |
+|------|------|
+| 상수명 | TABLE_NAME_PRODUCTION |
+| 원래 위치 | DBInfo.java:6 |
+| 삭제 사유 | CREATE TABLE 없음, 관련 메서드 데드코드 |
+| 관련 삭제 코드 | selectqueryAllProduction() (DBHandler.java:467-504) |
+
+**삭제된 코드 내용**:
+```java
+// DBInfo.java에서 삭제됨
+public static final String TABLE_NAME_PRODUCTION = "TB_PRODUCTION";
+
+// DBHandler.java에서 삭제됨 (데드코드)
+public static ArrayList<String[]> selectqueryAllProduction(Context context) {
+    // TB_PRODUCTION 테이블이 존재하지 않아 항상 실패하는 코드였음
+}
+```
+
+### 7.2 TB_COMPLETE_ITEM
+
+| 항목 | 내용 |
+|------|------|
+| 상수명 | TABLE_NAME_COMPLETE_ITEM |
+| 원래 위치 | DBInfo.java:10 |
+| 삭제 사유 | 상수 정의만 존재, CREATE TABLE 없음, 사용 코드 없음 |
+| 관련 삭제 코드 | 없음 (정의만 있었음) |
+
+**삭제된 코드 내용**:
+```java
+// DBInfo.java에서 삭제됨
+public static final String TABLE_NAME_COMPLETE_ITEM = "TB_COMPLETE_ITEM";
+```
+
+---
+
+## 8. 테이블 관계도
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -374,9 +795,9 @@ TB_GOODS_WET에서 서버로 전송되는 필드:
 
 ---
 
-## 8. 데이터 흐름
+## 9. 데이터 흐름
 
-### 8.1 출하대상 받기
+### 9.1 출하대상 받기
 
 ```
 1. MainActivity → "출하대상받기" 버튼 클릭
@@ -384,7 +805,7 @@ TB_GOODS_WET에서 서버로 전송되는 필드:
 3. DBHandler.insertqueryShipment() → TB_SHIPMENT에 저장 (Line 654)
 ```
 
-### 8.2 바코드 정보 받기
+### 9.2 바코드 정보 받기
 
 ```
 1. MainActivity → "바코드정보받기" 버튼 클릭
@@ -392,7 +813,7 @@ TB_GOODS_WET에서 서버로 전송되는 필드:
 3. DBHandler.insertqueryBarcodeInfo() → TB_BARCODE_INFO에 저장 (Line 1031)
 ```
 
-### 8.3 계근 입력
+### 9.3 계근 입력
 
 ```
 1. BixolonShipmentActivity → 바코드 스캔
@@ -404,7 +825,7 @@ TB_GOODS_WET에서 서버로 전송되는 필드:
 
 ---
 
-## 9. 관련 파일
+## 10. 관련 파일
 
 | 파일 | 역할 |
 |------|------|
@@ -418,7 +839,7 @@ TB_GOODS_WET에서 서버로 전송되는 필드:
 
 ---
 
-## 10. DEFAULT 값
+## 11. DEFAULT 값
 
 | 테이블 | 컬럼 | DEFAULT | 라인 |
 |--------|------|---------|------|
@@ -428,9 +849,9 @@ TB_GOODS_WET에서 서버로 전송되는 필드:
 
 ---
 
-## 11. 중복 체크 로직
+## 12. 중복 체크 로직
 
-### 11.1 duplicatequeryGoodsWet_check()
+### 12.1 duplicatequeryGoodsWet_check()
 
 **용도**: 바코드 단순 중복 체크 (생산 계근)
 **위치**: DBHandler.java:1396-1427
@@ -446,7 +867,7 @@ SELECT COUNT(*) FROM TB_GOODS_WET WHERE BARCODE = ?
     └─ count = 0 → 중복 아님 (false 반환)
 ```
 
-### 11.2 duplicatequeryGoodsWet()
+### 12.2 duplicatequeryGoodsWet()
 
 **용도**: 바코드 + GI_D_ID + PACKER_PRODUCT_CODE 복합 중복 체크 (출하 계근)
 **위치**: DBHandler.java:1430-1464
@@ -473,7 +894,7 @@ WHERE BARCODE = ?
 
 ---
 
-## 12. searchType별 VIEW 매핑
+## 13. searchType별 VIEW 매핑
 
 | searchType | 기능 | 서버 VIEW |
 |:----------:|------|-----------|
@@ -488,7 +909,7 @@ WHERE BARCODE = ?
 
 ---
 
-## 13. INDEX 정보
+## 14. INDEX 정보
 
 **현재 상태**: 별도 INDEX 생성 없음
 
@@ -504,4 +925,4 @@ WHERE BARCODE = ?
 
 ---
 
-**최종 수정일**: 2026-01-15
+**최종 수정일**: 2026-01-16
