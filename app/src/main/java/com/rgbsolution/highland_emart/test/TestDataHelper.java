@@ -80,9 +80,7 @@ public class TestDataHelper {
         insertBarcodeInfo(context, "TEST_PKR_001", "8801234567890", "이마트 테스트 상품");
 
         Shipments_Info si = createBaseShipmentInfo();
-        si.setGI_H_ID("TEST_GI_H_001");
         si.setGI_D_ID("TEST_GI_D_001");
-        si.setEOI_ID("EOI_TEST_001");
         si.setITEM_CODE("ITEM_TEST_001");
         si.setITEM_NAME("이마트 테스트 상품");
         si.setEMARTITEM_CODE("123456");            // 이마트 상품코드 6자리 (바코드용)
@@ -112,9 +110,7 @@ public class TestDataHelper {
         insertBarcodeInfo(context, "TEST_HP_PKR_001", "2288012345000", "홈플러스 테스트 상품");
 
         Shipments_Info si = createBaseShipmentInfo();
-        si.setGI_H_ID("TEST_HP_H_001");
         si.setGI_D_ID("TEST_HP_D_001");
-        si.setEOI_ID("HP_EOI_001");
         si.setITEM_CODE("HP_ITEM_001");
         si.setITEM_NAME("홈플러스 테스트 등심");
         si.setEMARTITEM_CODE("234567");            // 홈플러스 상품코드 6자리
@@ -138,9 +134,7 @@ public class TestDataHelper {
         insertBarcodeInfo(context, "TEST_LT_PKR_001", "6688012345000", "롯데마트 테스트 상품");
 
         Shipments_Info si = createBaseShipmentInfo();
-        si.setGI_H_ID("TEST_LT_H_001");
         si.setGI_D_ID("TEST_LT_D_001");
-        si.setEOI_ID("LT_EOI_001");
         si.setITEM_CODE("LT_ITEM_001");
         si.setITEM_NAME("롯데마트 테스트 양고기");
         si.setEMARTITEM_CODE("123456");            // 롯데 상품코드 6자리 (바코드용)
@@ -167,9 +161,7 @@ public class TestDataHelper {
         insertBarcodeInfo(context, "TEST_WS_PKR_001", "3388012345000", "도매 테스트 상품");
 
         Shipments_Info si = createBaseShipmentInfo();
-        si.setGI_H_ID("TEST_WS_H_001");
         si.setGI_D_ID("TEST_WS_D_001");
-        si.setEOI_ID("WS_EOI_001");
         si.setITEM_CODE("WS_ITEM_001");
         si.setITEM_NAME("도매 테스트 부채살");
         si.setEMARTITEM_CODE("345678");            // 도매 상품코드 6자리
@@ -191,9 +183,7 @@ public class TestDataHelper {
         insertBarcodeInfo(context, "TEST_NF_PKR_001", "4488012345000", "이마트 비정량 테스트");
 
         Shipments_Info si = createBaseShipmentInfo();
-        si.setGI_H_ID("TEST_NF_H_001");
         si.setGI_D_ID("TEST_NF_D_001");
-        si.setEOI_ID("NF_EOI_001");
         si.setITEM_CODE("NF_ITEM_001");
         si.setITEM_NAME("이마트 비정량 안심");
         si.setEMARTITEM_CODE("456789");            // 이마트 비정량 상품코드 6자리 (바코드용)
@@ -220,9 +210,7 @@ public class TestDataHelper {
         insertBarcodeInfo(context, "TEST_HPF_PKR_001", "5588012345000", "홈플러스 비정량 테스트");
 
         Shipments_Info si = createBaseShipmentInfo();
-        si.setGI_H_ID("TEST_HPF_H_001");
         si.setGI_D_ID("TEST_HPF_D_001");
-        si.setEOI_ID("HPF_EOI_001");
         si.setITEM_CODE("HPF_ITEM_001");
         si.setITEM_NAME("홈플러스 비정량 채끝");
         si.setEMARTITEM_CODE("789012");            // 홈플러스 비정량 상품코드 6자리
@@ -249,24 +237,18 @@ public class TestDataHelper {
         Shipments_Info si = new Shipments_Info();
         si.setGI_REQ_PKG("10");
         si.setGI_REQ_QTY("100.0");
-        si.setAMOUNT("0");
         si.setGI_REQ_DATE(dateformat.format(new Date()));
         si.setBRAND_CODE("TEST_BRAND");
-        si.setBRANDNAME("테스트브랜드");
         si.setCLIENT_CODE("TEST_CLIENT");
         si.setPACKER_CODE("TEST_PACKER");
-        si.setPACKERNAME("테스트패커");
         si.setPACKWEIGHT("10.0");
         si.setBL_NO("TEST_BL_001");
-        si.setGOODS_R_ID("TEST_GR_001");
-        si.setGR_REF_NO("TEST_REF_001");
         si.setITEM_SPEC("테스트 스펙");
         si.setCT_CODE("KR");
         si.setCT_NAME("한국");
         si.setIMPORT_ID_NO("123456789012");        // 12자리 필수 (substring(8,12) 사용)
         si.setSTORE_IN_DATE(dateformat.format(new Date()));
         si.setEMARTLOGIS_CODE("123456");           // 6자리 필수 (substring(0,6) 사용)
-        si.setEMARTLOGIS_NAME("테스트물류");
         return si;
     }
 
