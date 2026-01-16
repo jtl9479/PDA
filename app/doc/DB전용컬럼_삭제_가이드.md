@@ -162,10 +162,10 @@
 | Step | 파일                                                  | 작업                         | 완료  |
 | :--: | --------------------------------------------------- | -------------------------- | :-: |
 |  1   | DBHandler.java                                      | CREATE TABLE 8개 컬럼 삭제      |  ✅  |
-| 2-1  | DBHandler.java                                      | selectqueryShipment 수정     |     |
-| 2-2  | DBHandler.java                                      | selectqueryShipmentOnly 수정 |     |
-| 2-3  | DBHandler.java                                      | selectqueryShipmentBL 수정   |     |
-| 2-4  | DBHandler.java                                      | selectqueryAllShipment 수정  |     |
+| 2-1  | DBHandler.java                                      | selectqueryShipment 수정     |  ✅  |
+| 2-2  | DBHandler.java                                      | selectqueryShipmentOnly 수정 |  ✅  |
+| 2-3  | DBHandler.java                                      | selectqueryShipmentBL 수정   |  ✅  |
+| 2-4  | DBHandler.java                                      | selectqueryAllShipment 수정  |  ✅  |
 |  3   | DBHandler.java                                      | INSERT 쿼리 수정               |     |
 |  4   | DBHelper.java                                       | DB 마이그레이션                  |     |
 |  5   | Shipments_Info.java                                 | 필드/getter/setter 삭제        |     |
@@ -687,10 +687,10 @@ Step 1. CREATE TABLE [DBHandler.java]
     [x] createqueryShipment - 8개 컬럼 삭제
 
 Step 2. SELECT 쿼리 [DBHandler.java]
-    [ ] selectqueryShipment - SELECT 8개 + cursor 8개
-    [ ] selectqueryShipmentOnly - SELECT 8개 + cursor 8개
-    [ ] selectqueryShipmentBL - SELECT 8개 + cursor 8개
-    [ ] selectqueryAllShipment - EOI_ID + ORDER BY
+    [x] selectqueryShipment - SELECT 8개 + cursor 8개
+    [x] selectqueryShipmentOnly - SELECT 8개 + cursor 8개
+    [x] selectqueryShipmentBL - SELECT 8개 + cursor 8개
+    [x] selectqueryAllShipment - EOI_ID + ORDER BY
 
 Step 3. INSERT 쿼리 [DBHandler.java]
     [ ] insertqueryShipment - 컬럼명 8개 + VALUES 8개

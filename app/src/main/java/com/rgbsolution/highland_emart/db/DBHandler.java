@@ -32,22 +32,16 @@ public class DBHandler {
             String createTable = "CREATE TABLE IF NOT EXISTS "
                     + DBInfo.TABLE_NAME_SHIPMENT + " ("
                     + DBInfo.SHIPMENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                    + DBInfo.GI_H_ID + " TEXT NOT NULL, "
                     + DBInfo.GI_D_ID + " TEXT NOT NULL, "
-                    + DBInfo.EOI_ID + " TEXT NOT NULL, "
                     + DBInfo.ITEM_CODE + " TEXT NOT NULL, "
                     + DBInfo.ITEM_NAME + " TEXT NOT NULL, "
                     + DBInfo.EMARTITEM_CODE + " TEXT, "
                     + DBInfo.EMARTITEM + " TEXT, "
                     + DBInfo.GI_REQ_PKG + " TEXT NOT NULL, "
                     + DBInfo.GI_REQ_QTY + " TEXT NOT NULL, "
-                    + DBInfo.AMOUNT + " TEXT NOT NULL, "
-                    + DBInfo.GOODS_R_ID + " TEXT NOT NULL, "
-                    + DBInfo.GR_REF_NO + " TEXT NOT NULL, "
                     + DBInfo.GI_REQ_DATE + " TEXT NOT NULL, "
                     + DBInfo.BL_NO + " TEXT NOT NULL, "
                     + DBInfo.BRAND_CODE + " TEXT NOT NULL, "
-                    + DBInfo.BRANDNAME + " TEXT NOT NULL, "
                     + DBInfo.CLIENT_CODE + " TEXT NOT NULL, "
                     + DBInfo.CLIENTNAME + " TEXT NOT NULL, "
                     + DBInfo.CENTERNAME + " TEXT, "
@@ -55,7 +49,6 @@ public class DBHandler {
                     + DBInfo.CT_CODE + " TEXT NOT NULL, "
                     + DBInfo.IMPORT_ID_NO + " TEXT NOT NULL, "
                     + DBInfo.PACKER_CODE + " TEXT NOT NULL, "
-                    + DBInfo.PACKERNAME + " TEXT NOT NULL, "
                     + DBInfo.PACKER_PRODUCT_CODE + " TEXT NOT NULL, "
                     + DBInfo.BARCODE_TYPE + " TEXT NOT NULL, "
                     + DBInfo.ITEM_TYPE + " TEXT NOT NULL, "
@@ -63,7 +56,6 @@ public class DBHandler {
                     + DBInfo.BARCODEGOODS + " TEXT, "
                     + DBInfo.STORE_IN_DATE + " TEXT, "
                     + DBInfo.EMARTLOGIS_CODE + " TEXT, "
-                    + DBInfo.EMARTLOGIS_NAME + " TEXT, "
                     + DBInfo.SAVE_TYPE + " TEXT NOT NULL,"
                     + DBInfo.WH_AREA + " TEXT,"
                     + DBInfo.USE_NAME + " TEXT,"
@@ -107,22 +99,16 @@ public class DBHandler {
 
             sqlStr = "SELECT "
                     + DBInfo.SHIPMENT_ID + ", "
-                    + DBInfo.GI_H_ID + ", "
                     + DBInfo.GI_D_ID + ", "
-                    + DBInfo.EOI_ID + ", "
                     + DBInfo.ITEM_CODE + ", "
                     + DBInfo.ITEM_NAME + ", "
                     + DBInfo.EMARTITEM_CODE + ", "
                     + DBInfo.EMARTITEM + ", "
                     + DBInfo.GI_REQ_PKG + ", "
                     + DBInfo.GI_REQ_QTY + ", "
-                    + DBInfo.AMOUNT + ", "
-                    + DBInfo.GOODS_R_ID + ", "
-                    + DBInfo.GR_REF_NO + ", "
                     + DBInfo.GI_REQ_DATE + ", "
                     + DBInfo.BL_NO + ", "
                     + DBInfo.BRAND_CODE + ", "
-                    + DBInfo.BRANDNAME + ", "
                     + DBInfo.CLIENT_CODE + ", "
                     + DBInfo.CLIENTNAME + ", "
                     + DBInfo.CENTERNAME + ", "
@@ -130,7 +116,6 @@ public class DBHandler {
                     + DBInfo.CT_CODE + ", "
                     + DBInfo.IMPORT_ID_NO + ", "
                     + DBInfo.PACKER_CODE + ", "
-                    + DBInfo.PACKERNAME + ", "
                     + DBInfo.PACKER_PRODUCT_CODE + ", "
                     + DBInfo.BARCODE_TYPE + ", "
                     + DBInfo.ITEM_TYPE + ", "
@@ -138,7 +123,6 @@ public class DBHandler {
                     + DBInfo.BARCODEGOODS + ", "
                     + DBInfo.STORE_IN_DATE + ", "
                     + DBInfo.EMARTLOGIS_CODE + ", "
-                    + DBInfo.EMARTLOGIS_NAME + ", "
                     + DBInfo.WH_AREA + ", "
                     + DBInfo.USE_NAME + ", "
                     + DBInfo.USE_CODE + ", "
@@ -162,22 +146,16 @@ public class DBHandler {
             while (cursor.moveToNext()) {
                 si = new Shipments_Info();
                 si.setSHIPMENT_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SHIPMENT_ID")), ""));
-                si.setGI_H_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_H_ID")), ""));
                 si.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
-                si.setEOI_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EOI_ID")), ""));
                 si.setITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_CODE")), ""));
                 si.setITEM_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME")), ""));
                 si.setEMARTITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTITEM_CODE")), ""));
                 si.setEMARTITEM(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTITEM")), ""));
                 si.setGI_REQ_PKG(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_PKG")), ""));
                 si.setGI_REQ_QTY(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_QTY")), ""));
-                si.setAMOUNT(Common.nullCheck(cursor.getString(cursor.getColumnIndex("AMOUNT")), ""));
-                si.setGOODS_R_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GOODS_R_ID")), ""));
-                si.setGR_REF_NO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GR_REF_NO")), ""));
                 si.setGI_REQ_DATE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_DATE")), ""));
                 si.setBL_NO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BL_NO")), ""));
                 si.setBRAND_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BRAND_CODE")), ""));
-                si.setBRANDNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BRANDNAME")), ""));
                 si.setCLIENT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CLIENT_CODE")), ""));
                 si.setCLIENTNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CLIENTNAME")), ""));
                 si.setCENTERNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CENTERNAME")), ""));
@@ -185,7 +163,6 @@ public class DBHandler {
                 si.setCT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CT_CODE")), ""));
                 si.setIMPORT_ID_NO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("IMPORT_ID_NO")), ""));
                 si.setPACKER_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_CODE")), ""));
-                si.setPACKERNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKERNAME")), ""));
                 si.setPACKER_PRODUCT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRODUCT_CODE")), ""));
                 si.setBARCODE_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODE_TYPE")), ""));
                 si.setITEM_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_TYPE")), ""));
@@ -193,7 +170,6 @@ public class DBHandler {
                 si.setBARCODEGOODS(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODEGOODS")), ""));
                 si.setSTORE_IN_DATE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("STORE_IN_DATE")), ""));
                 si.setEMARTLOGIS_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTLOGIS_CODE")), ""));
-                si.setEMARTLOGIS_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTLOGIS_NAME")), ""));
                 si.setSAVE_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SAVE_TYPE")), ""));
                 si.setWH_AREA(Common.nullCheck(cursor.getString(cursor.getColumnIndex("WH_AREA")), ""));
                 si.setUSE_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("USE_NAME")), ""));
@@ -228,22 +204,16 @@ public class DBHandler {
 
             sqlStr = "SELECT "
                     + DBInfo.SHIPMENT_ID + ", "
-                    + DBInfo.GI_H_ID + ", "
                     + DBInfo.GI_D_ID + ", "
-                    + DBInfo.EOI_ID + ", "
                     + DBInfo.ITEM_CODE + ", "
                     + DBInfo.ITEM_NAME + ", "
                     + DBInfo.EMARTITEM_CODE + ", "
                     + DBInfo.EMARTITEM + ", "
                     + DBInfo.GI_REQ_PKG + ", "
                     + DBInfo.GI_REQ_QTY + ", "
-                    + DBInfo.AMOUNT + ", "
-                    + DBInfo.GOODS_R_ID + ", "
-                    + DBInfo.GR_REF_NO + ", "
                     + DBInfo.GI_REQ_DATE + ", "
                     + DBInfo.BL_NO + ", "
                     + DBInfo.BRAND_CODE + ", "
-                    + DBInfo.BRANDNAME + ", "
                     + DBInfo.CLIENT_CODE + ", "
                     + DBInfo.CLIENTNAME + ", "
                     + DBInfo.CENTERNAME + ", "
@@ -251,7 +221,6 @@ public class DBHandler {
                     + DBInfo.CT_CODE + ", "
                     + DBInfo.IMPORT_ID_NO + ", "
                     + DBInfo.PACKER_CODE + ", "
-                    + DBInfo.PACKERNAME + ", "
                     + DBInfo.PACKER_PRODUCT_CODE + ", "
                     + DBInfo.BARCODE_TYPE + ", "
                     + DBInfo.ITEM_TYPE + ", "
@@ -259,7 +228,6 @@ public class DBHandler {
                     + DBInfo.BARCODEGOODS + ", "
                     + DBInfo.STORE_IN_DATE + ", "
                     + DBInfo.EMARTLOGIS_CODE + ", "
-                    + DBInfo.EMARTLOGIS_NAME + ", "
                     + DBInfo.SAVE_TYPE + " FROM "
                     + DBInfo.TABLE_NAME_SHIPMENT
                     + " WHERE BARCODEGOODS = '" + barcodegoods + "' "
@@ -274,22 +242,16 @@ public class DBHandler {
             while (cursor.moveToNext()) {
                 si = new Shipments_Info();
                 si.setSHIPMENT_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SHIPMENT_ID")), ""));
-                si.setGI_H_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_H_ID")), ""));
                 si.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
-                si.setEOI_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EOI_ID")), ""));
                 si.setITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_CODE")), ""));
                 si.setITEM_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME")), ""));
                 si.setEMARTITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTITEM_CODE")), ""));
                 si.setEMARTITEM(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTITEM")), ""));
                 si.setGI_REQ_PKG(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_PKG")), ""));
                 si.setGI_REQ_QTY(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_QTY")), ""));
-                si.setAMOUNT(Common.nullCheck(cursor.getString(cursor.getColumnIndex("AMOUNT")), ""));
-                si.setGOODS_R_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GOODS_R_ID")), ""));
-                si.setGR_REF_NO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GR_REF_NO")), ""));
                 si.setGI_REQ_DATE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_DATE")), ""));
                 si.setBL_NO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BL_NO")), ""));
                 si.setBRAND_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BRAND_CODE")), ""));
-                si.setBRANDNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BRANDNAME")), ""));
                 si.setCLIENT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CLIENT_CODE")), ""));
                 si.setCLIENTNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CLIENTNAME")), ""));
                 si.setCENTERNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CENTERNAME")), ""));
@@ -297,7 +259,6 @@ public class DBHandler {
                 si.setCT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CT_CODE")), ""));
                 si.setIMPORT_ID_NO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("IMPORT_ID_NO")), ""));
                 si.setPACKER_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_CODE")), ""));
-                si.setPACKERNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKERNAME")), ""));
                 si.setPACKER_PRODUCT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRODUCT_CODE")), ""));
                 si.setBARCODE_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODE_TYPE")), ""));
                 si.setITEM_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_TYPE")), ""));
@@ -305,7 +266,6 @@ public class DBHandler {
                 si.setBARCODEGOODS(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODEGOODS")), ""));
                 si.setSTORE_IN_DATE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("STORE_IN_DATE")), ""));
                 si.setEMARTLOGIS_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTLOGIS_CODE")), ""));
-                si.setEMARTLOGIS_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTLOGIS_NAME")), ""));
                 si.setSAVE_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SAVE_TYPE")), ""));
 
                 list_si_info.add(si);
@@ -332,22 +292,16 @@ public class DBHandler {
 
             sqlStr = "SELECT "
                     + DBInfo.SHIPMENT_ID + ", "
-                    + DBInfo.GI_H_ID + ", "
                     + DBInfo.GI_D_ID + ", "
-                    + DBInfo.EOI_ID + ", "
                     + DBInfo.ITEM_CODE + ", "
                     + DBInfo.ITEM_NAME + ", "
                     + DBInfo.EMARTITEM_CODE + ", "
                     + DBInfo.EMARTITEM + ", "
                     + DBInfo.GI_REQ_PKG + ", "
                     + DBInfo.GI_REQ_QTY + ", "
-                    + DBInfo.AMOUNT + ", "
-                    + DBInfo.GOODS_R_ID + ", "
-                    + DBInfo.GR_REF_NO + ", "
                     + DBInfo.GI_REQ_DATE + ", "
                     + DBInfo.BL_NO + ", "
                     + DBInfo.BRAND_CODE + ", "
-                    + DBInfo.BRANDNAME + ", "
                     + DBInfo.CLIENT_CODE + ", "
                     + DBInfo.CLIENTNAME + ", "
                     + DBInfo.CENTERNAME + ", "
@@ -355,7 +309,6 @@ public class DBHandler {
                     + DBInfo.CT_CODE + ", "
                     + DBInfo.IMPORT_ID_NO + ", "
                     + DBInfo.PACKER_CODE + ", "
-                    + DBInfo.PACKERNAME + ", "
                     + DBInfo.PACKER_PRODUCT_CODE + ", "
                     + DBInfo.BARCODE_TYPE + ", "
                     + DBInfo.ITEM_TYPE + ", "
@@ -363,7 +316,6 @@ public class DBHandler {
                     + DBInfo.BARCODEGOODS + ", "
                     + DBInfo.STORE_IN_DATE + ", "
                     + DBInfo.EMARTLOGIS_CODE + ", "
-                    + DBInfo.EMARTLOGIS_NAME + ", "
                     + DBInfo.SAVE_TYPE + " FROM "
                     + DBInfo.TABLE_NAME_SHIPMENT
                     + " WHERE  CENTERNAME = '" + center_name + "' "
@@ -379,22 +331,16 @@ public class DBHandler {
             while (cursor.moveToNext()) {
                 si = new Shipments_Info();
                 si.setSHIPMENT_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SHIPMENT_ID")), ""));
-                si.setGI_H_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_H_ID")), ""));
                 si.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
-                si.setEOI_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EOI_ID")), ""));
                 si.setITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_CODE")), ""));
                 si.setITEM_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME")), ""));
                 si.setEMARTITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTITEM_CODE")), ""));
                 si.setEMARTITEM(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTITEM")), ""));
                 si.setGI_REQ_PKG(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_PKG")), ""));
                 si.setGI_REQ_QTY(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_QTY")), ""));
-                si.setAMOUNT(Common.nullCheck(cursor.getString(cursor.getColumnIndex("AMOUNT")), ""));
-                si.setGOODS_R_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GOODS_R_ID")), ""));
-                si.setGR_REF_NO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GR_REF_NO")), ""));
                 si.setGI_REQ_DATE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_DATE")), ""));
                 si.setBL_NO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BL_NO")), ""));
                 si.setBRAND_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BRAND_CODE")), ""));
-                si.setBRANDNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BRANDNAME")), ""));
                 si.setCLIENT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CLIENT_CODE")), ""));
                 si.setCLIENTNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CLIENTNAME")), ""));
                 si.setCENTERNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CENTERNAME")), ""));
@@ -402,7 +348,6 @@ public class DBHandler {
                 si.setCT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CT_CODE")), ""));
                 si.setIMPORT_ID_NO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("IMPORT_ID_NO")), ""));
                 si.setPACKER_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_CODE")), ""));
-                si.setPACKERNAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKERNAME")), ""));
                 si.setPACKER_PRODUCT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRODUCT_CODE")), ""));
                 si.setBARCODE_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODE_TYPE")), ""));
                 si.setITEM_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_TYPE")), ""));
@@ -410,7 +355,6 @@ public class DBHandler {
                 si.setBARCODEGOODS(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODEGOODS")), ""));
                 si.setSTORE_IN_DATE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("STORE_IN_DATE")), ""));
                 si.setEMARTLOGIS_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTLOGIS_CODE")), ""));
-                si.setEMARTLOGIS_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTLOGIS_NAME")), ""));
                 si.setSAVE_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SAVE_TYPE")), ""));
 
                 list_si_info.add(si);
@@ -434,11 +378,10 @@ public class DBHandler {
         try {
             Cursor cursor;
             String sqlStr = "SELECT "
-                    + DBInfo.GI_D_ID + ", "
-                    + DBInfo.EOI_ID
+                    + DBInfo.GI_D_ID
                     + " FROM "
                     + DBInfo.TABLE_NAME_SHIPMENT
-                    + " ORDER BY EOI_ID ASC";
+                    + " ORDER BY GI_D_ID ASC";
 
             cursor = mDbHelper.selectSql(sqlStr);
             if (Common.D) {
@@ -450,7 +393,6 @@ public class DBHandler {
             while (cursor.moveToNext()) {
                 si = new Shipments_Info();
                 si.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
-                si.setEOI_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EOI_ID")), ""));
 
                 list_si.add(si);
             }
