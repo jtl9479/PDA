@@ -166,7 +166,7 @@
 | 2-2  | DBHandler.java                                      | selectqueryShipmentOnly 수정 |  ✅  |
 | 2-3  | DBHandler.java                                      | selectqueryShipmentBL 수정   |  ✅  |
 | 2-4  | DBHandler.java                                      | selectqueryAllShipment 수정  |  ✅  |
-|  3   | DBHandler.java                                      | INSERT 쿼리 수정               |     |
+|  3   | DBHandler.java                                      | INSERT 쿼리 수정               |  ✅  |
 |  4   | DBHelper.java                                       | DB 마이그레이션                  |     |
 |  5   | Shipments_Info.java                                 | 필드/getter/setter 삭제        |     |
 |  6   | ProgressDlgShipSearch.java                          | temp[] 인덱스 재조정             |     |
@@ -693,7 +693,7 @@ Step 2. SELECT 쿼리 [DBHandler.java]
     [x] selectqueryAllShipment - EOI_ID + ORDER BY
 
 Step 3. INSERT 쿼리 [DBHandler.java]
-    [ ] insertqueryShipment - 컬럼명 8개 + VALUES 8개
+    [x] insertqueryShipment - 컬럼명 8개 + VALUES 8개
 
 Step 4. DB 마이그레이션 [DBHelper.java]
     [ ] DATABASE_VERSION 27 → 28 증가 (라인 22)
