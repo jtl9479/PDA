@@ -173,7 +173,7 @@
 |  7   | TestDataHelper.java                                 | setter 호출 삭제               |  ✅  |
 |  8   | DBInfo.java                                         | 상수 삭제                      |  ✅  |
 |  9   | ShipmentActivity.java, BixolonShipmentActivity.java | 주석 정리 (선택)                 |  ✅  |
-|  10  | -                                                   | 컴파일 및 테스트                  |     |
+|  10  | -                                                   | 컴파일 및 테스트                  |  ✅  |
 
 ---
 
@@ -479,46 +479,46 @@ public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
 #### 6.2 인덱스 재조정 매핑표 (38개 → 30개)
 
-| 현재 idx | 컬럼명 | 삭제 | 새 idx |
-|:--------:|--------|:----:|:------:|
-| 0 | GI_H_ID | ❌ | - |
-| 1 | GI_D_ID | | **0** |
-| 2 | EOI_ID | ❌ | - |
-| 3 | ITEM_CODE | | **1** |
-| 4 | ITEM_NAME | | **2** |
-| 5 | EMARTITEM_CODE | | **3** |
-| 6 | EMARTITEM | | **4** |
-| 7 | GI_REQ_PKG | | **5** |
-| 8 | GI_REQ_QTY | | **6** |
-| 9 | AMOUNT | ❌ | - |
-| 10 | GOODS_R_ID | ❌ | - |
-| 11 | GR_REF_NO | ❌ | - |
-| 12 | GI_REQ_DATE | | **7** |
-| 13 | BL_NO | | **8** |
-| 14 | BRAND_CODE | | **9** |
-| 15 | BRANDNAME | ❌ | - |
-| 16 | CLIENT_CODE | | **10** |
-| 17 | CLIENTNAME | | **11** |
-| 18 | CENTERNAME | | **12** |
-| 19 | ITEM_SPEC | | **13** |
-| 20 | CT_CODE | | **14** |
-| 21 | IMPORT_ID_NO | | **15** |
-| 22 | PACKER_CODE | | **16** |
-| 23 | PACKERNAME | ❌ | - |
-| 24 | PACKER_PRODUCT_CODE | | **17** |
-| 25 | BARCODE_TYPE | | **18** |
-| 26 | ITEM_TYPE | | **19** |
-| 27 | PACKWEIGHT | | **20** |
-| 28 | BARCODEGOODS | | **21** |
-| 29 | STORE_IN_DATE | | **22** |
-| 30 | EMARTLOGIS_CODE | | **23** |
-| 31 | EMARTLOGIS_NAME | ❌ | - |
-| 32 | WH_AREA | | **24** |
-| 33 | USE_NAME / LAST_BOX_ORDER | | **25** |
-| 34 | USE_CODE | | **26** |
-| 35 | CT_NAME | | **27** |
-| 36 | STORE_CODE | | **28** |
-| 37 | EMART_PLANT_CODE | | **29** |
+| 현재 idx | 컬럼명                       | 삭제  | 새 idx  |
+| :----: | ------------------------- | :-: | :----: |
+|   0    | GI_H_ID                   |  ❌  |   -    |
+|   1    | GI_D_ID                   |     | **0**  |
+|   2    | EOI_ID                    |  ❌  |   -    |
+|   3    | ITEM_CODE                 |     | **1**  |
+|   4    | ITEM_NAME                 |     | **2**  |
+|   5    | EMARTITEM_CODE            |     | **3**  |
+|   6    | EMARTITEM                 |     | **4**  |
+|   7    | GI_REQ_PKG                |     | **5**  |
+|   8    | GI_REQ_QTY                |     | **6**  |
+|   9    | AMOUNT                    |  ❌  |   -    |
+|   10   | GOODS_R_ID                |  ❌  |   -    |
+|   11   | GR_REF_NO                 |  ❌  |   -    |
+|   12   | GI_REQ_DATE               |     | **7**  |
+|   13   | BL_NO                     |     | **8**  |
+|   14   | BRAND_CODE                |     | **9**  |
+|   15   | BRANDNAME                 |  ❌  |   -    |
+|   16   | CLIENT_CODE               |     | **10** |
+|   17   | CLIENTNAME                |     | **11** |
+|   18   | CENTERNAME                |     | **12** |
+|   19   | ITEM_SPEC                 |     | **13** |
+|   20   | CT_CODE                   |     | **14** |
+|   21   | IMPORT_ID_NO              |     | **15** |
+|   22   | PACKER_CODE               |     | **16** |
+|   23   | PACKERNAME                |  ❌  |   -    |
+|   24   | PACKER_PRODUCT_CODE       |     | **17** |
+|   25   | BARCODE_TYPE              |     | **18** |
+|   26   | ITEM_TYPE                 |     | **19** |
+|   27   | PACKWEIGHT                |     | **20** |
+|   28   | BARCODEGOODS              |     | **21** |
+|   29   | STORE_IN_DATE             |     | **22** |
+|   30   | EMARTLOGIS_CODE           |     | **23** |
+|   31   | EMARTLOGIS_NAME           |  ❌  |   -    |
+|   32   | WH_AREA                   |     | **24** |
+|   33   | USE_NAME / LAST_BOX_ORDER |     | **25** |
+|   34   | USE_CODE                  |     | **26** |
+|   35   | CT_NAME                   |     | **27** |
+|   36   | STORE_CODE                |     | **28** |
+|   37   | EMART_PLANT_CODE          |     | **29** |
 
 #### 6.3 수정 전/후 비교
 
@@ -719,7 +719,7 @@ Step 9. 주석 정리 (선택) [ShipmentActivity.java, BixolonShipmentActivity.j
     [x] BixolonShipmentActivity.java - Javadoc 주석 수정
 
 Step 10. 테스트
-    [ ] 컴파일 성공
+    [x] 컴파일 성공
     [ ] 신규 설치 테스트
     [ ] 업그레이드 테스트
     [ ] 기능 테스트
