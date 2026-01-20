@@ -172,7 +172,7 @@
 |  6   | ProgressDlgShipSearch.java                          | temp[] 인덱스 재조정             |  ✅  |
 |  7   | TestDataHelper.java                                 | setter 호출 삭제               |  ✅  |
 |  8   | DBInfo.java                                         | 상수 삭제                      |  ✅  |
-|  9   | ShipmentActivity.java, BixolonShipmentActivity.java | 주석 정리 (선택)                 |     |
+|  9   | ShipmentActivity.java, BixolonShipmentActivity.java | 주석 정리 (선택)                 |  ✅  |
 |  10  | -                                                   | 컴파일 및 테스트                  |     |
 
 ---
@@ -715,8 +715,8 @@ Step 8. 상수 삭제 [DBInfo.java]
     [x] 8개 상수 삭제
 
 Step 9. 주석 정리 (선택) [ShipmentActivity.java, BixolonShipmentActivity.java]
-    [ ] ShipmentActivity.java - Javadoc 주석 + 주석 처리된 Log 삭제
-    [ ] BixolonShipmentActivity.java - Javadoc 주석 수정
+    [x] ShipmentActivity.java - Javadoc 주석 + 주석 처리된 Log 삭제
+    [x] BixolonShipmentActivity.java - Javadoc 주석 수정
 
 Step 10. 테스트
     [ ] 컴파일 성공

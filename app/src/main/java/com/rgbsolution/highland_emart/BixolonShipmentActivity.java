@@ -2046,7 +2046,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      *
      * <h3>바코드 타입별 라벨 형식</h3>
      * <ul>
-     *   <li>M0: 기본형 - 미트센터 납품 시 특별 처리 (EMARTLOGIS_NAME으로 분기)</li>
+     *   <li>M0: 기본형 - 미트센터 납품 시 특별 처리 (EMARTLOGIS_CODE로 분기)</li>
      *   <li>M1: 타입1 - 상품명, 바코드, 중량 표시</li>
      *   <li>M3: 타입3 - 소비기한 포함</li>
      *   <li>M4: 타입4 - 소비기한 포함 (M3과 유사)</li>

@@ -1960,7 +1960,7 @@ public class ShipmentActivity extends HoneywellScannerActivity {
      *
      * <h3>바코드 타입별 라벨 형식</h3>
      * <ul>
-     *   <li>M0: 기본형 - 미트센터 납품 시 특별 처리 (EMARTLOGIS_NAME으로 분기)</li>
+     *   <li>M0: 기본형 - 미트센터 납품 시 특별 처리 (EMARTLOGIS_CODE로 분기)</li>
      *   <li>M1: 타입1 - 상품명, 바코드, 중량 표시</li>
      *   <li>M3: 타입3 - 소비기한 포함</li>
      *   <li>M4: 타입4 - 소비기한 포함 (M3과 유사)</li>
@@ -2462,10 +2462,6 @@ public class ShipmentActivity extends HoneywellScannerActivity {
             Log.i(TAG, "===============CODE128============" + CODE128);
 
             byteStream.write(CODE128);
-
-//            Log.i(TAG, "===============LOGISCODE128============" + LOGISCODE128);
-//            byteStream.write(LOGISCODE128);
-//            Log.i(TAG, "===============EMARTLOGIS_NAME============" + si.EMARTLOGIS_NAME);
 
             //이마트 바코드 타입에 따른 바코드번호(숫자) 출력 위치 설정
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
