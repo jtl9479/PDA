@@ -423,23 +423,23 @@ labelPrintHelper.setPrintingLotte(
 > BixolonShipmentActivity의 상수는 유지하고, LabelPrintHelper에 동일 상수를 복사한다.
 
 #### 작업
-- [ ] searchType 상수 복사 (2개: EMART, LOTTE)
-- [ ] 회사 정보 상수 복사 (2개: COMPANY_CODE, COMPANY_NAME)
-- [ ] 미트센터 정보 상수 복사 (4개: MEAT_CENTER_CODE, MEAT_CENTER_STORE_CODE, KILKOY_PACKER_CODE, LOGIS_CODE_DEFAULT)
-- [ ] 바코드 타입 상수 복사 (11개: M0~M9, E0~E3, P0)
-- [ ] 아이템 타입 상수 복사 (5개: W, HW, S, J, B)
-- [ ] 센터명 상수 복사 (3개: TRD, WET, ET)
+- [x] searchType 상수 복사 (2개: EMART, LOTTE)
+- [x] 회사 정보 상수 복사 (2개: COMPANY_CODE, COMPANY_NAME)
+- [x] 미트센터 정보 상수 복사 (4개: MEAT_CENTER_CODE, MEAT_CENTER_STORE_CODE, KILKOY_PACKER_CODE, LOGIS_CODE_DEFAULT)
+- [x] 바코드 타입 상수 복사 (11개: M0~M9, E0~E3, P0)
+- [x] 아이템 타입 상수 복사 (5개: W, HW, S, J, B)
+- [x] 센터명 상수 복사 (3개: TRD, WET, ET)
 
 #### 테스트 (코드 비교)
-- [ ] LabelPrintHelper에 상수 총 27개 존재 확인
-- [ ] searchType 상수 값 일치 확인 (EMART="0", LOTTE="6")
-- [ ] 회사 정보 상수 값 일치 확인 (COMPANY_CODE="610933", COMPANY_NAME="(주)하이랜드이노베이션")
-- [ ] 미트센터 상수 값 일치 확인 (MEAT_CENTER_CODE="059015", MEAT_CENTER_STORE_CODE="9231", KILKOY_PACKER_CODE="30228", LOGIS_CODE_DEFAULT="0000000")
-- [ ] 바코드 타입 상수 값 일치 확인 (M0, M1, M3, M4, M8, M9, E0, E1, E2, E3, P0)
-- [ ] 아이템 타입 상수 값 일치 확인 (W, HW, S, J, B)
-- [ ] 센터명 상수 값 일치 확인 (TRD, WET, E/T)
-- [ ] 상수 주석 존재 확인 (각 그룹별 용도 설명)
-- [ ] BixolonShipmentActivity의 원본 상수 유지 확인
+- [x] LabelPrintHelper에 상수 총 27개 존재 확인
+- [x] searchType 상수 값 일치 확인 (EMART="0", LOTTE="6")
+- [x] 회사 정보 상수 값 일치 확인 (COMPANY_CODE="610933", COMPANY_NAME="(주)하이랜드이노베이션")
+- [x] 미트센터 상수 값 일치 확인 (MEAT_CENTER_CODE="059015", MEAT_CENTER_STORE_CODE="9231", KILKOY_PACKER_CODE="30228", LOGIS_CODE_DEFAULT="0000000")
+- [x] 바코드 타입 상수 값 일치 확인 (M0, M1, M3, M4, M8, M9, E0, E1, E2, E3, P0)
+- [x] 아이템 타입 상수 값 일치 확인 (W, HW, S, J, B)
+- [x] 센터명 상수 값 일치 확인 (TRD, WET, E/T)
+- [x] 상수 주석 존재 확인 (각 그룹별 용도 설명)
+- [x] BixolonShipmentActivity의 원본 상수 유지 확인
 
 ---
 
@@ -697,7 +697,7 @@ labelPrintHelper.setPrintingLotte(
 
 ### 개발 단계
 - [x] Step 1: 파일 생성 (LabelPrintHelper.java, PrinterCallback 인터페이스)
-- [ ] Step 2: 상수 복사 (27개)
+- [x] Step 2: 상수 복사 (27개)
 - [ ] Step 3: SLCS 메소드 이동 (8개)
 - [ ] Step 4-1: setPrinting() 이동 (660줄)
 - [ ] Step 4-2: setPrinting_prod() 이동 (87줄)
