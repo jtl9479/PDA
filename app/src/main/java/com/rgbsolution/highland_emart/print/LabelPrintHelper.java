@@ -1017,4 +1017,134 @@ public class LabelPrintHelper {
         return String.valueOf(weight_double);
     }
 
+    /**
+     * 홈플러스 출하용 바코드 라벨 인쇄
+     * <p>
+     * 홈플러스 비정량 출하 시 Bixolon 블루투스 프린터로 바코드 라벨을 인쇄한다.
+     * 지점명, 점포코드, 상품명, 중량, 납품일자, 업체명을 표시한다.
+     * </p>
+     *
+     * <h3>라벨 정보</h3>
+     * <ul>
+     *   <li>업체명: (주)하이랜드이노베이션</li>
+     *   <li>상품명, 중량, 지점코드, 점포코드 표시</li>
+     *   <li>소수점 2자리까지 중량 표시</li>
+     * </ul>
+     *
+     * @param weight_double 계근 중량
+     * @param si 출하 대상 정보 (Shipments_Info)
+     * @param reprint 재인쇄 여부
+     * @param callback 프린터 콜백
+     * @return 인쇄에 사용된 중량 문자열
+     */
+    public String setHomeplusPrinting(double weight_double, Shipments_Info si, boolean reprint,
+                                      PrinterCallback callback) {
+        if (Common.D) {
+            Log.d(TAG, "센터명 : '" + si.CENTERNAME + "'\n출고업체명 : '" + si.CLIENTNAME + "'\n이마트상품명 : '"
+                    + si.EMARTITEM + "'\n중량 : '" + weight_double + "'");
+        }
+
+        Log.d(TAG, "===========홈플 출력 시작 ================");
+
+        String pointCode = "";                // 지점코드
+        String storeCode = "";                // 점포코드(홈플러스 비정량)
+        String pointName = "";                // 지점명
+        String pCompName = COMPANY_NAME;
+
+        //소수점 한자리 이후 절사
+        String print_weight_str = "";
+        Double print_weight_double = 0.0;
+        String weight_ = String.valueOf(weight_double);
+        String weight_str = String.valueOf(weight_double);
+        String[] weight_sp = weight_str.split("\\.");
+        String print_weight = "";
+
+        if(weight_sp[1].length() > 1){
+            print_weight = weight_sp[0] + "." + weight_sp[1].substring(0, 2);
+        }else if(weight_sp[1].length() == 1){
+            print_weight = weight_sp[0] + "." + weight_sp[1].substring(0, 1);
+        }else{
+            print_weight = weight_sp[0];
+        }
+
+        weight_double = Double.parseDouble(print_weight);
+
+        print_weight_double = weight_double;
+
+        pointCode = si.EMARTLOGIS_CODE.toString();
+        storeCode = si.STORE_CODE.toString();
+        pointName = si.CLIENTNAME.toString();
+
+        // ========== SLCS 명령어로 홈플러스 라벨 인쇄 (Bixolon 프린터) ==========
+        // 원본: Woosim ByteArrayOutputStream + WoosimCmd 명령어
+        // 변환: StringBuilder + SLCS 헬퍼 메서드
+        // 라벨 레이아웃: 세로 방향 (원본 PM_setDirection(1))
+        try {
+            StringBuilder slcsCmd = new StringBuilder();
+            slcsCmd.append(slcsInit());                                              // 프린터 초기화 (CB + CS13,0)
+            slcsCmd.append(slcsLabelSize(510, 590));                                 // 라벨 크기: 가로 510, 세로 590 (원본 PM_setArea)
+            // 참고: 원본 PM_setDirection(1) - SLCS에서는 좌표 체계로 회전 효과 구현
+
+            // [1] 지점명 출력 - 위치(30, 170)
+            // 원본: PM_setPosition(30, 170) + getTTFcode(70 or 100)
+            // 6자 초과 시 크기 70, 이하 시 크기 100 (긴 이름은 작게)
+            if(pointName.length() > 6) {
+                slcsCmd.append(slcsText(170, 30, 70, 70, pointName.toString()));     // 6자 초과: 크기 70
+            } else {
+                slcsCmd.append(slcsText(170, 30, 100, 100, pointName.toString()));   // 6자 이하: 크기 100
+            }
+
+            // [2] 점포코드/지점코드 출력 - 위치(135, 170), 크기 155
+            // 원본: PM_setPosition(135, 170) + getTTFcode(155, 155)
+            // ITEM_TYPE_B(비정량)이면 storeCode, 아니면 pointCode 출력
+            if (si.getITEM_TYPE().equals(ITEM_TYPE_B)) {
+                slcsCmd.append(slcsText(170, 135, 155, 155, storeCode.toString()));  // 비정량: 점포코드(STORE_CODE)
+            } else {
+                slcsCmd.append(slcsText(170, 135, 155, 155, pointCode.toString()));  // 정량: 지점코드(EMARTLOGIS_CODE)
+            }
+
+            // [3] 상품명 출력 - 위치(287 or 283, 170)
+            // 원본: PM_setPosition + getTTFcode
+            // 17자 초과 시 크기 25, 이하 시 크기 30 (긴 상품명은 작게)
+            if (si.EMARTITEM.length() > 17) {
+                slcsCmd.append(slcsText(170, 287, 25, 25, si.EMARTITEM));            // 17자 초과: 크기 25
+            } else {
+                slcsCmd.append(slcsText(170, 283, 30, 30, si.EMARTITEM));            // 17자 이하: 크기 30
+            }
+
+            // [4] BOX 텍스트 - 위치(322, 170), 크기 40
+            slcsCmd.append(slcsText(170, 322, 40, 40, "BOX"));
+
+            // [5] CT코드 (차량코드) - 위치(361, 170), 크기 40
+            slcsCmd.append(slcsText(170, 361, 40, 40, String.valueOf(si.getCT_CODE())));
+
+            // [6] 중량/수입식별번호 - 위치(361, 380), 크기 40
+            // 형식: "중량/수입식별번호 뒤 4자리"
+            slcsCmd.append(slcsText(380, 361, 40, 40, String.valueOf(print_weight_double) + "/"+si.getIMPORT_ID_NO().substring(8, 12)));
+
+            // [7] 납품일자 - 위치(402, 170), 크기 40
+            // 형식: "YYYY년 MM월 DD일"
+            Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
+            String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
+            slcsCmd.append(slcsText(170, 402, 40, 40, tempDate));
+
+            // [8] 업체명 - 위치(441, 170), 크기 40
+            // 값: COMPANY_NAME 상수 ("(주)하이랜드이노베이션")
+            slcsCmd.append(slcsText(170, 441, 40, 40, pCompName));
+
+            // [9] 인쇄 실행 - 1장 출력
+            slcsCmd.append(slcsPrint(1));
+
+            // SLCS 명령어를 EUC-KR 인코딩으로 프린터에 전송
+            callback.sendData(slcsCmd.toString().getBytes("EUC-KR"));
+            callback.clearBarcodeInput();  // 바코드 입력창 초기화
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (Common.D) {
+                Log.d(TAG, "setHomeplusPrinting Exception\n" + e.getMessage());
+            }
+        }
+        return String.valueOf(print_weight_double);
+    }
+
 }
