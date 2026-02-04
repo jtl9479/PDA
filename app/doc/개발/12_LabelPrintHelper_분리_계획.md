@@ -534,19 +534,19 @@ labelPrintHelper.setPrintingLotte(
 > 롯데 라벨 출력 메소드 (2883-3145줄)
 
 #### 작업
-- [ ] setPrintingLotte() 메소드 복사 (2883-3145줄)
-- [ ] 시그니처 변경 (searchType, callback 추가)
-- [ ] 멤버 변수 참조 → 파라미터로 변경
-- [ ] sendData() → callback.sendData() 변경
-- [ ] edit_barcode.setText("") → callback.clearBarcodeInput() 변경
+- [x] setPrintingLotte() 메소드 복사 (2883-3145줄)
+- [x] 시그니처 변경 (searchType, callback 추가)
+- [x] 멤버 변수 참조 → 파라미터로 변경
+- [x] sendData() → callback.sendData() 변경
+- [x] edit_barcode.setText("") → callback.clearBarcodeInput() 변경
 
 #### 테스트 (코드 비교)
-- [ ] 메소드 본문 일치 확인 (2883-3145줄 → LabelPrintHelper)
-- [ ] 시그니처 변경 확인 (searchType, callback 추가)
-- [ ] 멤버 변수 참조 제거 확인 (Common.searchType → searchType 파라미터)
-- [ ] sendData() 호출 → callback.sendData() 변경 확인
-- [ ] edit_barcode.setText("") → callback.clearBarcodeInput() 변경 확인
-- [ ] box_order 처리 로직 일치 확인
+- [x] 메소드 본문 일치 확인 (2883-3145줄 → LabelPrintHelper)
+- [x] 시그니처 변경 확인 (searchType, callback 추가)
+- [x] 멤버 변수 참조 제거 확인 (Common.searchType → searchType 파라미터)
+- [x] sendData() 호출 → callback.sendData() 변경 확인
+- [x] edit_barcode.setText("") → callback.clearBarcodeInput() 변경 확인
+- [x] box_order 처리 로직 일치 확인
 
 ---
 
@@ -702,7 +702,7 @@ labelPrintHelper.setPrintingLotte(
 - [x] Step 4-1: setPrinting() 이동 (660줄)
 - [x] Step 4-2: setPrinting_prod() 이동 (87줄)
 - [x] Step 4-3: setHomeplusPrinting() 이동 (108줄)
-- [ ] Step 4-4: setPrintingLotte() 이동 (263줄)
+- [x] Step 4-4: setPrintingLotte() 이동 (263줄)
 - [ ] Step 5: BixolonShipmentActivity 수정 (호출부, 콜백 구현)
 - [ ] Step 6: 컴파일 오류 없음 확인
 

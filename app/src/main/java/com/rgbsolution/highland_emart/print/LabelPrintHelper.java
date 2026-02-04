@@ -1147,4 +1147,294 @@ public class LabelPrintHelper {
         return String.valueOf(print_weight_double);
     }
 
+    /**
+     * 롯데 출하용 바코드 라벨 인쇄
+     * <p>
+     * 롯데 유통 출하 시 사용하는 바코드 라벨 인쇄.
+     * 롯데 전용 바코드 포맷과 박스 순번(box_order)을 포함한다.
+     * </p>
+     *
+     * <h3>라벨 정보</h3>
+     * <ul>
+     *   <li>업체명: (주)하이랜드이노베이션</li>
+     *   <li>업체코드: EMARTLOGIS_CODE에서 가져옴</li>
+     *   <li>상품명, 중량, 제조일자, 박스 순번 표시</li>
+     *   <li>소수점 2자리까지 중량 표시</li>
+     *   <li>박스 순번(lotte_TryCount)으로 바코드 시퀀스 관리</li>
+     * </ul>
+     *
+     * @param weight_double 계근 중량
+     * @param si 출하 대상 정보 (Shipments_Info)
+     * @param reprint 재인쇄 여부
+     * @param making_date 제조일자
+     * @param box_order 박스 순번 (바코드 시퀀스용)
+     * @param searchType 검색 유형 - 기존 Common.searchType
+     * @param callback 프린터 콜백
+     * @return 인쇄에 사용된 중량 문자열
+     */
+    public String setPrintingLotte(double weight_double, Shipments_Info si, boolean reprint, String making_date, String box_order,
+                                   String searchType, PrinterCallback callback){
+        if (Common.D) {
+            Log.d(TAG, "센터명 : '" + si.CENTERNAME + "'\n출고업체명 : '" + si.CLIENTNAME + "'\n이마트상품명 : '"
+                    + si.EMARTITEM + "'\n중량 : '" + weight_double + "' \n제조일자 : '" + making_date + "'");
+        }
+
+        String pointName = "";                // 이마트 지점명
+        String pCompName = COMPANY_NAME;
+        String pBarcode = "";
+        String pBarcodeStr = "";
+        String pBarcode2 = "";
+        String pBarcodeStr2 = "";
+        String whArea = "";
+        String pCompCode_lotte = si.EMARTLOGIS_CODE; // 롯데전용 업체코드 뷰에서 EMARTLOGIS_CODE로 받아옴
+
+        //소수점 한자리 이후 절사
+        String print_weight_str = "";
+        Double print_weight_double = 0.0;
+        String weight_ = String.valueOf(weight_double);
+        String weight_str = String.valueOf(weight_double);
+        String[] weight_sp = weight_str.split("\\.");
+        String print_weight = "";
+
+        if(searchType.equals(SEARCH_TYPE_LOTTE)){
+            String chk = weight_sp[1];
+            if(chk.length() >=2){
+                print_weight = weight_sp[0] + "." + weight_sp[1].substring(0, 2); //롯데용, 한자리절사 안함
+            }else{
+                print_weight = weight_sp[0] + "." + weight_sp[1].substring(0, 1); //롯데용, 한자리절사 안함
+            }
+        }else{
+            print_weight = weight_sp[0] + "." + weight_sp[1].substring(0, 1); //이마트용 두자리부터 절사
+        }
+        weight_double = Double.parseDouble(print_weight);
+
+        if (si.getITEM_TYPE().equals(ITEM_TYPE_W) || si.getITEM_TYPE().equals(ITEM_TYPE_S)  ) { //롯데용 임시
+            print_weight_double = weight_double;
+            print_weight_str = String.valueOf(print_weight_double);
+
+            if (Common.D) {
+                Log.d(TAG, "print_weight_str : " + print_weight_str);
+                Log.d(TAG, "ITEM_TYPE : W");
+            }
+        } else if (si.getITEM_TYPE().equals(ITEM_TYPE_J)) {
+            print_weight_str = si.getPACKWEIGHT();
+            print_weight_double = Double.parseDouble(print_weight_str);
+            if (Common.D) {
+                Log.d(TAG, "ITEM_TYPE : J");
+            }
+        }
+
+        // .을 지워서 숫자만으로 표시
+        String temp = print_weight_str.replace(".", "");
+        int iLen = temp.length();
+
+        Log.d(TAG, "LENGTH TEST !!!! : "+iLen);
+
+        //원앤원은 17.7kg는 001770, 17.36kg는 001736 이렇게 위쪽 바코드에 찍어줘야되는데 소수점 두째자리가 아닌 첫째짜리까지 있는 건의 경우 000177 처럼 표기되는 문제가 있어 아래 로직 추가함(2020.09.01)
+        if(iLen == 4){ //17.36의 경우
+            for (int i = 0; i < 6 - iLen; i++) {
+                temp = "0" + temp;            // ex) 198 -> 000198
+            }
+        }else if(iLen == 3){ //17.7의 경우
+            for (int i = 0; i < 5 - iLen; i++) {
+                temp = "0" + temp;            // ex) 198 -> 001980
+            }
+            // 2가지 경우로 나누기 10 이상인 경우, 10미만인 경우
+            if(print_weight_double >= 10) { // 10이상 인경우 3자리는 무조건 소수점 한자리임 뒤에 0붙임 ex 001770 : 17.7kg
+                temp = temp + "0";
+            } else { // 10미만인 경우 3자리는 두자리 소수점임 앞에 0 붙임 ex) 000177 : 1.77kg
+                temp = "0"+ temp;
+            }
+        }else if(iLen == 2){ //17.7의 경우
+            for (int i = 0; i < 4 - iLen; i++) {
+                temp = "0" + temp;
+            }
+            // 2가지 경우로 나누기 10 이상인 경우, 10미만 1이상인 경우. 소수점만 있는경우는 에러로 판단하여 없게나오게하기
+            if(print_weight_double >= 10) {  //10이상인 경우 2자리는 무조건 소수점없음 ex 001700 : 17kg
+                temp = temp + "00";
+            } else if(print_weight_double < 10 && print_weight_double > 1) { // 10미만 1이상인 경우 2자리는 한자리 소수점임 ex) 000170 : 1.7kg
+                temp = "0" + temp + "0";
+            }
+        }
+
+        print_weight_str = temp;
+
+        if (Common.D) {
+            Log.d(TAG, "중량 6 자리 : " + print_weight_str);
+        }
+        Log.d(TAG, "============ 바코드 타입 =================== : " + si.getBARCODE_TYPE());
+        Log.d(TAG, "============ 바코드 타입 판별 =================== : " + si.getBARCODE_TYPE().equals("L0"));
+        switch (si.getBARCODE_TYPE()) {
+
+            case "L0":
+                // 롯데상품코드 형식
+                // 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
+                if (Common.D) {
+                    Log.e(TAG, "::::::::: L0 ::::::::");
+                    Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
+                    Log.d(TAG, "중량 6자리 :" + print_weight_str);
+                    Log.d(TAG, "회사코드 : " + pCompCode_lotte);
+                    Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
+                }
+
+                String boxserial_cnt = "";
+
+                //재출력, 신규 출력 상관없이 전달받은 box_order 파라미터 사용
+                if (box_order != null && !box_order.isEmpty()) {
+                    boxserial_cnt = String.format("%04d", Integer.parseInt(box_order));
+                } else {
+                    Log.e(TAG, "setPrintingLotte: box_order가 null 또는 empty입니다.");
+                    return "";
+                }
+
+                Log.d(TAG, "----------------------pBarcode(회사코드+제조일자+중량+마트제품코드+박스번호) : " + pCompCode_lotte+" + "+making_date+" + "+print_weight_str.substring(print_weight_str.length()-4, print_weight_str.length())+" + "+si.getEMARTITEM_CODE().substring(0, 6)+" + " +boxserial_cnt);
+                pBarcode = pCompCode_lotte+making_date+print_weight_str.substring(print_weight_str.length()-4, print_weight_str.length())+si.getEMARTITEM_CODE().substring(0, 6) +boxserial_cnt;
+                Log.d(TAG, "바코드 확인용 ---------------------- " + pBarcode);
+                pBarcodeStr = pCompCode_lotte+making_date+print_weight_str.substring(print_weight_str.length()-4, print_weight_str.length())+si.getEMARTITEM_CODE().substring(0, 6) +boxserial_cnt;
+                Log.d(TAG, "바코드 확인용 ---------------------- " + pBarcode);
+
+                pBarcode2 = si.getIMPORT_ID_NO();
+                pBarcodeStr2 = si.getIMPORT_ID_NO();
+
+                break;
+        }
+
+        String[] split_name = null;
+        pointName = si.CLIENTNAME.toString();
+
+        if (split_name != null && split_name.length > 1) {
+            pointName = split_name[1].toString();
+        }
+
+        if (Common.D) {
+            Log.d(TAG, "print Barcode : " + pBarcode.toString());
+            Log.d(TAG, "print Weight : " + print_weight_str);
+        }
+
+        // ========== SLCS 명령어로 롯데(원앤원) 라벨 인쇄 (Bixolon 프린터) ==========
+        // 원본: Woosim ByteArrayOutputStream + WoosimCmd/WoosimBarcode/WoosimImage 명령어
+        // 변환: StringBuilder + SLCS 헬퍼 메서드
+        // 출력 항목:
+        //   [1] 상품명 (10,12) 35x35 - si.EMARTITEM
+        //   [2] 바코드1 - 중량바코드 (100,80) CODE128 h=60
+        //   [3] 바코드1 숫자 (114,139) 25x25 - pBarcodeStr
+        //   [4] 바코드2 - 이력번호바코드 (150,350) CODE128 h=60
+        //   [5] 이력번호 숫자 (155,410) 25x25 - pBarcode2
+        //   [6] 중량 라벨 (15,180) 40x40 - "중      량 : "
+        //   [7] 중량 값 (175,180) 40x40 - print_weight_double + " KG"
+        //   [8] 납품처 (15,228) 30x30 - pCompName
+        //   [9] 제조일자 (15,268) 30x30 - tempDate
+        //   [10] 이력(묶음)번호 (15,313) 30x30 - si.getIMPORT_ID_NO()
+        //   [11] WH_AREA (385,305) 65x65 - whArea
+        //   [12] 겉 테두리 박스 (0,0)-(560,440) 두께3
+        //   [13~15] 가로선 3개 y=60, y=180, y=345 두께3
+        try {
+            StringBuilder slcsCmd = new StringBuilder();
+
+            // 초기화: CB(버퍼클리어) + CS13,0(한글문자셋)
+            // 원본: WoosimCmd.initPrinter() + setPageMode() + selectTTF()
+            slcsCmd.append(slcsInit());
+
+            // 라벨 크기 설정: 576x460 도트
+            // 원본: WoosimCmd.PM_setArea(0, 0, 576, 460)
+            slcsCmd.append(slcsLabelSize(576, 460));
+
+            Log.i(TAG, "===============EMARTITEM============" + si.EMARTITEM);
+
+            // [1] 상품명 출력 (x=10, y=12, 폰트크기 35x35)
+            // 원본: PM_setPosition(10, 12) + getTTFcode(35, 35, si.EMARTITEM)
+            slcsCmd.append(slcsText(10, 12, 35, 35, si.EMARTITEM));
+
+            Log.i(TAG, "===============pBarcode============" + pBarcode);
+            Log.i(TAG, "===============이력번호============" + pBarcode2);
+
+            // L0 바코드 타입 (롯데/원앤원 전용)
+            if (si.getBARCODE_TYPE().equals("L0")) {
+                // [2] 중량바코드 출력 (x=100, y=80, CODE128, 높이60)
+                // 원본: WoosimBarcode.createBarcode(CODE128, 2, 60, false, pBarcode.getBytes()) at (100,80)
+                slcsCmd.append(slcsBarcode(100, 80, 60, pBarcode));
+
+                // [3] 바코드1 숫자 (중량바코드 아래) (x=114, y=139, 폰트크기 25x25)
+                // 원본: PM_setPosition(114, 139) + getTTFcode(25, 25, pBarcodeStr)
+                slcsCmd.append(slcsText(114, 139, 25, 25, pBarcodeStr));
+
+                Log.i(TAG, "===============LOGISCODE128============");
+
+                // [4] 이력번호 바코드 출력 (x=150, y=350, CODE128, 높이60)
+                // 원본: WoosimBarcode.createBarcode(CODE128, 2, 60, false, pBarcode2.getBytes()) at (150,350)
+                slcsCmd.append(slcsBarcode(150, 350, 60, pBarcode2));
+
+                // [5] 이력번호 숫자 (바코드2 아래) (x=155, y=410, 폰트크기 25x25)
+                // 원본: PM_setPosition(155, 410) + getTTFcode(25, 25, pBarcode2)
+                slcsCmd.append(slcsText(155, 410, 25, 25, pBarcode2));
+
+                // [6] 중량 라벨 (x=15, y=180, 폰트크기 40x40)
+                // 원본: PM_setPosition(15, 180) + getTTFcode(40, 40, "중      량 : ")
+                slcsCmd.append(slcsText(15, 180, 40, 40, "중      량 : "));
+
+                // [7] 중량 값 (x=175, y=180, 폰트크기 40x40)
+                // 원본: PM_setPosition(175, 180) + getTTFcode(40, 40, weight + " KG")
+                slcsCmd.append(slcsText(175, 180, 40, 40, String.valueOf(print_weight_double) + " KG"));
+
+                // [8] 납품처 (x=15, y=228, 폰트크기 30x30)
+                // 원본: PM_setPosition(15, 228) + getTTFcode(30, 30, "납품처 : " + pCompName)
+                slcsCmd.append(slcsText(15, 228, 30, 30, "납품처 : " + pCompName));
+
+                // 재인쇄 표시
+                if (reprint) {
+                    pCompName = pCompName + "  *";
+                }
+
+                Log.i(TAG, "=====================제조일자==================" + making_date);
+
+                // [9] 제조일자 (x=15, y=268, 폰트크기 30x30)
+                // 원본: PM_setPosition(15, 268) + getTTFcode(30, 30, "제조일자 : " + tempDate)
+                String tempDate = "20" + making_date.substring(0, 2) + "년 " + making_date.substring(2, 4) + "월 " + making_date.substring(4, 6) + "일";
+                slcsCmd.append(slcsText(15, 268, 30, 30, "제조일자 : " + tempDate));
+
+                // [10] 이력(묶음)번호 (x=15, y=313, 폰트크기 30x30)
+                // 원본: PM_setPosition(15, 313) + getTTFcode(30, 30, "이력(묶음)번호 : " + ...)
+                slcsCmd.append(slcsText(15, 313, 30, 30, "이력(묶음)번호 : " + si.getIMPORT_ID_NO()));
+
+                // [13~15] 가로선 3개 (L0 바코드 타입 전용)
+                // 원본: WoosimImage.drawLine(0, 60, 560, 60, 3) 등
+                slcsCmd.append(slcsLine(0, 60, 560, 60, 3));     // 가로선1 (상품명 아래)
+                slcsCmd.append(slcsLine(0, 180, 560, 180, 3));   // 가로선2 (바코드1 아래)
+                slcsCmd.append(slcsLine(0, 345, 560, 345, 3));   // 가로선3 (중량정보 아래)
+            }
+
+            // [11] WH_AREA 출력 (x=385, y=305, 폰트크기 65x65) - 창고구역 코드
+            // 원본: PM_setPosition(385, 305) + getTTFcode(65, 65, whArea)
+            whArea = si.getWH_AREA();
+            Log.e(TAG, "::::::::: whArea check44 ::::::::" + whArea);
+
+            if (whArea != null && !whArea.equals("")) {
+                slcsCmd.append(slcsText(385, 305, 65, 65, whArea));
+            }
+
+            // [12] 겉 테두리 박스 (0,0)에서 (560,440) 크기, 두께 3
+            // 원본: WoosimImage.drawBox(0, 0, 560, 440, 3)
+            slcsCmd.append(slcsBox(0, 0, 560, 440, 3));
+
+            // 인쇄 실행 (1장)
+            // 원본: WoosimCmd.PM_printData()
+            slcsCmd.append(slcsPrint(1));
+
+            // 라벨 피드 (마크 위치로 이동)
+            // 원본: WoosimCmd.feedToMark()
+            slcsCmd.append(slcsFeedToMark());
+
+            // 전송
+            callback.sendData(slcsCmd.toString().getBytes("EUC-KR"));
+
+            callback.clearBarcodeInput();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (Common.D) {
+                Log.d(TAG, "setPrintingLotte Exception\n" + e.getMessage().toString());
+            }
+        }
+        return String.valueOf(print_weight_double);
+    }
+
 }
