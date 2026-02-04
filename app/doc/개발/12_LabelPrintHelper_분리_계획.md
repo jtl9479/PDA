@@ -473,22 +473,22 @@ labelPrintHelper.setPrintingLotte(
 > 이마트/비정량 라벨 출력 메소드 (가장 복잡, 2071-2730줄)
 
 #### 작업
-- [ ] setPrinting() 메소드 복사 (2071-2730줄)
-- [ ] 시그니처 변경 (barcodeInfo, currentWorkItem, searchType, callback 추가)
-- [ ] 멤버 변수 참조 → 파라미터로 변경
-- [ ] sendData() → callback.sendData() 변경
-- [ ] edit_barcode.setText("") → callback.clearBarcodeInput() 변경
+- [x] setPrinting() 메소드 복사 (2071-2730줄)
+- [x] 시그니처 변경 (barcodeInfo, currentWorkItem, searchType, callback 추가)
+- [x] 멤버 변수 참조 → 파라미터로 변경
+- [x] sendData() → callback.sendData() 변경
+- [x] edit_barcode.setText("") → callback.clearBarcodeInput() 변경
 
 #### 테스트 (코드 비교)
-- [ ] 메소드 본문 일치 확인 (2071-2730줄 → LabelPrintHelper)
-- [ ] 시그니처 변경 확인 (barcodeInfo, currentWorkItem, searchType, callback 추가)
-- [ ] 멤버 변수 참조 제거 확인 (work_item_bi_info → barcodeInfo 파라미터)
-- [ ] 멤버 변수 참조 제거 확인 (arSM.get(current_work_position) → currentWorkItem 파라미터)
-- [ ] 멤버 변수 참조 제거 확인 (Common.searchType → searchType 파라미터)
-- [ ] sendData() 호출 → callback.sendData() 변경 확인
-- [ ] edit_barcode.setText("") → callback.clearBarcodeInput() 변경 확인
-- [ ] 바코드 타입 분기 로직 일치 확인 (M0~M9, E0~E3, P0)
-- [ ] 미트센터/수입육 분기 로직 일치 확인
+- [x] 메소드 본문 일치 확인 (2071-2730줄 → LabelPrintHelper)
+- [x] 시그니처 변경 확인 (barcodeInfo, currentWorkItem, searchType, callback 추가)
+- [x] 멤버 변수 참조 제거 확인 (work_item_bi_info → barcodeInfo 파라미터)
+- [x] 멤버 변수 참조 제거 확인 (arSM.get(current_work_position) → currentWorkItem 파라미터)
+- [x] 멤버 변수 참조 제거 확인 (Common.searchType → searchType 파라미터)
+- [x] sendData() 호출 → callback.sendData() 변경 확인
+- [x] edit_barcode.setText("") → callback.clearBarcodeInput() 변경 확인
+- [x] 바코드 타입 분기 로직 일치 확인 (M0~M9, E0~E3, P0)
+- [x] 미트센터/수입육 분기 로직 일치 확인
 
 ---
 
@@ -699,7 +699,7 @@ labelPrintHelper.setPrintingLotte(
 - [x] Step 1: 파일 생성 (LabelPrintHelper.java, PrinterCallback 인터페이스)
 - [x] Step 2: 상수 복사 (27개)
 - [x] Step 3: SLCS 메소드 이동 (8개)
-- [ ] Step 4-1: setPrinting() 이동 (660줄)
+- [x] Step 4-1: setPrinting() 이동 (660줄)
 - [ ] Step 4-2: setPrinting_prod() 이동 (87줄)
 - [ ] Step 4-3: setHomeplusPrinting() 이동 (108줄)
 - [ ] Step 4-4: setPrintingLotte() 이동 (263줄)
