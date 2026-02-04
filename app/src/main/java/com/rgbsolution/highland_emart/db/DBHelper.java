@@ -53,10 +53,10 @@ public class DBHelper {
                     //db.execSQL("ALTER TABLE TB_SHIPMENT ADD COLUMN LAST_BOX_ORDER INTEGER");
 
                     // v28: 8개 컬럼 삭제 (GI_H_ID, EOI_ID, AMOUNT, GOODS_R_ID, GR_REF_NO, BRANDNAME, PACKERNAME, EMARTLOGIS_NAME)
-                    if (oldVersion < 28) {
-                        db.execSQL("DROP TABLE IF EXISTS TB_SHIPMENT");
-                        db.execSQL(DBHandler.createqueryShipment);
-                    }
+//                    if (oldVersion < 28) {
+//                        db.execSQL("DROP TABLE IF EXISTS TB_SHIPMENT");
+//                    db.execSQL(DBHandler.createqueryShipment);
+//                }
 
                     db.setTransactionSuccessful();
                 } catch (IllegalStateException e) {
