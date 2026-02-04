@@ -446,25 +446,25 @@ labelPrintHelper.setPrintingLotte(
 ### Step 3: SLCS 메소드 이동
 
 #### 작업
-- [ ] slcsInit() 이동
-- [ ] slcsLabelSize() 이동
-- [ ] slcsText() 이동
-- [ ] slcsBarcode() 이동
-- [ ] slcsLine() 이동
-- [ ] slcsBox() 이동
-- [ ] slcsPrint() 이동
-- [ ] slcsFeedToMark() 이동
+- [x] slcsInit() 이동
+- [x] slcsLabelSize() 이동
+- [x] slcsText() 이동
+- [x] slcsBarcode() 이동
+- [x] slcsLine() 이동
+- [x] slcsBox() 이동
+- [x] slcsPrint() 이동
+- [x] slcsFeedToMark() 이동
 
 #### 테스트 (코드 비교)
-- [ ] slcsInit() - 초기화 명령어 일치 확인 ("CB\r\n" + "CS13,0\r\n")
-- [ ] slcsLabelSize(int width, int height) - 라벨 크기 명령어 일치 확인 ("SW" + width + "\r\n" + "SL" + height + "\r\n")
-- [ ] slcsText(int x, int y, int width, int height, String text) - 텍스트 명령어 일치 확인 (V 명령어)
-- [ ] slcsBarcode(int x, int y, int height, String data) - 바코드 명령어 일치 확인 (BD CODE128)
-- [ ] slcsLine(int x1, int y1, int x2, int y2, int width) - 선 명령어 일치 확인 (LS 명령어)
-- [ ] slcsBox(int x, int y, int width, int height, int thickness) - 박스 명령어 일치 확인 (LB 명령어)
-- [ ] slcsPrint(int copies) - 인쇄 명령어 일치 확인 ("P" + copies + "\r\n")
-- [ ] slcsFeedToMark() - 피드 명령어 일치 확인 ("T\r\n")
-- [ ] 모든 메소드 반환 타입 일치 확인 (**String**)
+- [x] slcsInit() - 초기화 명령어 일치 확인 ("CB\r\n" + "CS13,0\r\n")
+- [x] slcsLabelSize(int width, int height) - 라벨 크기 명령어 일치 확인 ("SW" + width + "\r\n" + "SL" + height + "\r\n")
+- [x] slcsText(int x, int y, int width, int height, String text) - 텍스트 명령어 일치 확인 (V 명령어)
+- [x] slcsBarcode(int x, int y, int height, String data) - 바코드 명령어 일치 확인 (BD CODE128)
+- [x] slcsLine(int x1, int y1, int x2, int y2, int width) - 선 명령어 일치 확인 (LS 명령어)
+- [x] slcsBox(int x, int y, int width, int height, int thickness) - 박스 명령어 일치 확인 (LB 명령어)
+- [x] slcsPrint(int copies) - 인쇄 명령어 일치 확인 ("P" + copies + "\r\n")
+- [x] slcsFeedToMark() - 피드 명령어 일치 확인 ("T\r\n")
+- [x] 모든 메소드 반환 타입 일치 확인 (**String**)
 
 ---
 
@@ -698,7 +698,7 @@ labelPrintHelper.setPrintingLotte(
 ### 개발 단계
 - [x] Step 1: 파일 생성 (LabelPrintHelper.java, PrinterCallback 인터페이스)
 - [x] Step 2: 상수 복사 (27개)
-- [ ] Step 3: SLCS 메소드 이동 (8개)
+- [x] Step 3: SLCS 메소드 이동 (8개)
 - [ ] Step 4-1: setPrinting() 이동 (660줄)
 - [ ] Step 4-2: setPrinting_prod() 이동 (87줄)
 - [ ] Step 4-3: setHomeplusPrinting() 이동 (108줄)
