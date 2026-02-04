@@ -404,16 +404,16 @@ labelPrintHelper.setPrintingLotte(
 ### Step 1: LabelPrintHelper.java 파일 생성
 
 #### 작업
-- [ ] 패키지 생성: `com.rgbsolution.highland_emart.print`
-- [ ] 클래스 생성: `LabelPrintHelper.java`
-- [ ] PrinterCallback 인터페이스 정의
+- [x] 패키지 생성: `com.rgbsolution.highland_emart.print` (기존 존재)
+- [x] 클래스 생성: `LabelPrintHelper.java`
+- [x] PrinterCallback 인터페이스 정의
 
 #### 테스트
-- [ ] 파일 존재 확인 (`app/src/main/java/com/rgbsolution/highland_emart/print/LabelPrintHelper.java`)
-- [ ] 패키지 선언 확인 (`package com.rgbsolution.highland_emart.print;`)
-- [ ] PrinterCallback 인터페이스 존재 확인
-- [ ] sendData(byte[] data) 메소드 선언 확인
-- [ ] clearBarcodeInput() 메소드 선언 확인
+- [x] 파일 존재 확인 (`app/src/main/java/com/rgbsolution/highland_emart/print/LabelPrintHelper.java`)
+- [x] 패키지 선언 확인 (`package com.rgbsolution.highland_emart.print;`)
+- [x] PrinterCallback 인터페이스 존재 확인
+- [x] sendData(byte[] data) 메소드 선언 확인
+- [x] clearBarcodeInput() 메소드 선언 확인
 
 ---
 
@@ -696,7 +696,7 @@ labelPrintHelper.setPrintingLotte(
 - [ ] Part 2: 변환 계획 확인
 
 ### 개발 단계
-- [ ] Step 1: 파일 생성 (LabelPrintHelper.java, PrinterCallback 인터페이스)
+- [x] Step 1: 파일 생성 (LabelPrintHelper.java, PrinterCallback 인터페이스)
 - [ ] Step 2: 상수 복사 (27개)
 - [ ] Step 3: SLCS 메소드 이동 (8개)
 - [ ] Step 4-1: setPrinting() 이동 (660줄)
