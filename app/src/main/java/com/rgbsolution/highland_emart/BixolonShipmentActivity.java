@@ -36,6 +36,7 @@ import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Goodswets_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 import com.rgbsolution.highland_emart.print.BixolonSocketPrinter;
+import com.rgbsolution.highland_emart.print.LabelPrintHelper;
 // Woosim import 제거됨 - Bixolon SLCS 명령어로 대체
 // 원본: import com.woosim.printer.WoosimBarcode;
 // 원본: import com.woosim.printer.WoosimCmd;
@@ -248,6 +249,21 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private BixolonSocketPrinter mBixolonPrinter = null;
     /** Bixolon 프린터 이전 상태 (연결 실패 판단용) */
     private int mPreviousBixolonState = BixolonSocketPrinter.STATE_NONE;
+
+    /** 라벨 출력 헬퍼 */
+    private LabelPrintHelper labelPrintHelper = new LabelPrintHelper();
+    /** 프린터 콜백 - LabelPrintHelper에서 프린터 데이터 전송 및 UI 업데이트 */
+    private LabelPrintHelper.PrinterCallback printerCallback = new LabelPrintHelper.PrinterCallback() {
+        @Override
+        public void sendData(byte[] data) {
+            BixolonShipmentActivity.this.sendData(data);
+        }
+
+        @Override
+        public void clearBarcodeInput() {
+            edit_barcode.setText("");
+        }
+    };
 
     // mWoosim 제거됨 - Bixolon SLCS 명령어로 대체
     /** 효과음 풀 */
@@ -878,17 +894,17 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         String making_date = msg.getData().getString("MAKINGDATE").toString();
 
                         if (Common.searchType.equals(SEARCH_TYPE_HOMEPLUS) || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)) {
-                            setHomeplusPrinting(Double.parseDouble(print_weight_str), arSM.get(select_position), true);
+                            labelPrintHelper.setHomeplusPrinting(Double.parseDouble(print_weight_str), arSM.get(select_position), true, printerCallback);
                         } else if (Common.searchType.equals(SEARCH_TYPE_LOTTE)) {
                             //Toast.makeText(getApplicationContext(), "롯데 재출력은 불가합니다.", Toast.LENGTH_SHORT).show();
                             // 롯데의 경우 바코드 시퀀스를 위해 BOX_ORDER 가져옴.
                             String box_order = msg.getData().getString("BOX_ORDER").toString();
 
-                            setPrintingLotte(Double.parseDouble(print_weight_str), arSM.get(select_position), true , making_date, box_order);
+                            labelPrintHelper.setPrintingLotte(Double.parseDouble(print_weight_str), arSM.get(select_position), true, making_date, box_order, Common.searchType, printerCallback);
                         } else if (Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)) {
-                            setPrinting_prod(Double.parseDouble(print_weight_str), arSM.get(select_position), true );
+                            labelPrintHelper.setPrinting_prod(Double.parseDouble(print_weight_str), arSM.get(select_position), true, printerCallback);
                         }else{ //이마트수기프린팅
-                            setPrinting(Double.parseDouble(print_weight_str), arSM.get(select_position), true , making_date);
+                            labelPrintHelper.setPrinting(Double.parseDouble(print_weight_str), arSM.get(select_position), true, making_date, work_item_bi_info, arSM.get(current_work_position), Common.searchType, printerCallback);
                         }
 
                         break;
@@ -1597,19 +1613,19 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         if (Common.print_bool) {
             if (Common.searchType.equals(SEARCH_TYPE_HOMEPLUS) || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)) {
                 Log.d(TAG, "===========홈플 출력 시작 ================");
-                setHomeplusPrinting(weight_double, arSM.get(current_work_position), false);
+                labelPrintHelper.setHomeplusPrinting(weight_double, arSM.get(current_work_position), false, printerCallback);
             }else if(Common.searchType.equals(SEARCH_TYPE_EMART)){
                 Log.d(TAG, "===========이마트 출력 시작 ================");
-                setPrinting(weight_double, arSM.get(current_work_position), false, making_date);
+                labelPrintHelper.setPrinting(weight_double, arSM.get(current_work_position), false, making_date, work_item_bi_info, arSM.get(current_work_position), Common.searchType, printerCallback);
             }else if(Common.searchType.equals(SEARCH_TYPE_NONFIXED)){
                 Log.d(TAG, "===========이마트(비정량) 출력 시작 ================");
-                setPrinting(weight_double, arSM.get(current_work_position), false, making_date);
+                labelPrintHelper.setPrinting(weight_double, arSM.get(current_work_position), false, making_date, work_item_bi_info, arSM.get(current_work_position), Common.searchType, printerCallback);
             }else if(Common.searchType.equals(SEARCH_TYPE_LOTTE)){
                 Log.d(TAG, "===========롯데 출력 시작 ================");
-                setPrintingLotte(weight_double, arSM.get(current_work_position), false, making_date, lotteBoxOrder);
+                labelPrintHelper.setPrintingLotte(weight_double, arSM.get(current_work_position), false, making_date, lotteBoxOrder, Common.searchType, printerCallback);
             }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)){
                 Log.d(TAG, "===========생산 출력 시작 ================");
-                setPrinting_prod(weight_double, arSM.get(current_work_position), false);
+                labelPrintHelper.setPrinting_prod(weight_double, arSM.get(current_work_position), false, printerCallback);
             }
         }
 
@@ -1933,141 +1949,14 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
-    /**
-     * 생산 투입용 바코드 라벨 인쇄
-     * <p>
-     * 생산 공정 투입 시 사용하는 간소화된 라벨 인쇄.
-     * 상품명, 상품코드, 중량만 표시하는 기본 바코드 형식.
-     * </p>
-     *
-     * @param weight_double 계근 중량 (소수점 2자리)
-     * @param si 출하 대상 정보 (Shipments_Info)
-     * @param reprint 재인쇄 여부
-     * @return 인쇄에 사용된 중량 문자열
-     */
-    public String setPrinting_prod(double weight_double, Shipments_Info si, boolean reprint){
-        Log.e(TAG, "======================::::::::: setPrinting_prod ::::::::======================");
-        if (Common.D) {
-            Log.d(TAG, "'\n상품명 : '" + si.EMARTITEM + "'\n상품코드 : '" + si.EMARTITEM_CODE + "'\n중량 : '" + weight_double + "'");
-        }
-
-        String pBarcode = "";
-        String pBarcodeStr = "";
-
-        String weight_str = String.valueOf(weight_double);
-        Log.d(TAG, "weight_str : " + weight_str);
-
-        String print_weight_str = String.valueOf(weight_double);
-        Log.d(TAG, "print_weight_str : " + print_weight_str);
-
-        // 소수점 둘째자리까지 채우기
-        String weight_00 = "";
-        DecimalFormat decimalFormat = new DecimalFormat("###.00");
-        weight_00 = decimalFormat.format(weight_double);
-        Log.d(TAG, "weight_00 : " + weight_00);
-
-        // .을 지워서 숫자만으로 표시
-        String temp = weight_00.replace(".", "");
-        int iLen = temp.length();
-
-        for (int i = 0; i < 6 - iLen; i++) {
-            temp = "0" + temp;            // ex) 198 -> 000198
-        }
-        print_weight_str = temp;
-
-        // 바코드 형식 : 상품코드 + 중량 6자리 + 00 + 연월일시분초
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmssSS");
-        Date time = new Date();
-        String now = dateFormat.format(time);
-
-        pBarcode = si.getEMARTITEM_CODE() + print_weight_str + "00" + now;
-        pBarcodeStr = si.getEMARTITEM_CODE() + print_weight_str + "00" + now;
-
-        Log.d(TAG, "** 바코드 :상품코드 + 중량 + 00 + 연월일시분초 = " + si.getEMARTITEM_CODE() + " + " + print_weight_str + " + 00 + " + now);
-
-
-        // ========== SLCS 명령어로 라벨 인쇄 (Bixolon 프린터) ==========
-        try {
-            StringBuilder slcsCmd = new StringBuilder();
-
-            // 프린터 초기화 (버퍼 클리어 + 한글 설정)
-            slcsCmd.append(slcsInit());
-
-            // 라벨 크기 설정 (너비 576, 높이 460)
-            slcsCmd.append(slcsLabelSize(576, 460));
-
-            //------------------------상품명 / 냉장냉동------------------------
-            // 상품명이 일정 길이 이상 넘어갈 경우 글자 크기 조절
-            if (si.EMARTITEM.length() > 14) {
-                slcsCmd.append(slcsText(50, 120, 35, 35, si.EMARTITEM + " / " + si.ITEM_SPEC));
-            } else {
-                slcsCmd.append(slcsText(50, 120, 40, 40, si.EMARTITEM + " / " + si.ITEM_SPEC));
-            }
-            Log.i(TAG, "write------------------------------------>상품명 / 냉장냉동 : " + si.EMARTITEM + " / " + si.ITEM_SPEC);
-
-            //------------------------바코드------------------------
-            slcsCmd.append(slcsBarcode(50, 190, 60, pBarcode));
-            Log.i(TAG, "write------------------------------------>바코드 : " + pBarcode);
-
-            //------------------------바코드 번호------------------------
-            slcsCmd.append(slcsText(45, 260, 25, 25, pBarcodeStr));
-            Log.i(TAG, "write------------------------------------>바코드번호 : " + pBarcodeStr);
-
-            //------------------------중량------------------------
-            slcsCmd.append(slcsText(50, 340, 40, 40, "중      량   :   " + weight_str + " KG"));
-            Log.i(TAG, "write------------------------------------>중량 : " + weight_str);
-
-            // 인쇄 실행 (1장)
-            slcsCmd.append(slcsPrint(1));
-
-            // SLCS 명령어 전송
-            sendData(slcsCmd.toString().getBytes("EUC-KR"));
-
-            edit_barcode.setText("");
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (Common.D) {
-                Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
-            }
-        }
-        return String.valueOf(weight_double);
-    }
+    // setPrinting_prod() 메소드 → LabelPrintHelper로 이동됨
 
     // ========================================================================================
-    // 라벨 인쇄 메서드
+    // 라벨 인쇄 메서드 → LabelPrintHelper로 이동됨
+    // setPrinting(), setHomeplusPrinting(), setPrintingLotte() 모두 LabelPrintHelper로 이동
     // ========================================================================================
 
-    /**
-     * 이마트 출하용 바코드 라벨 인쇄
-     * <p>
-     * 이마트/트레이더스 출하 시 Woosim 블루투스 프린터로 바코드 라벨을 인쇄한다.
-     * BARCODE_TYPE에 따라 라벨 형식이 달라진다.
-     * </p>
-     *
-     * <h3>바코드 타입별 라벨 형식</h3>
-     * <ul>
-     *   <li>M0: 기본형 - 미트센터 납품 시 특별 처리 (EMARTLOGIS_CODE로 분기)</li>
-     *   <li>M1: 타입1 - 상품명, 바코드, 중량 표시</li>
-     *   <li>M3: 타입3 - 소비기한 포함</li>
-     *   <li>M4: 타입4 - 소비기한 포함 (M3과 유사)</li>
-     *   <li>M8: 수입식별번호 포함</li>
-     *   <li>M9: 납품일자 포함</li>
-     *   <li>E0, E1, E2, E3: 이마트 확장 타입</li>
-     *   <li>P0: 기본 바코드</li>
-     * </ul>
-     *
-     * <h3>특별 처리 케이스</h3>
-     * <ul>
-     *   <li>킬코이 미트센터(패커코드 30228, 스토어 9231): 제조일에서 소비기한 계산</li>
-     *   <li>수입육 센터(TRD/WET/E/T): 소비기한 계산하여 라벨에 표시</li>
-     * </ul>
-     *
-     * @param weight_double 계근 중량
-     * @param si 출하 대상 정보 (Shipments_Info)
-     * @param reprint 재인쇄 여부 (true: 재인쇄, false: 최초 인쇄)
-     * @param making_date 제조일자 (소비기한 계산용)
-     * @return 인쇄에 사용된 중량 문자열
-     */
+    /* setPrinting() 메소드 삭제됨 - LabelPrintHelper.setPrinting()으로 이동
     public String setPrinting(double weight_double, Shipments_Info si, boolean reprint, String making_date){
         if (Common.D) {
             Log.d(TAG, "센터명 : '" + si.CENTERNAME + "'\n출고업체명 : '" + si.CLIENTNAME + "'\n이마트상품명 : '"
@@ -2728,26 +2617,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
         return String.valueOf(print_weight_double);
     }
+    // setPrinting() 메소드 끝 */
 
-    /**
-     * 홈플러스 출하용 바코드 라벨 인쇄
-     * <p>
-     * 홈플러스 비정량 제품 출하 시 사용하는 라벨 인쇄.
-     * 홈플러스 전용 바코드 포맷(H5)으로 라벨을 생성한다.
-     * </p>
-     *
-     * <h3>라벨 정보</h3>
-     * <ul>
-     *   <li>업체명: (주)하이랜드이노베이션</li>
-     *   <li>상품명, 중량, 지점코드, 점포코드 표시</li>
-     *   <li>소수점 2자리까지 중량 표시</li>
-     * </ul>
-     *
-     * @param weight_double 계근 중량
-     * @param si 출하 대상 정보 (Shipments_Info)
-     * @param reprint 재인쇄 여부
-     * @return 인쇄에 사용된 중량 문자열
-     */
+    /* setHomeplusPrinting() 메소드 삭제됨 - LabelPrintHelper.setHomeplusPrinting()으로 이동
     public String setHomeplusPrinting(double weight_double, Shipments_Info si, boolean reprint) {
         if (Common.D) {
             Log.d(TAG, "센터명 : '" + si.CENTERNAME + "'\n출고업체명 : '" + si.CLIENTNAME + "'\n이마트상품명 : '"
@@ -2856,30 +2728,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
         return String.valueOf(print_weight_double);
     }
+    // setHomeplusPrinting() 메소드 끝 */
 
-    /**
-     * 롯데 출하용 바코드 라벨 인쇄
-     * <p>
-     * 롯데 유통 출하 시 사용하는 바코드 라벨 인쇄.
-     * 롯데 전용 바코드 포맷과 박스 순번(box_order)을 포함한다.
-     * </p>
-     *
-     * <h3>라벨 정보</h3>
-     * <ul>
-     *   <li>업체명: (주)하이랜드이노베이션</li>
-     *   <li>업체코드: EMARTLOGIS_CODE에서 가져옴</li>
-     *   <li>상품명, 중량, 제조일자, 박스 순번 표시</li>
-     *   <li>소수점 2자리까지 중량 표시</li>
-     *   <li>박스 순번(lotte_TryCount)으로 바코드 시퀀스 관리</li>
-     * </ul>
-     *
-     * @param weight_double 계근 중량
-     * @param si 출하 대상 정보 (Shipments_Info)
-     * @param reprint 재인쇄 여부
-     * @param making_date 제조일자
-     * @param box_order 박스 순번 (바코드 시퀀스용)
-     * @return 인쇄에 사용된 중량 문자열
-     */
+    /* setPrintingLotte() 메소드 삭제됨 - LabelPrintHelper.setPrintingLotte()으로 이동
     public String setPrintingLotte(double weight_double, Shipments_Info si, boolean reprint, String making_date, String box_order){
         if (Common.D) {
             Log.d(TAG, "센터명 : '" + si.CENTERNAME + "'\n출고업체명 : '" + si.CLIENTNAME + "'\n이마트상품명 : '"
@@ -3143,18 +2994,14 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
         return String.valueOf(print_weight_double);
     }
+    // setPrintingLotte() 메소드 끝 */
 
     // ========================================================================================
-    // SLCS 헬퍼 메서드 - Bixolon 라벨 프린터 명령어 생성
+    // SLCS 헬퍼 메서드 → LabelPrintHelper로 이동됨
     // ========================================================================================
 
-    /**
-     * SLCS 라벨 초기화
-     * - 버퍼 클리어 (CB)
-     * - 문자셋 설정 (CS13,0 = 한글)
-     *
-     * @return SLCS 초기화 명령어 문자열
-     */
+    // SLCS 메소드들 - weight list printing(4143, 4188줄)에서 사용되므로 유지
+    // LabelPrintHelper에도 복사본 존재 (라벨 출력용)
     private String slcsInit() {
         return "CB\r\n" + "CS13,0\r\n";
     }
@@ -3252,6 +3099,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private String slcsFeedToMark() {
         return "T\r\n";
     }
+    // SLCS 메소드들 끝
 
     // ========================================================================================
     // 프린터 데이터 전송

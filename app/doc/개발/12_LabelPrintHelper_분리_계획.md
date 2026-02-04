@@ -553,48 +553,48 @@ labelPrintHelper.setPrintingLotte(
 ### Step 5: BixolonShipmentActivity 수정
 
 #### 작업
-- [ ] LabelPrintHelper 인스턴스 생성
-- [ ] PrinterCallback 구현
-- [ ] 라벨 출력 메소드 호출부 수정
-- [ ] 기존 메소드/상수 삭제
+- [x] LabelPrintHelper 인스턴스 생성
+- [x] PrinterCallback 구현
+- [x] 라벨 출력 메소드 호출부 수정
+- [x] 기존 메소드/상수 삭제
 
 #### 테스트 (코드 비교)
 
 ##### 인스턴스 및 콜백
-- [ ] import 문 추가 확인 (com.rgbsolution.highland_emart.print.LabelPrintHelper)
-- [ ] LabelPrintHelper 인스턴스 변수 선언 확인
-- [ ] PrinterCallback 구현 확인
-- [ ] callback.sendData() → 기존 sendData() 호출 확인
-- [ ] callback.clearBarcodeInput() → edit_barcode.setText("") 확인
+- [x] import 문 추가 확인 (com.rgbsolution.highland_emart.print.LabelPrintHelper)
+- [x] LabelPrintHelper 인스턴스 변수 선언 확인
+- [x] PrinterCallback 구현 확인
+- [x] callback.sendData() → 기존 sendData() 호출 확인
+- [x] callback.clearBarcodeInput() → edit_barcode.setText("") 확인
 
 ##### 호출부 수정
-- [ ] setPrinting() 호출부 수정 확인 (2.4.2 형식)
-- [ ] setPrinting_prod() 호출부 수정 확인 (2.4.1 형식)
-- [ ] setHomeplusPrinting() 호출부 수정 확인 (2.4.3 형식)
-- [ ] setPrintingLotte() 호출부 수정 확인 (2.4.4 형식)
-- [ ] 호출 위치별 파라미터 정확성 확인
+- [x] setPrinting() 호출부 수정 확인 (2.4.2 형식)
+- [x] setPrinting_prod() 호출부 수정 확인 (2.4.1 형식)
+- [x] setHomeplusPrinting() 호출부 수정 확인 (2.4.3 형식)
+- [x] setPrintingLotte() 호출부 수정 확인 (2.4.4 형식)
+- [x] 호출 위치별 파라미터 정확성 확인
 
 ##### 삭제 확인
-- [ ] 기존 setPrinting() 메소드 삭제 확인
-- [ ] 기존 setPrinting_prod() 메소드 삭제 확인
-- [ ] 기존 setHomeplusPrinting() 메소드 삭제 확인
-- [ ] 기존 setPrintingLotte() 메소드 삭제 확인
-- [ ] 기존 slcs* 메소드 8개 삭제 확인
-- [ ] 상수 27개는 **삭제하지 않음** (라벨 출력 범위 밖에서도 사용되므로 유지)
+- [x] 기존 setPrinting() 메소드 삭제 확인
+- [x] 기존 setPrinting_prod() 메소드 삭제 확인
+- [x] 기존 setHomeplusPrinting() 메소드 삭제 확인
+- [x] 기존 setPrintingLotte() 메소드 삭제 확인
+- [x] 기존 slcs* 메소드 8개 **유지** (weight list printing 4143,4188줄에서 사용)
+- [x] 상수 27개는 **삭제하지 않음** (라벨 출력 범위 밖에서도 사용되므로 유지)
 
 ---
 
 ### Step 6: 컴파일 확인
 
 #### 작업
-- [ ] Gradle 빌드 실행
+- [x] Gradle 빌드 실행
 
 #### 테스트 (컴파일)
-- [ ] `./gradlew assembleDebug` 성공 확인
-- [ ] 컴파일 경고 검토 (새로 발생한 경고 없음 확인)
-- [ ] LabelPrintHelper.java 컴파일 성공 확인
-- [ ] BixolonShipmentActivity.java 컴파일 성공 확인
-- [ ] APK 파일 생성 확인 (`app/build/outputs/apk/debug/app-debug.apk`)
+- [x] `./gradlew assembleDebug` 성공 확인
+- [x] 컴파일 경고 검토 (새로 발생한 경고 없음 확인)
+- [x] LabelPrintHelper.java 컴파일 성공 확인
+- [x] BixolonShipmentActivity.java 컴파일 성공 확인
+- [x] APK 파일 생성 확인 (`app/build/outputs/apk/debug/app-debug.apk`)
 
 #### 컴파일 오류 시 체크포인트
 - [ ] import 문 누락 확인
@@ -703,8 +703,8 @@ labelPrintHelper.setPrintingLotte(
 - [x] Step 4-2: setPrinting_prod() 이동 (87줄)
 - [x] Step 4-3: setHomeplusPrinting() 이동 (108줄)
 - [x] Step 4-4: setPrintingLotte() 이동 (263줄)
-- [ ] Step 5: BixolonShipmentActivity 수정 (호출부, 콜백 구현)
-- [ ] Step 6: 컴파일 오류 없음 확인
+- [x] Step 5: BixolonShipmentActivity 수정 (호출부, 콜백 구현, SLCS 메소드 유지)
+- [x] Step 6: 컴파일 오류 없음 확인
 
 ### 테스트 단계
 - [ ] Step 7: 단위 테스트
