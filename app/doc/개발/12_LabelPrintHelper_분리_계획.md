@@ -497,16 +497,16 @@ labelPrintHelper.setPrintingLotte(
 > 생산 라벨 출력 메소드 (1948-2034줄)
 
 #### 작업
-- [ ] setPrinting_prod() 메소드 복사 (1948-2034줄)
-- [ ] 시그니처 변경 (callback 추가)
-- [ ] sendData() → callback.sendData() 변경
-- [ ] edit_barcode.setText("") → callback.clearBarcodeInput() 변경
+- [x] setPrinting_prod() 메소드 복사 (1948-2034줄)
+- [x] 시그니처 변경 (callback 추가)
+- [x] sendData() → callback.sendData() 변경
+- [x] edit_barcode.setText("") → callback.clearBarcodeInput() 변경
 
 #### 테스트 (코드 비교)
-- [ ] 메소드 본문 일치 확인 (1948-2034줄 → LabelPrintHelper)
-- [ ] 시그니처 변경 확인 (callback 추가)
-- [ ] sendData() 호출 → callback.sendData() 변경 확인
-- [ ] edit_barcode.setText("") → callback.clearBarcodeInput() 변경 확인
+- [x] 메소드 본문 일치 확인 (1948-2034줄 → LabelPrintHelper)
+- [x] 시그니처 변경 확인 (callback 추가)
+- [x] sendData() 호출 → callback.sendData() 변경 확인
+- [x] edit_barcode.setText("") → callback.clearBarcodeInput() 변경 확인
 
 ---
 
@@ -700,7 +700,7 @@ labelPrintHelper.setPrintingLotte(
 - [x] Step 2: 상수 복사 (27개)
 - [x] Step 3: SLCS 메소드 이동 (8개)
 - [x] Step 4-1: setPrinting() 이동 (660줄)
-- [ ] Step 4-2: setPrinting_prod() 이동 (87줄)
+- [x] Step 4-2: setPrinting_prod() 이동 (87줄)
 - [ ] Step 4-3: setHomeplusPrinting() 이동 (108줄)
 - [ ] Step 4-4: setPrintingLotte() 이동 (263줄)
 - [ ] Step 5: BixolonShipmentActivity 수정 (호출부, 콜백 구현)

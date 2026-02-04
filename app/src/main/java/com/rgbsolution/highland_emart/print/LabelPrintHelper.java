@@ -6,6 +6,7 @@ import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -912,6 +913,108 @@ public class LabelPrintHelper {
             }
         }
         return String.valueOf(print_weight_double);
+    }
+
+    /**
+     * 생산 투입용 바코드 라벨 인쇄
+     * <p>
+     * 생산 라벨 출력 시 Bixolon 블루투스 프린터로 바코드 라벨을 인쇄한다.
+     * 상품명, 상품코드, 중량만 표시하는 기본 바코드 형식.
+     * </p>
+     *
+     * @param weight_double 계근 중량 (소수점 2자리)
+     * @param si 출하 대상 정보 (Shipments_Info)
+     * @param reprint 재인쇄 여부
+     * @param callback 프린터 콜백
+     * @return 인쇄에 사용된 중량 문자열
+     */
+    public String setPrinting_prod(double weight_double, Shipments_Info si, boolean reprint,
+                                   PrinterCallback callback){
+        Log.e(TAG, "======================::::::::: setPrinting_prod ::::::::======================");
+        if (Common.D) {
+            Log.d(TAG, "'\n상품명 : '" + si.EMARTITEM + "'\n상품코드 : '" + si.EMARTITEM_CODE + "'\n중량 : '" + weight_double + "'");
+        }
+
+        String pBarcode = "";
+        String pBarcodeStr = "";
+
+        String weight_str = String.valueOf(weight_double);
+        Log.d(TAG, "weight_str : " + weight_str);
+
+        String print_weight_str = String.valueOf(weight_double);
+        Log.d(TAG, "print_weight_str : " + print_weight_str);
+
+        // 소수점 둘째자리까지 채우기
+        String weight_00 = "";
+        DecimalFormat decimalFormat = new DecimalFormat("###.00");
+        weight_00 = decimalFormat.format(weight_double);
+        Log.d(TAG, "weight_00 : " + weight_00);
+
+        // .을 지워서 숫자만으로 표시
+        String temp = weight_00.replace(".", "");
+        int iLen = temp.length();
+
+        for (int i = 0; i < 6 - iLen; i++) {
+            temp = "0" + temp;            // ex) 198 -> 000198
+        }
+        print_weight_str = temp;
+
+        // 바코드 형식 : 상품코드 + 중량 6자리 + 00 + 연월일시분초
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmssSS");
+        Date time = new Date();
+        String now = dateFormat.format(time);
+
+        pBarcode = si.getEMARTITEM_CODE() + print_weight_str + "00" + now;
+        pBarcodeStr = si.getEMARTITEM_CODE() + print_weight_str + "00" + now;
+
+        Log.d(TAG, "** 바코드 :상품코드 + 중량 + 00 + 연월일시분초 = " + si.getEMARTITEM_CODE() + " + " + print_weight_str + " + 00 + " + now);
+
+
+        // ========== SLCS 명령어로 라벨 인쇄 (Bixolon 프린터) ==========
+        try {
+            StringBuilder slcsCmd = new StringBuilder();
+
+            // 프린터 초기화 (버퍼 클리어 + 한글 설정)
+            slcsCmd.append(slcsInit());
+
+            // 라벨 크기 설정 (너비 576, 높이 460)
+            slcsCmd.append(slcsLabelSize(576, 460));
+
+            //------------------------상품명 / 냉장냉동------------------------
+            // 상품명이 일정 길이 이상 넘어갈 경우 글자 크기 조절
+            if (si.EMARTITEM.length() > 14) {
+                slcsCmd.append(slcsText(50, 120, 35, 35, si.EMARTITEM + " / " + si.ITEM_SPEC));
+            } else {
+                slcsCmd.append(slcsText(50, 120, 40, 40, si.EMARTITEM + " / " + si.ITEM_SPEC));
+            }
+            Log.i(TAG, "write------------------------------------>상품명 / 냉장냉동 : " + si.EMARTITEM + " / " + si.ITEM_SPEC);
+
+            //------------------------바코드------------------------
+            slcsCmd.append(slcsBarcode(50, 190, 60, pBarcode));
+            Log.i(TAG, "write------------------------------------>바코드 : " + pBarcode);
+
+            //------------------------바코드 번호------------------------
+            slcsCmd.append(slcsText(45, 260, 25, 25, pBarcodeStr));
+            Log.i(TAG, "write------------------------------------>바코드번호 : " + pBarcodeStr);
+
+            //------------------------중량------------------------
+            slcsCmd.append(slcsText(50, 340, 40, 40, "중      량   :   " + weight_str + " KG"));
+            Log.i(TAG, "write------------------------------------>중량 : " + weight_str);
+
+            // 인쇄 실행 (1장)
+            slcsCmd.append(slcsPrint(1));
+
+            // SLCS 명령어 전송
+            callback.sendData(slcsCmd.toString().getBytes("EUC-KR"));
+
+            callback.clearBarcodeInput();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (Common.D) {
+                Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
+            }
+        }
+        return String.valueOf(weight_double);
     }
 
 }
