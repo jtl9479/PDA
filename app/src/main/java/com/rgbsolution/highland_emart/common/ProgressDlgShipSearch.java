@@ -226,6 +226,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             list_si_info = new ArrayList<Shipments_Info>();
             String[] temp;
             Shipments_Info si;
+
             if (Common.D) {
                 Log.d(TAG, "result's Count : " + result.length);
             }
@@ -333,6 +334,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             // PDA에는 있지만 서버에는 없는 항목 → 삭제 대상
             for (int i = 0; i < list_si_pda.size(); i++) {
                 int check = 0;
+
                 for (int j = 0; j < list_si_info.size(); j++) {
                     if (list_si_pda.get(i).getGI_D_ID().equals(list_si_info.get(j).getGI_D_ID())) {
                         check++;
@@ -374,6 +376,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             // 7. DB 동기화 실행 (삭제 + 추가)
             // ========================================
             boolean refresh_result = DBHandler.refreshShipmentList(mContext, list_delete, list_insert);
+
             if (refresh_result) {
                 Log.v(TAG, "Shipment Refresh 성공");
             } else {

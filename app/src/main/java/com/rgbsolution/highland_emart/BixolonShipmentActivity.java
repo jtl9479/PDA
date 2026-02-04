@@ -2088,11 +2088,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             SimpleDateFormat dtFormat = new SimpleDateFormat("yyyyMMdd");
             Calendar cal = Calendar.getInstance();
             Date dt = null;
+
             try {
                 dt = dtFormat.parse(rawExp);
             } catch (ParseException e) {
                 e.printStackTrace();
             }
+
             cal.setTime(dt);
             //쉘프라이프를 더한다.
             cal.add(Calendar.DATE,  shelfLiftToInt);
@@ -2126,11 +2128,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 SimpleDateFormat dtFormat = new SimpleDateFormat("yyyyMMdd");
                 Calendar cal = Calendar.getInstance();
                 Date dt = null;
+
                 try {
                     dt = dtFormat.parse(rawExp);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+
                 cal.setTime(dt);
                 //쉘프라이프를 더한다.
                 cal.add(Calendar.DATE,  shelfLiftToInt);
@@ -2421,8 +2425,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             Log.d(TAG, "print Barcode : " + pBarcode.toString());
             Log.d(TAG, "print Weight : " + print_weight_str);
         }
-
-
 
         // ========== SLCS 명령어로 이마트 확장 라벨 인쇄 (Bixolon 프린터) ==========
         try {

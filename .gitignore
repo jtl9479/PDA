@@ -7,3 +7,10 @@
 /build
 /captures
 .idea/
+*.ps1
+*.bat
+*.py
+.obsidian*
+*.base
+*.bmp
+*.tmp
