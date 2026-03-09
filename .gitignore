@@ -14,3 +14,5 @@
 *.base
 *.bmp
 *.tmp
+node_modules/
+*.apk
