@@ -797,6 +797,8 @@ public class LabelPrintHelper {
 
             // 인쇄 실행
             slcsCmd.append(slcsPrint(1));
+            // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
+            slcsCmd.append(slcsFeedToMark());
 
             if( !si.getBARCODE_TYPE().equals(BARCODE_TYPE_P0) ) {
                 callback.sendData(slcsCmd.toString().getBytes("EUC-KR"));
@@ -848,6 +850,8 @@ public class LabelPrintHelper {
                     }
 
                     slcsMeat.append(slcsPrint(1));
+                    // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
+                    slcsMeat.append(slcsFeedToMark());
                     callback.sendData(slcsMeat.toString().getBytes("EUC-KR"));
                 } catch (Exception e) {
                     Log.d(TAG, "이마트 공장코드 출력 오류 " +  e.getMessage());
@@ -899,6 +903,8 @@ public class LabelPrintHelper {
                     }
 
                     slcsMeat2.append(slcsPrint(1));
+                    // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
+                    slcsMeat2.append(slcsFeedToMark());
                     callback.sendData(slcsMeat2.toString().getBytes("EUC-KR"));
                 } catch (Exception e) {
                     Log.d(TAG, "이마트 미트센터 출력 오류 " +  e.getMessage());
@@ -1003,6 +1009,8 @@ public class LabelPrintHelper {
 
             // 인쇄 실행 (1장)
             slcsCmd.append(slcsPrint(1));
+            // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
+            slcsCmd.append(slcsFeedToMark());
 
             // SLCS 명령어 전송
             callback.sendData(slcsCmd.toString().getBytes("EUC-KR"));
@@ -1011,7 +1019,7 @@ public class LabelPrintHelper {
         } catch (Exception e) {
             e.printStackTrace();
             if (Common.D) {
-                Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
+                Log.d(TAG, "setPrinting_prod Exception\n" + e.getMessage().toString());
             }
         }
         return String.valueOf(weight_double);
@@ -1134,6 +1142,8 @@ public class LabelPrintHelper {
 
             // [9] 인쇄 실행 - 1장 출력
             slcsCmd.append(slcsPrint(1));
+            // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
+            slcsCmd.append(slcsFeedToMark());
 
             // SLCS 명령어를 EUC-KR 인코딩으로 프린터에 전송
             callback.sendData(slcsCmd.toString().getBytes("EUC-KR"));
@@ -1408,7 +1418,7 @@ public class LabelPrintHelper {
             whArea = si.getWH_AREA();
             Log.e(TAG, "::::::::: whArea check44 ::::::::" + whArea);
 
-            if (whArea != null && !whArea.equals("")) {
+            if (whArea != null || !whArea.equals("")) {
                 slcsCmd.append(slcsText(385, 305, 65, 65, whArea));
             }
 

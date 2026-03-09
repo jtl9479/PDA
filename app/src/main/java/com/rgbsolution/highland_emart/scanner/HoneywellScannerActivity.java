@@ -73,6 +73,19 @@ public class HoneywellScannerActivity extends AppCompatActivity implements Compo
     protected SwitchCompat swt_print;
 
     // ========================================================================================
+    // 바코드 스캔 중복 방지 (디바운싱)
+    // ========================================================================================
+
+    /** 마지막 스캔 시각 (ms) */
+    private long lastScanTime = 0;
+
+    /** 마지막 스캔 바코드 데이터 */
+    private String lastScanData = "";
+
+    /** 동일 바코드 무시 간격 (ms) */
+    private static final long SCAN_DEBOUNCE_MS = 500;
+
+    // ========================================================================================
     // Activity 생명주기
     // ========================================================================================
 
@@ -213,8 +226,23 @@ public class HoneywellScannerActivity extends AppCompatActivity implements Compo
                 if (Common.D) {
                     Log.e(TAG, "===== Receiver action From Honeywell =====");
                 }
-                // 바코드 데이터 추출 및 콜백 호출
+                // 바코드 데이터 추출
                 String receive_data = intent.getStringExtra(EXTRA_BARCODE_DATA);
+
+                // 중복 스캔 방지: 동일 바코드가 500ms 이내 재수신되면 무시
+                long now = System.currentTimeMillis();
+                if (receive_data != null
+                        && receive_data.equals(lastScanData)
+                        && (now - lastScanTime) < SCAN_DEBOUNCE_MS) {
+                    if (Common.D) {
+                        Log.w(TAG, "중복 스캔 무시 (디바운싱): " + receive_data);
+                    }
+                    return;
+                }
+                lastScanTime = now;
+                lastScanData = (receive_data != null) ? receive_data : "";
+
+                // 콜백 호출
                 setMessage(receive_data);
             }
         }

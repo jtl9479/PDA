@@ -18,7 +18,6 @@ import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.common.ProgressDlgShipSearch;
 import com.rgbsolution.highland_emart.db.DBHandler;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
-import com.rgbsolution.highland_emart.test.TestDataHelper;  // ★ 테스트 완료 후 삭제
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -99,11 +98,6 @@ public class MainActivity extends AppCompatActivity {
         // 진동 서비스 초기화 - 에러 시 사용자 피드백용
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-        // ===== TEST CODE START - 테스트 완료 후 이 블록 전체 삭제 =====
-        // 삭제 방법: 1) 이 블록 삭제  2) onClick 내 TEST CODE 블록 삭제  3) TestDataHelper import 삭제  4) test/TestDataHelper.java 파일 삭제
-        // 테스트 데이터는 각 "출하대상받기" 버튼 클릭 시 해당 마트사 데이터만 삽입됨
-        TestDataHelper.deleteAllTestData(this);  // 앱 시작 시 이전 테스트 데이터 삭제
-        // ===== TEST CODE END - 테스트 완료 후 이 블록 전체 삭제 =====
     }
 
     /**
@@ -213,16 +207,8 @@ public class MainActivity extends AppCompatActivity {
 
             // ==================== 이마트 출하대상받기 (searchType: 0) ====================
             case R.id.btnDownload:
-                // ===== TEST CODE START =====
-                Common.searchType = SEARCH_TYPE_EMART;
-                Common.selectDay = formatDateYYYYMMDD();  // 오늘 날짜 설정
-                TestDataHelper.deleteAllTestData(this);
-                TestDataHelper.insertTestDataForEmart(this);
-                Toast.makeText(this, "[테스트] 이마트 테스트 데이터 삽입됨\n계근입력시작 버튼을 누르세요", Toast.LENGTH_SHORT).show();
-                break;  // 서버 호출 건너뛰기
-                // ===== TEST CODE END =====
-                // downloadShipmentList(SEARCH_TYPE_EMART, "출하대상받기");
-                // break;
+                downloadShipmentList(SEARCH_TYPE_EMART, "출하대상받기");
+                break;
 
             // ==================== 생산계근대상받기 (searchType: 1) ====================
             case R.id.btnproductionlist:
@@ -231,68 +217,28 @@ public class MainActivity extends AppCompatActivity {
 
             // ==================== 홈플러스하이퍼 출하대상받기 (searchType: 2) ====================
             case R.id.btnDownloadHomeplus:
-                // ===== TEST CODE START =====
-                Common.searchType = SEARCH_TYPE_HOMEPLUS;
-                Common.selectDay = formatDateYYYYMMDD();  // 오늘 날짜 설정
-                TestDataHelper.deleteAllTestData(this);
-                TestDataHelper.insertTestDataForHomeplus(this);
-                Toast.makeText(this, "[테스트] 홈플러스 테스트 데이터 삽입됨\n계근입력시작 버튼을 누르세요", Toast.LENGTH_SHORT).show();
-                break;  // 서버 호출 건너뛰기
-                // ===== TEST CODE END =====
-                // downloadShipmentList(SEARCH_TYPE_HOMEPLUS, "홈플러스출하대상받기");
-                // break;
+                downloadShipmentList(SEARCH_TYPE_HOMEPLUS, "홈플러스출하대상받기");
+                break;
 
             // ==================== 도매업체 출하대상받기 (searchType: 3) ====================
             case R.id.btnDownloadWholesale:
-                // ===== TEST CODE START =====
-                Common.searchType = SEARCH_TYPE_WHOLESALE;
-                Common.selectDay = formatDateYYYYMMDD();  // 오늘 날짜 설정
-                TestDataHelper.deleteAllTestData(this);
-                TestDataHelper.insertTestDataForWholesale(this);
-                Toast.makeText(this, "[테스트] 도매업체 테스트 데이터 삽입됨 (라벨 출력 없음)\n계근입력시작 버튼을 누르세요", Toast.LENGTH_SHORT).show();
-                break;  // 서버 호출 건너뛰기
-                // ===== TEST CODE END =====
-                // downloadShipmentList(SEARCH_TYPE_WHOLESALE, "도매업체출하대상받기");
-                // break;
+                downloadShipmentList(SEARCH_TYPE_WHOLESALE, "도매업체출하대상받기");
+                break;
 
             // ==================== (비정량)출하계근대상받기 (searchType: 4) ====================
             case R.id.btnproductionNonfixedlist:
-                // ===== TEST CODE START =====
-                Common.searchType = SEARCH_TYPE_NONFIXED;
-                Common.selectDay = formatDateYYYYMMDD();  // 오늘 날짜 설정
-                TestDataHelper.deleteAllTestData(this);
-                TestDataHelper.insertTestDataForEmartNonfixed(this);
-                Toast.makeText(this, "[테스트] 이마트 비정량 테스트 데이터 삽입됨\n계근입력시작 버튼을 누르세요", Toast.LENGTH_SHORT).show();
-                break;  // 서버 호출 건너뛰기
-                // ===== TEST CODE END =====
-                // downloadShipmentList(SEARCH_TYPE_NONFIXED, "비정량출하대상받기");
-                // break;
+                downloadShipmentList(SEARCH_TYPE_NONFIXED, "비정량출하대상받기");
+                break;
 
             // ==================== (비정량)홈플러스 출하대상받기 (searchType: 5) ====================
             case R.id.btnWetHomeplusNon:
-                // ===== TEST CODE START =====
-                Common.searchType = SEARCH_TYPE_HOMEPLUS_NONFIXED;
-                Common.selectDay = formatDateYYYYMMDD();  // 오늘 날짜 설정
-                TestDataHelper.deleteAllTestData(this);
-                TestDataHelper.insertTestDataForHomeplusNonfixed(this);
-                Toast.makeText(this, "[테스트] 홈플러스 비정량 테스트 데이터 삽입됨\n계근입력시작 버튼을 누르세요", Toast.LENGTH_SHORT).show();
-                break;  // 서버 호출 건너뛰기
-                // ===== TEST CODE END =====
-                // downloadShipmentList(SEARCH_TYPE_HOMEPLUS_NONFIXED, "홈플러스 비정량 출하대상받기");
-                // break;
+                downloadShipmentList(SEARCH_TYPE_HOMEPLUS_NONFIXED, "홈플러스 비정량 출하대상받기");
+                break;
 
             // ==================== 롯데 출하대상받기 (searchType: 6) ====================
             case R.id.btnDownloadLotte:
-                // ===== TEST CODE START =====
-                Common.searchType = SEARCH_TYPE_LOTTE;
-                Common.selectDay = formatDateYYYYMMDD();  // 오늘 날짜 설정
-                TestDataHelper.deleteAllTestData(this);
-                TestDataHelper.insertTestDataForLotte(this);
-                Toast.makeText(this, "[테스트] 롯데 테스트 데이터 삽입됨\n계근입력시작 버튼을 누르세요", Toast.LENGTH_SHORT).show();
-                break;  // 서버 호출 건너뛰기
-                // ===== TEST CODE END =====
-                // downloadShipmentList(SEARCH_TYPE_LOTTE, "롯데출하대상받기");
-                // break;
+                downloadShipmentList(SEARCH_TYPE_LOTTE, "롯데출하대상받기");
+                break;
 
             // ==================== 생산대상받기(라벨) (searchType: 7) ====================
             case R.id.btnproductionlist4print:
