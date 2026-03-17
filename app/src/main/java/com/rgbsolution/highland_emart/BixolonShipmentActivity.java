@@ -17,6 +17,9 @@ import android.os.Message;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -377,6 +380,21 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     boolean makingdateInputFlag = false;
 
     // ========================================================================================
+    // Keyboard Wedge 자동 감지 (바코드 스캐너 지원)
+    // ========================================================================================
+
+    /** 내부 코드에서 edit_barcode.setText() 호출 시 TextWatcher 재진입 방지 플래그 */
+    private boolean isInternalTextChange = false;
+    /** setBarcodeMsg 마지막 처리 시각 (중복 호출 방지용) */
+    private long lastBarcodeProcessedTime = 0;
+    /** 중복 처리 방지 간격 (ms) - 같은 바코드 처리 후 1초 이내 재처리 차단 */
+    private static final long BARCODE_PROCESS_DEBOUNCE_MS = 1000;
+    /** 스캐너 입력 완료 감지용 Handler */
+    private Handler scanAutoHandler = new Handler();
+    /** 스캐너 입력 완료 감지용 Runnable */
+    private Runnable scanAutoRunnable;
+
+    // ========================================================================================
     // Activity 생명주기 메서드
     // ========================================================================================
 
@@ -431,6 +449,69 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         sp_work = (Spinner) findViewById(R.id.sp_work);
         sp_work.setOnItemSelectedListener(workSelectedListener);
         edit_barcode = (EditText) findViewById(R.id.edit_barcode);
+
+        // Keyboard Wedge 모드 지원 (1): ENTER/TAB 키 감지
+        edit_barcode.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_TAB)
+                        && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    // TextWatcher 타이머 취소 (ENTER로 먼저 처리)
+                    if (scanAutoRunnable != null) {
+                        scanAutoHandler.removeCallbacks(scanAutoRunnable);
+                        scanAutoRunnable = null;
+                    }
+                    String barcodeText = edit_barcode.getText().toString().trim();
+                    if (!barcodeText.isEmpty()) {
+                        Log.d(TAG, "Keyboard Wedge ENTER/TAB 감지, 바코드: " + barcodeText);
+                        hideKeyboard();
+                        if (work_flag == 1 || work_flag == 2) {
+                            setBarcodeMsg(barcodeText);
+                        } else if (work_flag == 0) {
+                            btn_input.performClick();
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        // Keyboard Wedge 모드 지원 (2): TextWatcher - ENTER 키 없는 스캐너 대응
+        // 텍스트 입력 후 300ms 동안 추가 입력 없으면 자동 처리
+        edit_barcode.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                // 내부 setText 호출인 경우 무시
+                if (isInternalTextChange) return;
+                // 수기 입력 모드에서는 자동 처리 안함
+                if (work_flag == 0) return;
+
+                // 이전 타이머 취소
+                if (scanAutoRunnable != null) {
+                    scanAutoHandler.removeCallbacks(scanAutoRunnable);
+                }
+
+                final String text = s.toString().trim();
+                // 바코드 최소 길이 5자 이상일 때만 자동 처리
+                if (text.length() >= 5) {
+                    scanAutoRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d(TAG, "TextWatcher 자동 감지, 바코드: " + text);
+                            hideKeyboard();
+                            setBarcodeMsg(text);
+                        }
+                    };
+                    scanAutoHandler.postDelayed(scanAutoRunnable, 300);
+                }
+            }
+        });
+
         sp_center_name = (Spinner) findViewById(sp_center);
 
         Common.list_center_info = DBHandler.selectqueryCenterList(this);
@@ -546,6 +627,11 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, TAG + " onDestroy");
+
+        // TextWatcher 타이머 정리
+        if (scanAutoRunnable != null) {
+            scanAutoHandler.removeCallbacks(scanAutoRunnable);
+        }
 
         if (mBixolonPrinter != null) {
             new ProgressDlgDiscon(BixolonShipmentActivity.this).execute();
@@ -1003,6 +1089,12 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             Log.d(TAG, "바코드스캐너 입력값 : " + msg);
         }
 
+        // BroadcastReceiver에서 처리 → TextWatcher 타이머 취소
+        if (scanAutoRunnable != null) {
+            scanAutoHandler.removeCallbacks(scanAutoRunnable);
+            scanAutoRunnable = null;
+        }
+
         if (msg != null) {
             if (work_flag == 1) {
                 setBarcodeMsg(msg);
@@ -1068,9 +1160,20 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             if (dialog_flag)
                 return;
 
+            // 중복 호출 방지: 동일 바코드가 1초 이내 재처리되면 무시
+            long now = System.currentTimeMillis();
+            if ((now - lastBarcodeProcessedTime) < BARCODE_PROCESS_DEBOUNCE_MS) {
+                Log.d(TAG, "setBarcodeMsg 중복 호출 무시 (디바운싱)");
+                return;
+            }
+            lastBarcodeProcessedTime = now;
+
             Log.e(TAG, "========================setBarcodeMsg 시작======================");
 
+            // TextWatcher 재진입 방지
+            isInternalTextChange = true;
             edit_barcode.setText(msg);
+            isInternalTextChange = false;
             if (scan_flag) { // 패커상품 스캔
                 Log.e(TAG, "========================상품스캔======================" + work_flag);
                 try {
@@ -2077,8 +2180,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             return;
         }
         // Check that there's actually something to send
+        // EUC-KR로 이미 인코딩된 바이트 배열을 직접 전송
         if (data.length > 0)
-            mBixolonPrinter.sendCommand(new String(data));
+            mBixolonPrinter.sendCommandBytes(data);
     }
 
     // ========================================================================================
