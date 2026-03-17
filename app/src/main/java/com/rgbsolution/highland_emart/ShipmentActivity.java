@@ -3650,7 +3650,8 @@ public class ShipmentActivity extends HoneywellScannerActivity {
                             packet += list_send_info.get(i).getITEM_CODE() + "::";
                             packet += list_send_info.get(i).getBRAND_CODE() + "::";
                             packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
-                            packet += list_send_info.get(i).getBOX_ORDER();
+                            packet += list_send_info.get(i).getBOX_ORDER() + "::";
+                            packet += list_send_info.get(i).getCOMPANY_CODE();
 
                             if (Common.D) {
                                 Log.d(TAG, "Send Packet : '" + packet + "'");

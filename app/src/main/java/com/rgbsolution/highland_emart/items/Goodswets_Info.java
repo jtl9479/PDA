@@ -24,6 +24,7 @@ public class Goodswets_Info {
     public String DUPLICATE					    = "";					    // 중복스캔
     public String CLIENT_TYPE 					= "";
     public String BOX_ORDER					    = "";
+    public String COMPANY_CODE					    = "";
 
 
     public String getGOODS_WET_ID() {
@@ -202,4 +203,11 @@ public class Goodswets_Info {
         this.BOX_ORDER = BOX_ORDER;
     }
 
+    public String getCOMPANY_CODE() {
+        return COMPANY_CODE;
+    }
+
+    public void setCOMPANY_CODE(String BOX_ORDER) {
+        this.COMPANY_CODE= COMPANY_CODE;
+    }
 }
