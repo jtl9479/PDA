@@ -157,9 +157,9 @@ public class LabelPrintHelper {
      * @return SLCS 바코드 명령어 문자열
      */
     private String slcsBarcode(int x, int y, int height, String data) {
-        // BD x,y,barcode_type,narrow,wide,height,rotation,HRI,quiet_zone,'data'
-        // CODE128, narrow=2, wide=4, HRI=0(없음), quiet_zone=0
-        return "BD" + x + "," + y + ",CODE128,2,4," + height + ",0,0,0,'" + data + "'\r\n";
+        // B1 x,y,barcode_type,narrow,wide,height,rotation,HRI,'data'
+        // barcode_type: 1=CODE128, narrow=2, wide=3, HRI=0(없음)
+        return "B1" + x + "," + y + ",1,2,3," + height + ",0,0,'" + data + "'\r\n";
     }
 
     /**
@@ -620,11 +620,11 @@ public class LabelPrintHelper {
 
             // 센터명 출력
             if (7 < si.CENTERNAME.length()) {
-                slcsCmd.append(slcsText(10, 12, 35, 35, si.CENTERNAME));
+                slcsCmd.append(slcsText(15, 12, 35, 35, si.CENTERNAME));
                 if (Common.D)
                     Log.i(TAG, "센터명 > 7 ,  size 30");
             } else {
-                slcsCmd.append(slcsText(10, 10, 40, 40, si.CENTERNAME));
+                slcsCmd.append(slcsText(15, 10, 40, 40, si.CENTERNAME));
                 if (Common.D)
                     Log.i(TAG, "센터명 <= 7 ,  size 40");
             }
@@ -652,11 +652,11 @@ public class LabelPrintHelper {
                 slcsCmd.append(slcsText(400, 270, 25, 25, usePurpose));
             } else {
                 if (11 < si.CLIENTNAME.toString().length()) {
-                    slcsCmd.append(slcsText(10, 60, 35, 35, pointName.toString()));          // 지점명 출력
+                    slcsCmd.append(slcsText(15, 60, 35, 35, pointName.toString()));          // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 > 11 ,  size 30");
                 } else {
-                    slcsCmd.append(slcsText(10, 60, 40, 40, pointName.toString()));          // 지점명 출력
+                    slcsCmd.append(slcsText(15, 60, 40, 40, pointName.toString()));          // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 <= 11 ,  size 40");
                 }
@@ -715,7 +715,7 @@ public class LabelPrintHelper {
 
             // 바코드 타입별 바코드번호(숫자) 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
-                slcsCmd.append(slcsText(75, 240, 25, 25, pBarcodeStr));
+                slcsCmd.append(slcsText(75, 240, 20, 20, pBarcodeStr));
             }
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M1)) {
                 slcsCmd.append(slcsText(147, 240, 25, 25, pBarcodeStr));
