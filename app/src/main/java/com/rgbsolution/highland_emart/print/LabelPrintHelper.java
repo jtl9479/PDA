@@ -620,11 +620,11 @@ public class LabelPrintHelper {
 
             // 센터명 출력
             if (7 < si.CENTERNAME.length()) {
-                slcsCmd.append(slcsText(15, 12, 35, 35, si.CENTERNAME));
+                slcsCmd.append(slcsText(20, 12, 35, 35, si.CENTERNAME));
                 if (Common.D)
                     Log.i(TAG, "센터명 > 7 ,  size 30");
             } else {
-                slcsCmd.append(slcsText(15, 10, 40, 40, si.CENTERNAME));
+                slcsCmd.append(slcsText(20, 10, 40, 40, si.CENTERNAME));
                 if (Common.D)
                     Log.i(TAG, "센터명 <= 7 ,  size 40");
             }
@@ -652,11 +652,11 @@ public class LabelPrintHelper {
                 slcsCmd.append(slcsText(400, 270, 25, 25, usePurpose));
             } else {
                 if (11 < si.CLIENTNAME.toString().length()) {
-                    slcsCmd.append(slcsText(15, 60, 35, 35, pointName.toString()));          // 지점명 출력
+                    slcsCmd.append(slcsText(20, 60, 35, 35, pointName.toString()));          // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 > 11 ,  size 30");
                 } else {
-                    slcsCmd.append(slcsText(15, 60, 40, 40, pointName.toString()));          // 지점명 출력
+                    slcsCmd.append(slcsText(20, 60, 40, 40, pointName.toString()));          // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 <= 11 ,  size 40");
                 }
@@ -771,16 +771,16 @@ public class LabelPrintHelper {
                 slcsCmd.append(slcsText(90, 220, 30, 30, "납품일 : " + tempDate));
 
             } else {
-                slcsCmd.append(slcsText(15, 280, 40, 40, "중      량 : "));
-                slcsCmd.append(slcsText(175, 280, 40, 40, String.valueOf(print_weight_double) + " KG"));
+                slcsCmd.append(slcsText(20, 280, 40, 40, "중량 : "));
+                slcsCmd.append(slcsText(180, 280, 40, 40, String.valueOf(print_weight_double) + " KG"));
                 Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
                 String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-                slcsCmd.append(slcsText(15, 328, 30, 30, "납품일자 : " + tempDate));
+                slcsCmd.append(slcsText(20, 328, 30, 30, "납품일자 : " + tempDate));
                 if (reprint) {
                     pCompName = pCompName + "  *";
                 }
-                slcsCmd.append(slcsText(15, 368, 30, 30, "업체코드 : " + pCompCode + expiryDayConvert));
-                slcsCmd.append(slcsText(15, 408, 30, 30, "업 체 명 : " + pCompName));
+                slcsCmd.append(slcsText(20, 368, 30, 30, "업체코드 : " + pCompCode + expiryDayConvert));
+                slcsCmd.append(slcsText(20, 408, 30, 30, "업 체 명 : " + pCompName));
             }
 
             // WH_AREA 출력
