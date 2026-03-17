@@ -7,36 +7,35 @@
 <%@ page import="java.text.*" %>
 <%@ page import="java.lang.*" %>
 <%@ page import="java.util.logging.Logger" %>
+<%@ include file="common/db_connection.jsp" %>
 <%!
  static Logger logger = Logger.getLogger("insert_goods_wet.jsp");
 %>
 <%
 boolean connection = false;
 Connection conn = null;
-String driver = "oracle.jdbc.driver.OracleDriver";
- String url = "jdbc:oracle:thin:@1.1.1.1:SIDname";
-
 
 request.setCharacterEncoding("UTF-8");
 String data = request.getParameter("data");
 String dbid = request.getParameter("dbid");
 
 try {
-	Class.forName(driver); 
-	conn = DriverManager.getConnection(url, dbid, "DBPassword");
-	connection = true;
+	conn = getMSSQLConnection();
+	if(conn != null) {
+		connection = true;
+	}
 } catch (Exception e) {
 	connection = false;
 	out.println(e.getMessage().toString());
 	e.printStackTrace();
-} 
+}
 try {
 	String[] splitData = data.split("::");
-	
-  logger.info("============================================");
-  logger.info("=========insert_goods_wet start=============");
-  logger.info("============================================");
-  logger.info("##insert_goods_wet all parameter :" + data);	
+
+  System.out.println("============================================");
+  System.out.println("=========insert_goods_wet start=============");
+  System.out.println("============================================");
+  System.out.println("##insert_goods_wet all parameter :" + data);
 
   SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMdd");
   SimpleDateFormat timeformat = new SimpleDateFormat("HHmmss");
@@ -46,23 +45,27 @@ try {
   String dateStr = dateformat.format(datetime);
   String timeStr = timeformat.format(datetime);
 
- //SQL 
-  String qry = "INSERT INTO W_GOODS_WET(GOODS_WET_ID"
-		+ ", GI_D_ID"
-		+ ", WEIGHT"
-		+ ", WEIGHT_UNIT"
-		+ ", PACKER_PRODUCT_CODE"
-		+ ", BARCODE"
-		+ ", PACKER_CLIENT_CODE"
-		+ ", MAKINGDATE"
-		+ ", BOXSERIAL"
-		+ ", BOX_CNT"
-		+ ", REG_ID"
-		+ ", REG_DATE"
-		+ ", REG_TIME)"
+ //SQL
+  String qry = "INSERT INTO SM_출고계근(SEQ"
+		+ ", 출고상세SEQ"
+		+ ", 계근중량"
+		+ ", 계근중량단위"
+		+ ", ppCode"
+		+ ", 계근바코드"
+		+ ", 패커코드"
+		+ ", 제조일자"
+		+ ", 박스시리얼"
+		+ ", 계근순번"
+		+ ", 등록사원"
+		+ ", 등록일자"
+		+ ", 등록시간"
+		+ ", 회사코드"
+		+ ", 수정사원"
+		+ ", 수정일자"
+		+ ", 수정시간)"
 		+ " VALUES "
-		+ "(W_GOODS_WET_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?)";
-  PreparedStatement pstmt = conn.prepareStatement(qry);    
+		+ "(NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  PreparedStatement pstmt = conn.prepareStatement(qry);
 
 
   pstmt.setInt(1, Integer.parseInt(splitData[0]));
@@ -77,8 +80,12 @@ try {
   pstmt.setString(10, splitData[9]);
   pstmt.setString(11, dateStr);
   pstmt.setString(12, timeStr);
+  pstmt.setString(13, splitData[10]);
+  pstmt.setString(14, splitData[9]);
+  pstmt.setString(15, dateStr);
+  pstmt.setString(16, timeStr);
 
-  
+
 /*
   pstmt.setInt(1, 1234567);
 //  pstmt.setDouble(2, ((Double.parseDouble("12.30")) * 100) / 100);
@@ -92,8 +99,8 @@ try {
   pstmt.setString(8, dateStr);
   pstmt.setString(9, timeStr);
 */
-  
-  logger.info("##insert_goods_wet query start, query :"+ qry);	
+
+  System.out.println("##insert_goods_wet query start, query :"+ qry);
   pstmt.executeUpdate();
 /*
 	String update_qry = "UPDATE W_GOODS_ID SET "
@@ -102,8 +109,8 @@ try {
 			+ ", MOD_ID = ? "
 			+ ", MOD_DATE = ? "
 			+ ", MOD_TIME = ? "
-			+ "WHERE GI_D_ID = ? AND ITEM_CODE = ? AND BRAND_CODE = ?"; 
-	pstmt = conn.prepareStatement(update_qry);  
+			+ "WHERE GI_D_ID = ? AND ITEM_CODE = ? AND BRAND_CODE = ?";
+	pstmt = conn.prepareStatement(update_qry);
 
 	pstmt.setDouble(1, (Double.parseDouble(splitData[1]) * 100) / 100.0);
 	pstmt.setString(2, splitData[9]);
@@ -123,24 +130,24 @@ try {
 	System.out.println("============================"); */ //logger 추가 후 System.out.println 주석처리, 2019.01.28 park.sj
 
   conn.commit();
-  
-  logger.info("##insert_goods_wet parameter : ======INSERT_GOODS_WET PARAMS=====");
-  logger.info("##insert_goods_wet parameter : ========GI_D_ID===================" + splitData[0]);
-  logger.info("##insert_goods_wet parameter : ========WEIGHT====================" + splitData[1]);
-  logger.info("##insert_goods_wet parameter : ========DATE======================" + dateStr + timeStr);
-  logger.info("##insert_goods_wet parameter : ========REG_ID====================" + splitData[9]);
-  logger.info("##insert_goods_wet parameter : ==================================");
-	
-  if(pstmt != null) 
+
+  System.out.println("##insert_goods_wet parameter : ======INSERT_GOODS_WET PARAMS=====");
+  System.out.println("##insert_goods_wet parameter : ========GI_D_ID===================" + splitData[0]);
+  System.out.println("##insert_goods_wet parameter : ========WEIGHT====================" + splitData[1]);
+  System.out.println("##insert_goods_wet parameter : ========DATE======================" + dateStr + timeStr);
+  System.out.println("##insert_goods_wet parameter : ========REG_ID====================" + splitData[9]);
+  System.out.println("##insert_goods_wet parameter : ==================================");
+
+  if(pstmt != null)
 	  pstmt.close();
-  if(conn != null) 
+  if(conn != null)
 	  conn.close();
-  out.println("s");  
+  out.println("s");
 } catch (Exception ex) {
 		out.println("f");
 		out.println(ex.getMessage());
 		ex.printStackTrace();
-		logger.info("=============insert_goods_wet exception============== message :" + ex.getMessage().toString());
+		System.out.println("=============insert_goods_wet exception============== message :" + ex.getMessage().toString());
 		conn.rollback();
 		conn.close();
 }

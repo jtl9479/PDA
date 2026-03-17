@@ -3,14 +3,13 @@
 <%@ page import = "java.sql.DriverManager" %>
 <%@ page import="java.sql.*" %>
 <%@ page import="org.apache.log4j.Logger"%>
+<%@ include file="common/db_connection.jsp" %>
 <%!
- static Logger logger = Logger.getLogger("search_barcode_info.jsp"); 
+ static Logger logger = Logger.getLogger("search_barcode_info.jsp");
 %>
 <%
 boolean connection = false;
 Connection conn = null;
-String driver = "oracle.jdbc.driver.OracleDriver";
- String url = "jdbc:oracle:thin:@1.1.1.1:SIDname";
 
 request.setCharacterEncoding("UTF-8");
 
@@ -19,61 +18,61 @@ String dbid = request.getParameter("dbid");
 /* System.out.println("==================================");
 System.out.println("=======search_barcode_info========");
 System.out.println("=================================="); */
-logger.info("============================================");
-logger.info("=========search_barcode_info start==========");
-logger.info("============================================");
-logger.info("##search_barcode_info all parameter :" + qry_where);
+System.out.println("============================================");
+System.out.println("=========search_barcode_info start==========");
+System.out.println("============================================");
+System.out.println("##search_barcode_info all parameter :" + qry_where);
 
 try {
-	Class.forName(driver); 
-	conn = DriverManager.getConnection(url, dbid, "DBpassword");
-	
-	connection = true;
+	conn = getMSSQLConnection();
+	if(conn != null) {
+		connection = true;
+	}
 } catch (Exception e) {
 	connection = false;
 	out.println(e.getMessage().toString());
 	e.printStackTrace();
-} 
- //SQL 
+}
+ //SQL
   Statement stmt = conn.createStatement();
   //ResultSet rs = stmt.executeQuery("SELECT PACKER_CLIENT_CODE, PACKER_PRODUCT_CODE, PACKER_PRD_NAME, BRAND_CODE, BARCODEGOODS, BASEUNIT, ZEROPOINT, PARCKER_PRD_CODE_FROM, PACKER_PRD_CODE_TO, BARCODEGOODS_FROM, BARCODEGOODS_TO, WEIGHT_FROM, WEIGHT_TO, STATUS, REG_ID, REG_DATE, REG_TIME, MEMO FROM S_BARCODE_INFO");
 
-	String quertystring = "SELECT SBI.PACKER_CLIENT_CODE"
-		+ ", SBI.PACKER_PRODUCT_CODE"
-		+ ", SBI.PACKER_PRD_NAME"
-		+ ", SBI.ITEMCODE"
-		+ ", BI.ITEM_NAME_KR"
-		+ ", SBI.BRAND_CODE"
-		+ ", SBI.BARCODEGOODS"
-		+ ", SBI.BASEUNIT"
-		+ ", SBI.ZEROPOINT"
-		+ ", SBI.PACKER_PRD_CODE_FROM"
-		+ ", SBI.PACKER_PRD_CODE_TO"
-		+ ", SBI.BARCODEGOODS_FROM"
-		+ ", SBI.BARCODEGOODS_TO"
-		+ ", SBI.WEIGHT_FROM"
-		+ ", SBI.WEIGHT_TO"
-		+ ", SBI.MAKINGDATE_FROM"
-		+ ", SBI.MAKINGDATE_TO"
-		+ ", SBI.BOXSERIAL_FROM"
-		+ ", SBI.BOXSERIAL_TO"
-		+ ", SBI.STATUS"
-		+ ", SBI.REG_ID"
-		+ ", SBI.REG_DATE"
-		+ ", SBI.REG_TIME"
-		+ ", SBI.MEMO"
-		+ ", BSI.SHELF_LIFE" 
-		+ " FROM S_BARCODE_INFO SBI"
-		+ " INNER JOIN B_ITEM BI ON SBI.ITEMCODE = BI.ITEM_CODE AND BI.STATUS = 'Y'"
-		+ " INNER JOIN B_SUPPLIER_ITEM BSI ON SBI.PACKER_CLIENT_CODE = BSI.PACKER_CODE AND SBI.PACKER_PRODUCT_CODE = BSI.PACKER_PRODUCT_CODE AND SBI.STATUS = 'Y' AND BSI.STATUS = 'Y'"
-		+ qry_where
-		+ " ORDER BY PACKER_PRODUCT_CODE ASC";
-  
+	String quertystring = "SELECT 패커코드		AS PACKER_CLIENT_CODE"
+							 + ", ppCode	AS PACKER_PRODUCT_CODE"
+							 + ", '' 		AS PACKER_PRD_NAME"
+							 + ", '' 		AS ITEMCODE"
+							 + ", 품목명 	AS ITEM_NAME_KR"
+							 + ", '' 		AS BRAND_CODE"
+							 + ", 상품바코드 AS BARCODEGOODS"
+							 + ", 기준단위 	AS BASEUNIT"
+							 + ", 소수점 	AS ZEROPOINT"
+							 + ", '' 		AS PACKER_PRD_CODE_FROM"
+							 + ", '' 		AS PACKER_PRD_CODE_TO"
+							 + ", 바코드상품코드시작 AS BARCODEGOODS_FROM"
+							 + ", 바코드상품코드끝 AS BARCODEGOODS_TO"
+							 + ", 중량시작 AS WEIGHT_FROM"
+							 + ", 중량끝 AS WEIGHT_TO"
+							 + ", 제조일자시작 AS MAKINGDATE_FROM"
+							 + ", 제조일자끝 AS MAKINGDATE_TO"
+							 + ", 박스시리얼시작 AS BOXSERIAL_FROM"
+							 + ", 박스시리얼끝 AS BOXSERIAL_TO"
+							 + ", '' AS STATUS"
+							 + ", '' AS REG_ID"
+							 + ", '' AS REG_DATE"
+							 + ", '' AS REG_TIME"
+							 + ", '' AS MEMO"
+							 + ", CASE WHEN 적용단위 = 1 THEN 적용값 * 365"
+							 + "       WHEN 적용단위 = 2 THEN 적용값 * 30"
+							 + "       ELSE 적용값 END AS SHELF_LIFE"
+					     + " FROM CO_품목코드"
+							+ qry_where
+						+ " ORDER BY PACKER_PRODUCT_CODE ASC";
+
   ResultSet rs = stmt.executeQuery(quertystring);
-  
+
   /* System.out.println(quertystring); */
-  
-  logger.info("##search_barcode_info query :" + quertystring);
+
+  System.out.println("##search_barcode_info query :" + quertystring);
   
   ResultSetMetaData rsmd = rs.getMetaData();
 	int columnCnt = rsmd.getColumnCount(); //컬럼????
