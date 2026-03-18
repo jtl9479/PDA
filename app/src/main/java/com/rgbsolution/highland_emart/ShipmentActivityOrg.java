@@ -55,7 +55,7 @@ import java.util.Date;
 
 import static com.rgbsolution.highland_emart.R.id.sp_center;
 
-public class 원본ShipmentActivity extends ScannerActivity {
+public class ShipmentActivityOrg extends ScannerActivity {
 
     private final String TAG = "ShipmentActivity";
     private final int MESSAGE_ROWCHECK = 1000;
@@ -174,7 +174,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
         //sp_center_name.setSelection(0);
 
         Common.list_center_info = DBHandler.selectqueryCenterList(this);
-        ArrayAdapter<String> center_adapter = new ArrayAdapter<String>(ShipmentActivity.this, android.R.layout.simple_spinner_item, Common.list_center_info);
+        ArrayAdapter<String> center_adapter = new ArrayAdapter<String>(ShipmentActivityOrg.this, android.R.layout.simple_spinner_item, Common.list_center_info);
         center_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sp_center_name.setAdapter(center_adapter);
         sp_center_name.setOnItemSelectedListener(emartCenterSelectedListener);
@@ -236,7 +236,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
         super.onStart();
         Log.i(TAG, TAG + " onStart");
 
-        //new ProgressDlgShipSelect(ShipmentActivity.this).execute();
+        //new ProgressDlgShipSelect(ShipmentActivityOrg.this).execute();
         // 출하대상 불러오기 끝, Print 연결 시작
 
         if (!mBluetoothAdapter.isEnabled() && !Common.searchType.equals("1")) {  //안드로이드 디바이스에서 블루투스 ON 여부, 이노이천에서 생산 계근일때는 블루투스 on 여부 묻지 않는다
@@ -249,13 +249,13 @@ public class 원본ShipmentActivity extends ScannerActivity {
 
                 if (mPrintService == null) {
 
-                    mPrintService = new BluetoothPrintService(ShipmentActivity.this, mHandler);
+                    mPrintService = new BluetoothPrintService(ShipmentActivityOrg.this, mHandler);
                     mWoosim = new WoosimService(mHandler);
                     if (Common.printer_address.equals("")) {
-                        Intent i = new Intent(ShipmentActivity.this, DeviceListActivity.class);
+                        Intent i = new Intent(ShipmentActivityOrg.this, DeviceListActivity.class);
                         startActivityForResult(i, REQUEST_CONNECT_DEVICE);
                     } else {
-                        new ProgressDlgPrintConnect(ShipmentActivity.this).execute();
+                        new ProgressDlgPrintConnect(ShipmentActivityOrg.this).execute();
                     }
 
                 }
@@ -274,7 +274,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
         super.onDestroy();
         Log.i(TAG, TAG + " onDestroy");
         if (mPrintService != null) {
-            new ProgressDlgDiscon(ShipmentActivity.this).execute();
+            new ProgressDlgDiscon(ShipmentActivityOrg.this).execute();
         }
         if (cDialog != null && cDialog.isShowing()) {
             cDialog.dismiss(); //접속되면 여기서 종료
@@ -349,7 +349,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                           String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
                           String makingTo = work_item_bi_info.getMAKINGDATE_TO();
 
-                          Intent IntentA = new Intent(ShipmentActivity.this, ExpiryEnterActivity.class);
+                          Intent IntentA = new Intent(ShipmentActivityOrg.this, ExpiryEnterActivity.class);
 
                           String weightStrKey = "weightStrKey";
                           String weightDblKey = "weightDblKey";
@@ -369,7 +369,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                             String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
                             String makingTo = work_item_bi_info.getMAKINGDATE_TO();
 
-                            Intent IntentA = new Intent(ShipmentActivity.this, ExpiryEnterActivity.class);
+                            Intent IntentA = new Intent(ShipmentActivityOrg.this, ExpiryEnterActivity.class);
 
                             String weightStrKey = "weightStrKey";
                             String weightDblKey = "weightDblKey";
@@ -425,7 +425,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
             }*/
 
             dialog_flag = true;
-            new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
+            new AlertDialog.Builder(ShipmentActivityOrg.this, R.style.AppCompatDialogStyle)
                     .setIcon(R.drawable.highland)
                     .setTitle(R.string.shipment_wet_send)
                     .setMessage(R.string.shipment_wet_send_msg)
@@ -435,7 +435,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             // 전송시작
                             dialog_flag = false;
-                            new ProgressDlgShipmentSend(ShipmentActivity.this).execute();
+                            new ProgressDlgShipmentSend(ShipmentActivityOrg.this).execute();
                         }
                     }).setNegativeButton(R.string.shipment_wet_no, new DialogInterface.OnClickListener() {
                 @Override
@@ -550,9 +550,9 @@ public class 원본ShipmentActivity extends ScannerActivity {
                         break;
                     case MESSAGE_SEARCH:
                         if (mPrintService == null) {
-                            mPrintService = new BluetoothPrintService(ShipmentActivity.this, mHandler);
+                            mPrintService = new BluetoothPrintService(ShipmentActivityOrg.this, mHandler);
                             mWoosim = new WoosimService(mHandler);
-                            Intent i = new Intent(ShipmentActivity.this, DeviceListActivity.class);
+                            Intent i = new Intent(ShipmentActivityOrg.this, DeviceListActivity.class);
                             startActivityForResult(i, REQUEST_CONNECT_DEVICE);
                         }
                         break;
@@ -602,7 +602,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                 setBarcodeMsg(msg);
             } else if(work_flag == 0){
                 // BL코드로 계근 리스트 조회하기
-                new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), msg, scan_flag).execute();
+                new ProgressDlgShipSelect(ShipmentActivityOrg.this, sp_center_name.getSelectedItem().toString(), msg, scan_flag).execute();
             } else if(work_flag == 2){
                 setBarcodeMsg(msg);
             }
@@ -686,7 +686,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                                 return;
                                 /*Log.e(TAG, "=====================중복상품스캔=========================");
                                 vibrator.vibrate(500);
-                                new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
+                                new AlertDialog.Builder(ShipmentActivityOrg.this, R.style.AppCompatDialogStyle)
                                         .setIcon(R.drawable.highland)
                                         .setTitle("중복상품스캔")
                                         .setMessage("중복된상품을 스캔하시겠습니까?")
@@ -726,7 +726,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                             Log.i(TAG, "작업 중 다른 상품 스캔 !");
                             vibrator.vibrate(500);
                             dialog_flag = true;
-                            new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
+                            new AlertDialog.Builder(ShipmentActivityOrg.this, R.style.AppCompatDialogStyle)
                                     .setIcon(R.drawable.highland)
                                     .setTitle(R.string.shipment_wet_other)
                                     .setMessage(R.string.shipment_wet_other_msg)
@@ -740,7 +740,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                                                     //set_scanFlag(false);
                                                     work_ppcode = find_ppcode;
                                                     work_item_fullbarcode = msg;
-                                                    new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
+                                                    new ProgressDlgShipSelect(ShipmentActivityOrg.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
                                                 }
                                             }
                                     )
@@ -1562,7 +1562,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
         try {
             ArrayList<String> list_bl = new ArrayList<String>();
             list_bl.add(arSM.get(work_position).getBL_NO());
-            ArrayAdapter<String> bl_adapter = new ArrayAdapter<String>(ShipmentActivity.this, android.R.layout.simple_spinner_item, list_bl);
+            ArrayAdapter<String> bl_adapter = new ArrayAdapter<String>(ShipmentActivityOrg.this, android.R.layout.simple_spinner_item, list_bl);
             bl_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             sp_bl_no.setAdapter(bl_adapter);
 
@@ -3020,7 +3020,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                         list_position.add(arSM.get(i).getCLIENTNAME() + " / " + arSM.get(i).getIMPORT_ID_NO());
                     }
 
-                    ArrayAdapter<String> position_adapter = new ArrayAdapter<String>(ShipmentActivity.this, android.R.layout.simple_spinner_item, list_position);
+                    ArrayAdapter<String> position_adapter = new ArrayAdapter<String>(ShipmentActivityOrg.this, android.R.layout.simple_spinner_item, list_position);
                     position_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     sp_point_name.setAdapter(position_adapter);
                     select_flag = true;
@@ -3175,7 +3175,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                     list_position.add(arSM.get(i).getCLIENTNAME());
                 }
 
-                ArrayAdapter<String> position_adapter = new ArrayAdapter<String>(ShipmentActivity.this, android.R.layout.simple_spinner_item, list_position);
+                ArrayAdapter<String> position_adapter = new ArrayAdapter<String>(ShipmentActivityOrg.this, android.R.layout.simple_spinner_item, list_position);
                 position_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 sp_point_name.setAdapter(position_adapter);
                 select_flag = true;
@@ -3202,7 +3202,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                 edit_center_tcount.setText(centerTotalCount + " / " + centerWorkCount);
                 edit_center_tweight.setText(Math.round(centerTotalWeight * 100) / 100.0 + " / " + centerWorkWeight);
 
-                ArrayAdapter<String> bl_adapter = new ArrayAdapter<String>(ShipmentActivity.this, android.R.layout.simple_spinner_item, list_bl);
+                ArrayAdapter<String> bl_adapter = new ArrayAdapter<String>(ShipmentActivityOrg.this, android.R.layout.simple_spinner_item, list_bl);
                 bl_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 sp_bl_no.setAdapter(bl_adapter);
 
@@ -3661,7 +3661,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
                                 editor.putString("printer_address", Common.printer_address);
                                 editor.putInt("printer_no", 10);                //	30 = PM30
                                 editor.commit();
-                                new ProgressDlgPrintConnect(ShipmentActivity.this).execute();        // 선택된 모바일프린터 연결 시도
+                                new ProgressDlgPrintConnect(ShipmentActivityOrg.this).execute();        // 선택된 모바일프린터 연결 시도
                             }
                         } catch (Exception e) {
                             if (Common.D) {
@@ -3815,16 +3815,16 @@ public class 원본ShipmentActivity extends ScannerActivity {
                     edit_wet_count.setText("");
                     edit_wet_weight.setText("");
                     if (work_flag == 1) {
-                        new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true).execute();
+                        new ProgressDlgShipSelect(ShipmentActivityOrg.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true).execute();
                         //setBarcodeMsg(msg);
                     } else if (work_flag == 0){
                         //Toast.makeText(getApplicationContext(), "수기로 중량을 입력해주세요.", Toast.LENGTH_SHORT).show();
                         //vibrator.vibrate(500);
                         Log.e(TAG, "수기일때 뒤로가기 = " + work_bl_no);
                         // BL코드로 계근 리스트 조회하기
-                        new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
+                        new ProgressDlgShipSelect(ShipmentActivityOrg.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
                     } else if (work_flag == 2){
-                        new ProgressDlgShipSelect(ShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
+                        new ProgressDlgShipSelect(ShipmentActivityOrg.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
                     }
                 }
             });
@@ -3935,8 +3935,8 @@ public class 원본ShipmentActivity extends ScannerActivity {
                 }
             });
 
-            list_gi_info = DBHandler.selectqueryGoodsWet(ShipmentActivity.this, si.getGI_D_ID(), si.getPACKER_PRODUCT_CODE(), si.getCLIENT_CODE());
-            detailAdapter = new DetailAdapter(ShipmentActivity.this, R.layout.list_detailshipment, list_gi_info, mHandler);
+            list_gi_info = DBHandler.selectqueryGoodsWet(ShipmentActivityOrg.this, si.getGI_D_ID(), si.getPACKER_PRODUCT_CODE(), si.getCLIENT_CODE());
+            detailAdapter = new DetailAdapter(ShipmentActivityOrg.this, R.layout.list_detailshipment, list_gi_info, mHandler);
 
             detail_list = (ListView) detail_layout.findViewById(R.id.detail_list);
             detail_list.setAdapter(detailAdapter);
@@ -3958,7 +3958,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
         String buttonYes = "삭제";
         String buttonNo = "취소";
 
-        new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
+        new AlertDialog.Builder(ShipmentActivityOrg.this, R.style.AppCompatDialogStyle)
                 .setIcon(R.drawable.highland)
                 .setTitle(alertTitle)
                 .setMessage(buttonMessage)
@@ -4022,7 +4022,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
     // 전송이 끝났음을 알리는 Dialog
     private void show_sendFinishDialog() {
         dialog_flag = true;
-        new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
+        new AlertDialog.Builder(ShipmentActivityOrg.this, R.style.AppCompatDialogStyle)
                 .setIcon(R.drawable.highland)
                 .setTitle(R.string.shipment_wet_send_finish)
                 .setMessage(R.string.shipment_wet_send_finish_msg)
@@ -4052,7 +4052,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
     // 다음 지점 계근을 묻는 Dialog
     private void show_wetNextDialog() {
         dialog_flag = true;
-        new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
+        new AlertDialog.Builder(ShipmentActivityOrg.this, R.style.AppCompatDialogStyle)
                 .setIcon(R.drawable.highland)
                 .setTitle(R.string.shipment_wet_finish)
                 .setMessage(R.string.shipment_wet_next_msg)
@@ -4090,7 +4090,7 @@ public class 원본ShipmentActivity extends ScannerActivity {
     // 계근이 끝났음을 알리는 Dialog
     private void show_wetFinishDialog() {
         dialog_flag = true;
-        new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle)
+        new AlertDialog.Builder(ShipmentActivityOrg.this, R.style.AppCompatDialogStyle)
                 .setIcon(R.drawable.highland)
                 .setTitle(R.string.shipment_wet_finish)
                 .setMessage(R.string.shipment_wet_finish_msg)
@@ -4120,8 +4120,8 @@ public class 원본ShipmentActivity extends ScannerActivity {
     // 에러가 났을 때, 알림창 표시 showAelrtDialog 추가
     public void showAlertDialog(String s,int i){
         try {
-            Inflater = (LayoutInflater) ShipmentActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            final AlertDialog.Builder builder = new AlertDialog.Builder(ShipmentActivity.this, R.style.AppCompatDialogStyle);
+            Inflater = (LayoutInflater) ShipmentActivityOrg.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(ShipmentActivityOrg.this, R.style.AppCompatDialogStyle);
             vibrator.vibrate(500);
             builder.setIcon(R.drawable.highland);
             builder.setTitle("스캔 오류");
