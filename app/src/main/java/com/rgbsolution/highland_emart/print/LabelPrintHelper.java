@@ -1,11 +1,18 @@
 package com.rgbsolution.highland_emart.print;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.Log;
 
 import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 
+import java.io.ByteArrayOutputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -78,6 +85,9 @@ public class LabelPrintHelper {
     private static final String CENTER_NAME_TRD = "TRD";
     private static final String CENTER_NAME_WET = "WET";
     private static final String CENTER_NAME_ET = "E/T";
+
+    // 휴먼울림체 폰트
+    private static Typeface customFont = null;
 
     // ========================================================================================
     // 인터페이스 정의
@@ -211,6 +221,93 @@ public class LabelPrintHelper {
      */
     private String slcsFeedToMark() {
         return "T\r\n";
+    }
+
+    /**
+     * 커스텀 폰트(휴먼울림체) 로드
+     */
+    public static void loadCustomFont(Context context) {
+        if (customFont == null) {
+            try {
+                customFont = Typeface.createFromAsset(context.getAssets(), "hywulm.ttf");
+                Log.d("LabelPrintHelper", "휴먼울림체 폰트 로드 성공");
+            } catch (Exception e) {
+                Log.e("LabelPrintHelper", "폰트 로드 실패, 기본 폰트 사용: " + e.getMessage());
+                customFont = Typeface.DEFAULT_BOLD;
+            }
+        }
+    }
+
+    /**
+     * 텍스트를 비트맵으로 렌더링 후 SLCS LD 명령으로 변환
+     *
+     * @param x      X 좌표
+     * @param y      Y 좌표
+     * @param size   폰트 크기 (도트)
+     * @param text   출력할 텍스트
+     * @param bold   굵게 여부
+     * @return SLCS LD 명령 바이트 배열
+     */
+    private byte[] slcsBitmapText(int x, int y, int size, String text, boolean bold) {
+        if (text == null || text.isEmpty()) return new byte[0];
+
+        // Paint 설정
+        Paint paint = new Paint();
+        paint.setAntiAlias(false);  // 프린터 출력용 - 안티앨리어싱 OFF (1bpp 흑백)
+        paint.setTextSize(size);
+        paint.setColor(Color.BLACK);
+        paint.setTypeface(customFont != null ? customFont : Typeface.DEFAULT_BOLD);
+        if (bold) {
+            paint.setFakeBoldText(true);
+        }
+
+        // 텍스트 크기 측정
+        int textWidth = (int) Math.ceil(paint.measureText(text));
+        Paint.FontMetrics fm = paint.getFontMetrics();
+        int textHeight = (int) Math.ceil(fm.descent - fm.ascent);
+        if (textWidth <= 0 || textHeight <= 0) return new byte[0];
+
+        // 비트맵 생성 및 텍스트 그리기
+        Bitmap bitmap = Bitmap.createBitmap(textWidth, textHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.WHITE);
+        canvas.drawText(text, 0, -fm.ascent, paint);
+
+        // 비트맵을 1bpp 데이터로 변환 (흑백, 검정=1)
+        int widthBytes = (textWidth + 7) / 8;
+        byte[] bitmapData = new byte[widthBytes * textHeight];
+
+        for (int row = 0; row < textHeight; row++) {
+            for (int col = 0; col < textWidth; col++) {
+                int pixel = bitmap.getPixel(col, row);
+                int gray = (Color.red(pixel) + Color.green(pixel) + Color.blue(pixel)) / 3;
+                if (gray < 128) { // 검정
+                    int byteIndex = row * widthBytes + (col / 8);
+                    int bitIndex = 7 - (col % 8);
+                    bitmapData[byteIndex] |= (1 << bitIndex);
+                }
+            }
+        }
+        bitmap.recycle();
+
+        // LD 명령 구성: LD xL xH yL yH dhL dhH dvL dvH d1~dk
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            out.write("LD".getBytes());
+            out.write((byte) (x & 0xFF));         // xL
+            out.write((byte) ((x >> 8) & 0xFF));   // xH
+            out.write((byte) (y & 0xFF));         // yL
+            out.write((byte) ((y >> 8) & 0xFF));   // yH
+            out.write((byte) (widthBytes & 0xFF));  // dhL
+            out.write((byte) ((widthBytes >> 8) & 0xFF)); // dhH
+            out.write((byte) (textHeight & 0xFF)); // dvL
+            out.write((byte) ((textHeight >> 8) & 0xFF)); // dvH
+            out.write(bitmapData);
+        } catch (Exception e) {
+            Log.e("LabelPrintHelper", "LD 명령 생성 실패: " + e.getMessage());
+        }
+
+        return out.toByteArray();
     }
 
     // ========================================================================================
@@ -614,17 +711,17 @@ public class LabelPrintHelper {
 
         // ========== SLCS 명령어로 이마트 확장 라벨 인쇄 (Bixolon 프린터) ==========
         try {
-            StringBuilder slcsCmd = new StringBuilder();
-            slcsCmd.append(slcsInit());                                              // 프린터 초기화
-            slcsCmd.append(slcsLabelSize(576, 460));                                 // 라벨 크기 설정
+            ByteArrayOutputStream labelData = new ByteArrayOutputStream();
+            labelData.write(slcsInit().getBytes("EUC-KR"));                          // 프린터 초기화
+            labelData.write(slcsLabelSize(576, 460).getBytes("EUC-KR"));             // 라벨 크기 설정
 
             // 센터명 출력
             if (7 < si.CENTERNAME.length()) {
-                slcsCmd.append(slcsText(20, 12, 35, 35, si.CENTERNAME));
+                labelData.write(slcsBitmapText(20, 12, 35, si.CENTERNAME, true));
                 if (Common.D)
                     Log.i(TAG, "센터명 > 7 ,  size 30");
             } else {
-                slcsCmd.append(slcsText(20, 10, 40, 40, si.CENTERNAME));
+                labelData.write(slcsBitmapText(20, 10, 40, si.CENTERNAME, true));
                 if (Common.D)
                     Log.i(TAG, "센터명 <= 7 ,  size 40");
             }
@@ -634,29 +731,29 @@ public class LabelPrintHelper {
                 // M3, M4는 여기서 출력 없음
             } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
                 String vendorName = "[" + COMPANY_NAME + "]";
-                slcsCmd.append(slcsText(330, 13, 25, 25, vendorName));                // 업체명 출력
+                labelData.write(slcsBitmapText(330, 13, 25, vendorName, true));       // 업체명 출력
 
                 String storeNamePlusCode = pointName + "(" +  si.getSTORE_CODE() +")";
 
                 if (11 < si.CLIENTNAME.toString().length()) {
-                    slcsCmd.append(slcsText(10, 270, 35, 35, storeNamePlusCode.toString()));  // 지점명 출력
+                    labelData.write(slcsBitmapText(10, 270, 35, storeNamePlusCode.toString(), true));  // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 > 11 ,  size 30");
                 } else {
-                    slcsCmd.append(slcsText(10, 270, 40, 40, storeNamePlusCode.toString()));  // 지점명 출력
+                    labelData.write(slcsBitmapText(10, 270, 40, storeNamePlusCode.toString(), true));  // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 <= 11 ,  size 40");
                 }
                 // 저울스캔용 표시
                 String usePurpose = "[저울 스캔용]";
-                slcsCmd.append(slcsText(400, 270, 25, 25, usePurpose));
+                labelData.write(slcsBitmapText(400, 270, 25, usePurpose, true));
             } else {
                 if (11 < si.CLIENTNAME.toString().length()) {
-                    slcsCmd.append(slcsText(20, 60, 35, 35, pointName.toString()));          // 지점명 출력
+                    labelData.write(slcsBitmapText(20, 60, 35, pointName.toString(), true));          // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 > 11 ,  size 30");
                 } else {
-                    slcsCmd.append(slcsText(20, 60, 40, 40, pointName.toString()));          // 지점명 출력
+                    labelData.write(slcsBitmapText(20, 60, 40, pointName.toString(), true));          // 지점명 출력
                     if (Common.D)
                         Log.i(TAG, "지점명 <= 11 ,  size 40");
                 }
@@ -670,9 +767,9 @@ public class LabelPrintHelper {
                 itemX = 15; itemY = 70;
             }
             if (si.EMARTITEM.length() > 14) {
-                slcsCmd.append(slcsText(itemX, itemY, 35, 35, si.EMARTITEM));
+                labelData.write(slcsBitmapText(itemX, itemY, 35, si.EMARTITEM, true));
             } else {
-                slcsCmd.append(slcsText(itemX, itemY, 40, 40, si.EMARTITEM));
+                labelData.write(slcsBitmapText(itemX, itemY, 40, si.EMARTITEM, true));
             }
 
             Log.i(TAG, "===============EMARTITEM============" + si.EMARTITEM);
@@ -680,14 +777,14 @@ public class LabelPrintHelper {
 
             // sBarcode 바코드 출력 (M9 제외)
             if (!si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                slcsCmd.append(slcsBarcode(420, 20, 60, sBarcode));
+                labelData.write(slcsBarcode(420, 20, 60, sBarcode).getBytes("EUC-KR"));
             }
 
             Log.i(TAG, "===============sBarcode2============" + sBarcodeStr);
 
             // sBarcodeStr 텍스트 출력 (M9 제외)
             if (!si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                slcsCmd.append(slcsText(450, 80, 25, 25, sBarcodeStr));               // 바코드번호(숫자) 출력
+                labelData.write(slcsBitmapText(450, 80, 25, sBarcodeStr, true));      // 바코드번호(숫자) 출력
             }
 
             Log.i(TAG, "===============pBarcode============" + pBarcode);
@@ -711,97 +808,97 @@ public class LabelPrintHelper {
             } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
                 barcodeX = 90; barcodeY = 125;
             }
-            slcsCmd.append(slcsBarcode(barcodeX, barcodeY, 60, pBarcode));
+            labelData.write(slcsBarcode(barcodeX, barcodeY, 60, pBarcode).getBytes("EUC-KR"));
 
             // 바코드 타입별 바코드번호(숫자) 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
-                slcsCmd.append(slcsText(75, 240, 20, 20, pBarcodeStr));
+                labelData.write(slcsBitmapText(75, 240, 20, pBarcodeStr, true));
             }
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M1)) {
-                slcsCmd.append(slcsText(147, 240, 25, 25, pBarcodeStr));
+                labelData.write(slcsBitmapText(147, 240, 25, pBarcodeStr, true));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E2)) {
-                slcsCmd.append(slcsText(100, 240, 25, 25, pBarcodeStr));
+                labelData.write(slcsBitmapText(100, 240, 25, pBarcodeStr, true));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E3)) {
-                slcsCmd.append(slcsText(190, 240, 25, 25, pBarcodeStr));
+                labelData.write(slcsBitmapText(190, 240, 25, pBarcodeStr, true));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                slcsCmd.append(slcsText(25, 175, 25, 25, pBarcodeStr + "  PC매입"));
+                labelData.write(slcsBitmapText(25, 175, 25, pBarcodeStr + "  PC매입", true));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                slcsCmd.append(slcsText(117, 175, 25, 25, pBarcodeStr + "  PC매입"));
+                labelData.write(slcsBitmapText(117, 175, 25, pBarcodeStr + "  PC매입", true));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
-                slcsCmd.append(slcsText(90, 192, 25, 25, pBarcodeStr));
+                labelData.write(slcsBitmapText(90, 192, 25, pBarcodeStr, true));
             }
 
             // M3, M4, M9 추가 바코드 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                slcsCmd.append(slcsBarcode(70, 205, 60, pBarcode2));
+                labelData.write(slcsBarcode(70, 205, 60, pBarcode2).getBytes("EUC-KR"));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                slcsCmd.append(slcsBarcode(145, 205, 60, pBarcode2));
+                labelData.write(slcsBarcode(145, 205, 60, pBarcode2).getBytes("EUC-KR"));
             } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                slcsCmd.append(slcsBarcode(125, 325, 60, pBarcode2));
+                labelData.write(slcsBarcode(125, 325, 60, pBarcode2).getBytes("EUC-KR"));
                 String ctName = si.getCT_NAME();
-                slcsCmd.append(slcsText(450, 330, 25, 25, ctName));
-                slcsCmd.append(slcsText(125, 390, 25, 25, pBarcodeStr2));
+                labelData.write(slcsBitmapText(450, 330, 25, ctName, true));
+                labelData.write(slcsBitmapText(125, 390, 25, pBarcodeStr2, true));
                 String belowBarcodeString = si.EMARTITEM +","+si.getUSE_NAME();
-                slcsCmd.append(slcsText(80, 420, 25, 25, belowBarcodeString));
+                labelData.write(slcsBitmapText(80, 420, 25, belowBarcodeString, true));
             }
 
             // M3, M4 PC출하 텍스트 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                slcsCmd.append(slcsText(25, 265, 25, 25, pBarcodeStr2 + "  PC출하"));
+                labelData.write(slcsBitmapText(25, 265, 25, pBarcodeStr2 + "  PC출하", true));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
-                slcsCmd.append(slcsText(117, 265, 25, 25, pBarcodeStr2 + "  PC출하"));
+                labelData.write(slcsBitmapText(117, 265, 25, pBarcodeStr2 + "  PC출하", true));
             }
 
             // 바코드 타입별 중량, 납품일자, 업체 정보 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                slcsCmd.append(slcsText(15, 300, 40, 40, "중     량 : "));
-                slcsCmd.append(slcsText(175, 300, 40, 40, String.valueOf(print_weight_double) + " KG"));
+                labelData.write(slcsBitmapText(15, 300, 40, "중     량 : ", true));
+                labelData.write(slcsBitmapText(175, 300, 40, String.valueOf(print_weight_double) + " KG", true));
                 String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-                slcsCmd.append(slcsText(15, 348, 30, 30, "납품일자 : " + tempDate));
+                labelData.write(slcsBitmapText(15, 348, 30, "납품일자 : " + tempDate, true));
                 if (reprint) {
                     pCompName = pCompName + "  *";
                 }
-                slcsCmd.append(slcsText(15, 388, 30, 30, "업        체 : " + pCompCode + "   " + pCompName));
-                slcsCmd.append(slcsText(15, 428, 30, 30, expiryDayConvert));          // 소비기한
+                labelData.write(slcsBitmapText(15, 388, 30, "업        체 : " + pCompCode + "   " + pCompName, true));
+                labelData.write(slcsBitmapText(15, 428, 30, expiryDayConvert, true)); // 소비기한
 
             } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
                 Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
                 String tempDate = si.getSTORE_IN_DATE().substring(0, 4) + "년 " + si.getSTORE_IN_DATE().substring(4, 6) + "월 " + si.getSTORE_IN_DATE().substring(6, 8) + "일";
-                slcsCmd.append(slcsText(90, 220, 30, 30, "납품일 : " + tempDate));
+                labelData.write(slcsBitmapText(90, 220, 30, "납품일 : " + tempDate, true));
 
             } else {
-                slcsCmd.append(slcsText(20, 280, 40, 40, "중량 : "));
-                slcsCmd.append(slcsText(180, 280, 40, 40, String.valueOf(print_weight_double) + " KG"));
+                labelData.write(slcsBitmapText(20, 280, 40, "중량 : ", true));
+                labelData.write(slcsBitmapText(180, 280, 40, String.valueOf(print_weight_double) + " KG", true));
                 Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
                 String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-                slcsCmd.append(slcsText(20, 328, 30, 30, "납품일자 : " + tempDate));
+                labelData.write(slcsBitmapText(20, 328, 30, "납품일자 : " + tempDate, true));
                 if (reprint) {
                     pCompName = pCompName + "  *";
                 }
-                slcsCmd.append(slcsText(20, 368, 30, 30, "업체코드 : " + pCompCode + expiryDayConvert));
-                slcsCmd.append(slcsText(20, 408, 30, 30, "업 체 명 : " + pCompName));
+                labelData.write(slcsBitmapText(20, 368, 30, "업체코드 : " + pCompCode + expiryDayConvert, true));
+                labelData.write(slcsBitmapText(20, 408, 30, "업 체 명 : " + pCompName, true));
             }
 
             // WH_AREA 출력
             whArea = si.getWH_AREA();
             Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
             if(whArea != null || !whArea.equals("")){
-                slcsCmd.append(slcsText(430, 385, 65, 65, whArea));
+                labelData.write(slcsBitmapText(430, 385, 65, whArea, true));
             }
 
             // M9 가로선 그리기
             if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
-                slcsCmd.append(slcsLine(0, 260, 560, 260, 5));
+                labelData.write(slcsLine(0, 260, 560, 260, 5).getBytes("EUC-KR"));
             }
 
             // 인쇄 실행
-            slcsCmd.append(slcsPrint(1));
+            labelData.write(slcsPrint(1).getBytes("EUC-KR"));
             // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
-            slcsCmd.append(slcsFeedToMark());
+            labelData.write(slcsFeedToMark().getBytes("EUC-KR"));
 
             if( !si.getBARCODE_TYPE().equals(BARCODE_TYPE_P0) ) {
-                callback.sendData(slcsCmd.toString().getBytes("EUC-KR"));
+                callback.sendData(labelData.toByteArray());
             }
 
             // ========== 이마트 미트센터 +공장코드 라벨 (SLCS) ==========

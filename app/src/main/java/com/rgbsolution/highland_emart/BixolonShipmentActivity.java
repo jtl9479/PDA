@@ -420,6 +420,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
         super.onCreate(savedInstanceState);
 
+        // 휴먼울림체 폰트 로드
+        LabelPrintHelper.loadCustomFont(this);
+
         // 출하 유형에 따른 레이아웃 설정
         // searchType "3": 도매 출하 - 별도 레이아웃 사용
         if(Common.searchType.equals(SEARCH_TYPE_WHOLESALE)){
