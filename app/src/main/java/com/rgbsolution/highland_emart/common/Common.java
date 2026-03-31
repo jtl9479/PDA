@@ -10,8 +10,8 @@ public class Common {
 
     // 베이스 URL (서버 변경 시 여기만 수정)
     // public static final String BASE_URL = "http://175.120.155.125:4040/inno";  // 운영서버
-    public static final String BASE_URL = "http://49.50.173.44:4040/inno";  // 개발서버
-    //public static final String BASE_URL = "http://localhost:4040/inno";  // 로컬
+    //public static final String BASE_URL = "http://49.50.173.44:4040/inno";  // 개발서버
+    public static final String BASE_URL = "http://192.168.0.28:4040/inno";      // 로컬
 
 
     // URL 변수
