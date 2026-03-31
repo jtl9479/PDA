@@ -30,7 +30,8 @@ try {
 }
  //SQL
   Statement stmt = conn.createStatement();
-  String quertystring = "SELECT 창고코드 AS WAREHOUSE_CODE"
+  String quertystring = "SELECT 회사코드 AS COMPANY_CODE"
+  								+ ", 창고코드 AS WAREHOUSE_CODE"
 								+ ", 창고명 AS WAREHOUSE_NAME"
 								+ " FROM CO_창고관리"
 								+ " WHERE 회사코드 = '20'";
@@ -44,6 +45,7 @@ try {
 
   while(rs.next()) {
 	out.println(
+		rs.getString("COMPANY_CODE") + "::" +
 		rs.getString("WAREHOUSE_CODE") + "::" +
 		rs.getString("WAREHOUSE_NAME") + ";;"
 		);
