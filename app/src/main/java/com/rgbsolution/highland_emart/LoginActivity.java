@@ -95,7 +95,8 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(Void... params) {
             try {
-                return HttpHelper.getInstance().sendDataDb("", "inno",
+                String data = " WHERE 회사코드 = '" + Common.selectCompanyCode + "'";
+                return HttpHelper.getInstance().sendDataDb(data, "inno",
                     "search_warehouse", Common.URL_SEARCH_WAREHOUSE);
             } catch (Exception e) {
                 Log.e(TAG, "창고 목록 조회 실패: " + e.getMessage());
