@@ -104,8 +104,9 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             // ========================================
             // 2. 서버 조회 조건 생성 (WHERE절)
             // ========================================
-            // 기본 조건: 선택한 날짜의 출하대상만 조회
-            String data = " AND D.출고일자 = '" + Common.selectDay + "'";
+            // 기본 조건: 회사코드 + 선택한 날짜의 출하대상만 조회
+            String data = " AND D.회사코드 = '" + Common.selectCompanyCode + "'";
+            data += " AND D.출고일자 = '" + Common.selectDay + "'";
 
             // ========================================
             // 3. searchType별 서버 URL 호출
