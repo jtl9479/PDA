@@ -54,8 +54,6 @@ public class LoginActivity extends AppCompatActivity {
     // 빅솔론 프린터 (소켓 통신 방식)
     private BixolonSocketPrinter mBixolonPrinter = null;
 
-    static final String[] store = {"부산2","이천1센터","삼일냉장","SWC","탑로지스"};
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,25 +85,70 @@ public class LoginActivity extends AppCompatActivity {
         editID.setText("12345678");
         editPWD.setText("5411");
 
-        ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_spinner_item,store);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // 창고 목록 서버 조회
+        new WarehouseSearchTask().execute();
 
-        Spinner spin = (Spinner) findViewById(R.id.storeSpinner);
-        spin.setAdapter(adapter);
+    }
 
-        spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-            TextView storetv = (TextView) findViewById(R.id.TextView01);
-
-            public void onItemSelected(AdapterView parent, View v, int position, long id){
-                storetv.setText(store[position]);
-                Common.selectWarehouse = storetv.getText().toString();
-                Log.i(TAG, TAG + "=====================Common.selectWarehouse======================" + Common.selectWarehouse);
+    // 창고 목록 조회 AsyncTask
+    class WarehouseSearchTask extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... params) {
+            try {
+                return HttpHelper.getInstance().sendDataDb("", "inno",
+                    "search_warehouse", Common.URL_SEARCH_WAREHOUSE);
+            } catch (Exception e) {
+                Log.e(TAG, "창고 목록 조회 실패: " + e.getMessage());
+                return "";
             }
-            public void onNothingSelected(AdapterView parent){
-                storetv.setText("");
-            }
-        });
+        }
 
+        @Override
+        protected void onPostExecute(String receiveData) {
+            receiveData = receiveData.replace("\r\n", "").replace("\n", "");
+
+            Common.warehouseNames.clear();
+            Common.warehouseCodes.clear();
+
+            if (receiveData != null && !receiveData.isEmpty()) {
+                String[] rows = receiveData.split(";;");
+                for (String row : rows) {
+                    if (row.isEmpty()) continue;
+                    String[] cols = row.split("::");
+                    if (cols.length >= 3) {
+                        Common.warehouseCodes.add(cols[1].trim());  // 창고코드
+                        Common.warehouseNames.add(cols[2].trim());  // 창고명
+                    }
+                }
+            }
+
+            // 조회 실패 시 기본값
+            if (Common.warehouseNames.isEmpty()) {
+                Common.warehouseNames.add("삼일냉장");
+                Common.warehouseCodes.add("1");
+            }
+
+            // Spinner 구성
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                LoginActivity.this,
+                android.R.layout.simple_spinner_item,
+                Common.warehouseNames
+            );
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+            Spinner spin = (Spinner) findViewById(R.id.storeSpinner);
+            spin.setAdapter(adapter);
+
+            spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                public void onItemSelected(AdapterView parent, View v, int position, long id) {
+                    Common.selectWarehouse = Common.warehouseNames.get(position);
+                    Common.selectWarehouseCode = Common.warehouseCodes.get(position);
+                    Log.i(TAG, "창고 선택: " + Common.selectWarehouse
+                        + " (" + Common.selectWarehouseCode + ")");
+                }
+                public void onNothingSelected(AdapterView parent) {}
+            });
+        }
     }
 
     //	Button 클릭 이벤트
@@ -205,7 +248,7 @@ public class LoginActivity extends AppCompatActivity {
                     Log.d(TAG, "::: ID = '" + Common.REG_ID + "', PWD = '" + password + "' :::");
                 }
 
-                receiveData = HttpHelper.getInstance().loginData(Common.REG_ID, encPassword, Common.COMPANY_CODE, Common.URL_LOGIN);
+                receiveData = HttpHelper.getInstance().loginData(Common.REG_ID, encPassword, Common.selectCompanyCode, Common.URL_LOGIN);
             } catch (Exception e) {
                 if (Common.D) {
                     e.printStackTrace();
