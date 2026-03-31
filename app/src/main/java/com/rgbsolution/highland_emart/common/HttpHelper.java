@@ -119,7 +119,7 @@ public class HttpHelper {
 	private HttpEntity makeEntity(Vector<BasicNameValuePair> nameValue) throws Exception {
 		HttpEntity result = null;
 		try {
-			result = new UrlEncodedFormEntity(nameValue, "euc-kr");
+			result = new UrlEncodedFormEntity(nameValue, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
