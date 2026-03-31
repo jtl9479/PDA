@@ -113,17 +113,9 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
 
             // ----- searchType "0": 이마트 출하대상 -----
             if(Common.searchType.equals("0")){
-                // 창고별 조건 추가 (이마트는 창고 구분 있음)
-                if(Common.selectWarehouse.equals("삼일냉장")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN10273'";
-                }else if(Common.selectWarehouse.equals("SWC")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN60464'";
-                }else if(Common.selectWarehouse.equals("이천1센터")){
-                    data += " AND GR_WAREHOUSE_CODE = '4001'";
-                }else if(Common.selectWarehouse.equals("부산센터")){
-                    data += " AND GR_WAREHOUSE_CODE = '4004'";
-                }else if(Common.selectWarehouse.equals("탑로지스")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN63279'";
+                // 창고별 조건 추가
+                if (!Common.selectWarehouseCode.isEmpty()) {
+                    data += " AND 창고코드 = '" + Common.selectWarehouseCode + "'";
                 }
 
                 // 서버 API 호출 (DB: inno)
@@ -139,16 +131,8 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             // ----- searchType "2": 홈플러스 출하대상 -----
             }else if(Common.searchType.equals("2")){
                 // 창고별 조건 추가
-                if(Common.selectWarehouse.equals("삼일냉장")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN10273'";
-                }else if(Common.selectWarehouse.equals("SWC")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN60464'";
-                }else if(Common.selectWarehouse.equals("이천1센터")){
-                    data += " AND GR_WAREHOUSE_CODE = '4001'";
-                }else if(Common.selectWarehouse.equals("부산센터")){
-                    data += " AND GR_WAREHOUSE_CODE = '4004'";
-                }else if(Common.selectWarehouse.equals("탑로지스")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN63279'";
+                if (!Common.selectWarehouseCode.isEmpty()) {
+                    data += " AND 창고코드 = '" + Common.selectWarehouseCode + "'";
                 }
                 receiveData = HttpHelper.getInstance().sendDataDb(data, "inno", "search_shipment", Common.URL_SEARCH_SHIPMENT_HOMEPLUS);
                 Log.d(TAG, "============== 출하리스트 조회조건 홈플러스로 들어옴 : " + data + "================");
@@ -156,16 +140,8 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             // ----- searchType "3": 도매업체 출하대상 -----
             }else if(Common.searchType.equals("3")){
                 // 창고별 조건 추가
-                if(Common.selectWarehouse.equals("삼일냉장")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN10273'";
-                }else if(Common.selectWarehouse.equals("SWC")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN60464'";
-                }else if(Common.selectWarehouse.equals("이천1센터")){
-                    data += " AND GR_WAREHOUSE_CODE = '4001'";
-                }else if(Common.selectWarehouse.equals("부산센터")){
-                    data += " AND GR_WAREHOUSE_CODE = '4004'";
-                }else if(Common.selectWarehouse.equals("탑로지스")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN63279'";
+                if (!Common.selectWarehouseCode.isEmpty()) {
+                    data += " AND 창고코드 = '" + Common.selectWarehouseCode + "'";
                 }
                 receiveData = HttpHelper.getInstance().sendDataDb(data, "inno", "search_shipment", Common.URL_SEARCH_SHIPMENT_WHOLESALE);
                 Log.d(TAG, "============== 출하리스트 조회조건 홈플러스로 들어옴 : " + data + "================");
@@ -184,16 +160,8 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             // ----- searchType "6": 롯데 출하대상 -----
             }else if(Common.searchType.equals("6")){
                 // 창고별 조건 추가
-                if(Common.selectWarehouse.equals("삼일냉장")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN10273'";
-                }else if(Common.selectWarehouse.equals("SWC")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN60464'";
-                }else if(Common.selectWarehouse.equals("이천센터")){
-                    data += " AND GR_WAREHOUSE_CODE = '4001'";
-                }else if(Common.selectWarehouse.equals("부산센터")){
-                    data += " AND GR_WAREHOUSE_CODE = '4004'";
-                }else if(Common.selectWarehouse.equals("탑로지스")){
-                    data += " AND GR_WAREHOUSE_CODE = 'IN63279'";
+                if (!Common.selectWarehouseCode.isEmpty()) {
+                    data += " AND 창고코드 = '" + Common.selectWarehouseCode + "'";
                 }
                 Log.d(TAG, "==============  Common.URL_SEARCH_SHIPMENT_LOTTE : " + Common.URL_SEARCH_SHIPMENT_LOTTE + "================");
                 // 롯데는 DB: highland 사용
