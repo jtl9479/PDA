@@ -105,7 +105,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             // 2. 서버 조회 조건 생성 (WHERE절)
             // ========================================
             // 기본 조건: 선택한 날짜의 출하대상만 조회
-            String data = " WHERE GI_REQ_DATE = '" + Common.selectDay + "'";
+            String data = " AND D.출고일자 = '" + Common.selectDay + "'";
 
             // ========================================
             // 3. searchType별 서버 URL 호출
@@ -115,7 +115,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             if(Common.searchType.equals("0")){
                 // 창고별 조건 추가
                 if (!Common.selectWarehouseCode.isEmpty()) {
-                    data += " AND 창고코드 = '" + Common.selectWarehouseCode + "'";
+                    data += " AND D.창고코드 = '" + Common.selectWarehouseCode + "'";
                 }
 
                 // 서버 API 호출 (DB: inno)
