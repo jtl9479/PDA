@@ -36,14 +36,19 @@ public class Common {
     public static final String URL_SEARCH_PRODUCTION_NONFIXED = BASE_URL + "/search_production_nonfixed.jsp";
     public static final String URL_SEARCH_HOMEPLUS_NONFIXED = BASE_URL + "/search_homeplus_nonfixed.jsp";
     public static final String URL_SEARCH_HOMEPLUS_NONFIXED2 = BASE_URL + "/search_homeplus_nonfixed2.jsp";
+    public static final String URL_SEARCH_WAREHOUSE = BASE_URL + "/search_warehouse.jsp";
 
-    public static String COMPANY_CODE = "20";                   // 사용자 ID
+    public static String selectCompanyCode = "20";               // 회사코드 (기본값 20, 창고 조회 시 서버에서 덮어씀)
     public static String REG_ID = "";                   // 사용자 ID
     public static String USER_TYPE = "";                // 사용자 권한
     public static boolean search_bool = false;
     public static String selectDay = "";                // 계근 선택 날짜
-    public static String selectWarehouse = "";          // 창고
+    public static String selectWarehouse = "";          // 창고명
+    public static String selectWarehouseCode = "";      // 창고코드
     public static String searchType = "0";              // 계근대상 종류
+
+    public static ArrayList<String> warehouseNames = new ArrayList<>();   // 창고명 목록 (Spinner 표시)
+    public static ArrayList<String> warehouseCodes = new ArrayList<>();   // 창고코드 목록 (쿼리 조건)
 
     public static String printer_address = "";          // 모바일프린터 MAC주소
     public static boolean printer_setting = true;       // 모바일프린터 사용여부
