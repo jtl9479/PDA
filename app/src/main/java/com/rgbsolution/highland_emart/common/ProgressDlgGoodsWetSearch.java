@@ -60,9 +60,9 @@ public class ProgressDlgGoodsWetSearch extends AsyncTask<Integer, String, Intege
             String data = " WHERE ";
             for (int i = 0; i < list_id_info.size(); i++) {
                 if (i == list_id_info.size() - 1) {
-                    data = data + "GI_D_ID = '" + list_id_info.get(i).toString() + "'";
+                    data = data + "출고상세SEQ = '" + list_id_info.get(i).toString() + "'";
                 } else {
-                    data = data + "GI_D_ID = '" + list_id_info.get(i).toString() + "' OR ";
+                    data = data + "출고상세SEQ = '" + list_id_info.get(i).toString() + "' OR ";
                 }
             }
 
