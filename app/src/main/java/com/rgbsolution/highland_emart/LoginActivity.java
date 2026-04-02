@@ -115,7 +115,7 @@ public class LoginActivity extends AppCompatActivity {
                 String[] rows = receiveData.split(";;");
                 for (String row : rows) {
                     if (row.isEmpty()) continue;
-                    String[] cols = row.split("::");
+                    String[] cols = row.split("::", -1);
                     if (cols.length >= 3) {
                         Common.warehouseCodes.add(cols[1].trim());  // 창고코드
                         Common.warehouseNames.add(cols[2].trim());  // 창고명

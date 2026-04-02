@@ -72,7 +72,7 @@ public class ProgressDlgNewBarcodeInfo extends AsyncTask<String, Void, String> {
         //s : 성공, f : 실패
         if (result.toString().equals("s")) {
 
-            String[] split_data = addData.split("::");
+            String[] split_data = addData.split("::", -1);
 
             Barcodes_Info bi = new Barcodes_Info();
             HashMap<String, String> temp = new HashMap<String, String>();

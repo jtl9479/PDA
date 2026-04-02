@@ -103,7 +103,7 @@ public class ProgressDlgBarcodeSearch extends AsyncTask<Integer, String, Integer
             if (result.length > 0) {
                 for (String s : result) {
                     //각 row의 데이터별로 split
-                    temp = s.split("::");
+                    temp = s.split("::", -1);
                     bi = new Barcodes_Info();
                     bi.setPACKER_CLIENT_CODE(temp[0].toString());
                     bi.setPACKER_PRODUCT_CODE(temp[1].toString());

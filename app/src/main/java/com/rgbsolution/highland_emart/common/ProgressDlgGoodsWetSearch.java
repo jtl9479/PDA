@@ -96,7 +96,7 @@ public class ProgressDlgGoodsWetSearch extends AsyncTask<Integer, String, Intege
                 Goodswets_Info gi;
                 for (String s : result) {
                     //각 row의 데이터별로 split
-                    temp = s.split("::");
+                    temp = s.split("::", -1);
                     gi = new Goodswets_Info();
                     gi.setGI_D_ID(temp[0].toString());
                     gi.setWEIGHT(temp[1].toString());

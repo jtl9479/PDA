@@ -204,7 +204,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             if (result.length > 0) {
                 for (String s : result) {
                     // column 단위로 분리 (구분자: "::")
-                    temp = s.split("::");
+                    temp = s.split("::", -1);
                     si = new Shipments_Info();
 
                     // ----- 기본 필드 설정 (0~5) -----

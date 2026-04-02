@@ -417,7 +417,7 @@ public class ProductionActivity extends HoneywellScannerActivity {
 
                 if(temp!=null) {
                     // 응답 파싱 (:: 구분자로 분리)
-                    String[] tempArray = temp.split("::");
+                    String[] tempArray = temp.split("::", -1);
 
                     // 바코드 중량 위치 정보 저장
                     weightFrom = tempArray[0].toString();  // 중량 시작 위치
