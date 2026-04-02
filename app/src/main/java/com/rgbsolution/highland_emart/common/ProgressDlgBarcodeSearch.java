@@ -48,7 +48,6 @@ public class ProgressDlgBarcodeSearch extends AsyncTask<Integer, String, Integer
 
             String data = " WHERE ";
             for (int i = 0; i < list_code_info.size(); i++) {
-
                 if(Common.searchType.equals("4") || Common.searchType.equals("5")){
                     if (i == list_code_info.size() - 1) {
                         Log.d( TAG, "TEST DATA : " + list_code_info.get(i)[0].toString() );
@@ -58,9 +57,9 @@ public class ProgressDlgBarcodeSearch extends AsyncTask<Integer, String, Integer
                     }
                 }else{
                     if (i == list_code_info.size() - 1) {
-                        data = data + "SBI.PACKER_PRODUCT_CODE = '" + list_code_info.get(i)[0].toString() + "'";
+                        data = data + "SBI.PPCODE = '" + list_code_info.get(i)[0].toString() + "'";
                     } else {
-                        data = data + "SBI.PACKER_PRODUCT_CODE = '" + list_code_info.get(i)[0].toString() + "' OR ";
+                        data = data + "SBI.PPCODE = '" + list_code_info.get(i)[0].toString() + "' OR ";
                     }
                 }
             }
