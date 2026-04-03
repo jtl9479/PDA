@@ -82,23 +82,32 @@ byteStream.write(WoosimCmd.getTTFcode(35, 35, text));
 
 **필요 준비물:**
 
-| 항목 | 설명 |
-|------|------|
-| HYWULM.TTF | `app/src/main/assets/hywulm.ttf` (프로젝트에 존재) |
-| BixFD.exe | Bixolon Font Downloader (프린터 드라이버 설치 시 포함) |
-| USB 또는 블루투스 | PC ↔ SPP-L3000 연결 |
+| 항목 | 설명 | 경로 |
+|------|------|------|
+| HYWULM.TTF | 휴먼울림체 폰트 파일 | `app/src/main/assets/hywulm.ttf` |
+| BIXOLON Utility | 폰트 다운로드 프로그램 | Bixolon 홈페이지 또는 프린터 드라이버 설치 시 포함 |
+| USB 또는 블루투스 | PC ↔ SPP-L3000 연결 | |
+| 유틸리티 매뉴얼 | `app/doc/문서/Manual_Windows_BIXOLON_Utility_KOR_V1.09.pdf` | 8-4-3절 참고 |
 
-**절차:**
+**절차 (매뉴얼 8-4-3 TTF 다운로드):**
 
 ```
-1. BixFD.exe 실행
+1. BIXOLON Utility 실행
 2. 프린터 연결 (USB 또는 블루투스)
-3. "Add Font" → hywulm.ttf 선택
-4. 폰트 ID 지정 (예: 1)
-5. 문자셋: Korean (한글)
-6. "Download" 클릭
-7. 업로드 완료 대기
-8. "Information"으로 프린터 폰트 목록 확인
+3. 라벨 프린터 탭 선택
+4. 폰트 다운로드 메뉴 진입
+5. TTF 파일 선택 → hywulm.ttf
+6. 다운로드 실행
+7. 다운로드 완료 대기 (폰트 크기에 따라 수 분 소요)
+8. 프린터에 폰트 저장 확인
+```
+
+**폰트 삭제 시 (매뉴얼 8-4-4 TTF 삭제):**
+
+```
+1. BIXOLON Utility → 폰트 삭제 메뉴
+2. 삭제할 폰트 선택
+3. 삭제 실행
 ```
 
 ---
@@ -127,19 +136,48 @@ private String slcsDownloadFontText(int x, int y, int width, int height, String 
 }
 ```
 
-**교체 대상:**
+**교체 대상:** 36곳
 
 모든 `slcsBitmapText()` 호출 → `slcsDownloadFontText()` 호출로 교체
 
 ```java
-// 변경 전
+// 변경 전 (byte[] 반환, write에 직접 전달)
 labelData.write(slcsBitmapText(20, 12, 35, si.CENTERNAME, true));
 
-// 변경 후
+// 변경 후 (String 반환, EUC-KR 바이트로 변환하여 전달)
 labelData.write(slcsDownloadFontText(20, 12, 35, 35, si.CENTERNAME).getBytes("EUC-KR"));
 ```
 
-> 주의: `T` 명령의 정확한 파라미터는 프린터에 폰트 업로드 후 SLCS 매뉴얼 확인 필요. 폰트 ID, x_scale, y_scale 등이 다를 수 있음.
+**파라미터 매핑:**
+
+| slcsBitmapText | slcsDownloadFontText | 설명 |
+|----------------|---------------------|------|
+| x | x | X 좌표 (동일) |
+| y | y | Y 좌표 (동일) |
+| size | width, height | 폰트 크기 → 너비/높이로 분리 (동일값 사용) |
+| text | text | 출력 텍스트 (동일) |
+| bold | (없음) | T 명령에서는 별도 처리 |
+
+**교체 예시:**
+
+```java
+// size=35 → width=35, height=35
+slcsBitmapText(20, 12, 35, si.CENTERNAME, true)
+→ slcsDownloadFontText(20, 12, 35, 35, si.CENTERNAME)
+
+// size=40 → width=40, height=40
+slcsBitmapText(20, 10, 40, si.CENTERNAME, true)
+→ slcsDownloadFontText(20, 10, 40, 40, si.CENTERNAME)
+
+// size=25 → width=25, height=25
+slcsBitmapText(330, 13, 25, vendorName, true)
+→ slcsDownloadFontText(330, 13, 25, 25, vendorName)
+```
+
+> 주의:
+> - `T` 명령의 정확한 파라미터는 프린터에 폰트 업로드 후 SLCS 매뉴얼 확인 필요
+> - 폰트 ID(현재 1로 가정), x_scale, y_scale 등이 다를 수 있음
+> - Step 1 완료 후 테스트 출력으로 파라미터 확인 필요
 
 **검증**: M0 라벨 인쇄 후 원본과 폰트 품질 비교
 
@@ -180,18 +218,19 @@ labelData.write(slcsDownloadFontText(20, 12, 35, 35, si.CENTERNAME).getBytes("EU
 - 메서드: N/A (프린터 설정)
 - 범위: Bixolon SPP-L3000 프린터
 - 용도: 프린터에 휴먼울림체 폰트 설치
-- 주의할 점: BixFD.exe 필요, 폰트 ID 확인
+- 주의할 점: BIXOLON Utility 필요, 매뉴얼 8-4-3절 참고
 
 | # | 항목 | 내용 |
 |---|------|------|
-| 1 | BixFD.exe 실행 | Bixolon Font Downloader |
+| 1 | BIXOLON Utility 실행 | 폰트 다운로드 프로그램 |
 | 2 | 프린터 연결 | USB 또는 블루투스 |
-| 3 | hywulm.ttf 업로드 | 폰트 ID=1, Korean |
-| 4 | 업로드 확인 | Information으로 폰트 목록 확인 |
+| 3 | hywulm.ttf 다운로드 | 매뉴얼 8-4-3 TTF 다운로드 절차 |
+| 4 | 다운로드 확인 | 프린터 폰트 목록에서 확인 |
 
 **Part 2. 변환 계획**
-- 변환 방식: BixFD.exe 사용 (1회)
+- 변환 방식: BIXOLON Utility 사용 (1회)
 - 주의사항: 프린터 메모리에 저장되므로 전원 OFF 후에도 유지
+- 참고 매뉴얼: `app/doc/문서/Manual_Windows_BIXOLON_Utility_KOR_V1.09.pdf` 8-4-3절
 
 **체크리스트**
 - [ ] Part 1: 분석 완료 확인
@@ -210,9 +249,9 @@ labelData.write(slcsDownloadFontText(20, 12, 35, 35, si.CENTERNAME).getBytes("EU
 ### Step 2: LabelPrintHelper.java 수정
 
 **Part 1. 분석**
-- 메서드: slcsDownloadFontText() 추가, slcsBitmapText() 호출 교체
-- 범위: LabelPrintHelper.java 전체 (slcsBitmapText 호출 약 30곳)
-- 용도: 비트맵 → 다운로드 폰트(T 명령)로 교체
+- 메서드: slcsDownloadFontText() 추가, slcsBitmapText() 호출 36곳 교체
+- 범위: LabelPrintHelper.java:720~887
+- 용도: 비트맵(LD 명령) → 다운로드 폰트(T 명령)로 교체
 - 주의할 점: T 명령 파라미터(폰트 ID, scale) 프린터 확인 후 적용
 
 **Part 2. 변환 계획**
