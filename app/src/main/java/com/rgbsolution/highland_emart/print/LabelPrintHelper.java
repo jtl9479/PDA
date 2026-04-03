@@ -251,27 +251,34 @@ public class LabelPrintHelper {
     private byte[] slcsBitmapText(int x, int y, int size, String text, boolean bold) {
         if (text == null || text.isEmpty()) return new byte[0];
 
-        // Paint 설정
+        // Paint 설정 (2배 크기로 렌더링하여 품질 개선)
+        int scale = 2;
         Paint paint = new Paint();
-        paint.setAntiAlias(false);  // 프린터 출력용 - 안티앨리어싱 OFF (1bpp 흑백)
-        paint.setTextSize(size);
+        paint.setAntiAlias(true);   // 2배 렌더링 시 안티앨리어싱 ON
+        paint.setTextSize(size * scale);
         paint.setColor(Color.BLACK);
         paint.setTypeface(customFont != null ? customFont : Typeface.DEFAULT_BOLD);
         if (bold) {
             paint.setFakeBoldText(true);
         }
 
-        // 텍스트 크기 측정
-        int textWidth = (int) Math.ceil(paint.measureText(text));
+        // 텍스트 크기 측정 (2배 크기)
+        int bigWidth = (int) Math.ceil(paint.measureText(text));
         Paint.FontMetrics fm = paint.getFontMetrics();
-        int textHeight = (int) Math.ceil(fm.descent - fm.ascent);
-        if (textWidth <= 0 || textHeight <= 0) return new byte[0];
+        int bigHeight = (int) Math.ceil(fm.descent - fm.ascent);
+        if (bigWidth <= 0 || bigHeight <= 0) return new byte[0];
 
-        // 비트맵 생성 및 텍스트 그리기
-        Bitmap bitmap = Bitmap.createBitmap(textWidth, textHeight, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
+        // 2배 크기 비트맵 생성 및 텍스트 그리기
+        Bitmap bigBitmap = Bitmap.createBitmap(bigWidth, bigHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bigBitmap);
         canvas.drawColor(Color.WHITE);
         canvas.drawText(text, 0, -fm.ascent, paint);
+
+        // 원본 크기로 축소 (안티앨리어싱 적용)
+        int textWidth = bigWidth / scale;
+        int textHeight = bigHeight / scale;
+        Bitmap bitmap = Bitmap.createScaledBitmap(bigBitmap, textWidth, textHeight, true);
+        bigBitmap.recycle();
 
         // 비트맵을 1bpp 데이터로 변환 (흑백, 검정=1)
         int widthBytes = (textWidth + 7) / 8;
