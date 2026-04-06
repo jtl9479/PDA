@@ -407,8 +407,8 @@ public class DBHandler {
     }
 
     /**
-     * 출하대상 팝업 표시용 SELECT (품목코드, 품목명, 출하중량, 출하수량, 계근수량)
-     * TB_SHIPMENT LEFT JOIN TB_GOODS_WET으로 계근수량 포함
+     * 출하대상 팝업 표시용 SELECT (품목코드, 품목명, 출하중량합산, 출하수량합산, 계근수량)
+     * TB_SHIPMENT LEFT JOIN TB_GOODS_WET, ITEM_CODE 기준 합산
      */
     public static ArrayList<Shipments_Info> selectqueryShipmentForPopup(Context context) {
         ArrayList<Shipments_Info> list_si = new ArrayList<Shipments_Info>();
@@ -420,16 +420,15 @@ public class DBHandler {
             String sqlStr = "SELECT "
                     + "S." + DBInfo.ITEM_CODE + ", "
                     + "S." + DBInfo.ITEM_NAME + ", "
-                    + "S." + DBInfo.GI_REQ_QTY + ", "
-                    + "S." + DBInfo.GI_REQ_PKG + ", "
+                    + "SUM(CAST(S." + DBInfo.GI_REQ_QTY + " AS REAL)) AS GI_REQ_QTY, "
+                    + "SUM(CAST(S." + DBInfo.GI_REQ_PKG + " AS REAL)) AS GI_REQ_PKG, "
                     + "COUNT(W." + DBInfo.GI_D_ID + ") AS WET_CNT"
                     + " FROM "
                     + DBInfo.TABLE_NAME_SHIPMENT + " S"
                     + " LEFT JOIN " + DBInfo.TABLE_NAME_GOODS_WET + " W"
                     + " ON S." + DBInfo.GI_D_ID + " = W." + DBInfo.GI_D_ID
-                    + " GROUP BY S." + DBInfo.GI_D_ID + ", S." + DBInfo.ITEM_CODE
-                    + ", S." + DBInfo.ITEM_NAME + ", S." + DBInfo.GI_REQ_QTY
-                    + ", S." + DBInfo.GI_REQ_PKG
+                    + " GROUP BY S." + DBInfo.ITEM_CODE
+                    + ", S." + DBInfo.ITEM_NAME
                     + " ORDER BY S." + DBInfo.ITEM_CODE + " ASC";
 
             cursor = mDbHelper.selectSql(sqlStr);
