@@ -124,16 +124,16 @@ PDA TB_BARCODE_INFO에 유효한 품목만 저장
 - 주의사항: 기존 WHERE 조건 변경/삭제 없음
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
 - [ ] Part 4: 서버 배포 확인
 - [ ] Part 5: PDA 출하대상받기 → 바코드 정보 조회 정상 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: search_barcode_info.jsp WHERE 조건에 `AND SBI.ppCode != ''` 추가
+- **왜**: PPCODE가 빈값인 품목이 조회되어 PDA에 불필요한 데이터가 저장되는 것을 방지
+- **어떻게**: qry_where 뒤, ORDER BY 앞에 AND 조건 1줄 추가
 
 ---
 
@@ -149,7 +149,7 @@ Step 1: search_barcode_info.jsp WHERE 조건 추가 (AND SBI.ppCode != '')
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | search_barcode_info.jsp WHERE 조건 추가 | ⏳ 대기 |
+| 1 | search_barcode_info.jsp WHERE 조건 추가 | ✅ 코드 수정 완료 (서버 배포/테스트 대기) |
 
 ---
 
