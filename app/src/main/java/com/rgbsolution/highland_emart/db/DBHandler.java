@@ -406,6 +406,50 @@ public class DBHandler {
         return list_si;
     }
 
+    /**
+     * 출하대상 팝업 표시용 SELECT (품목코드, 품목명, 출하중량, 출하수량)
+     */
+    public static ArrayList<Shipments_Info> selectqueryShipmentForPopup(Context context) {
+        ArrayList<Shipments_Info> list_si = new ArrayList<Shipments_Info>();
+        DBHelper mDbHelper = new DBHelper(context);
+        mDbHelper.open();
+
+        try {
+            Cursor cursor;
+            String sqlStr = "SELECT "
+                    + DBInfo.ITEM_CODE + ", "
+                    + DBInfo.ITEM_NAME + ", "
+                    + DBInfo.GI_REQ_QTY + ", "
+                    + DBInfo.GI_REQ_PKG
+                    + " FROM "
+                    + DBInfo.TABLE_NAME_SHIPMENT
+                    + " ORDER BY ITEM_CODE ASC";
+
+            cursor = mDbHelper.selectSql(sqlStr);
+            if (Common.D) {
+                Log.v(TAG, "selectqueryShipmentForPopup -> " + sqlStr);
+                Log.v(TAG, "selectqueryShipmentForPopup -> " + cursor.getCount());
+            }
+
+            Shipments_Info si;
+            while (cursor.moveToNext()) {
+                si = new Shipments_Info();
+                si.setITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_CODE")), ""));
+                si.setITEM_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME")), ""));
+                si.setGI_REQ_QTY(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_QTY")), ""));
+                si.setGI_REQ_PKG(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_PKG")), ""));
+                list_si.add(si);
+            }
+            cursor.close();
+        } catch (Exception e) {
+            if (Common.D) {
+                Log.v(TAG, "selectqueryShipmentForPopup exception -> " + e.getMessage().toString());
+            }
+        }
+        mDbHelper.close();
+        return list_si;
+    }
+
     // 출하대상's Packer_Product_Code list SELECT
     public static ArrayList<String[]> selectqueryCodeList(Context context) {
         ArrayList<String[]> list_code_info = new ArrayList<String[]>();
