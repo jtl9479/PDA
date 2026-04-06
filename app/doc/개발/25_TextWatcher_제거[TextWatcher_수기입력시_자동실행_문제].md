@@ -121,18 +121,38 @@ edit_barcode.setOnKeyListener(new View.OnKeyListener() {
 });
 ```
 
-### 4.2 관련 필드 확인
+### 4.2 관련 필드/코드 전수 확인 및 제거 대상
 
-scanAutoHandler, scanAutoRunnable, isInternalTextChange가 TextWatcher 외에 다른 곳에서도 사용되는지 확인 필요.
-사용되지 않으면 필드 선언도 함께 제거.
+| 줄 | 코드 | 용도 | 제거 |
+|:--:|------|------|:----:|
+| 387 | `private boolean isInternalTextChange = false;` | TextWatcher 재진입 방지 | ✅ |
+| 393 | `private Handler scanAutoHandler = new Handler();` | TextWatcher 타이머 | ✅ |
+| 395 | `private Runnable scanAutoRunnable;` | TextWatcher 타이머 | ✅ |
+| 463-465 | ENTER/TAB 리스너 내 `scanAutoRunnable` 취소 | TextWatcher 타이머 취소 | ✅ |
+| 485-516 | TextWatcher 본체 (`addTextChangedListener`) | **핵심 제거 대상** | ✅ |
+| 635-636 | onDestroy() 내 `scanAutoRunnable` 취소 | TextWatcher 타이머 정리 | ✅ |
+| 1096-1098 | setMessage() 내 `scanAutoRunnable` 취소 | TextWatcher 타이머 취소 | ✅ |
+| 1177-1179 | setBarcodeMsg() 내 `isInternalTextChange` 플래그 | TextWatcher 재진입 방지 | ✅ |
+
+**1177-1179줄 상세**: TextWatcher 제거 후 `edit_barcode.setText(msg)` 시 재진입 방지가 불필요하므로 플래그 코드 제거. `edit_barcode.setText(msg)` 자체는 유지.
+
+```java
+// 변경 전 (1176~1179줄)
+isInternalTextChange = true;
+edit_barcode.setText(msg);
+isInternalTextChange = false;
+
+// 변경 후
+edit_barcode.setText(msg);
+```
 
 ---
 
 ## 5. 사이드이펙트
 
-- ENTER/TAB 키 감지는 유지되므로 수기 입력 기능 정상 동작
-- BroadcastReceiver 바코드 수신은 TextWatcher와 무관하므로 스캐너 기능 정상 동작
-- setMessage() 내부의 scanAutoRunnable 취소 코드 (1096~1098줄)도 함께 제거 필요
+- ENTER/TAB 키 감지 (457~481줄)는 유지 → 수기 입력 정상 동작
+- BroadcastReceiver 바코드 수신은 TextWatcher와 무관 → 스캐너 기능 정상 동작
+- `edit_barcode.setText(msg)` (1178줄)는 유지 → 바코드 값 화면 표시 정상
 
 ---
 
