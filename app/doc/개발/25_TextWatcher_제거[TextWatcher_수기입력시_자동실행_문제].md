@@ -166,16 +166,16 @@ edit_barcode.setText(msg);
 - 주의할 점: ENTER/TAB 키 감지 (457~481줄) 변경 없음
 
 **체크리스트**
-- [ ] Part 1: scanAutoHandler, scanAutoRunnable, isInternalTextChange 사용처 전수 확인
-- [ ] Part 2: TextWatcher 코드 제거
-- [ ] Part 3: 관련 필드/코드 정리
-- [ ] Part 4: 컴파일 확인
+- [x] Part 1: scanAutoHandler, scanAutoRunnable, isInternalTextChange 사용처 전수 확인
+- [x] Part 2: TextWatcher 코드 제거
+- [x] Part 3: 관련 필드/코드 정리 (import 포함)
+- [x] Part 4: 컴파일 확인 (BUILD SUCCESSFUL)
 - [ ] Part 5: 수기 입력 시 ENTER 누를 때까지 대기하는지 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: TextWatcher 본체, 관련 필드 3개, 타이머 취소 코드 4곳, import 2개 제거
+- **왜**: 수기 입력 시 5자 이상 → 300ms 후 강제 실행되는 문제 (원본에 없는 코드)
+- **어떻게**: 8곳 제거 + import 2개(TextWatcher, Editable) 제거, edit_barcode.setText(msg) 유지
 
 ---
 
@@ -191,7 +191,7 @@ Step 1: TextWatcher 코드 및 관련 필드 제거
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | TextWatcher 코드 및 관련 필드 제거 | ⏳ 대기 |
+| 1 | TextWatcher 코드 및 관련 필드 제거 | ✅ 완료 (실기기 테스트 대기) |
 
 ---
 
