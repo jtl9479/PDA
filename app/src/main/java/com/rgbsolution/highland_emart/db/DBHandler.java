@@ -407,7 +407,8 @@ public class DBHandler {
     }
 
     /**
-     * 출하대상 팝업 표시용 SELECT (품목코드, 품목명, 출하중량, 출하수량)
+     * 출하대상 팝업 표시용 SELECT (품목코드, 품목명, 출하중량, 출하수량, 계근수량)
+     * TB_SHIPMENT LEFT JOIN TB_GOODS_WET으로 계근수량 포함
      */
     public static ArrayList<Shipments_Info> selectqueryShipmentForPopup(Context context) {
         ArrayList<Shipments_Info> list_si = new ArrayList<Shipments_Info>();
@@ -417,13 +418,19 @@ public class DBHandler {
         try {
             Cursor cursor;
             String sqlStr = "SELECT "
-                    + DBInfo.ITEM_CODE + ", "
-                    + DBInfo.ITEM_NAME + ", "
-                    + DBInfo.GI_REQ_QTY + ", "
-                    + DBInfo.GI_REQ_PKG
+                    + "S." + DBInfo.ITEM_CODE + ", "
+                    + "S." + DBInfo.ITEM_NAME + ", "
+                    + "S." + DBInfo.GI_REQ_QTY + ", "
+                    + "S." + DBInfo.GI_REQ_PKG + ", "
+                    + "COUNT(W." + DBInfo.GI_D_ID + ") AS WET_CNT"
                     + " FROM "
-                    + DBInfo.TABLE_NAME_SHIPMENT
-                    + " ORDER BY ITEM_CODE ASC";
+                    + DBInfo.TABLE_NAME_SHIPMENT + " S"
+                    + " LEFT JOIN " + DBInfo.TABLE_NAME_GOODS_WET + " W"
+                    + " ON S." + DBInfo.GI_D_ID + " = W." + DBInfo.GI_D_ID
+                    + " GROUP BY S." + DBInfo.GI_D_ID + ", S." + DBInfo.ITEM_CODE
+                    + ", S." + DBInfo.ITEM_NAME + ", S." + DBInfo.GI_REQ_QTY
+                    + ", S." + DBInfo.GI_REQ_PKG
+                    + " ORDER BY S." + DBInfo.ITEM_CODE + " ASC";
 
             cursor = mDbHelper.selectSql(sqlStr);
             if (Common.D) {
@@ -438,6 +445,7 @@ public class DBHandler {
                 si.setITEM_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME")), ""));
                 si.setGI_REQ_QTY(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_QTY")), ""));
                 si.setGI_REQ_PKG(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_REQ_PKG")), ""));
+                si.setPACKING_QTY(cursor.getInt(cursor.getColumnIndex("WET_CNT")));
                 list_si.add(si);
             }
             cursor.close();

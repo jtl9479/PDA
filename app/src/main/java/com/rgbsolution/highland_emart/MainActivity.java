@@ -490,17 +490,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%-10s %-15s %-5s %-8s %-8s\n",
-            "품목코드", "품목명", "타입", "중량", "수량"));
-        sb.append("─────────────────────────────────\n");
+        sb.append(String.format("%-10s %-15s %-5s %-8s %-8s %-8s\n",
+            "품목코드", "품목명", "타입", "중량", "수량", "계근"));
+        sb.append("──────────────────────────────────────\n");
 
         for (Shipments_Info si : list) {
-            sb.append(String.format("%-10s %-15s %-5s %-8s %-8s\n",
+            sb.append(String.format("%-10s %-15s %-5s %-8s %-8s %-8s\n",
                 si.getITEM_CODE(),
                 si.getITEM_NAME(),
                 Common.searchType,
                 si.getGI_REQ_QTY(),
-                si.getGI_REQ_PKG()));
+                si.getGI_REQ_PKG(),
+                String.valueOf(si.getPACKING_QTY())));
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
