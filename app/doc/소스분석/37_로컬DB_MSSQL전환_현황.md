@@ -260,4 +260,198 @@ splitData[11]=BRAND_CODE, splitData[12]=CLIENT_TYPE, splitData[13]=BOX_ORDER는 
 
 ---
 
-**문서 버전**: 1.0
+## 7. ERP Entity 기반 MSSQL 테이블 정의 (HL_ERP 프로젝트)
+
+**소스 경로**: `D:\HL_ERP\workspace\SGIS_HL_WEBERP\src\main\java\com\sgis\domain\sm\release\entity\`
+
+### 7.1 공통 컬럼 (BaseEntity)
+
+**파일**: `com.sgis.domain.cmmn.base.entity.BaseEntity`
+
+모든 SM_ 테이블이 상속하는 공통 컬럼:
+
+| 컬럼명 | 타입 | 기본값 | Java 필드 | 비고 |
+|--------|------|--------|----------|------|
+| 회사코드 | VARCHAR(2) | '' | cmpnyCode | INSERT 시 자동설정 |
+| 등록사원 | VARCHAR(8) | '' | insEmpno | INSERT 시 자동설정 |
+| 등록일자 | VARCHAR(8) | '00000000' | insDate | INSERT 시 자동설정 |
+| 등록시간 | VARCHAR(6) | '000000' | insTime | INSERT 시 자동설정 |
+| 수정사원 | VARCHAR(8) | '' | updEmpno | UPDATE 시 자동설정 |
+| 수정일자 | VARCHAR(8) | '00000000' | updDate | UPDATE 시 자동설정 |
+| 수정시간 | VARCHAR(6) | '000000' | updTime | UPDATE 시 자동설정 |
+
+---
+
+### 7.2 SM_출고계근 (DlivyWeighEntity)
+
+**파일**: `DlivyWeighEntity.java`
+**시퀀스**: `SM_DLIVY_WEIGH_SEQ`
+
+| # | 컬럼명 | 타입 | 기본값 | NOT NULL | Java 필드 | PDA 대응 (TB_GOODS_WET) |
+|:-:|--------|------|--------|:--------:|----------|:---------------------:|
+| PK | SEQ | BIGINT | 자동증가 | O | seq | GOODS_WET_ID |
+| 1 | 출고상세SEQ | BIGINT | 0 | O | dlivyDetailSeq | GI_D_ID |
+| 2 | 계근순번 | INT | 0 | O | weighSn | BOX_CNT |
+| 3 | 계근중량 | FLOAT | 0 | O | weighWt | WEIGHT |
+| 4 | 계근중량단위 | VARCHAR(10) | '' | O | weighUnit | WEIGHT_UNIT |
+| 5 | 계근바코드 | VARCHAR(50) | '' | O | weighBrcd | BARCODE |
+| 6 | PPCODE | VARCHAR(20) | '' | O | ppCode | PACKER_PRODUCT_CODE |
+| 7 | 패커코드 | VARCHAR(6) | '' | O | packerCode | PACKER_CLIENT_CODE |
+| 8 | 제조일자 | VARCHAR(8) | '00000000' | O | mnfcturDe | MAKINGDATE |
+| 9 | 박스시리얼 | VARCHAR(30) | '' | O | boxSerial | BOXSERIAL |
+| + | 회사코드 | VARCHAR(2) | '' | O | (BaseEntity) | (없음) |
+| + | 등록사원 | VARCHAR(8) | '' | O | (BaseEntity) | REG_ID |
+| + | 등록일자 | VARCHAR(8) | '00000000' | O | (BaseEntity) | REG_DATE |
+| + | 등록시간 | VARCHAR(6) | '000000' | O | (BaseEntity) | REG_TIME |
+| + | 수정사원 | VARCHAR(8) | '' | O | (BaseEntity) | (없음) |
+| + | 수정일자 | VARCHAR(8) | '00000000' | O | (BaseEntity) | (없음) |
+| + | 수정시간 | VARCHAR(6) | '000000' | O | (BaseEntity) | (없음) |
+
+**총 컬럼**: 고유 9개 + BaseEntity 공통 7개 = **16개**
+
+---
+
+### 7.3 SM_출고머리 (DlivyHeadEntity)
+
+**파일**: `DlivyHeadEntity.java`
+**시퀀스**: `SM_DIL_HEAD_SEQ`
+
+| # | 컬럼명 | 타입 | Java 필드 | 설명 |
+|:-:|--------|------|----------|------|
+| PK | SEQ | BIGINT | seq | |
+| 1 | 출고사업장 | VARCHAR(2) | dlivyBPlc | |
+| 2 | 출고일자 | VARCHAR(8) | dlivyDe | |
+| 3 | 출고일련번호 | SMALLINT | dlivySN | |
+| 4 | 출고부서 | VARCHAR(14) | dlivyDept | |
+| 5 | 출고거래처 | VARCHAR(6) | dlivyBcnc | |
+| 6 | 운송방법 | VARCHAR(2) | trnsprtMth | |
+| 7 | 출고구분 | VARCHAR(1) | dlivySe | |
+| 8 | 공급가액 | FLOAT | splPc | |
+| 9 | 부가세 | FLOAT | vat | |
+| 10 | 총금액 | FLOAT | totAm | |
+| 11 | 출고검사완료 | VARCHAR(1) | dlivyInspctCompt | |
+| 12 | 거래명세발행여부 | VARCHAR(1) | delngDtlsIsuAt | |
+| 13 | 세금_작성여부 | VARCHAR(1) | taxWritngAt | |
+| 14 | 출고담당자 | VARCHAR(8) | dlivyCharger | |
+| 15 | 계산서사업장 | VARCHAR(2) | billBPlc | |
+| 16 | 계산서발행일자 | VARCHAR(8) | billIsuDe | |
+| 17 | 계산서번호 | SMALLINT | billNum | |
+| 18 | 거래명세회수여부 | VARCHAR(1) | delngDtlsRtrvlAt | |
+| 19 | 차량코드 | VARCHAR(7) | vhcleCode | |
+| 20 | 직배송업체 | VARCHAR(6) | directDlvyEntrps | |
+| 21 | 명세서발행일자 | VARCHAR(8) | dtStmnIsuDe | |
+| 22 | 영업담당자 | VARCHAR(8) | salesChager | |
+| 23 | 마트사구분 | VARCHAR(1) | martCmnpySe | |
+| + | BaseEntity 공통 7개 | | | |
+
+**총 컬럼**: 고유 23개 + 공통 7개 = **30개**
+
+---
+
+### 7.4 SM_출고상세 (DlivyDetailEntity)
+
+**파일**: `DlivyDetailEntity.java`
+**시퀀스**: `SM_DIL_DET_SEQ`
+
+| # | 컬럼명 | 타입 | Java 필드 | 설명 |
+|:-:|--------|------|----------|------|
+| PK | SEQ | BIGINT | seq | |
+| 1 | 출고사업장 | VARCHAR(2) | dlivyBPlc | |
+| 2 | 출고일자 | VARCHAR(8) | dlivyDe | |
+| 3 | 출고일련번호 | SMALLINT | dlivySN | |
+| 4 | 행번호 | SMALLINT | rowNum | |
+| 5 | 거래처코드 | VARCHAR(10) | bcncCode | |
+| 6 | 출고품목코드 | VARCHAR(10) | dlivyItemCode | |
+| 7 | 출고박스수량 | FLOAT | dlivyBoxQy | |
+| 8 | 출고수량 | FLOAT | dlivyQy | |
+| 9 | 출고중량 | FLOAT | dlivyWt | |
+| 10 | 출고단가 | FLOAT | dlivyUntPc | |
+| 11 | 출고금액 | FLOAT | dlivyAm | |
+| 12 | 부가세금액 | FLOAT | vatAm | |
+| 13 | 제조사업장 | VARCHAR(2) | mnfcturBPlc | |
+| 14 | 제조일자 | VARCHAR(8) | mnfcturDe | |
+| 15 | 제조번호 | SMALLINT | mnfcturNum | |
+| 16 | 수주사업장 | VARCHAR(2) | rcvOrdbizPlc | |
+| 17 | 수주일자 | VARCHAR(8) | rcvOrdDe | |
+| 18 | 수주일련번호 | SMALLINT | rcvOrdSN | |
+| 19 | 순번 | SMALLINT | sn | |
+| 20 | 수주수량 | FLOAT | rcvOrdQy | |
+| 21 | 수주중량 | FLOAT | rcvOrdWt | |
+| 22 | 성적서발행사업장 | VARCHAR(2) | gradCrtfctPblicteBPlc | |
+| 23 | 성적서발행일자 | VARCHAR(8) | gradCrtfctPblicteDe | |
+| 24 | 성적서발행번호 | SMALLINT | gradCrtfctPblicteNum | |
+| 25 | 시험성적서발행 | VARCHAR(1) | testReprtPblicte | |
+| 26 | 출고확인 | VARCHAR(1) | dlivyCnfirm | |
+| 27 | 세금계산서등록 | VARCHAR(1) | elTaxBilIns | |
+| 28 | 계산서사업장 | VARCHAR(2) | billBPlc | |
+| 29 | 계산서발행일자 | VARCHAR(8) | billIsuDe | |
+| 30 | 계산서발행번호 | SMALLINT | billIsuNum | |
+| 31 | 계산서행번호 | SMALLINT | billRowNum | |
+| 32 | 비고 | VARCHAR(2000) | rm | |
+| 33 | 변경전단가 | FLOAT | bfChgUntPc | |
+| 34 | 창고코드 | VARCHAR(4) | wrhsCode | |
+| 35 | 이력번호 | VARCHAR(15) | histNo | |
+| 36 | 이력번호개수 | SMALLINT | histNoCnt | |
+| 37 | 계근여부 | VARCHAR(1) | weighYn | 기본값 'N' |
+| 38 | 이체출고여부 | VARCHAR(1) | transfrDlivyYn | 기본값 'N' |
+| + | BaseEntity 공통 7개 | | | |
+
+**총 컬럼**: 고유 38개 + 공통 7개 = **45개**
+
+---
+
+### 7.5 SM_출고LOT (DlivyLotEntity)
+
+**파일**: `DlivyLotEntity.java`
+**시퀀스**: `SM_DLIVY_LOT_SEQ`
+
+| # | 컬럼명 | 타입 | Java 필드 | 설명 |
+|:-:|--------|------|----------|------|
+| PK | SEQ | BIGINT | seq | |
+| 1 | 출고머리SEQ | BIGINT | dlivyHeadSeq | |
+| 2 | 출고상세SEQ | BIGINT | dlivyDetailSeq | |
+| 3 | 출고LOTSEQ | BIGINT | dlivyLotSeq | |
+| 4 | 사업장 | VARCHAR(2) | bizPlc | |
+| 5 | 창고코드 | VARCHAR(4) | wrhsCode | |
+| 6 | LOTNO | VARCHAR(50) | lotNo | |
+| 7 | 박스수량 | FLOAT | boxQy | |
+| 8 | 수량 | FLOAT | qy | |
+| 9 | 중량 | FLOAT | wt | |
+| 10 | 평균중량 | FLOAT | avgWt | |
+| 11 | 제조일자 | VARCHAR(8) | mnfcturDe | |
+| 12 | 소비기한 | VARCHAR(8) | expDe | |
+| 13 | 이력번호 | VARCHAR(15) | histNo | |
+| 14 | 피스여부 | VARCHAR(1) | pieceYn | 기본값 'N' |
+| 15 | WMS관리번호 | VARCHAR(100) | wmsManageNo | |
+| 16 | 확정여부 | VARCHAR(1) | cfmYn | 기본값 'N' |
+| 17 | 확정일자 | VARCHAR(8) | cfmDe | |
+| 18 | 확정시간 | VARCHAR(6) | cfmTime | |
+| + | BaseEntity 공통 7개 | | | |
+
+**총 컬럼**: 고유 18개 + 공통 7개 = **25개**
+
+---
+
+## 8. PDA 로컬 테이블 ↔ MSSQL 테이블 관계도
+
+```
+PDA 로컬 (SQLite)                    MSSQL (ERP)
+─────────────────                    ──────────────────
+TB_SHIPMENT (41컬럼)          ←──   SM_출고머리 (30컬럼)
+  서버→앱 다운로드                     SM_출고상세 (45컬럼)
+                                      SM_수주머리
+                                      SM_수주상세
+                                      SM_마트사발주이마트
+
+TB_BARCODE_INFO (26컬럼)      ←──   (별도 확인 필요)
+
+TB_GOODS_WET (22컬럼)         ──→   SM_출고계근 (16컬럼)
+  앱→서버 전송                         insert_goods_wet.jsp 경유
+
+                               ──→   SM_출고LOT (25컬럼)
+                                      (현재 PDA에서 미사용)
+```
+
+---
+
+**문서 버전**: 1.1
