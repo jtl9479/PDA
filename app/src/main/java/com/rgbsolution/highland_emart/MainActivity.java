@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.common.ProgressDlgShipSearch;
+import com.rgbsolution.highland_emart.common.TestDataHelper;
 import com.rgbsolution.highland_emart.db.DBHandler;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 
@@ -141,6 +142,12 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
+        // 출하대상 목록 팝업
+        if (id == R.id.action_shipmentlist) {
+            showShipmentListDialog();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -207,7 +214,15 @@ public class MainActivity extends AppCompatActivity {
 
             // ==================== 이마트 출하대상받기 (searchType: 0) ====================
             case R.id.btnDownload:
-                downloadShipmentList(SEARCH_TYPE_EMART, "출하대상받기");
+                if (TestDataHelper.TEST_MODE) {
+                    Common.searchType = SEARCH_TYPE_EMART;
+                    Common.selectDay = formatDateYYYYMMDD();
+                    TestDataHelper.deleteAllTestData(this);
+                    TestDataHelper.insertTestDataForEmartM0(this);
+                    Toast.makeText(this, "[테스트] M0 테스트 데이터 삽입됨\n계근입력시작 버튼을 누르세요", Toast.LENGTH_SHORT).show();
+                } else {
+                    downloadShipmentList(SEARCH_TYPE_EMART, "출하대상받기");
+                }
                 break;
 
             // ==================== 생산계근대상받기 (searchType: 1) ====================
@@ -460,6 +475,39 @@ public class MainActivity extends AppCompatActivity {
 
         // 4. 최종 결과 반환 (예: "20260107")
         return inPutDay;
+    }
+
+    /**
+     * 출하대상 목록 팝업 표시
+     * ActionBar 메뉴 "출하대상" 클릭 시 호출
+     */
+    private void showShipmentListDialog() {
+        ArrayList<Shipments_Info> list = DBHandler.selectqueryShipmentForPopup(this);
+
+        if (list.size() == 0) {
+            Toast.makeText(this, "출하대상이 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%-10s %-15s %-5s %-8s %-8s\n",
+            "품목코드", "품목명", "타입", "중량", "수량"));
+        sb.append("─────────────────────────────────\n");
+
+        for (Shipments_Info si : list) {
+            sb.append(String.format("%-10s %-15s %-5s %-8s %-8s\n",
+                si.getITEM_CODE(),
+                si.getITEM_NAME(),
+                Common.searchType,
+                si.getGI_REQ_QTY(),
+                si.getGI_REQ_PKG()));
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("출하대상 목록 (" + list.size() + "건)");
+        builder.setMessage(sb.toString());
+        builder.setPositiveButton("닫기", null);
+        builder.show();
     }
 
     /**
