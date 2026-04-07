@@ -164,6 +164,46 @@ GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬�
 **B-1그룹(추가 권장): 약 7곳**
 **C그룹(신규 추가): 약 5곳**
 
+---
+
+## 사이드이펙트 조사 결과
+
+### GI_L_ID 단독 교체 시 치명적 사이드이펙트 (3건)
+
+| # | 항목 | 문제 | 심각도 |
+|:-:|------|------|:------:|
+| 1 | 서버 전송 packet (splitData[0]) | SM_출고계근.출고상세SEQ에 GI_L_ID가 들어감 → 데이터 정합성 파괴 | 치명적 |
+| 2 | search_goods_wet.jsp | `WHERE 출고상세SEQ = GI_L_ID` → 조회 결과 0건 | 치명적 |
+| 3 | completeStr (update_shipment.jsp) | `WHERE GI_D_ID = GI_L_ID` → UPDATE 불가 | 치명적 |
+
+### GI_D_ID + GI_L_ID 조합 시 사이드이펙트 (0건)
+
+| 항목 | GI_L_ID 단독 | GI_D_ID + GI_L_ID |
+|------|:----------:|:----------------:|
+| 서버 전송 packet (출고상세SEQ) | 치명적 | **없음** (GI_D_ID 유지) |
+| search_goods_wet.jsp WHERE | 치명적 | **없음** (GI_D_ID 유지) |
+| completeStr (update_shipment.jsp) | 치명적 | **없음** (GI_D_ID 유지) |
+| selectquerySendGoodsWet WHERE | 깨짐 | **없음** (GI_D_ID 유지) |
+| 계근수량 분리 (핵심 문제) | 해결 | **해결** (GI_L_ID 추가) |
+| 전송 후 arSM 매칭 | 깨짐 | **해결** (GI_D_ID + GI_L_ID) |
+| 동기화 비교 | 깨짐 | **해결** (GI_D_ID + GI_L_ID) |
+
+### 결론: GI_D_ID + GI_L_ID 조합 채택
+
+```
+GI_D_ID(기존 유지) = SM_출고상세.SEQ → 서버 인터페이스용
+GI_L_ID(신규 추가) = SM_출고LOT.SEQ → LOT별 유니크 식별용
+```
+
+**A그룹 수정 방법:**
+- WHERE 조건: `GI_D_ID` → `GI_D_ID AND GI_L_ID` (조합)
+- equals 매칭: `getGI_D_ID().equals()` → `getGI_D_ID().equals() && getGI_L_ID().equals()` (조합)
+- INSERT: GI_D_ID 유지 + GI_L_ID 컬럼/값 추가
+
+**B그룹 (서버 전송용):**
+- packet에서 GI_D_ID 유지 (SM_출고계근.출고상세SEQ)
+- packet에 GI_L_ID 추가 (SM_출고계근.출고LOTSEQ 신규)
+
 ## 상태
 - [ ] 미수정
 
