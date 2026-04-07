@@ -101,6 +101,7 @@ public class DBHandler {
             sqlStr = "SELECT "
                     + DBInfo.SHIPMENT_ID + ", "
                     + DBInfo.GI_D_ID + ", "
+                    + DBInfo.GI_L_ID + ", "
                     + DBInfo.ITEM_CODE + ", "
                     + DBInfo.ITEM_NAME + ", "
                     + DBInfo.EMARTITEM_CODE + ", "
@@ -148,6 +149,7 @@ public class DBHandler {
                 si = new Shipments_Info();
                 si.setSHIPMENT_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SHIPMENT_ID")), ""));
                 si.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
+                si.setGI_L_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_L_ID")), ""));
                 si.setITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_CODE")), ""));
                 si.setITEM_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME")), ""));
                 si.setEMARTITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTITEM_CODE")), ""));
@@ -206,6 +208,7 @@ public class DBHandler {
             sqlStr = "SELECT "
                     + DBInfo.SHIPMENT_ID + ", "
                     + DBInfo.GI_D_ID + ", "
+                    + DBInfo.GI_L_ID + ", "
                     + DBInfo.ITEM_CODE + ", "
                     + DBInfo.ITEM_NAME + ", "
                     + DBInfo.EMARTITEM_CODE + ", "
@@ -244,6 +247,7 @@ public class DBHandler {
                 si = new Shipments_Info();
                 si.setSHIPMENT_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SHIPMENT_ID")), ""));
                 si.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
+                si.setGI_L_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_L_ID")), ""));
                 si.setITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_CODE")), ""));
                 si.setITEM_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME")), ""));
                 si.setEMARTITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTITEM_CODE")), ""));
@@ -294,6 +298,7 @@ public class DBHandler {
             sqlStr = "SELECT "
                     + DBInfo.SHIPMENT_ID + ", "
                     + DBInfo.GI_D_ID + ", "
+                    + DBInfo.GI_L_ID + ", "
                     + DBInfo.ITEM_CODE + ", "
                     + DBInfo.ITEM_NAME + ", "
                     + DBInfo.EMARTITEM_CODE + ", "
@@ -333,6 +338,7 @@ public class DBHandler {
                 si = new Shipments_Info();
                 si.setSHIPMENT_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SHIPMENT_ID")), ""));
                 si.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
+                si.setGI_L_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_L_ID")), ""));
                 si.setITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_CODE")), ""));
                 si.setITEM_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME")), ""));
                 si.setEMARTITEM_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EMARTITEM_CODE")), ""));
@@ -379,7 +385,8 @@ public class DBHandler {
         try {
             Cursor cursor;
             String sqlStr = "SELECT "
-                    + DBInfo.GI_D_ID
+                    + DBInfo.GI_D_ID + ", "
+                    + DBInfo.GI_L_ID
                     + " FROM "
                     + DBInfo.TABLE_NAME_SHIPMENT
                     + " ORDER BY GI_D_ID ASC";
@@ -394,6 +401,7 @@ public class DBHandler {
             while (cursor.moveToNext()) {
                 si = new Shipments_Info();
                 si.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
+                si.setGI_L_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_L_ID")), ""));
 
                 list_si.add(si);
             }
@@ -693,6 +701,7 @@ public class DBHandler {
         try {
             String sqlStr = "INSERT INTO " + DBInfo.TABLE_NAME_SHIPMENT + " ("
                     + DBInfo.GI_D_ID + ", "
+                    + DBInfo.GI_L_ID + ", "
                     + DBInfo.ITEM_CODE + ", "
                     + DBInfo.ITEM_NAME + ", "
                     + DBInfo.EMARTITEM_CODE + ", "
@@ -726,6 +735,7 @@ public class DBHandler {
                     + DBInfo.LAST_BOX_ORDER
                     + ") VALUES('"
                     + Common.nullCheck(si.getGI_D_ID(), "") + "','"
+                    + Common.nullCheck(si.getGI_L_ID(), "") + "','"
                     + Common.nullCheck(si.getITEM_CODE(), "") + "','"
                     + Common.nullCheck(si.getITEM_NAME(), "") + "','"
                     + Common.nullCheck(si.getEMARTITEM_CODE(), "") + "','"
@@ -801,7 +811,7 @@ public class DBHandler {
     }
 
     // 출하대상 UPDATE
-    public static void updatequeryShipment(Context context, String gi_d_id, String packer_product_code) {
+    public static void updatequeryShipment(Context context, String gi_d_id, String packer_product_code, String gi_l_id) {
         DBHelper dbHelper = new DBHelper(context);
         dbHelper.open();
         try {
@@ -810,6 +820,7 @@ public class DBHandler {
                     + " SET "
                     + DBInfo.SAVE_TYPE + " = 'Y'"
                     + " WHERE GI_D_ID = '" + gi_d_id
+                    + "' AND GI_L_ID = '" + gi_l_id
                     + "' AND "
                     + "PACKER_PRODUCT_CODE = '" + packer_product_code + "'";
 
@@ -1224,7 +1235,7 @@ public class DBHandler {
     }
 
     // 계근 상품 작업내역 SELECT :: GOODS_WET
-    public static ArrayList<Goodswets_Info> selectqueryGoodsWet(Context context, String gi_d_id, String packer_product_code, String client_code) {//
+    public static ArrayList<Goodswets_Info> selectqueryGoodsWet(Context context, String gi_d_id, String packer_product_code, String client_code, String gi_l_id) {//
         ArrayList<Goodswets_Info> list_gi_info = new ArrayList<Goodswets_Info>();
         DBHelper mDbHelper = new DBHelper(context);
         mDbHelper.open();
@@ -1235,6 +1246,7 @@ public class DBHandler {
             sqlStr = "SELECT "
                     + DBInfo.GOODS_WET_ID + ", "
                     + DBInfo.GI_D_ID + ", "
+                    + DBInfo.GI_L_ID + ", "
                     + DBInfo.WEIGHT + ", "
                     + DBInfo.WEIGHT_UNIT + ", "
                     + DBInfo.PACKER_PRODUCT_CODE + ", "
@@ -1253,6 +1265,7 @@ public class DBHandler {
                     + DBInfo.TABLE_NAME_GOODS_WET
                     + " WHERE "
                     + "GI_D_ID = '" + gi_d_id + "' AND "
+                    + "GI_L_ID = '" + gi_l_id + "' AND "
                     + "PACKER_PRODUCT_CODE = '" + packer_product_code + "' "
                     + "ORDER BY BOX_CNT DESC";
 
@@ -1266,6 +1279,7 @@ public class DBHandler {
             while (cursor.moveToNext()) {
                 gi = new Goodswets_Info();
                 gi.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
+                gi.setGI_L_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_L_ID")), ""));
                 gi.setWEIGHT(Common.nullCheck(cursor.getString(cursor.getColumnIndex("WEIGHT")), ""));
                 gi.setWEIGHT_UNIT(Common.nullCheck(cursor.getString(cursor.getColumnIndex("WEIGHT_UNIT")), ""));
                 gi.setPACKER_PRODUCT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRODUCT_CODE")), ""));
@@ -1305,6 +1319,7 @@ public class DBHandler {
             sqlStr = "SELECT "
                     + DBInfo.GOODS_WET_ID + ", "
                     + DBInfo.GI_D_ID + ", "
+                    + DBInfo.GI_L_ID + ", "
                     + DBInfo.WEIGHT + ", "
                     + DBInfo.WEIGHT_UNIT + ", "
                     + DBInfo.PACKER_PRODUCT_CODE + ", "
@@ -1338,6 +1353,7 @@ public class DBHandler {
             while (cursor.moveToNext()) {
                 gi = new Goodswets_Info();
                 gi.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
+                gi.setGI_L_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_L_ID")), ""));
                 gi.setWEIGHT(Common.nullCheck(cursor.getString(cursor.getColumnIndex("WEIGHT")), ""));
                 gi.setWEIGHT_UNIT(Common.nullCheck(cursor.getString(cursor.getColumnIndex("WEIGHT_UNIT")), ""));
                 gi.setPACKER_PRODUCT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRODUCT_CODE")), ""));
@@ -1368,7 +1384,7 @@ public class DBHandler {
         return list_gi_info;
     }
 
-    public static String[] selectqueryListGoodsWetInfo(Context context, String gi_d_id, String pp_code, String client_code) {
+    public static String[] selectqueryListGoodsWetInfo(Context context, String gi_d_id, String pp_code, String client_code, String gi_l_id) {
         String[] row_info = new String[4];
         DBHelper mDbHelper = new DBHelper(context);
         mDbHelper.open();
@@ -1385,6 +1401,7 @@ public class DBHandler {
                     + DBInfo.TABLE_NAME_GOODS_WET
                     + " WHERE "
                     + "GI_D_ID = '" + gi_d_id + "' AND "
+                    + "GI_L_ID = '" + gi_l_id + "' AND "
                     + "PACKER_PRODUCT_CODE = '" + pp_code + "' ";
 
             cursor = mDbHelper.selectSql(sqlStr);
@@ -1446,7 +1463,7 @@ public class DBHandler {
     }
 
     // 계근정보 중복체크
-    public static boolean duplicatequeryGoodsWet(Context context, String barcode, String gi_d_id, String pp_code) {//
+    public static boolean duplicatequeryGoodsWet(Context context, String barcode, String gi_d_id, String pp_code, String gi_l_id) {//
         DBHelper mDbHelper = new DBHelper(context);
         mDbHelper.open();
         boolean duplicate = false;
@@ -1459,6 +1476,8 @@ public class DBHandler {
                     + " WHERE BARCODE = '" + barcode
                     + "' AND"
                     + " GI_D_ID = '" + gi_d_id
+                    + "' AND"
+                    + " GI_L_ID = '" + gi_l_id
                     + "' AND"
                     + " PACKER_PRODUCT_CODE = '" + pp_code + "'";
             cursor = mDbHelper.selectSql(sqlStr);
@@ -1496,6 +1515,7 @@ public class DBHandler {
             String sqlStr = "INSERT INTO "
                     + DBInfo.TABLE_NAME_GOODS_WET + " ("
                     + DBInfo.GI_D_ID + ", "
+                    + DBInfo.GI_L_ID + ", "
                     + DBInfo.WEIGHT + ", "
                     + DBInfo.WEIGHT_UNIT + ", "
                     + DBInfo.PACKER_PRODUCT_CODE + ", "
@@ -1516,6 +1536,7 @@ public class DBHandler {
                     + DBInfo.DUPLICATE
                     + ") VALUES('"
                     + Common.nullCheck(gi.getGI_D_ID(), "") + "','"
+                    + Common.nullCheck(gi.getGI_L_ID(), "") + "','"
                     + Common.nullCheck(gi.getWEIGHT(), "") + "','"
                     + Common.nullCheck(gi.getWEIGHT_UNIT(), "") + "','"
                     + Common.nullCheck(gi.getPACKER_PRODUCT_CODE(), "") + "','"
@@ -1566,6 +1587,7 @@ public class DBHandler {
             String sqlStr = "INSERT INTO "
                     + DBInfo.TABLE_NAME_GOODS_WET + " ("
                     + DBInfo.GI_D_ID + ", "
+                    + DBInfo.GI_L_ID + ", "
                     + DBInfo.WEIGHT + ", "
                     + DBInfo.WEIGHT_UNIT + ", "
                     + DBInfo.PACKER_PRODUCT_CODE + ", "
@@ -1587,6 +1609,7 @@ public class DBHandler {
                     + DBInfo.BOX_ORDER
                     + ") VALUES('"
                     + Common.nullCheck(gi.getGI_D_ID(), "") + "','"
+                    + Common.nullCheck(gi.getGI_L_ID(), "") + "','"
                     + Common.nullCheck(gi.getWEIGHT(), "") + "','"
                     + Common.nullCheck(gi.getWEIGHT_UNIT(), "") + "','"
                     + Common.nullCheck(gi.getPACKER_PRODUCT_CODE(), "") + "','"
@@ -1639,6 +1662,7 @@ public class DBHandler {
             String sqlStr = "INSERT INTO "
                     + DBInfo.TABLE_NAME_GOODS_WET + " ("
                     + DBInfo.GI_D_ID + ", "
+                    + DBInfo.GI_L_ID + ", "
                     + DBInfo.WEIGHT + ", "
                     + DBInfo.WEIGHT_UNIT + ", "
                     + DBInfo.PACKER_PRODUCT_CODE + ", "
@@ -1660,6 +1684,7 @@ public class DBHandler {
                     + DBInfo.BOX_ORDER
                     + ") VALUES('"
                     + Common.nullCheck(gi.getGI_D_ID(), "") + "','"
+                    + Common.nullCheck(gi.getGI_L_ID(), "") + "','"
                     + Common.nullCheck(gi.getWEIGHT(), "") + "','"
                     + Common.nullCheck(gi.getWEIGHT_UNIT(), "") + "','"
                     + Common.nullCheck(gi.getPACKER_PRODUCT_CODE(), "") + "','"
