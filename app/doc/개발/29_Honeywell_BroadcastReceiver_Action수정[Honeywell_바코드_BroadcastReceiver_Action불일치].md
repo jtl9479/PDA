@@ -124,7 +124,7 @@ Step 1에서 Action 수정 후 실기기 테스트로 Extra 키 확인.
 
 **체크리스트**
 - [x] Part 1: Action 문자열 수정 (`com.honeywell.intent.action.SCAN_RESULT`)
-- [x] Part 2: Extra 키 수정 (`data`)
+- [x] Part 2: Extra 키 수정 (`decode_rslt` - adb logcat으로 확인)
 - [x] Part 3: 컴파일 확인 (BUILD SUCCESSFUL)
 - [ ] Part 4: 실기기 바코드 스캔 → Logcat에 "Receiver action From Honeywell" 출력 확인
 - [ ] Part 5: setMessage() → setBarcodeMsg() 정상 호출 확인

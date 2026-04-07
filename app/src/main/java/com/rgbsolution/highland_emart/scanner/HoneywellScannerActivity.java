@@ -60,7 +60,7 @@ public class HoneywellScannerActivity extends AppCompatActivity implements Compo
 
     /** Honeywell EDA51 바코드 데이터 Extra 키 */
     private static final String EXTRA_BARCODE_DATA =
-            "data";
+            "decode_rslt";
 
     // ========================================================================================
     // UI 컴포넌트 (ActionBar)
