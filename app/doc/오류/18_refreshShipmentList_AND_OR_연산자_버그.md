@@ -3,6 +3,35 @@
 ## 발견일
 2026-04-07
 
+## 에러 발생 시나리오
+
+```
+1. 출하대상받기 실행 → TB_SHIPMENT 전체 삭제 → 서버 조회 → TB_SHIPMENT INSERT
+   (이 시점에서 PDA에 품목A(LOT1), 품목A(LOT2), 품목A(LOT3) 3건 저장)
+
+2. 서버에서 품목A(LOT3) 삭제됨
+
+3. 출하대상받기 재실행 → TB_SHIPMENT 전체 삭제 → 서버 조회 → TB_SHIPMENT INSERT
+   (이 시점에서 PDA에 품목A(LOT1), 품목A(LOT2) 2건 저장)
+
+4. ProgressDlgShipSearch 동기화 비교 (서버 vs PDA)
+   → PDA에 있고 서버에 없는 것: LOT3 → list_delete에 추가
+   → 삭제 대상 1건이면 정상 삭제
+
+5. 만약 삭제 대상이 2건(LOT2, LOT3)이면:
+   → refreshShipmentList() DELETE WHERE:
+     GI_D_ID = '1330' AND GI_D_ID = '1330'  ← AND 연결
+   → 조건 성립하지만 GI_D_ID가 동일하므로 1건만 삭제될 수 있음
+
+6. 삭제 대상이 GI_D_ID가 서로 다른 2건이면:
+   → WHERE GI_D_ID = '1330' AND GI_D_ID = '1440'
+   → GI_D_ID가 동시에 1330이면서 1440일 수 없음 → 삭제 0건
+```
+
+**단, 출하대상받기 시 `deletequeryShipment()`로 전체 삭제가 선행되므로, 동기화에서 삭제 대상이 발생할 가능성이 매우 낮음. 실질적 영향은 낮음.**
+
+---
+
 ## 현상
 - 출하대상받기(ProgressDlgShipSearch) 실행 시, 서버와 PDA 데이터를 비교하여 차이분을 삭제/추가하는 동기화(refreshShipmentList)에서 발생
 - 삭제 대상이 2건 이상이면 **아무것도 삭제되지 않음**
