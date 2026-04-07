@@ -80,19 +80,19 @@ GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬�
 
 #### BixolonShipmentActivity.java
 
-| 줄 | 용도 |
-|:--:|------|
-| 880 | GI_D_ID로 행 선택 → LOT_SEQ 비교 추가 |
-| 1272 | duplicatequeryGoodsWet 호출 → LOT_SEQ 파라미터 추가 |
-| 1552 | gi.setGI_D_ID → gi.setLOT_SEQ 추가 |
+|  줄   | 용도                                               |
+| :--: | ------------------------------------------------ |
+| 880  | GI_D_ID로 행 선택 → LOT_SEQ 비교 추가                    |
+| 1272 | duplicatequeryGoodsWet 호출 → LOT_SEQ 파라미터 추가      |
+| 1552 | gi.setGI_D_ID → gi.setLOT_SEQ 추가                 |
 | 2189 | selectqueryListGoodsWetInfo 호출 → LOT_SEQ 파라미터 추가 |
-| 2380 | 동일 (수기입력) |
-| 2472 | duplicatequeryGoodsWet 호출 → LOT_SEQ 파라미터 추가 |
-| 2635 | 전송 후 arSM 매칭 → LOT_SEQ 비교 추가 |
-| 2662 | updatequeryShipment 호출 → LOT_SEQ 파라미터 추가 |
-| 2763 | 전송 후 arSM 매칭 (생산/도매) → LOT_SEQ 비교 추가 |
+| 2380 | 동일 (수기입력)                                        |
+| 2472 | duplicatequeryGoodsWet 호출 → LOT_SEQ 파라미터 추가      |
+| 2635 | 전송 후 arSM 매칭 → LOT_SEQ 비교 추가                     |
+| 2662 | updatequeryShipment 호출 → LOT_SEQ 파라미터 추가         |
+| 2763 | 전송 후 arSM 매칭 (생산/도매) → LOT_SEQ 비교 추가             |
 | 2795 | updatequeryShipment 호출 (생산/도매) → LOT_SEQ 파라미터 추가 |
-| 3238 | selectqueryGoodsWet 호출 → LOT_SEQ 파라미터 추가 |
+| 3238 | selectqueryGoodsWet 호출 → LOT_SEQ 파라미터 추가         |
 
 #### ShipmentActivity.java (동일 패턴)
 
@@ -116,14 +116,21 @@ GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬�
 | BixolonShipment | 1268 | 로그 출력 | 표시용 |
 | BixolonShipment | 2572-2574 | 전송 WHERE 조건 | 넓게 조회 OK |
 | BixolonShipment | 2590, 2696 | packet GI_D_ID | SM_출고계근.출고상세SEQ (D.SEQ 유지) |
-| BixolonShipment | 2629, 2758 | updatequeryGoodsWet | BARCODE+BOX_CNT로 특정 |
-| BixolonShipment | 3278 | deletequerySelectGoodsWet | BARCODE+BOX_CNT로 특정 |
 | DBHandler | 381-395 | selectqueryAllShipment | 존재 여부만 체크 |
 | DBHandler | 426-427 | selectqueryShipmentForPopup | ITEM_CODE 기준 GROUP BY |
 | DBHandler | 623-636 | selectqueryGIDIDList | 서버 WHERE 조건용 |
-| DBHandler | 1710 | updatequeryGoodsWet | BARCODE+BOX_CNT로 특정 |
-| DBHandler | 1739 | deletequerySelectGoodsWet | BARCODE+BOX_CNT로 특정 |
 | DBHandler | 509-523 | selectqueryGoodsWetForPopup | 표시용 |
+
+---
+
+### B-1그룹: LOT_SEQ 추가 권장 (WHERE에 GI_D_ID 포함, BARCODE+BOX_CNT로 사실상 특정 가능하나 안전을 위해 추가 권장)
+
+| 파일 | 줄 | 메서드 | 현재 WHERE | 비고 |
+|------|:--:|--------|-----------|------|
+| DBHandler | 1710 | updatequeryGoodsWet() | GI_D_ID + BARCODE + BOX_CNT | 전송 성공 시 SAVE_TYPE='Y' UPDATE |
+| DBHandler | 1739 | deletequerySelectGoodsWet() | BARCODE + GI_D_ID + BOX_CNT + SAVE_TYPE | 계근 선택 삭제 |
+| BixolonShipment | 2629, 2758 | updatequeryGoodsWet 호출 | 상동 | |
+| BixolonShipment | 3278 | deletequerySelectGoodsWet 호출 | 상동 | |
 
 ---
 
@@ -140,20 +147,21 @@ GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬�
 
 ## 변경 범위 요약
 
-| 대상 | A그룹 | B그룹 | C그룹 |
-|------|:-----:|:-----:|:-----:|
-| MSSQL 테이블 | 1 (ALTER TABLE SM_출고계근) | - | - |
-| JSP | 1 (search_shipment.jsp SELECT 추가) | - | 1 (insert_goods_wet.jsp INSERT 추가) |
-| DBInfo.java | 1 | - | - |
-| Shipments_Info.java | 1 | - | - |
-| Goodswets_Info.java | 1 | - | - |
-| DBHandler.java | 14 | 10 | - |
-| ProgressDlgShipSearch.java | 3 | - | - |
-| ProgressDlgGoodsWetSearch.java | 1 | - | - |
-| BixolonShipmentActivity.java | 11 | 5 | 2 |
-| ShipmentActivity.java | 8 | 4 | 2 |
+| 대상 | A그룹 | B그룹 | B-1그룹 | C그룹 |
+|------|:-----:|:-----:|:-------:|:-----:|
+| MSSQL 테이블 | 1 (ALTER TABLE SM_출고계근) | - | - | - |
+| JSP | 1 (search_shipment.jsp SELECT 추가) | - | - | 1 (insert_goods_wet.jsp INSERT 추가) |
+| DBInfo.java | 1 | - | - | - |
+| Shipments_Info.java | 1 | - | - | - |
+| Goodswets_Info.java | 1 | - | - | - |
+| DBHandler.java | 14 | 7 | 2 | - |
+| ProgressDlgShipSearch.java | 3 | - | - | - |
+| ProgressDlgGoodsWetSearch.java | 1 | - | - | - |
+| BixolonShipmentActivity.java | 11 | 3 | 3 | 2 |
+| ShipmentActivity.java | 8 | 2 | 2 | 2 |
 
 **A그룹(수정 필요): 약 41곳**
+**B-1그룹(추가 권장): 약 7곳**
 **C그룹(신규 추가): 약 5곳**
 
 ## 상태
