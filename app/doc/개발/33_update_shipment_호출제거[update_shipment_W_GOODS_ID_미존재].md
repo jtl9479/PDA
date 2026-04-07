@@ -73,21 +73,63 @@ WHERE GI_D_ID=? AND ITEM_CODE=? AND BRAND_CODE=?
 
 ---
 
-## 4. 개발 플랜
+## 4. 영향 분석
 
-### Step 1: update_shipment.jsp 호출 제거
+### 현재 코드 구조 (이마트/홈플러스/롯데 구로직, 2642~2682줄)
+
+```java
+if (SAVE_CNT == GI_REQ_PKG) {                          // 모든 박스 전송 완료
+    String completeStr = GI_D_ID + "::" + ...;          // ← 제거 대상
+    receiveData = sendDataDb(completeStr, URL_UPDATE_SHIPMENT); // ← 제거 대상
+    
+    if (receiveData.equals("s")) {                      // ← 서버 응답 "s"일 때만 실행
+        arSM.get(j).setSAVE_TYPE("Y");                  // ★ PDA 전송상태 변경
+        DBHandler.updatequeryShipment(...);              // ★ TB_SHIPMENT UPDATE
+        jChk++;
+        if (jChk == arSM.size()) return "ss";           // ★ 전체 완료
+    }
+}
+```
+
+### 문제점
+
+completeStr + 서버 호출을 단순 제거하면 `receiveData`가 "s"가 아니게 되어 **후속 로직 3가지가 전부 실행되지 않음:**
+- arSM.setSAVE_TYPE("Y") 미실행
+- DBHandler.updatequeryShipment() 미실행
+- jChk++ → return "ss" 미실행 → 완료 다이얼로그 안 뜸
+
+### 수정 방법
+
+completeStr + 서버 호출 + `if (receiveData.equals("s"))` 체크를 제거하고, **후속 로직을 바로 실행**
+
+```java
+if (SAVE_CNT == GI_REQ_PKG) {
+    // completeStr + URL_UPDATE_SHIPMENT 호출 제거
+    // receiveData 체크 제거
+    // 후속 로직 바로 실행
+    arSM.get(j).setSAVE_TYPE("Y");
+    DBHandler.updatequeryShipment(...);
+    jChk++;
+    if (jChk == arSM.size()) return "ss";
+}
+```
+
+---
+
+## 5. 개발 플랜
+
+### Step 1: update_shipment.jsp 호출 제거 + 후속 로직 유지
 
 **Part 1. 분석**
 - 대상: BixolonShipmentActivity.java
-- 범위: 전송 완료 후 completeStr 생성 및 URL_UPDATE_SHIPMENT 호출 부분 2곳
-- 주의할 점: completeStr 이후의 결과 처리(receiveData 체크, SAVE_TYPE 변경, updatequeryShipment) 로직 확인
+- 범위: 이마트 구로직(2642~2682줄), 생산/도매 신로직(동일 패턴)
+- 핵심: completeStr 생성 + 서버 호출 + receiveData 체크 제거, SAVE_TYPE 변경 + updatequeryShipment + jChk 유지
 
 **체크리스트**
-- [ ] 이마트/홈플러스/롯데 구로직 completeStr + 호출 제거 (2643~2665줄)
-- [ ] 생산/도매/비정량 신로직 completeStr + 호출 제거 (2772~2800줄)
-- [ ] 제거 후 SAVE_TYPE 변경, updatequeryShipment 등 후속 로직이 영향받는지 확인
+- [ ] 이마트/홈플러스/롯데 구로직: completeStr + sendDataDb + receiveData 체크 제거, 후속 로직 유지 (2642~2682줄)
+- [ ] 생산/도매/비정량 신로직: 동일 패턴 수정
 - [ ] 컴파일 확인
-- [ ] 전송 테스트 → 에러 없이 전송 완료 확인
+- [ ] 전송 테스트 → 에러 없이 전송 완료 + 완료 다이얼로그 표시 확인
 
 **Part 6. 변경 내용** (완료 후 작성):
 - **무엇을**:
