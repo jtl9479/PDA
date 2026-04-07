@@ -128,34 +128,60 @@ public void setGI_L_ID(String GI_L_ID) { this.GI_L_ID = GI_L_ID; }
 
 ---
 
-### Step 4: JSP 수정 (search_shipment.jsp)
+### Step 4: JSP 수정 (search_shipment.jsp + 다른 searchType JSP)
 
-SELECT에 L.SEQ AS GI_L_ID 추가
+**이마트(searchType=0):**
+- search_shipment.jsp: SELECT에 L.SEQ AS GI_L_ID 추가 (마지막 index 30에 추가 → 기존 0~29 유지)
+
+**다른 searchType (현재 작업 범위 외, 별도 진행):**
+- search_shipment_homeplus.jsp (searchType=2)
+- search_shipment_wholesale.jsp (searchType=3)
+- search_production_nonfixed.jsp (searchType=4)
+- search_homeplus_nonfixed.jsp / search_homeplus_nonfixed2.jsp (searchType=5)
+- search_shipment_lotte.jsp (searchType=6)
+- search_production.jsp (searchType=1), search_production_4label.jsp (searchType=7)
 
 **주의**: out.println 출력 순서가 변경되므로 ProgressDlgShipSearch 파싱 인덱스도 변경 필요 (Step 5에서 처리)
 
 **체크리스트**
-- [ ] search_shipment.jsp SELECT 컬럼 추가
-- [ ] 출력 순서(index) 확인
+- [ ] search_shipment.jsp SELECT 컬럼 추가 (index 30)
+- [ ] 출력 순서(index) 확인 (기존 0~29 유지)
 - [ ] JSP 커밋
+- [ ] (별도) 다른 searchType JSP GI_L_ID 추가 (이마트 완료 후 진행)
 
 ---
 
-### Step 5: 파싱 수정 (ProgressDlgShipSearch, ProgressDlgGoodsWetSearch)
+### Step 5: 파싱 + 동기화 수정 (ProgressDlgShipSearch, ProgressDlgGoodsWetSearch)
 
-**ProgressDlgShipSearch.java (211줄):**
-- GI_L_ID 파싱 추가 (temp[N] → si.setGI_L_ID())
-- 인덱스 변경에 따른 기존 파싱 순서 조정
+**5-1. 파싱 추가**
 
-**ProgressDlgShipSearch.java (308, 328줄):**
-- 동기화 비교에 GI_L_ID 조합 추가
+ProgressDlgShipSearch.java (211줄):
+- 이마트(searchType=0): temp[30]에 GI_L_ID 추가 → si.setGI_L_ID(temp[30])
+- 기존 temp[0]~temp[29] 변경 없음
 
-**ProgressDlgGoodsWetSearch.java (101줄):**
+ProgressDlgGoodsWetSearch.java (101줄):
 - 서버 계근 데이터 파싱 시 GI_L_ID 추가 (search_goods_wet.jsp도 수정 필요한지 확인)
 
+**5-2. 동기화 비교 수정**
+
+ProgressDlgShipSearch.java (308, 328줄):
+- 현재: `getGI_D_ID().equals(getGI_D_ID())` → GI_D_ID만 비교
+- 변경: `getGI_D_ID().equals() && getGI_L_ID().equals()` → GI_D_ID + GI_L_ID 조합 비교
+
+**5-3. 동기화 삭제 로직 자료구조 변경**
+
+ProgressDlgShipSearch.java (299~321줄):
+- 현재: `list_delete`가 `ArrayList<String>` (GI_D_ID만 담김)
+- 변경: GI_D_ID + GI_L_ID 조합으로 삭제할 수 있도록 자료구조 변경
+  - 방안 A: `ArrayList<String[]>` (String[0]=GI_D_ID, String[1]=GI_L_ID)
+  - 방안 B: `ArrayList<Shipments_Info>` (객체 전체 전달)
+- refreshShipmentList() (1880줄)의 DELETE WHERE도 `GI_D_ID AND GI_L_ID` 조합으로 변경 필요
+
 **체크리스트**
-- [ ] ProgressDlgShipSearch 파싱 수정
-- [ ] ProgressDlgShipSearch 동기화 비교 수정
+- [ ] ProgressDlgShipSearch 파싱 수정 (temp[30])
+- [ ] ProgressDlgShipSearch 동기화 비교 수정 (GI_D_ID + GI_L_ID)
+- [ ] ProgressDlgShipSearch list_delete 자료구조 변경
+- [ ] DBHandler.refreshShipmentList() DELETE WHERE 변경
 - [ ] ProgressDlgGoodsWetSearch 파싱 수정
 - [ ] 컴파일 확인
 
@@ -178,6 +204,7 @@ SELECT에 L.SEQ AS GI_L_ID 추가
 - selectqueryShipment() (SELECT 100줄, 매핑 148~180줄)
 - selectqueryShipmentOnly() (SELECT 205줄, 매핑 244~269줄)
 - selectqueryShipmentBL() (SELECT 293줄, 매핑 332~358줄)
+- selectqueryAllShipment() (SELECT 380줄, 매핑 395줄): 동기화 비교에 GI_L_ID 필요
 
 **SELECT - GI_L_ID 컬럼/매핑 추가 (TB_GOODS_WET 조회):**
 - selectquerySendGoodsWet() (SELECT 1305줄, 매핑 1338줄): packet에 GI_L_ID 추가하려면 여기서 SELECT/매핑 필수
@@ -191,10 +218,10 @@ SELECT에 L.SEQ AS GI_L_ID 추가
 **체크리스트**
 - [ ] INSERT 4곳 수정
 - [ ] SELECT WHERE 3곳 수정
-- [ ] SELECT TB_SHIPMENT 조회 3곳 컬럼/매핑 추가
+- [ ] SELECT TB_SHIPMENT 조회 4곳 컬럼/매핑 추가 (selectqueryShipment, ShipmentOnly, ShipmentBL, AllShipment)
 - [ ] SELECT TB_GOODS_WET 조회 1곳 컬럼/매핑 추가 (selectquerySendGoodsWet)
 - [ ] UPDATE 1곳 수정
-- [ ] DELETE 1곳 수정
+- [ ] DELETE 1곳 수정 (refreshShipmentList - Step 5에서 자료구조 변경과 연동)
 - [ ] 컴파일 확인
 
 ---
