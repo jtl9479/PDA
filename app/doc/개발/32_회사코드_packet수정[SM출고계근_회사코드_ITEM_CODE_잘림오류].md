@@ -79,7 +79,7 @@ packet += list_send_info.get(i).getITEM_CODE() + "::";
 
 **변경 후:**
 ```java
-packet += Common.selectCompanyCode + "::";
+packet += Common.selectCompanyCode + "::";STEP1 
 ```
 
 **변경 전 (생산/도매/비정량 신로직, 2707줄):**
@@ -108,15 +108,15 @@ packet += Common.selectCompanyCode + "::";
 ### Step 1: packet[10] 회사코드 수정
 
 **체크리스트**
-- [ ] BixolonShipmentActivity 이마트/홈플러스/롯데 packet 수정 (2601줄)
-- [ ] BixolonShipmentActivity 생산/도매/비정량 packet 수정 (2707줄)
-- [ ] 컴파일 확인
+- [x] BixolonShipmentActivity 이마트/홈플러스/롯데 packet 수정 (2602줄)
+- [x] BixolonShipmentActivity 생산/도매/비정량 packet 수정 (2710줄)
+- [x] 컴파일 확인 (BUILD SUCCESSFUL)
 - [ ] 전송 테스트 → SM_출고계근.회사코드 = "20" 정상 저장 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: packet[10]에 getITEM_CODE() → Common.selectCompanyCode 변경 (2곳)
+- **왜**: ITEM_CODE(10자리)가 SM_출고계근.회사코드(VARCHAR(2))에 저장 시 잘림 에러
+- **어떻게**: 2602줄, 2710줄에서 `Common.selectCompanyCode`("20") 전송
 
 ---
 
@@ -124,7 +124,7 @@ packet += Common.selectCompanyCode + "::";
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | packet[10] 회사코드 수정 | ⏳ 대기 |
+| 1 | packet[10] 회사코드 수정 | ✅ 완료 (실기기 테스트 대기) |
 
 ---
 

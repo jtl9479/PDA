@@ -2599,7 +2599,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             packet += list_send_info.get(i).getBOXSERIAL() + "::";
                             packet += list_send_info.get(i).getBOX_CNT() + "::";
                             packet += list_send_info.get(i).getREG_ID() + "::";
-                            packet += list_send_info.get(i).getITEM_CODE() + "::";
+                            packet += Common.selectCompanyCode + "::";
                             packet += list_send_info.get(i).getBRAND_CODE() + "::";
                             packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
                             packet += list_send_info.get(i).getBOX_ORDER() + "::";
@@ -2707,7 +2707,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             packet += list_send_info.get(i).getBOXSERIAL() + "::";
                             packet += list_send_info.get(i).getBOX_CNT() + "::";
                             packet += list_send_info.get(i).getREG_ID() + "::";
-                            packet += list_send_info.get(i).getITEM_CODE() + "::";
+                            packet += Common.selectCompanyCode + "::";
                             packet += list_send_info.get(i).getBRAND_CODE() + "::";
                             packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
                             packet += list_send_info.get(i).getBOX_ORDER() + "::" + list_send_info.get(i).getGI_L_ID() +"##";
