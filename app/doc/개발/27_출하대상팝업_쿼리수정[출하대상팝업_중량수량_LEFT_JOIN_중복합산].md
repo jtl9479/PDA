@@ -129,15 +129,15 @@ String sqlStr = "SELECT "
 - 주의할 점: cursor.getColumnIndex("WET_CNT") 별칭 유지
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 수행
-- [ ] Part 3: 컴파일 확인
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 수행
+- [x] Part 3: 컴파일 확인 (BUILD SUCCESSFUL)
 - [ ] Part 4: 출하대상 팝업에서 중량/수량이 정확한 값으로 표시되는지 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: selectqueryShipmentForPopup() 쿼리에서 LEFT JOIN → 서브쿼리 변경
+- **왜**: LEFT JOIN으로 TB_GOODS_WET 계근 건수만큼 행 중복 → SUM 뻥튀기
+- **어떻게**: LEFT JOIN 제거, 서브쿼리로 WET_CNT 별도 조회, cursor 매핑 변경 없음
 
 ---
 
@@ -153,7 +153,7 @@ Step 1: LEFT JOIN → 서브쿼리 변경
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | LEFT JOIN → 서브쿼리 변경 | ⏳ 대기 |
+| 1 | LEFT JOIN → 서브쿼리 변경 | ✅ 완료 (실기기 테스트 대기) |
 
 ---
 

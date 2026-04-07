@@ -422,11 +422,12 @@ public class DBHandler {
                     + "S." + DBInfo.ITEM_NAME + ", "
                     + "SUM(CAST(S." + DBInfo.GI_REQ_QTY + " AS REAL)) AS GI_REQ_QTY, "
                     + "SUM(CAST(S." + DBInfo.GI_REQ_PKG + " AS REAL)) AS GI_REQ_PKG, "
-                    + "COUNT(W." + DBInfo.GI_D_ID + ") AS WET_CNT"
+                    + "(SELECT COUNT(*) FROM " + DBInfo.TABLE_NAME_GOODS_WET + " W"
+                    + " WHERE W." + DBInfo.GI_D_ID + " IN"
+                    + " (SELECT " + DBInfo.GI_D_ID + " FROM " + DBInfo.TABLE_NAME_SHIPMENT
+                    + " WHERE " + DBInfo.ITEM_CODE + " = S." + DBInfo.ITEM_CODE + ")) AS WET_CNT"
                     + " FROM "
                     + DBInfo.TABLE_NAME_SHIPMENT + " S"
-                    + " LEFT JOIN " + DBInfo.TABLE_NAME_GOODS_WET + " W"
-                    + " ON S." + DBInfo.GI_D_ID + " = W." + DBInfo.GI_D_ID
                     + " GROUP BY S." + DBInfo.ITEM_CODE
                     + ", S." + DBInfo.ITEM_NAME
                     + " ORDER BY S." + DBInfo.ITEM_CODE + " ASC";
