@@ -172,11 +172,11 @@ GI_D_ID는 기존대로 유지하고, **GI_L_ID(SM_출고LOT.SEQ)를 추가 컬�
 
 ### GI_L_ID 단독 교체 시 치명적 사이드이펙트 (3건)
 
-| # | 항목 | 문제 | 심각도 |
-|:-:|------|------|:------:|
-| 1 | 서버 전송 packet (splitData[0]) | SM_출고계근.출고상세SEQ에 GI_L_ID가 들어감 → 데이터 정합성 파괴 | 치명적 |
-| 2 | search_goods_wet.jsp | `WHERE 출고상세SEQ = GI_L_ID` → 조회 결과 0건 | 치명적 |
-| 3 | completeStr (update_shipment.jsp) | `WHERE GI_D_ID = GI_L_ID` → UPDATE 불가 | 치명적 |
+|  #  | 항목                                | 문제                                         | 심각도 |
+| :-: | --------------------------------- | ------------------------------------------ | :-: |
+|  1  | 서버 전송 packet (splitData[0])       | SM_출고계근.출고상세SEQ에 GI_L_ID가 들어감 → 데이터 정합성 파괴 | 치명적 |
+|  2  | search_goods_wet.jsp              | `WHERE 출고상세SEQ = GI_L_ID` → 조회 결과 0건       | 치명적 |
+|  3  | completeStr (update_shipment.jsp) | `WHERE GI_D_ID = GI_L_ID` → UPDATE 불가      | 치명적 |
 
 ### GI_D_ID + GI_L_ID 조합 시 사이드이펙트 (0건)
 
