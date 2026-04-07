@@ -131,9 +131,27 @@ public class MainActivity extends AppCompatActivity {
 
         int id = item.getItemId();
 
-        // 설정 메뉴 - 선택 다이얼로그 표시
+        // 프린터 설정 메뉴 - SettingActivity로 이동
         if (id == R.id.action_pinrtsettings) {
-            showSettingMenuDialog();
+            startActivity(new Intent(MainActivity.this, SettingActivity.class));
+            return true;
+        }
+
+        // 출하대상 팝업
+        if (id == R.id.action_shipmentlist) {
+            showShipmentListDialog();
+            return true;
+        }
+
+        // 바코드정보 팝업
+        if (id == R.id.action_barcodeinfolist) {
+            showBarcodeInfoDialog();
+            return true;
+        }
+
+        // 계근데이터 팝업
+        if (id == R.id.action_goodswetlist) {
+            showGoodsWetDialog();
             return true;
         }
 
@@ -470,34 +488,6 @@ public class MainActivity extends AppCompatActivity {
 
         // 4. 최종 결과 반환 (예: "20260107")
         return inPutDay;
-    }
-
-    /**
-     * 설정 메뉴 선택 다이얼로그 표시
-     * 프린터설정, 출하대상, 바코드정보, 계근데이터 4개 항목
-     */
-    private void showSettingMenuDialog() {
-        String[] items = {"프린터설정", "출하대상", "바코드정보", "계근데이터"};
-        new AlertDialog.Builder(this)
-            .setTitle("설정")
-            .setItems(items, (dialog, which) -> {
-                switch (which) {
-                    case 0:
-                        startActivity(new Intent(MainActivity.this, SettingActivity.class));
-                        break;
-                    case 1:
-                        showShipmentListDialog();
-                        break;
-                    case 2:
-                        showBarcodeInfoDialog();
-                        break;
-                    case 3:
-                        showGoodsWetDialog();
-                        break;
-                }
-            })
-            .setNegativeButton("닫기", null)
-            .show();
     }
 
     /**

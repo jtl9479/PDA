@@ -6,7 +6,25 @@
     <item
         android:id="@+id/action_pinrtsettings"
         android:orderInCategory="100"
-        android:title="설정"
+        android:title="프린터설정"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_shipmentlist"
+        android:orderInCategory="100"
+        android:title="출하대상"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_barcodeinfolist"
+        android:orderInCategory="100"
+        android:title="바코드정보"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_goodswetlist"
+        android:orderInCategory="100"
+        android:title="계근데이터"
         app:showAsAction="never"/>
 
     <item
