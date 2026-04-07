@@ -102,6 +102,7 @@ completeStr + 서버 호출을 단순 제거하면 `receiveData`가 "s"가 아�
 
 completeStr + 서버 호출 + `if (receiveData.equals("s"))` 체크를 제거하고, **후속 로직을 바로 실행**
 
+**구로직 (이마트/홈플러스/롯데, 2642~2682줄):**
 ```java
 if (SAVE_CNT == GI_REQ_PKG) {
     // completeStr + URL_UPDATE_SHIPMENT 호출 제거
@@ -113,6 +114,18 @@ if (SAVE_CNT == GI_REQ_PKG) {
     if (jChk == arSM.size()) return "ss";
 }
 ```
+
+**신로직 (생산/도매/비정량, 2771~2810줄):**
+- 동일 패턴으로 수정
+- 참고: 도매/비정량(2785~2788줄)은 이미 서버 호출 안 하고 `receiveData = "s"` 직접 설정하는 예외 처리가 있었음
+```java
+// 현재 코드 (2785~2788줄)
+} else if (Common.searchType.equals(SEARCH_TYPE_WHOLESALE)||...) {
+    //도매계근은 아래 URL을 호출하지 않는다.
+    receiveData = "s";  // 서버 호출 없이 직접 "s" 설정
+}
+```
+- 수정 후: 모든 searchType에서 서버 호출 없이 후속 로직 바로 실행하므로 이 예외 처리도 불필요해짐
 
 ---
 
@@ -138,7 +151,7 @@ if (SAVE_CNT == GI_REQ_PKG) {
 
 ---
 
-## 5. 진행 현황
+## 6. 진행 현황
 
 | Step | 작업 | 상태 |
 |------|------|------|
