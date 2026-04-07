@@ -177,10 +177,23 @@ ProgressDlgShipSearch.java (299~321줄):
   - 방안 B: `ArrayList<Shipments_Info>` (객체 전체 전달)
 - refreshShipmentList() (1880줄)의 DELETE WHERE도 `GI_D_ID AND GI_L_ID` 조합으로 변경 필요
 
+**5-4. refreshShipmentList() AND/OR 버그 수정 (오류18)**
+
+DBHandler.java refreshShipmentList() (1878~1883줄):
+- 현재: 삭제 대상 여러 건을 **AND**로 연결 → 2건 이상이면 삭제 안됨 (기존 버그)
+- 변경: 각 삭제 대상을 `(GI_D_ID = ? AND GI_L_ID = ?)` 형태로 만들고 행 간에는 **OR**로 연결
+- 관련 오류: `app/doc/오류/18_refreshShipmentList_AND_OR_연산자_버그.md`
+
+```sql
+-- 변경 후 예상
+WHERE (GI_D_ID = '1330' AND GI_L_ID = '5001') OR (GI_D_ID = '1330' AND GI_L_ID = '5003')
+```
+
 **체크리스트**
 - [ ] ProgressDlgShipSearch 파싱 수정 (temp[30])
 - [ ] ProgressDlgShipSearch 동기화 비교 수정 (GI_D_ID + GI_L_ID)
 - [ ] ProgressDlgShipSearch list_delete 자료구조 변경
+- [ ] refreshShipmentList() AND→OR 수정 + GI_L_ID 조건 추가 (오류18)
 - [ ] DBHandler.refreshShipmentList() DELETE WHERE 변경
 - [ ] ProgressDlgGoodsWetSearch 파싱 수정
 - [ ] 컴파일 확인
