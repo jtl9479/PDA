@@ -169,11 +169,18 @@ SELECT에 L.SEQ AS GI_L_ID 추가
 - insertqueryGoodsWetHomeplus() (1566줄)
 - insertqueryGoodsWetLotte() (1639줄)
 
-**SELECT (GI_L_ID 조건 추가):**
+**SELECT - WHERE에 GI_L_ID 조건 추가:**
 - selectqueryGoodsWet() (1253줄): WHERE에 GI_L_ID 추가
 - selectqueryListGoodsWetInfo() (1385줄): WHERE에 GI_L_ID 추가
 - duplicatequeryGoodsWet() (1459줄): WHERE에 GI_L_ID 추가
-- selectqueryShipment 류: SELECT에 GI_L_ID 추가, cursor 매핑 추가
+
+**SELECT - GI_L_ID 컬럼/매핑 추가 (TB_SHIPMENT 조회):**
+- selectqueryShipment() (SELECT 100줄, 매핑 148~180줄)
+- selectqueryShipmentOnly() (SELECT 205줄, 매핑 244~269줄)
+- selectqueryShipmentBL() (SELECT 293줄, 매핑 332~358줄)
+
+**SELECT - GI_L_ID 컬럼/매핑 추가 (TB_GOODS_WET 조회):**
+- selectquerySendGoodsWet() (SELECT 1305줄, 매핑 1338줄): packet에 GI_L_ID 추가하려면 여기서 SELECT/매핑 필수
 
 **UPDATE (GI_L_ID 조건 추가):**
 - updatequeryShipment() (811줄): WHERE에 GI_L_ID 추가
@@ -184,7 +191,8 @@ SELECT에 L.SEQ AS GI_L_ID 추가
 **체크리스트**
 - [ ] INSERT 4곳 수정
 - [ ] SELECT WHERE 3곳 수정
-- [ ] SELECT 컬럼/매핑 추가
+- [ ] SELECT TB_SHIPMENT 조회 3곳 컬럼/매핑 추가
+- [ ] SELECT TB_GOODS_WET 조회 1곳 컬럼/매핑 추가 (selectquerySendGoodsWet)
 - [ ] UPDATE 1곳 수정
 - [ ] DELETE 1곳 수정
 - [ ] 컴파일 확인
