@@ -105,17 +105,24 @@
 ### Index 기준
 - **Index = JSP out.println 출력 순서** (0부터 시작)
 - VIEW DDL 컬럼 순서가 아님
+- JSP가 직접 JOIN 쿼리를 사용하는 경우에도 SELECT 컬럼 출력 순서 기준
 
 ### Index '-' 조건
 - JSP에서 전송하지 않는 컬럼 (WHERE/ORDER BY 조건용)
-- ProgressDlgShipSearch에서 temp[]로 파싱하지 않는 컬럼
+- Java 파싱 클래스에서 temp[]로 파싱하지 않는 컬럼
 
 ### 문서 작성 후 필수 검증 (매번 수행)
 1. **JSP 확인**: 외부 JSP 프로젝트 경로에서 해당 JSP의 out.println 순서 확인
 2. **Index 검증**: JSP out.println 순서와 문서 Index 일치 여부 확인
-3. **파싱 검증**: `ProgressDlgShipSearch.java` temp[] 파싱 코드와 Index 일치 여부 확인
+3. **파싱 검증**: 해당 파싱 클래스의 temp[] 파싱 코드와 Index 일치 여부 확인
+	- 출하대상: `ProgressDlgShipSearch.java`
+	- 바코드정보: `ProgressDlgBarcodeSearch.java`
+	- 계근데이터: `ProgressDlgGoodsWetSearch.java`
 4. **미파싱 컬럼**: JSP 전송하나 Java 미파싱이면 Index '-'로 표시
-5. **TB_SHIPMENT 컬럼**: DBHandler.createqueryShipment()와 실제 컬럼 일치 여부 확인
+5. **로컬DB 컬럼**: 해당 테이블의 CREATE 쿼리와 실제 컬럼 일치 여부 확인
+	- TB_SHIPMENT: `DBHandler.createqueryShipment()`
+	- TB_BARCODE_INFO: `DBHandler.createqueryBarcodeInfo()`
+	- TB_GOODS_WET: `DBHandler.createqueryGoodsWet()`
 
 ### 용도 표기 기준
 - JSP 미전달 컬럼: "미사용(JSP미전달·로컬DB없음)"
