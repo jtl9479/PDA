@@ -16,32 +16,34 @@
 
 ## 해결 방향
 
-GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬럼으로 신규 추가**
-- search_shipment.jsp에서 L.SEQ AS LOT_SEQ 추가
-- SM_출고계근 INSERT 시 출고LOTSEQ 컬럼 추가
+GI_D_ID는 기존대로 유지하고, **GI_L_ID(SM_출고LOT.SEQ)를 추가 컬럼으로 신규 추가**
+- MSSQL/JSP 컬럼명: `출고LOTSEQ`
+- PDA Java 별칭: `GI_L_ID`
+- search_shipment.jsp에서 L.SEQ AS GI_L_ID 추가
+- SM_출고계근 INSERT 시 `출고LOTSEQ` 컬럼 추가
 
 ---
 
-## GI_D_ID 사용처 전수 확인 (LOT_SEQ 추가 필요 여부)
+## GI_D_ID 사용처 전수 확인 (GI_L_ID 추가 필요 여부)
 
-### A그룹: LOT_SEQ 추가 필요 (GI_D_ID로 유니크 식별하는 곳)
+### A그룹: GI_L_ID 추가 필요 (GI_D_ID로 유니크 식별하는 곳)
 
 #### 모델/상수
 
 | 파일 | 줄 | 내용 |
 |------|:--:|------|
-| DBInfo.java | 11 | LOT_SEQ 상수 추가 필요 |
-| Shipments_Info.java | 6, 75-81 | LOT_SEQ 필드/getter/setter 추가 |
-| Goodswets_Info.java | 6, 38-43 | LOT_SEQ 필드/getter/setter 추가 |
+| DBInfo.java | 11 | GI_L_ID 상수 추가 필요 |
+| Shipments_Info.java | 6, 75-81 | GI_L_ID 필드/getter/setter 추가 |
+| Goodswets_Info.java | 6, 38-43 | GI_L_ID 필드/getter/setter 추가 |
 
 #### DB 테이블 CREATE
 
 | 파일 | 줄 | 테이블 |
 |------|:--:|--------|
-| DBHandler.java | 35 | TB_SHIPMENT CREATE - LOT_SEQ 컬럼 추가 |
-| DBHandler.java | 1189 | TB_GOODS_WET CREATE - LOT_SEQ 컬럼 추가 |
+| DBHandler.java | 35 | TB_SHIPMENT CREATE - GI_L_ID 컬럼 추가 |
+| DBHandler.java | 1189 | TB_GOODS_WET CREATE - GI_L_ID 컬럼 추가 |
 
-#### DB SELECT (LOT_SEQ 조건 추가 필요)
+#### DB SELECT (GI_L_ID 조건 추가 필요)
 
 | 파일 | 줄 | 메서드 | 현재 WHERE |
 |------|:--:|--------|-----------|
@@ -49,7 +51,7 @@ GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬�
 | DBHandler.java | 1385 | selectqueryListGoodsWetInfo() | GI_D_ID + PP_CODE |
 | DBHandler.java | 1459 | duplicatequeryGoodsWet() | GI_D_ID + PP_CODE + BARCODE |
 
-#### DB INSERT (LOT_SEQ 컬럼/값 추가 필요)
+#### DB INSERT (GI_L_ID 컬럼/값 추가 필요)
 
 | 파일 | 줄 | 메서드 |
 |------|:--:|--------|
@@ -58,13 +60,13 @@ GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬�
 | DBHandler.java | 1566 | insertqueryGoodsWetHomeplus() |
 | DBHandler.java | 1639 | insertqueryGoodsWetLotte() |
 
-#### DB UPDATE (LOT_SEQ 조건 추가 필요)
+#### DB UPDATE (GI_L_ID 조건 추가 필요)
 
 | 파일 | 줄 | 메서드 | 현재 WHERE |
 |------|:--:|--------|-----------|
 | DBHandler.java | 811 | updatequeryShipment() | GI_D_ID + PP_CODE |
 
-#### DB DELETE (LOT_SEQ 조건 추가 필요)
+#### DB DELETE (GI_L_ID 조건 추가 필요)
 
 | 파일 | 줄 | 메서드 |
 |------|:--:|--------|
@@ -74,25 +76,25 @@ GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬�
 
 | 파일 | 줄 | 용도 |
 |------|:--:|------|
-| ProgressDlgShipSearch.java | 211 | 출하대상 파싱 시 LOT_SEQ 추가 |
-| ProgressDlgShipSearch.java | 308, 328 | 동기화 비교 시 GI_D_ID+LOT_SEQ 조합 |
-| ProgressDlgGoodsWetSearch.java | 101 | 서버 계근 데이터 파싱 시 LOT_SEQ 추가 |
+| ProgressDlgShipSearch.java | 211 | 출하대상 파싱 시 GI_L_ID 추가 |
+| ProgressDlgShipSearch.java | 308, 328 | 동기화 비교 시 GI_D_ID+GI_L_ID 조합 |
+| ProgressDlgGoodsWetSearch.java | 101 | 서버 계근 데이터 파싱 시 GI_L_ID 추가 |
 
 #### BixolonShipmentActivity.java
 
 |  줄   | 용도                                               |
 | :--: | ------------------------------------------------ |
-| 880  | GI_D_ID로 행 선택 → LOT_SEQ 비교 추가                    |
-| 1272 | duplicatequeryGoodsWet 호출 → LOT_SEQ 파라미터 추가      |
-| 1552 | gi.setGI_D_ID → gi.setLOT_SEQ 추가                 |
-| 2189 | selectqueryListGoodsWetInfo 호출 → LOT_SEQ 파라미터 추가 |
+| 880  | GI_D_ID로 행 선택 → GI_L_ID 비교 추가                    |
+| 1272 | duplicatequeryGoodsWet 호출 → GI_L_ID 파라미터 추가      |
+| 1552 | gi.setGI_D_ID → gi.setGI_L_ID 추가                 |
+| 2189 | selectqueryListGoodsWetInfo 호출 → GI_L_ID 파라미터 추가 |
 | 2380 | 동일 (수기입력)                                        |
-| 2472 | duplicatequeryGoodsWet 호출 → LOT_SEQ 파라미터 추가      |
-| 2635 | 전송 후 arSM 매칭 → LOT_SEQ 비교 추가                     |
-| 2662 | updatequeryShipment 호출 → LOT_SEQ 파라미터 추가         |
-| 2763 | 전송 후 arSM 매칭 (생산/도매) → LOT_SEQ 비교 추가             |
-| 2795 | updatequeryShipment 호출 (생산/도매) → LOT_SEQ 파라미터 추가 |
-| 3238 | selectqueryGoodsWet 호출 → LOT_SEQ 파라미터 추가         |
+| 2472 | duplicatequeryGoodsWet 호출 → GI_L_ID 파라미터 추가      |
+| 2635 | 전송 후 arSM 매칭 → GI_L_ID 비교 추가                     |
+| 2662 | updatequeryShipment 호출 → GI_L_ID 파라미터 추가         |
+| 2763 | 전송 후 arSM 매칭 (생산/도매) → GI_L_ID 비교 추가             |
+| 2795 | updatequeryShipment 호출 (생산/도매) → GI_L_ID 파라미터 추가 |
+| 3238 | selectqueryGoodsWet 호출 → GI_L_ID 파라미터 추가         |
 
 #### ShipmentActivity.java (동일 패턴)
 
@@ -109,13 +111,13 @@ GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬�
 
 ---
 
-### B그룹: LOT_SEQ 불필요 (기존 GI_D_ID로 충분)
+### B그룹: GI_L_ID 불필요 (기존 GI_D_ID로 충분)
 
 | 파일 | 줄 | 용도 | 이유 |
 |------|:--:|------|------|
 | BixolonShipment | 1268 | 로그 출력 | 표시용 |
 | BixolonShipment | 2572-2574 | 전송 WHERE 조건 | 넓게 조회 OK |
-| BixolonShipment | 2590, 2696 | packet GI_D_ID | SM_출고계근.출고상세SEQ (D.SEQ 유지) |
+| BixolonShipment | 2590, 2696 | packet GI_D_ID 유지 | SM_출고계근.출고상세SEQ (D.SEQ 유지, C그룹에서 GI_L_ID 추가) |
 | DBHandler | 381-395 | selectqueryAllShipment | 존재 여부만 체크 |
 | DBHandler | 426-427 | selectqueryShipmentForPopup | ITEM_CODE 기준 GROUP BY |
 | DBHandler | 623-636 | selectqueryGIDIDList | 서버 WHERE 조건용 |
@@ -123,7 +125,7 @@ GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬�
 
 ---
 
-### B-1그룹: LOT_SEQ 추가 권장 (WHERE에 GI_D_ID 포함, BARCODE+BOX_CNT로 사실상 특정 가능하나 안전을 위해 추가 권장)
+### B-1그룹: GI_L_ID 추가 권장 (WHERE에 GI_D_ID 포함, BARCODE+BOX_CNT로 사실상 특정 가능하나 안전을 위해 추가 권장)
 
 | 파일 | 줄 | 메서드 | 현재 WHERE | 비고 |
 |------|:--:|--------|-----------|------|
@@ -134,13 +136,13 @@ GI_D_ID는 기존대로 유지하고, **LOT_SEQ(SM_출고LOT.SEQ)를 추가 컬�
 
 ---
 
-### C그룹: LOT_SEQ 신규 추가 (서버 전송 패킷)
+### C그룹: GI_L_ID 신규 추가 (서버 전송 패킷)
 
 | 파일 | 줄 | 용도 |
 |------|:--:|------|
-| BixolonShipment | 2590 | 이마트/홈플러스/롯데 packet에 LOT_SEQ 추가 |
-| BixolonShipment | 2696 | 생산/도매/비정량 packet에 LOT_SEQ 추가 |
-| insert_goods_wet.jsp | - | SM_출고계근 INSERT에 출고LOTSEQ 컬럼 추가 |
+| BixolonShipment | 2590 | 이마트/홈플러스/롯데 packet에 GI_L_ID 추가 |
+| BixolonShipment | 2696 | 생산/도매/비정량 packet에 GI_L_ID 추가 |
+| insert_goods_wet.jsp | - | SM_출고계근 INSERT에 `출고LOTSEQ` 컬럼 추가 |
 | ShipmentActivity | 3640, 3747 | 동일 패턴 |
 
 ---
@@ -200,9 +202,9 @@ GI_L_ID(신규 추가) = SM_출고LOT.SEQ → LOT별 유니크 식별용
 - equals 매칭: `getGI_D_ID().equals()` → `getGI_D_ID().equals() && getGI_L_ID().equals()` (조합)
 - INSERT: GI_D_ID 유지 + GI_L_ID 컬럼/값 추가
 
-**B그룹 (서버 전송용):**
+**C그룹 (서버 전송용):**
 - packet에서 GI_D_ID 유지 (SM_출고계근.출고상세SEQ)
-- packet에 GI_L_ID 추가 (SM_출고계근.출고LOTSEQ 신규)
+- packet에 GI_L_ID 추가 (SM_출고계근.`출고LOTSEQ` 신규)
 
 ## 상태
 - [ ] 미수정
