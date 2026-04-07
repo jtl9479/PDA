@@ -382,7 +382,7 @@ Step 11: 통합 테스트
 | 5 | 파싱 + 동기화 수정 | ✅ 완료 |
 | 6 | DBHandler 수정 | ✅ 완료 (Step 7,9 후 빌드 가능) |
 | 7 | BixolonShipmentActivity 수정 | ✅ 완료 |
-| 8 | insert_goods_wet.jsp 수정 | ⏳ 대기 |
+| 8 | insert_goods_wet.jsp 수정 | ✅ 완료 |
 | 9 | ShipmentActivity 수정 | ⏳ 대기 |
 | 10 | B-1그룹 수정 | ⏳ 대기 |
 | 11 | 통합 테스트 | ⏳ 대기 |
