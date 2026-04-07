@@ -1113,7 +1113,7 @@ public class ShipmentActivity extends HoneywellScannerActivity {
                         Log.e(TAG, "=====================arSM.get(current_work_position).getPACKER_PRODUCT_CODE()=========================" + arSM.get(current_work_position).getPACKER_PRODUCT_CODE());
 
                         boolean dup = DBHandler.duplicatequeryGoodsWet(getApplicationContext(), work_item_fullbarcode,
-                                arSM.get(current_work_position).getGI_D_ID(), arSM.get(current_work_position).getPACKER_PRODUCT_CODE());
+                                arSM.get(current_work_position).getGI_D_ID(), arSM.get(current_work_position).getPACKER_PRODUCT_CODE(), arSM.get(current_work_position).getGI_L_ID());
 
                         if (Common.searchType.equals(SEARCH_TYPE_NONFIXED) || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)) { //비정량은 바코드 같은게 얼마든지 나올 수 있기 때문에 중복확인 제외
                             dup = false;
@@ -3236,7 +3236,7 @@ public class ShipmentActivity extends HoneywellScannerActivity {
 
                 for (int i = 0; i < arSM.size(); i++) {
                     String[] row = new String[2];
-                    row = DBHandler.selectqueryListGoodsWetInfo(mContext, arSM.get(i).getGI_D_ID(), arSM.get(i).getPACKER_PRODUCT_CODE(), arSM.get(i).getCLIENT_CODE());
+                    row = DBHandler.selectqueryListGoodsWetInfo(mContext, arSM.get(i).getGI_D_ID(), arSM.get(i).getPACKER_PRODUCT_CODE(), arSM.get(i).getCLIENT_CODE(), arSM.get(i).getGI_L_ID());
                     arSM.get(i).setGI_QTY(Double.parseDouble(row[0]));      // 중량
                     arSM.get(i).setPACKING_QTY(Integer.parseInt(row[1]));   // 수량
                     arSM.get(i).setSAVE_CNT(Integer.parseInt(row[2]));      // 계근 상품 전송 개수
@@ -3427,7 +3427,7 @@ public class ShipmentActivity extends HoneywellScannerActivity {
 
                 for (int i = 0; i < arSM.size(); i++) {
                     String[] row = new String[2];
-                    row = DBHandler.selectqueryListGoodsWetInfo(mContext, arSM.get(i).getGI_D_ID(), arSM.get(i).getPACKER_PRODUCT_CODE(), arSM.get(i).getCLIENT_CODE());
+                    row = DBHandler.selectqueryListGoodsWetInfo(mContext, arSM.get(i).getGI_D_ID(), arSM.get(i).getPACKER_PRODUCT_CODE(), arSM.get(i).getCLIENT_CODE(), arSM.get(i).getGI_L_ID());
                     arSM.get(i).setGI_QTY(Double.parseDouble(row[0]));      // 중량
                     arSM.get(i).setPACKING_QTY(Integer.parseInt(row[1]));   // 수량
                     arSM.get(i).setSAVE_CNT(Integer.parseInt(row[2]));      // 계근 상품 전송 개수
@@ -3519,7 +3519,7 @@ public class ShipmentActivity extends HoneywellScannerActivity {
 
                 if (!work_item_fullbarcode.equals("")) {
                     boolean dup = DBHandler.duplicatequeryGoodsWet(getApplicationContext(), work_item_fullbarcode,
-                            arSM.get(current_work_position).getGI_D_ID(), arSM.get(current_work_position).getPACKER_PRODUCT_CODE());
+                            arSM.get(current_work_position).getGI_D_ID(), arSM.get(current_work_position).getPACKER_PRODUCT_CODE(), arSM.get(current_work_position).getGI_L_ID());
 
                     if (dup) {
                         Log.e(TAG, "=====================오류지점3=========================");
@@ -3710,7 +3710,7 @@ public class ShipmentActivity extends HoneywellScannerActivity {
                                                 if (receiveData.equals("s")) {
                                                     Log.v(TAG, "출하대상 리스트 update 완료");
                                                     arSM.get(j).setSAVE_TYPE("Y");          // 전부 전송했다면 전송여부 Y로 변경
-                                                    DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE());
+                                                    DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
 
                                                     jChk++;
 
@@ -3843,7 +3843,7 @@ public class ShipmentActivity extends HoneywellScannerActivity {
                                                 if (receiveData.equals("s")) {
                                                     Log.v(TAG, "출하대상 리스트 update 완료");
                                                     arSM.get(j).setSAVE_TYPE("Y");          // 전부 전송했다면 전송여부 Y로 변경
-                                                    DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE());
+                                                    DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
 
                                                     jChk++;
 
@@ -4258,7 +4258,7 @@ public class ShipmentActivity extends HoneywellScannerActivity {
                 }
             });
 
-            list_gi_info = DBHandler.selectqueryGoodsWet(ShipmentActivity.this, si.getGI_D_ID(), si.getPACKER_PRODUCT_CODE(), si.getCLIENT_CODE());
+            list_gi_info = DBHandler.selectqueryGoodsWet(ShipmentActivity.this, si.getGI_D_ID(), si.getPACKER_PRODUCT_CODE(), si.getCLIENT_CODE(), si.getGI_L_ID());
             detailAdapter = new DetailAdapter(ShipmentActivity.this, R.layout.list_detailshipment, list_gi_info, mHandler);
 
             detail_list = (ListView) detail_layout.findViewById(R.id.detail_list);
