@@ -269,6 +269,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
                         si.setCT_NAME(temp[27].toString());          // CT명
                         si.setSTORE_CODE(temp[28].toString());       // 점포코드
                         si.setEMART_PLANT_CODE(temp[29].toString()); // 이마트공장코드
+                        si.setGI_L_ID(temp[30].toString());          // 출고LOTSEQ
 
                     // 홈플러스 비정량(5): 추가 5개 필드
                     } else if(Common.searchType.equals("5")) {
@@ -296,7 +297,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             // ========================================
             // 6. PDA 기존 데이터와 비교 (동기화)
             // ========================================
-            ArrayList<String> list_delete = new ArrayList<String>();      // 삭제할 GI_D_ID 목록
+            ArrayList<Shipments_Info> list_delete = new ArrayList<Shipments_Info>();      // 삭제할 출하대상 목록 (GI_D_ID + GI_L_ID)
             ArrayList<Shipments_Info> list_insert = new ArrayList<Shipments_Info>(); // 추가할 출하대상 목록
 
             // ----- 삭제 대상 검색 -----
@@ -305,14 +306,15 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
                 int check = 0;
 
                 for (int j = 0; j < list_si_info.size(); j++) {
-                    if (list_si_pda.get(i).getGI_D_ID().equals(list_si_info.get(j).getGI_D_ID())) {
+                    if (list_si_pda.get(i).getGI_D_ID().equals(list_si_info.get(j).getGI_D_ID())
+                            && list_si_pda.get(i).getGI_L_ID().equals(list_si_info.get(j).getGI_L_ID())) {
                         check++;
                         break;
                     }
                 }
                 if (check == 0) {
                     // 서버에 없는 항목 → 삭제 대상에 추가
-                    list_delete.add(list_si_pda.get(i).getGI_D_ID());
+                    list_delete.add(list_si_pda.get(i));
                     Log.e(TAG, "==============================================");
                     Log.e(TAG, "================ 삭제 ItemInfo ================");
                     Log.e(TAG, "GI_D_ID : " + list_si_pda.get(i).getGI_D_ID());
@@ -325,7 +327,8 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             for (int i = 0; i < list_si_info.size(); i++) {
                 int check = 0;
                 for (int j = 0; j < list_si_pda.size(); j++) {
-                    if (list_si_info.get(i).getGI_D_ID().equals(list_si_pda.get(j).getGI_D_ID())) {
+                    if (list_si_info.get(i).getGI_D_ID().equals(list_si_pda.get(j).getGI_D_ID())
+                            && list_si_info.get(i).getGI_L_ID().equals(list_si_pda.get(j).getGI_L_ID())) {
                         check++;
                         break;
                     }

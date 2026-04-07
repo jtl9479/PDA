@@ -1870,7 +1870,7 @@ public class DBHandler {
     }
 
     // 출하대상 수정사항만 변경하기
-    public static boolean refreshShipmentList(Context context, ArrayList<String> list_delete, ArrayList<Shipments_Info> list_insert) {
+    public static boolean refreshShipmentList(Context context, ArrayList<Shipments_Info> list_delete, ArrayList<Shipments_Info> list_insert) {
         boolean result;
         try {
             DBHelper dbHelper = new DBHelper(context);
@@ -1879,9 +1879,9 @@ public class DBHandler {
                 String delete_where = "";
                 for (int i = 0; i < list_delete.size(); i++) {
                     if (i == list_delete.size() - 1) {
-                        delete_where += " GI_D_ID = '" + list_delete.get(i) + "'";
+                        delete_where += "(GI_D_ID = '" + list_delete.get(i).getGI_D_ID() + "' AND GI_L_ID = '" + list_delete.get(i).getGI_L_ID() + "')";
                     } else {
-                        delete_where += "GI_D_ID = '" + list_delete.get(i) + "' AND ";
+                        delete_where += "(GI_D_ID = '" + list_delete.get(i).getGI_D_ID() + "' AND GI_L_ID = '" + list_delete.get(i).getGI_L_ID() + "') OR ";
                     }
                 }
 

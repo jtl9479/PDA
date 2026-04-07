@@ -379,7 +379,7 @@ Step 11: 통합 테스트
 | 2 | 모델/상수 추가 | ✅ 완료 |
 | 3 | DB CREATE TABLE 수정 | ✅ 완료 |
 | 4 | search_shipment.jsp 수정 | ✅ 완료 |
-| 5 | 파싱 수정 | ⏳ 대기 |
+| 5 | 파싱 + 동기화 수정 | ✅ 완료 |
 | 6 | DBHandler 수정 | ⏳ 대기 |
 | 7 | BixolonShipmentActivity 수정 | ⏳ 대기 |
 | 8 | insert_goods_wet.jsp 수정 | ⏳ 대기 |
