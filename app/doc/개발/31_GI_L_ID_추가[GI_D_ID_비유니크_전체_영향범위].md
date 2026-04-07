@@ -377,7 +377,7 @@ Step 11: 통합 테스트
 |------|------|------|
 | 1 | MSSQL ALTER TABLE | ✅ 완료 |
 | 2 | 모델/상수 추가 | ✅ 완료 |
-| 3 | DB CREATE TABLE 수정 | ⏳ 대기 |
+| 3 | DB CREATE TABLE 수정 | ✅ 완료 |
 | 4 | search_shipment.jsp 수정 | ⏳ 대기 |
 | 5 | 파싱 수정 | ⏳ 대기 |
 | 6 | DBHandler 수정 | ⏳ 대기 |
