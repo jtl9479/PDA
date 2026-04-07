@@ -213,7 +213,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
                     si.setITEM_NAME(temp[2].toString());         // 품목명
                     si.setEMARTITEM_CODE(temp[3].toString());    // 이마트품목코드
                     si.setEMARTITEM(temp[4].toString());         // 이마트품목명
-                    si.setGI_REQ_PKG(temp[5].toString());        // 요청수량 (박스)
+                    si.setGI_REQ_PKG(String.valueOf((int) Double.parseDouble(temp[5])));        // 요청수량 (박스) - MSSQL FLOAT→INT 변환
 
                     // ----- 요청중량 소수점 처리 (6) -----
                     // 소수점 4자리 이상이면 1자리로 절사

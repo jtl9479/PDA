@@ -101,16 +101,16 @@ si.setGI_REQ_PKG(String.valueOf((int) Double.parseDouble(temp[5])));
 - 주의할 점: temp[5]가 null이거나 빈값일 경우 예외 처리
 
 **체크리스트**
-- [ ] Part 1: 파싱 코드 위치 확인
-- [ ] Part 2: 변환 수행
-- [ ] Part 3: 컴파일 확인
+- [x] Part 1: 파싱 코드 위치 확인 (216줄, 1곳)
+- [x] Part 2: 변환 수행
+- [x] Part 3: 컴파일 확인 (BUILD SUCCESSFUL)
 - [ ] Part 4: 출하대상받기 → 바코드 스캔 → 센터 총수량 정상 표시 확인
 - [ ] Part 5: 계근 완료 시 전송 버튼 활성화 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: ProgressDlgShipSearch.java 216줄 GI_REQ_PKG 파싱 수정
+- **왜**: MSSQL FLOAT "2.0" → Integer.parseInt 에러, 문자열 비교 불일치
+- **어떻게**: `String.valueOf((int) Double.parseDouble(temp[5]))` 로 변환 후 저장
 
 ---
 
@@ -126,7 +126,7 @@ Step 1: ProgressDlgShipSearch temp[5] 파싱 수정
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | ProgressDlgShipSearch 파싱 수정 | ⏳ 대기 |
+| 1 | ProgressDlgShipSearch 파싱 수정 | ✅ 완료 (실기기 테스트 대기) |
 
 ---
 
