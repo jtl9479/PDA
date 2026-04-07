@@ -9,6 +9,7 @@ public class DBInfo {
 
 	//	::::::::::::::: ↓ 공통 Columns ↓ ::::::::::::::::::
 	public static final String GI_D_ID 						= "GI_D_ID";					// 출고번호(출고상세번호id 값)
+	public static final String GI_L_ID 						= "GI_L_ID";					// 출고LOT번호(출고LOTSEQ 값)
 	public static final String BRAND_CODE 					= "BRAND_CODE";				// 브랜드코드, 공통 Column
 	public static final String PACKER_CLIENT_CODE 			= "PACKER_CLIENT_CODE";
 	public static final String PACKER_PRODUCT_CODE 			= "PACKER_PRODUCT_CODE";	// 패커 상품코드

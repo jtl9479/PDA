@@ -4,6 +4,7 @@ public class Goodswets_Info {
 
     public String GOODS_WET_ID					= "";                       // Seq
     public String GI_D_ID 						= "";					    // 출고번호(출고상세번호id 값)
+    public String GI_L_ID 						= "";					    // 출고LOT번호(출고LOTSEQ 값)
     public String WEIGHT						= "";						// 중량, 소숫점 2자리
     public String WEIGHT_UNIT					= "";				        // 중량 단위(LB, KG)
     public String PACKER_PRODUCT_CODE 			= "";		                // 패커 상품코드
@@ -41,6 +42,14 @@ public class Goodswets_Info {
 
     public void setGI_D_ID(String GI_D_ID) {
         this.GI_D_ID = GI_D_ID;
+    }
+
+    public String getGI_L_ID() {
+        return GI_L_ID;
+    }
+
+    public void setGI_L_ID(String GI_L_ID) {
+        this.GI_L_ID = GI_L_ID;
     }
 
     public String getWEIGHT() {

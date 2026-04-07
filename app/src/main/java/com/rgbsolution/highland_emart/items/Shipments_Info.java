@@ -4,6 +4,7 @@ public class Shipments_Info {
 
     public String SHIPMENT_ID					= "";				    // 출하대상 ID
     public String GI_D_ID 						= "";					// 출고번호(출고상세번호id 값)
+    public String GI_L_ID 						= "";					// 출고LOT번호(출고LOTSEQ 값)
     public String ITEM_CODE 					= "";					// 상품코드
     public String ITEM_NAME 					= "";					// 상품명
     public String EMARTITEM_CODE				= "";				    // 이마트 상품코드
@@ -78,6 +79,14 @@ public class Shipments_Info {
 
     public void setGI_D_ID(String GI_D_ID) {
         this.GI_D_ID = GI_D_ID;
+    }
+
+    public String getGI_L_ID() {
+        return GI_L_ID;
+    }
+
+    public void setGI_L_ID(String GI_L_ID) {
+        this.GI_L_ID = GI_L_ID;
     }
 
     public String getITEM_CODE() {
