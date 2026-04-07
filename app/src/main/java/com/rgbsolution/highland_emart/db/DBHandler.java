@@ -1726,7 +1726,7 @@ public class DBHandler {
 
 
     // 계근정보 UPDATE
-    public static boolean updatequeryGoodsWet(Context context, String gi_d_id, String barcode, String box_cnt) {
+    public static boolean updatequeryGoodsWet(Context context, String gi_d_id, String barcode, String box_cnt, String gi_l_id) {
         DBHelper dbHelper = new DBHelper(context);
         dbHelper.open();
         try {
@@ -1735,6 +1735,7 @@ public class DBHandler {
                     + " SET "
                     + DBInfo.SAVE_TYPE + " = 'Y' "
                     + "WHERE GI_D_ID = '" + gi_d_id
+                    + "' AND GI_L_ID = '" + gi_l_id
                     + "' AND "
                     + "BARCODE = '" + barcode
                     + "' AND "
@@ -1755,7 +1756,7 @@ public class DBHandler {
     }
 
     // 미전송 선택 계근정보 DELETE
-    public static void deletequerySelectGoodsWet(Context context, String gi_d_id, String barcode, int box_cnt) {
+    public static void deletequerySelectGoodsWet(Context context, String gi_d_id, String barcode, int box_cnt, String gi_l_id) {
         DBHelper dbHelper = new DBHelper(context);
         dbHelper.open();
         try {
@@ -1764,6 +1765,7 @@ public class DBHandler {
                     + "WHERE BARCODE = '" + barcode
                     + "' AND "
                     + "GI_D_ID = '" + gi_d_id
+                    + "' AND GI_L_ID = '" + gi_l_id
                     + "' AND "
                     + "BOX_CNT = " + box_cnt
                     + " AND "

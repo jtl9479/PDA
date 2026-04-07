@@ -2629,7 +2629,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             Log.v(TAG, "전송결과 : " + result);
                             //s : 성공, f : 실패
                             if (result.equals("s")) {
-                                boolean bool = DBHandler.updatequeryGoodsWet(mContext, list_send_info.get(i).getGI_D_ID(), list_send_info.get(i).getBARCODE(), list_send_info.get(i).getBOX_CNT());
+                                boolean bool = DBHandler.updatequeryGoodsWet(mContext, list_send_info.get(i).getGI_D_ID(), list_send_info.get(i).getBARCODE(), list_send_info.get(i).getBOX_CNT(), list_send_info.get(i).getGI_L_ID());
                                 Log.d(TAG, "boolean " + bool);
                                 if (bool) {          // 전송 & PDA SQLite update 성공
                                     publishProgress("progress", Integer.toString(iCount), Integer.toString(iCount) + "번 데이터 전송성공..");
@@ -2759,7 +2759,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     for (int i = 0; i < list_send_info.size(); i++) { //계근데이터 루프돌면서
                         if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
                             if (result.equals("s")) {
-                                boolean bool = DBHandler.updatequeryGoodsWet(mContext, list_send_info.get(i).getGI_D_ID(), list_send_info.get(i).getBARCODE(), list_send_info.get(i).getBOX_CNT()); //PDA 계근테이블 SAVE TYPE Y로 업데이트
+                                boolean bool = DBHandler.updatequeryGoodsWet(mContext, list_send_info.get(i).getGI_D_ID(), list_send_info.get(i).getBARCODE(), list_send_info.get(i).getBOX_CNT(), list_send_info.get(i).getGI_L_ID()); //PDA 계근테이블 SAVE TYPE Y로 업데이트
                                 Log.d(TAG, "boolean " + bool);
                                 if (bool) {          // 전송 & PDA SQLite update 성공
                                     publishProgress("progress", Integer.toString(iCount), Integer.toString(iCount) + "번 데이터 전송성공..");
@@ -3280,7 +3280,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             String delete_box = list_delete.get(i).getBOX_CNT();
 
                             DBHandler.deletequerySelectGoodsWet(getApplicationContext(),
-                                    list_delete.get(i).getGI_D_ID(), list_delete.get(i).getBARCODE(), Integer.parseInt(delete_box));
+                                    list_delete.get(i).getGI_D_ID(), list_delete.get(i).getBARCODE(), Integer.parseInt(delete_box), list_delete.get(i).getGI_L_ID());
                             refresh_delete(list_delete.get(i).getWEIGHT());
 
                         /*    int removeindex = Integer.parseInt(delete_box)-1;

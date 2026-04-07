@@ -384,7 +384,7 @@ Step 11: 통합 테스트
 | 7 | BixolonShipmentActivity 수정 | ✅ 완료 |
 | 8 | insert_goods_wet.jsp 수정 | ✅ 완료 |
 | 9 | ShipmentActivity 수정 | ✅ 완료 |
-| 10 | B-1그룹 수정 | ⏳ 대기 |
+| 10 | B-1그룹 수정 | ✅ 완료 |
 | 11 | 통합 테스트 | ⏳ 대기 |
 
 ---
