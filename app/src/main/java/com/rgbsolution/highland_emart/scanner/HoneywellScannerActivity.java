@@ -56,11 +56,11 @@ public class HoneywellScannerActivity extends AppCompatActivity implements Compo
 
     /** Honeywell EDA51 바코드 스캔 Action */
     private static final String ACTION_BARCODE_DATA =
-            "com.honeywell.scantointent.intent.action.BARCODE_DATA";
+            "com.honeywell.intent.action.SCAN_RESULT";
 
     /** Honeywell EDA51 바코드 데이터 Extra 키 */
     private static final String EXTRA_BARCODE_DATA =
-            "com.honeywell.scantointent.intent.extra.DATA";
+            "data";
 
     // ========================================================================================
     // UI 컴포넌트 (ActionBar)

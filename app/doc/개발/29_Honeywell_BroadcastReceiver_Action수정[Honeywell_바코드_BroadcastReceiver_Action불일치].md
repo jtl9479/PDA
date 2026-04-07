@@ -123,16 +123,16 @@ Step 1에서 Action 수정 후 실기기 테스트로 Extra 키 확인.
 - 주의할 점: Extra 키는 실기기 테스트로 확인 필요
 
 **체크리스트**
-- [ ] Part 1: Action 문자열 수정
-- [ ] Part 2: Extra 키 수정
-- [ ] Part 3: 컴파일 확인
+- [x] Part 1: Action 문자열 수정 (`com.honeywell.intent.action.SCAN_RESULT`)
+- [x] Part 2: Extra 키 수정 (`data`)
+- [x] Part 3: 컴파일 확인 (BUILD SUCCESSFUL)
 - [ ] Part 4: 실기기 바코드 스캔 → Logcat에 "Receiver action From Honeywell" 출력 확인
 - [ ] Part 5: setMessage() → setBarcodeMsg() 정상 호출 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: ACTION_BARCODE_DATA, EXTRA_BARCODE_DATA 상수 2개 수정
+- **왜**: PDA 실제 Action(`com.honeywell.intent.action.SCAN_RESULT`)과 코드 Action 불일치
+- **어떻게**: Action → `com.honeywell.intent.action.SCAN_RESULT`, Extra → `data`
 
 ---
 
@@ -148,7 +148,7 @@ Step 1: Action 문자열 수정 + Extra 키 확인
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | Action 문자열 수정 + Extra 키 확인 | ⏳ 대기 |
+| 1 | Action 문자열 수정 + Extra 키 확인 | ✅ 코드 완료 (실기기 테스트 대기) |
 
 ---
 
