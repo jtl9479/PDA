@@ -458,6 +458,84 @@ public class DBHandler {
         return list_si;
     }
 
+    /**
+     * 바코드정보 팝업 표시용 SELECT (PPCODE, 품목명, 바코드상품코드)
+     */
+    public static ArrayList<Barcodes_Info> selectqueryBarcodeInfoForPopup(Context context) {
+        ArrayList<Barcodes_Info> list_bi = new ArrayList<Barcodes_Info>();
+        DBHelper mDbHelper = new DBHelper(context);
+        mDbHelper.open();
+        try {
+            Cursor cursor;
+            String sqlStr = "SELECT "
+                    + DBInfo.PACKER_PRODUCT_CODE + ", "
+                    + DBInfo.ITEM_NAME_KR + ", "
+                    + DBInfo.BARCODEGOODS
+                    + " FROM " + DBInfo.TABLE_NAME_BARCODE_INFO
+                    + " ORDER BY " + DBInfo.PACKER_PRODUCT_CODE + " ASC";
+            cursor = mDbHelper.selectSql(sqlStr);
+            if (Common.D) {
+                Log.v(TAG, "selectqueryBarcodeInfoForPopup -> " + sqlStr);
+                Log.v(TAG, "selectqueryBarcodeInfoForPopup -> " + cursor.getCount());
+            }
+            Barcodes_Info bi;
+            while (cursor.moveToNext()) {
+                bi = new Barcodes_Info();
+                bi.setPACKER_PRODUCT_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PACKER_PRODUCT_CODE")), ""));
+                bi.setITEM_NAME_KR(Common.nullCheck(cursor.getString(cursor.getColumnIndex("ITEM_NAME_KR")), ""));
+                bi.setBARCODEGOODS(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODEGOODS")), ""));
+                list_bi.add(bi);
+            }
+            cursor.close();
+        } catch (Exception e) {
+            if (Common.D) {
+                Log.v(TAG, "selectqueryBarcodeInfoForPopup exception -> " + e.getMessage().toString());
+            }
+        }
+        mDbHelper.close();
+        return list_bi;
+    }
+
+    /**
+     * 계근데이터 팝업 표시용 SELECT (GI_D_ID, 중량, 바코드, SAVE_TYPE)
+     */
+    public static ArrayList<Goodswets_Info> selectqueryGoodsWetForPopup(Context context) {
+        ArrayList<Goodswets_Info> list_gi = new ArrayList<Goodswets_Info>();
+        DBHelper mDbHelper = new DBHelper(context);
+        mDbHelper.open();
+        try {
+            Cursor cursor;
+            String sqlStr = "SELECT "
+                    + DBInfo.GI_D_ID + ", "
+                    + DBInfo.WEIGHT + ", "
+                    + DBInfo.BARCODE + ", "
+                    + DBInfo.SAVE_TYPE
+                    + " FROM " + DBInfo.TABLE_NAME_GOODS_WET
+                    + " ORDER BY " + DBInfo.GI_D_ID + " ASC";
+            cursor = mDbHelper.selectSql(sqlStr);
+            if (Common.D) {
+                Log.v(TAG, "selectqueryGoodsWetForPopup -> " + sqlStr);
+                Log.v(TAG, "selectqueryGoodsWetForPopup -> " + cursor.getCount());
+            }
+            Goodswets_Info gi;
+            while (cursor.moveToNext()) {
+                gi = new Goodswets_Info();
+                gi.setGI_D_ID(Common.nullCheck(cursor.getString(cursor.getColumnIndex("GI_D_ID")), ""));
+                gi.setWEIGHT(Common.nullCheck(cursor.getString(cursor.getColumnIndex("WEIGHT")), ""));
+                gi.setBARCODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODE")), ""));
+                gi.setSAVE_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("SAVE_TYPE")), ""));
+                list_gi.add(gi);
+            }
+            cursor.close();
+        } catch (Exception e) {
+            if (Common.D) {
+                Log.v(TAG, "selectqueryGoodsWetForPopup exception -> " + e.getMessage().toString());
+            }
+        }
+        mDbHelper.close();
+        return list_gi;
+    }
+
     // 출하대상's Packer_Product_Code list SELECT
     public static ArrayList<String[]> selectqueryCodeList(Context context) {
         ArrayList<String[]> list_code_info = new ArrayList<String[]>();
