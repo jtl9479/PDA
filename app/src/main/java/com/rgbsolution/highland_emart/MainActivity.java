@@ -18,6 +18,8 @@ import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.common.ProgressDlgShipSearch;
 import com.rgbsolution.highland_emart.common.TestDataHelper;
 import com.rgbsolution.highland_emart.db.DBHandler;
+import com.rgbsolution.highland_emart.items.Barcodes_Info;
+import com.rgbsolution.highland_emart.items.Goodswets_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 
 import java.util.ArrayList;
@@ -129,22 +131,15 @@ public class MainActivity extends AppCompatActivity {
 
         int id = item.getItemId();
 
-        // 프린터 설정 메뉴 - SettingActivity로 이동
+        // 설정 메뉴 - 선택 다이얼로그 표시
         if (id == R.id.action_pinrtsettings) {
-            i = new Intent(MainActivity.this, SettingActivity.class);
-            startActivity(i);
+            showSettingMenuDialog();
             return true;
         }
 
         // 날짜 설정 메뉴 - DatePickerDialog 표시
         if (id == R.id.action_daysettings) {
             new DatePickerDialog(MainActivity.this,date,calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
-            return true;
-        }
-
-        // 출하대상 목록 팝업
-        if (id == R.id.action_shipmentlist) {
-            showShipmentListDialog();
             return true;
         }
 
@@ -478,8 +473,80 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * 설정 메뉴 선택 다이얼로그 표시
+     * 프린터설정, 출하대상, 바코드정보, 계근데이터 4개 항목
+     */
+    private void showSettingMenuDialog() {
+        String[] items = {"프린터설정", "출하대상", "바코드정보", "계근데이터"};
+        new AlertDialog.Builder(this)
+            .setTitle("설정")
+            .setItems(items, (dialog, which) -> {
+                switch (which) {
+                    case 0:
+                        startActivity(new Intent(MainActivity.this, SettingActivity.class));
+                        break;
+                    case 1:
+                        showShipmentListDialog();
+                        break;
+                    case 2:
+                        showBarcodeInfoDialog();
+                        break;
+                    case 3:
+                        showGoodsWetDialog();
+                        break;
+                }
+            })
+            .setNegativeButton("닫기", null)
+            .show();
+    }
+
+    /**
+     * 바코드정보 팝업 표시
+     */
+    private void showBarcodeInfoDialog() {
+        ArrayList<Barcodes_Info> list = DBHandler.selectqueryBarcodeInfoForPopup(this);
+        if (list.size() == 0) {
+            Toast.makeText(this, "바코드정보가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Barcodes_Info bi : list) {
+            sb.append("[" + bi.getPACKER_PRODUCT_CODE() + "] " + bi.getITEM_NAME_KR() + "\n");
+            sb.append("  바코드: " + bi.getBARCODEGOODS() + "\n");
+            sb.append("─────────────────────────\n");
+        }
+        new AlertDialog.Builder(this)
+            .setTitle("바코드정보 (" + list.size() + "건)")
+            .setMessage(sb.toString())
+            .setPositiveButton("닫기", null)
+            .show();
+    }
+
+    /**
+     * 계근데이터 팝업 표시
+     */
+    private void showGoodsWetDialog() {
+        ArrayList<Goodswets_Info> list = DBHandler.selectqueryGoodsWetForPopup(this);
+        if (list.size() == 0) {
+            Toast.makeText(this, "계근데이터가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Goodswets_Info gi : list) {
+            sb.append("[" + gi.getGI_D_ID() + "] 중량:" + gi.getWEIGHT() + "\n");
+            sb.append("  바코드:" + gi.getBARCODE() + "\n");
+            sb.append("  전송:" + gi.getSAVE_TYPE() + "\n");
+            sb.append("─────────────────────────\n");
+        }
+        new AlertDialog.Builder(this)
+            .setTitle("계근데이터 (" + list.size() + "건)")
+            .setMessage(sb.toString())
+            .setPositiveButton("닫기", null)
+            .show();
+    }
+
+    /**
      * 출하대상 목록 팝업 표시
-     * ActionBar 메뉴 "출하대상" 클릭 시 호출
      */
     private void showShipmentListDialog() {
         ArrayList<Shipments_Info> list = DBHandler.selectqueryShipmentForPopup(this);
