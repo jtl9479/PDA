@@ -111,6 +111,7 @@ public class ProgressDlgGoodsWetSearch extends AsyncTask<Integer, String, Intege
                     gi.setMAKINGDATE(temp[10].toString());
                     gi.setBOXSERIAL(temp[11].toString());
                     gi.setBOX_ORDER(temp[12].toString());
+                    gi.setGI_L_ID(temp[13].toString());          // 출고LOTSEQ
                     gi.setSAVE_TYPE("Y");
                     //계근정보 내부 SQLite에 INSERT
                     DBHandler.insertqueryGoodsWet(mContext, gi);
