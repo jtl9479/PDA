@@ -155,7 +155,7 @@ if (SAVE_CNT == GI_REQ_PKG) {
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | update_shipment.jsp 호출 제거 | ⏳ 대기 |
+| 1 | update_shipment.jsp 호출 제거 + 후속 로직 유지 | ✅ 완료 (실기기 테스트 대기) |
 
 ---
 

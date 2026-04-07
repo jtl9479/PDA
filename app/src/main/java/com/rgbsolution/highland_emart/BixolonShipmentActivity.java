@@ -2640,28 +2640,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                             arSM.get(j).setSAVE_CNT(arSM.get(j).getSAVE_CNT() + 1);
 
                                             if (arSM.get(j).getSAVE_CNT() == Integer.parseInt(arSM.get(j).getGI_REQ_PKG())) {            // 전송 개수와 요청 개수 비교
-                                                String completeStr = arSM.get(j).getGI_D_ID() + "::" + arSM.get(j).getITEM_CODE() + "::" + arSM.get(j).getBRAND_CODE() + "::" + Common.REG_ID;
-                                                if (Common.D) {
-                                                    Log.d(TAG, "complete Str : " + completeStr);
-                                                }
-
-                                                Log.d(TAG, "arSM.size() : " + arSM.size());
-
-                                                Log.d(TAG, "j number : " + j);
-
-                                                // 디비접속 설정
-                                                if(Common.searchType.equals(SEARCH_TYPE_EMART) || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS) || Common.searchType.equals(SEARCH_TYPE_LOTTE)) {
-                                                    receiveData = HttpHelper.getInstance().sendDataDb(completeStr, "inno", "complete_shipment", Common.URL_UPDATE_SHIPMENT);
-                                                }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION)||Common.searchType.equals(SEARCH_TYPE_NONFIXED)||Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)||Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)){
-                                                    receiveData = HttpHelper.getInstance().sendDataDb(completeStr, "inno", "complete_shipment", Common.URL_UPDATE_SHIPMENT);
-                                                }
-
-                                                receiveData = receiveData.replace("\r\n", "");
-                                                receiveData = receiveData.replace("\n", "");
-                                                Log.v(TAG, "'" + receiveData + "'");
-
-                                                if (receiveData.equals("s")) {
-                                                    Log.v(TAG, "출하대상 리스트 update 완료");
+                                                    Log.v(TAG, "출하대상 계근 완료");
                                                     arSM.get(j).setSAVE_TYPE("Y");          // 전부 전송했다면 전송여부 Y로 변경
                                                     DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
 
@@ -2669,17 +2648,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                                                     if (jChk == arSM.size()) {
                                                         Log.d(TAG, "arSM.size() when return: " + arSM.size());
-                                                        Log.d(TAG, "arSM.size()-1 when return: " + (arSM.size() -1));
                                                         Log.d(TAG, "jChk number when return: " + jChk);
-                                                        Log.d(TAG, "i number when return: " + i);
-                                                        Log.d(TAG, "j number when return: " + j);
                                                         return "ss";
                                                     }
-
-                                                } else {
-                                                    Log.v(TAG, "출하대상 리스트 update 실패");
-                                                    Log.v(TAG, "'" + receiveData + "'");
-                                                }
                                             }
                                         }
                                     }
@@ -2769,33 +2740,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                             arSM.get(j).setSAVE_CNT(arSM.get(j).getSAVE_CNT() + 1); //출하대상 데이터에 SAVE_CNT(저장갯수) 데이터 저장
 
                                             if (arSM.get(j).getSAVE_CNT() == Integer.parseInt(arSM.get(j).getGI_REQ_PKG())) {  // 전송 개수와 출하요청 개수가 같으면
-                                                String completeStr = arSM.get(j).getGI_D_ID() + "::" + arSM.get(j).getITEM_CODE() + "::" + arSM.get(j).getBRAND_CODE() + "::" + Common.REG_ID;
-                                                if (Common.D) {
-                                                    Log.d(TAG, "complete Str : " + completeStr);
-                                                }
-
-                                                Log.d(TAG, "arSM.size() : " + arSM.size());
-                                                Log.d(TAG, "j number : " + j);
-
-                                                // 디비접속 설정
-                                                if (Common.searchType.equals(SEARCH_TYPE_EMART) || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS)) {
-                                                    receiveData = HttpHelper.getInstance().sendDataDb(completeStr, "inno", "complete_shipment", Common.URL_UPDATE_SHIPMENT);
-                                                } else if (Common.searchType.equals(SEARCH_TYPE_PRODUCTION)) {
-                                                    receiveData = HttpHelper.getInstance().sendDataDb(completeStr, "inno", "complete_shipment", Common.URL_UPDATE_SHIPMENT);
-                                                } else if (Common.searchType.equals(SEARCH_TYPE_WHOLESALE)||Common.searchType.equals(SEARCH_TYPE_NONFIXED)||Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)) {
-                                                    //도매계근은 아래 URL을 호출하지 않는다. GI_D_ID별 CHECK_YN으로 대상을 구분하는데 아래 URL이 CHECK_YN을 N으로 꺾어버리기 때문에 박스 일부 재계근이 불가능해짐
-                                                    //receiveData = HttpHelper.getInstance().sendDataDb(completeStr, "inno", "complete_shipment", Common.URL_UPDATE_SHIPMENT);
-                                                    receiveData = "s";
-                                                } else if (Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)) {
-                                                    receiveData = HttpHelper.getInstance().sendDataDb(completeStr, "inno", "complete_shipment", Common.URL_UPDATE_SHIPMENT);
-                                                }
-
-                                                receiveData = receiveData.replace("\r\n", "");
-                                                receiveData = receiveData.replace("\n", "");
-                                                Log.v(TAG, "'" + receiveData + "'");
-
-                                                if (receiveData.equals("s")) {
-                                                    Log.v(TAG, "출하대상 리스트 update 완료");
+                                                    Log.v(TAG, "출하대상 계근 완료");
                                                     arSM.get(j).setSAVE_TYPE("Y");          // 전부 전송했다면 전송여부 Y로 변경
                                                     DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
 
@@ -2803,16 +2748,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                                                     if (jChk == arSM.size()) {
                                                         Log.d(TAG, "arSM.size() when return: " + arSM.size());
-                                                        Log.d(TAG, "arSM.size()-1 when return: " + (arSM.size() - 1));
                                                         Log.d(TAG, "jChk number when return: " + jChk);
-                                                        Log.d(TAG, "i number when return: " + i);
-                                                        Log.d(TAG, "j number when return: " + j);
                                                         return "ss";
                                                     }
-                                                } else {
-                                                    Log.v(TAG, "출하대상 리스트 update 실패");
-                                                    Log.v(TAG, "'" + receiveData + "'");
-                                                }
                                             }
                                         }
                                     }
