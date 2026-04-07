@@ -56,20 +56,12 @@ private String weighYn;
 
 ## 수정 방안
 
-### update_shipment.jsp SQL 변경
+### update_shipment.jsp 호출 제거
 
-```sql
--- 변경 전 (Oracle)
-UPDATE W_GOODS_ID SET CHECK_YN='N' WHERE GI_D_ID=? AND ITEM_CODE=? AND BRAND_CODE=?
-
--- 변경 후 (MSSQL)
-UPDATE SM_출고상세 SET 계근여부='Y' WHERE SEQ=?
-```
-
-- W_GOODS_ID → SM_출고상세
-- CHECK_YN='N' → 계근여부='Y' (계근 완료)
-- WHERE GI_D_ID=? → WHERE SEQ=? (출고상세SEQ)
-- completeStr에서 전달하는 파라미터 구조도 변경 필요
+계근 완료 여부를 UPDATE하지 않고, **SM_출고계근 ROW COUNT = SM_출고상세.출고박스수량** 비교로 판단.
+- ERP에서 `계근여부` 컬럼을 사용하는 비즈니스 로직 없음 (Entity 정의만 존재)
+- update_shipment.jsp 호출 자체를 PDA에서 제거
+- completeStr 생성 + URL_UPDATE_SHIPMENT 호출 코드 제거
 
 ## 상태
 - [ ] 미수정
