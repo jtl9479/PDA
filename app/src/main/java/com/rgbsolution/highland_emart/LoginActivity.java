@@ -172,11 +172,7 @@ public class LoginActivity extends AppCompatActivity {
                 new ProgressDlgLogin(LoginActivity.this).execute();
                 break;
             case R.id.btnClose:
-                //exitDialog();
-                //프린트 출력 테스트
-                this.printTest();
-
-                Toast.makeText(this, "메시지", Toast.LENGTH_SHORT).show();
+                exitDialog();
                 break;
         }
     }

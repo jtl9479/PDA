@@ -113,15 +113,15 @@ case R.id.btnClose:
 - 주의할 점: exitDialog() 메서드가 LoginActivity에 존재하는지 확인
 
 **체크리스트**
-- [ ] Part 1: exitDialog() 메서드 존재 확인
-- [ ] Part 2: 변환 수행
-- [ ] Part 3: 컴파일 확인
+- [x] Part 1: exitDialog() 메서드 존재 확인 (298줄)
+- [x] Part 2: 변환 수행
+- [x] Part 3: 컴파일 확인 (BUILD SUCCESSFUL)
 - [ ] Part 4: 종료 버튼 클릭 → 종료 확인 다이얼로그 표시 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: LoginActivity btnClose에서 printTest() → exitDialog() 복원
+- **왜**: 테스트용 코드가 원복되지 않아 종료 버튼이 프린터 테스트를 호출
+- **어떻게**: 174~180줄을 원본과 동일하게 exitDialog() 호출로 변경
 
 ---
 
@@ -137,7 +137,7 @@ Step 1: 종료 버튼 exitDialog() 복원
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | 종료 버튼 exitDialog() 복원 | ⏳ 대기 |
+| 1 | 종료 버튼 exitDialog() 복원 | ✅ 완료 (실기기 테스트 대기) |
 
 ---
 
