@@ -91,7 +91,7 @@ PDA 앱 (searchType=4) → search_production_nonfixed.jsp
 
 [변경 후]
 PDA 앱 (searchType=4) → search_production_nonfixed.jsp
-    → MSSQL 직접 JOIN (이마트 JSP 기반 + 비정량 차이 5개 컬럼)
+    → MSSQL 직접 JOIN (이마트 JSP 기반 + 비정량 차이 4개 컬럼)
     → out.println 31개 컬럼 (이마트 JSP와 동일 구조)
     → Java temp[0]~temp[30] 파싱 (31개 기준) → 인덱스 일치
 ```
@@ -148,7 +148,7 @@ String quertystring = "SELECT /* 비정량 출고상세 종합 조회 */"
     + ", '0000' AS PACKER_CODE"                                    // ★ 비정량 차이: 고정값
     + ", V.이력번호 AS IMPORT_ID_NO"
     + ", I.품목코드 AS PACKER_PRODUCT_CODE"                         // ★ 비정량 차이: PPCODE → 품목코드
-    + ", COALESCE(M1.바코드타입, M2.바코드타입) AS BARCODE_TYPE"      // ★ 비정량 차이: M9분기 불필요
+    + ", COALESCE(M1.바코드타입, M2.바코드타입) AS BARCODE_TYPE"      // 이마트와 동일 (M9분기 없음)
     + ", 'HW' AS ITEM_TYPE"                                        // ★ 비정량 차이: 고정값
     + ", COALESCE(NULLIF(V.평균중량,0), I.박스중량) AS PACKWEIGHT"
     + ", I.품목코드 AS BARCODEGOODS"                                // ★ 비정량 차이: 상품바코드 → 품목코드
@@ -295,15 +295,16 @@ out.println(
 
 ## 6. 데이터 저장 구조
 
-### 이마트 JSP와 비정량 JSP의 핵심 5개 컬럼 차이 매핑
+### 이마트 JSP와 비정량 JSP의 핵심 4개 컬럼 차이 매핑
 
 | Index | 컬럼명 | 이마트 JSP (search_shipment.jsp) | 비정량 JSP 전환 후 | 차이 이유 |
 |:-----:|--------|--------------------------------|-------------------|----------|
 | 16 | PACKER_CODE | `I.패커코드` | **`'0000'` 고정값** | 비정량은 자체 원료육, 패커 없음 |
 | 17 | PACKER_PRODUCT_CODE | `I.PPCODE` | **`I.품목코드`** | 패커 없으므로 자사 품목코드 사용 |
-| 18 | BARCODE_TYPE | `COALESCE(M1.바코드타입, M2.바코드타입)` + M9분기 | **`COALESCE(M1.바코드타입, M2.바코드타입)`** M9분기 불필요 | 비정량은 M8만 해당 |
 | 19 | ITEM_TYPE | `COALESCE(M1.타입구분, M2.타입구분)` | **`'HW'` 고정값** | PDA FLOOR 처리 안 하기 위한 구분자 |
 | 21 | BARCODEGOODS | `I.상품바코드` | **`I.품목코드`** | 패커 없으므로 자사 품목코드 사용 |
+
+> **참고**: BARCODE_TYPE(index 18)은 이마트 MSSQL JSP에서도 M9분기 없이 `COALESCE(M1.바코드타입, M2.바코드타입)`만 사용하므로 비정량과 동일 처리. 차이 컬럼에서 제외.
 
 ### WHERE 조건 차이 매핑
 
@@ -379,7 +380,7 @@ temp[30] = GI_L_ID             → setGI_L_ID()
 - 메서드: JSP SELECT 쿼리
 - 범위: search_production_nonfixed.jsp:37~77줄
 - 용도: Oracle VIEW 기반 37개 컬럼 쿼리를 MSSQL 직접 JOIN 31개 컬럼 쿼리로 전환
-- 주의할 점: 이마트 JSP를 기반으로 하되, 비정량 차이 5개 컬럼과 WHERE 조건 2개를 반드시 반영
+- 주의할 점: 이마트 JSP를 기반으로 하되, 비정량 차이 4개 컬럼과 WHERE 조건 2개를 반드시 반영
 
 | # | 항목 | 이마트 JSP 값 | 비정량 전환 값 | 비고 |
 |---|------|-------------|-------------|------|
@@ -477,7 +478,7 @@ temp[30] = GI_L_ID             → setGI_L_ID()
 ### 개발 순서 요약
 
 ```
-Step 1: SELECT 쿼리 전환 (VIEW → MSSQL 직접 JOIN, 비정량 차이 5개 + WHERE 2개 반영)
+Step 1: SELECT 쿼리 전환 (VIEW → MSSQL 직접 JOIN, 비정량 차이 4개 + WHERE 2개 반영)
     ↓
 Step 2: out.println 전환 (37개 → 31개 컬럼, 이마트 JSP와 동일 구조)
     ↓
@@ -537,7 +538,7 @@ Step 3: 통합 테스트
 ## 관련 문서
 
 - `app/doc/소스분석/40_비정량_출하계근대상받기_JSP_Java파싱_인덱스분석.md` — JSP 37개 vs Java 31개 인덱스 불일치 분석
-- `app/doc/소스분석/41_이마트VIEW_vs_비정량VIEW_비교분석.md` — 이마트 VIEW vs 비정량 VIEW 비교, 핵심 5개 컬럼 차이
+- `app/doc/소스분석/41_이마트VIEW_vs_비정량VIEW_비교분석.md` — 이마트 VIEW vs 비정량 VIEW 비교, 핵심 4개 컬럼 차이
 - `app/doc/소스분석/42_이마트Oracle_MSSQL_JSP_비정량Oracle_3자비교분석.md` — Oracle VIEW → MSSQL JSP 전환 매핑, 테이블/JOIN/컬럼/WHERE 3자 비교
 - `app/doc/view/VW_PDA_WID_LIST_NONFIXED` — 비정량 Oracle VIEW SQL 정의
 
