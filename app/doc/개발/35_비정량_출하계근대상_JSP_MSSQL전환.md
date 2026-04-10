@@ -222,6 +222,7 @@ String quertystring = "SELECT /* 비정량 출고상세 종합 조회 */"
     + "   AND D.출고수량 > 0"
     + "   AND COALESCE(M1.타입구분, M2.타입구분) IN ('J', 'B')"     // ★ 이마트 'W' → 비정량 IN('J','B')
     + "   AND COALESCE(M1.바코드타입, M2.바코드타입) = 'M8'"         // ★ 비정량 M8 조건 추가
+    + "   AND I.PPCODE != ''"                                        // PPCODE 빈값 방어코드 (이마트 JSP와 동일)
     + qry_where
     + " ORDER BY GI_D_ID ASC";
 ```
@@ -400,17 +401,17 @@ temp[30] = GI_L_ID             → setGI_L_ID()
   - `conn = getMSSQLConnection()` 유지 (이미 MSSQL 연결)
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: SELECT 쿼리 전환 수행
-- [ ] Part 4: JSP 문법 오류 없는지 확인
-- [ ] Part 5: 단위테스트 (쿼리 실행 가능 여부)
-- [ ] Part 6: 회귀테스트
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: SELECT 쿼리 전환 수행
+- [x] Part 4: JSP 문법 오류 없는지 확인
+- [x] Part 5: 단위테스트 (쿼리 실행 가능 여부)
+- [x] Part 6: 회귀테스트
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: SELECT 쿼리를 Oracle VIEW(`VW_PDA_WID_LIST_NONFIXED`) 기반 37개 컬럼에서 MSSQL 직접 JOIN 31개 컬럼으로 전환
+- **왜**: MSSQL에 해당 VIEW가 존재하지 않아 직접 JOIN 쿼리로 전환 필요
+- **어떻게**: 이마트 JSP(`search_shipment.jsp`)의 쿼리를 복사 후 비정량 차이 4개 컬럼(PACKER_CODE, PACKER_PRODUCT_CODE, ITEM_TYPE, BARCODEGOODS) + WHERE 2개(타입구분 IN('J','B'), 바코드타입='M8') 반영, PPCODE 빈값 방어코드 추가
 
 ---
 
@@ -443,17 +444,17 @@ temp[30] = GI_L_ID             → setGI_L_ID()
 - 주의사항: while(rs.next()) 구문도 이마트 JSP와 동일한 형식으로 변경
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: out.println 전환 수행
-- [ ] Part 4: 31개 컬럼 순서 검증 (이마트 JSP와 대조)
-- [ ] Part 5: 단위테스트 (출력 형식 확인)
-- [ ] Part 6: 회귀테스트
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: out.println 전환 수행
+- [x] Part 4: 31개 컬럼 순서 검증 (이마트 JSP와 대조)
+- [x] Part 5: 단위테스트 (출력 형식 확인)
+- [x] Part 6: 회귀테스트
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: out.println을 37개 컬럼에서 31개 컬럼(이마트 JSP와 동일 구조)으로 전환
+- **왜**: Java 파싱(temp[0]~temp[30]) 31개 기준과 인덱스를 일치시키기 위함
+- **어떻게**: 이마트 JSP의 out.println 부분을 그대로 복사하여 while(rs.next()) 구문 포함 동일 형식으로 변경
 
 ---
 
@@ -529,8 +530,8 @@ Step 3: 통합 테스트
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | SELECT 쿼리 전환 (VIEW → MSSQL 직접 JOIN) | ⏳ 대기 |
-| 2 | out.println 전환 (37개 → 31개 컬럼) | ⏳ 대기 |
+| 1 | SELECT 쿼리 전환 (VIEW → MSSQL 직접 JOIN) | ✅ 완료 |
+| 2 | out.println 전환 (37개 → 31개 컬럼) | ✅ 완료 |
 | 3 | 통합 테스트 | ⏳ 대기 |
 
 ---
