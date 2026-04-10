@@ -222,7 +222,6 @@ String quertystring = "SELECT /* 비정량 출고상세 종합 조회 */"
     + "   AND D.출고수량 > 0"
     + "   AND COALESCE(M1.타입구분, M2.타입구분) IN ('J', 'B')"     // ★ 이마트 'W' → 비정량 IN('J','B')
     + "   AND COALESCE(M1.바코드타입, M2.바코드타입) = 'M8'"         // ★ 비정량 M8 조건 추가
-    + "   AND I.PPCODE != ''"                                        // PPCODE 빈값 방어코드 (이마트 JSP와 동일)
     + qry_where
     + " ORDER BY GI_D_ID ASC";
 ```
@@ -286,6 +285,14 @@ out.println(
 - searchType "0"(이마트)과 "4"(비정량)는 **동일한 파싱 로직**(temp[0]~temp[30])을 사용
 - 비정량 JSP를 31개 컬럼으로 전환하면 인덱스가 자동 일치하므로 **수정 불필요**
 - 영향 없음
+
+### PPCODE 빈값 방어코드 (`AND I.PPCODE != ''`)
+
+- 이마트 JSP(`search_shipment.jsp`)의 WHERE에 `PPCODE != ''` 조건 **없음**
+- 원본 비정량 VIEW(`VW_PDA_WID_LIST_NONFIXED`)에도 PPCODE 조건 **없음**
+- `PPCODE != ''` 방어코드는 `search_barcode_info.jsp`(개발23)에서 사용하는 것이며, 출하대상 조회 JSP에는 원본에 없는 조건
+- **프로젝트 제1원칙(기존 기능 100% 동일)에 따라 비정량 JSP에서도 PPCODE 조건을 추가하지 않음**
+- 만약 PPCODE 빈값 상품이 조회되어 문제가 발생하면, 이마트 JSP와 동일하게 별도 오류 문서로 대응
 
 ### 다른 searchType JSP
 
