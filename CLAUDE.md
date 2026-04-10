@@ -176,7 +176,7 @@ D:\HL_ERP\workspace\SGIS_HL_WEBERP
 | ② | 오류 문서 | `error-doc` | 오류/ 템플릿 기반 문서 생성 (순번 자동) |
 | ③ | 개발 가이드 | `dev-guide` | 개발/ 영향 분석+step 설계 문서 생성 |
 | ④ | 기능/소스분석 문서 | `analysis-doc` | 기능/, 소스분석/ 문서 생성 |
-| ⑤ | 코드 검증 | `code-verifier` | 인덱스+파라미터+WHERE절+컴파일+로컬DB 정합성 검증 |
+| ⑤ | 코드 검증 | `code-verifier` | 인덱스+파라미터+WHERE절+컴파일+로컬DB 정합성 검증+동작 시뮬레이션 |
 | ⑥ | 원본 비교 | `original-comparator` | PDA-INNO(원본)과 기능 동일성 비교 |
 | ⑦ | 테스트 | `test-manager` | 테스트 시나리오 작성+테스트 데이터 문서화 |
 | ⑧ | 문서 정합성 | `doc-consistency` | 문서 간 번호/이름/경로/WF 호출 순서 일치 검증 |
