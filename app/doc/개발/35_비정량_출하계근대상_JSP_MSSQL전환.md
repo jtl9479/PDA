@@ -538,6 +538,7 @@ Step 3: 통합 테스트
 
 - `app/doc/소스분석/40_비정량_출하계근대상받기_JSP_Java파싱_인덱스분석.md` — JSP 37개 vs Java 31개 인덱스 불일치 분석
 - `app/doc/소스분석/41_이마트VIEW_vs_비정량VIEW_비교분석.md` — 이마트 VIEW vs 비정량 VIEW 비교, 핵심 5개 컬럼 차이
+- `app/doc/소스분석/42_이마트Oracle_MSSQL_JSP_비정량Oracle_3자비교분석.md` — Oracle VIEW → MSSQL JSP 전환 매핑, 테이블/JOIN/컬럼/WHERE 3자 비교
 - `app/doc/view/VW_PDA_WID_LIST_NONFIXED` — 비정량 Oracle VIEW SQL 정의
 
 ---
