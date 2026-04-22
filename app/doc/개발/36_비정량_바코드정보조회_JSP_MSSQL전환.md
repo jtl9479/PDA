@@ -423,17 +423,23 @@ onPostExecute() → ProgressDlgGoodsWetSearch 실행
 - 주의사항: SELECT에 컬럼이 24개임을 rsmd.getColumnCount()로 확인하여 검증
 
 **체크리스트**
-- [ ] Part 1: out.println 컬럼 수 24개 확인
-- [ ] Part 2: 이마트 JSP(25개)와의 차이 확인
-- [ ] Part 3: Java temp[] 매핑 최종 일치 확인
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트
-- [ ] Part 6: 회귀테스트
+- [x] Part 1: out.println 컬럼 수 24개 확인 (수정 후 JSP L76~83: `rsmd.getColumnName(1)~(24)`)
+- [x] Part 2: 이마트 JSP(25개)와의 차이 확인 (이마트 L83에 `getColumnName(25)` 존재, 비정량은 없음)
+- [x] Part 3: Java temp[] 매핑 최종 일치 확인 (ProgressDlgBarcodeSearch.java L107~131 temp[0]~temp[23] 1:1, L132~134에서 searchType=4 분기로 temp[24] 스킵)
+- [ ] Part 4: 컴파일 확인 (실기기 테스트 시 수행 — Step 3 통합 테스트로 이동)
+- [ ] Part 5: 단위테스트 (실기기 테스트 시 수행 — Step 3 통합 테스트로 이동)
+- [ ] Part 6: 회귀테스트 (실기기 테스트 시 수행 — Step 3 통합 테스트로 이동)
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: `search_barcode_info_nonfixed.jsp` L76~83의 `out.println` 블록이 24개 컬럼을 출력하는지 검증. 이마트 JSP의 25개(SHELF_LIFE 포함)와의 구조적 차이를 재확인.
+- **왜**: Step 1에서 SELECT 쿼리를 24컬럼으로 수정했으므로, `out.println`이 참조하는 `rsmd.getColumnName(N)`의 N 범위가 실제 SELECT 컬럼 수와 일치하는지 확인이 필요. Java의 `searchType=4` 분기가 `temp[24]` 접근을 스킵하도록 설계되어 있으므로 비정량은 반드시 24개 유지.
 - **어떻게**:
+  1. 비정량 JSP L76~83 확인: `getColumnName(1)` ~ `getColumnName(24)` + `";;"` 행 구분자 → 24개 정상
+  2. 이마트 JSP L76~83 확인: `getColumnName(1)` ~ `getColumnName(25)` → 25개 (SHELF_LIFE 포함)
+  3. Java `ProgressDlgBarcodeSearch.java` L108~131 setter 확인: temp[0]~temp[23] 24개
+  4. Java L132~134 `if (!searchType.equals("4") && !searchType.equals("5"))` 분기 확인: 비정량은 `temp[24]` 접근 없음
+  5. out.println 블록은 코드 변경 없이 기존 구조 유지 — Step 1에서 SELECT 쿼리를 24개로 맞춰 쓴 것만으로 검증 완료
+- **검증**: 본 검증은 정적 코드 구조 확인이며, 컴파일/단위테스트/회귀테스트(Part 4~6)는 실기기 환경 의존 작업이므로 Step 3 통합 테스트 단계로 이동
 
 ---
 
@@ -565,7 +571,7 @@ Step 3: 통합 테스트
 |------|------|------|
 | 사전 시뮬레이션 | ⑤ code-verifier 정합성 검증 | ✅ PASS (2026-04-22) |
 | 1 | B_ITEM → CO_품목코드 SELECT 쿼리 전환 | ✅ 완료 (2026-04-22, ⑤⑥ 사후 검증 PASS) |
-| 2 | out.println 24개 컬럼 수/순서 검증 | ⏳ 대기 |
+| 2 | out.println 24개 컬럼 수/순서 검증 | ✅ 완료 (2026-04-22, 정적 구조 검증 PASS, 컴파일/테스트는 Step 3 이관) |
 | 3 | 통합 테스트 | ⏳ 대기 |
 
 ---
