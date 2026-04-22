@@ -378,17 +378,26 @@ onPostExecute() → ProgressDlgGoodsWetSearch 실행
 - 주의사항: out.println의 컬럼 카운트(rsmd.getColumnName 1~24)가 변경 전과 동일해야 함
 
 **체크리스트**
-- [ ] Part 1: B_ITEM 컬럼 vs CO_품목코드 컬럼 19개 매핑 분석 완료
-- [ ] Part 2: qry_where replace 방식 확인
-- [ ] Part 3: JSP 쿼리 문자열 전환 수행
-- [ ] Part 4: JSP Tomcat 재시작 후 문법 오류 없음 확인
-- [ ] Part 5: 단위테스트 (MSSQL에서 SELECT 직접 실행)
-- [ ] Part 6: 회귀테스트 없음 (비정량 단독 JSP)
+- [x] Part 1: B_ITEM 컬럼 vs CO_품목코드 컬럼 19개 매핑 분석 완료 (소스분석46 + 11장 사전 시뮬레이션)
+- [x] Part 2: qry_where replace 방식 확인 (사전 시뮬레이션 샘플 추적 PASS)
+- [x] Part 3: JSP 쿼리 문자열 전환 수행 (2026-04-22)
+- [ ] Part 4: JSP Tomcat 재시작 후 문법 오류 없음 확인 (실기기 테스트 시 수행)
+- [ ] Part 5: 단위테스트 (MSSQL에서 SELECT 직접 실행) (실기기 테스트 시 수행)
+- [x] Part 6: 회귀테스트 없음 (비정량 단독 JSP) (Step 3에서 이마트 회귀 테스트만 별도 수행)
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: `search_barcode_info_nonfixed.jsp`의 SELECT 쿼리를 Oracle `B_ITEM` 기반 → MSSQL `CO_품목코드` 기반으로 전환. 쿼리 조립 직전 `qry_where.replace("SBI.ITEM_CODE", "SBI.품목코드")` 추가.
+- **왜**: DB 접속은 이미 MSSQL로 전환됐으나 SELECT 쿼리가 Oracle 전용 B_ITEM 테이블을 사용하여 실행 불가 상태. CO_품목코드의 한글 컬럼명에 맞춰 19개 컬럼을 매핑하고, Java 측 전송 조건(`SBI.ITEM_CODE`)을 CO_품목코드 실컬럼명(`품목코드`)으로 치환하는 replace 처리가 필요.
+- **어떻게**: 
+  1. 쿼리 조립 직전 `qry_where.replace("SBI.ITEM_CODE", "SBI.품목코드")` 1줄 추가
+  2. FROM 절: `B_ITEM sbi` → `CO_품목코드 SBI`
+  3. 컬럼명 전환 11건: 품목명, 소수점, 바코드상품코드시작/끝, 중량시작/끝, 제조일자시작/끝, 박스시리얼시작/끝, 생산품상태
+  4. 품목코드 재사용 3건(PACKER_PRODUCT_CODE, ITEMCODE, BARCODEGOODS): `sbi.ITEM_CODE` → `SBI.품목코드`
+  5. CO_품목코드에 없는 5개 컬럼(PACKER_PRD_CODE_FROM/TO, REG_ID/DATE/TIME): `''` 빈값 고정
+  6. 하드코딩 4건(`'이마트용'`, `'0000'` BRAND_CODE, `'KG'`, `'0000'` memo) 유지
+  7. ORDER BY `ITEMCODE ASC` 유지
+  8. out.println 블록(L76~83) 및 기타 블록 수정 없음
+- **검증**: ⑤ code-verifier(6항목 PASS) + ⑥ original-comparator(전 항목 원본 동일/허용차이) 모두 COMMIT OK 판정
 
 ---
 
@@ -555,7 +564,7 @@ Step 3: 통합 테스트
 | Step | 작업 | 상태 |
 |------|------|------|
 | 사전 시뮬레이션 | ⑤ code-verifier 정합성 검증 | ✅ PASS (2026-04-22) |
-| 1 | B_ITEM → CO_품목코드 SELECT 쿼리 전환 | ⏳ 대기 |
+| 1 | B_ITEM → CO_품목코드 SELECT 쿼리 전환 | ✅ 완료 (2026-04-22, ⑤⑥ 사후 검증 PASS) |
 | 2 | out.println 24개 컬럼 수/순서 검증 | ⏳ 대기 |
 | 3 | 통합 테스트 | ⏳ 대기 |
 
