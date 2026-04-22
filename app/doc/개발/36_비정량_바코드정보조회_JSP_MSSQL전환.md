@@ -505,10 +505,56 @@ Step 3: 통합 테스트
 
 ---
 
-## 11. 진행 현황
+## 11. 사전 시뮬레이션 결과 (⑤ code-verifier)
+
+**실행 일자**: 2026-04-22
+**검증 단계**: 코드 수정 **전** 사전 시뮬레이션 (실제 JSP 파일 미수정)
+**최종 판정**: ✅ **GO** (착수 가능)
+
+### 11.1 검증 항목별 결과
+
+| # | 검증 항목 | 결과 | 핵심 발견 |
+|:-:|----------|:----:|----------|
+| 1 | CO_품목코드 스키마 대조 (12컬럼) | ✅ PASS | ItemCodeEntity.java(L100~640)에 품목코드·품목명·소수점·바코드상품코드시작/끝·중량시작/끝·제조일자시작/끝·박스시리얼시작/끝·생산품상태 전부 존재 |
+| 2 | Java temp[] 파싱 인덱스 (24개 1:1) | ✅ PASS | JSP 출력 24컬럼 순서와 `ProgressDlgBarcodeSearch.java` L107~131 파싱 인덱스 1:1 일치 |
+| 3 | qry_where replace 동작 | ✅ PASS | `SBI.ITEM_CODE` → `SBI.품목코드` 전환 후 잔존 없음, MSSQL 문법 유효 |
+| 4 | TB_BARCODE_INFO INSERT 정합성 | ✅ PASS | 22컬럼 INSERT 정상, `SHELF_LIFE`는 nullable(L872)이라 빈값 허용 |
+| 5 | 전체 흐름 시뮬레이션 (11단계) | ✅ PASS | ProgressDlgBarcodeSearch → URL 분기 → JSP → replace → SELECT → out.println → split → 파싱 → setter → INSERT 전 과정 정상 |
+| 6 | 원본 JSP 동작 동일성 | ✅ PASS | 24컬럼·하드코딩 4건·품목코드 재사용 3건 구조 유지 |
+
+### 11.2 검증 중 도출된 주의사항
+
+| # | 항목 | 내용 |
+|:-:|------|------|
+| 1 | `PACKER_PRD_CODE_FROM/TO` 빈값 처리 | CO_품목코드에 해당 컬럼 없음 → `''` 고정. 바코드 매칭 로직(`BARCODEGOODS_TO != ''`)과 무관, 기능 영향 없음 |
+| 2 | `REG_DATE`/`REG_TIME`/`MEMO` | JSP SELECT로 읽히지만 `insertqueryBarcodeInfo()` INSERT 컬럼 목록에 원래부터 없음 (기존 동작 유지) |
+| 3 | `temp[24]` 스킵 | Java L132~134의 `searchType != 4 && != 5` 분기로 스킵, 24컬럼 쿼리여도 배열 범위 오버 없음 |
+| 4 | ORDER BY | `ITEMCODE ASC`는 SELECT 별칭 기반. MSSQL에서 별칭 ORDER BY 사용 가능 (변경 불요) |
+
+### 11.3 11장 10장의 예상 문제점 재평가 결과
+
+| 예상 문제점 # | 시뮬레이션 결과 | 비고 |
+|:-:|:-:|------|
+| 1. WHERE `SBI.ITEM_CODE` 오류 | ✅ 해결됨 | replace 처리로 완전 방지 확인 |
+| 2. ZEROPOINT NULL | ⚠️ 시뮬레이션 불가 | 데이터 환경 의존 — Step 3 실기기 테스트에서 확인 |
+| 3. 바코드 파싱 위치 NULL | ⚠️ 시뮬레이션 불가 | 데이터 환경 의존 — Step 3 실기기 테스트에서 확인 |
+| 4. 컬럼 수 25개로 증가 | ✅ 방지됨 | 쿼리 설계상 24개 고정, SHELF_LIFE 미포함 |
+| 5. ITEM_CODE 데이터 없음 | ⚠️ 시뮬레이션 불가 | 운영 환경 의존 — Step 3 실기기 테스트에서 확인 |
+| 6. PACKER_PRD_CODE_FROM/TO 사용 불가 | ✅ 확인됨 | Log 출력만 사용, 기능 영향 없음 확정 |
+
+### 11.4 결론
+
+- 코드 정합성 레벨(스키마·파싱·쿼리 문법·INSERT)은 **전 항목 통과**
+- 데이터 값 레벨(NULL 여부·등록 여부)은 실기기/실데이터 의존 → Step 3 통합 테스트에서 검증
+- **Step 1 착수 가능**. Step 1~2 완료 후 Step 3 통합 테스트로 데이터 레벨 최종 확인
+
+---
+
+## 12. 진행 현황
 
 | Step | 작업 | 상태 |
 |------|------|------|
+| 사전 시뮬레이션 | ⑤ code-verifier 정합성 검증 | ✅ PASS (2026-04-22) |
 | 1 | B_ITEM → CO_품목코드 SELECT 쿼리 전환 | ⏳ 대기 |
 | 2 | out.println 24개 컬럼 수/순서 검증 | ⏳ 대기 |
 | 3 | 통합 테스트 | ⏳ 대기 |
