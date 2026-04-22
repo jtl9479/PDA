@@ -372,17 +372,27 @@ AsyncTask 완료 → ProgressDialog 종료
 - 주의사항: 파라미터 개수 불일치 시 SQLException 발생하므로 `VALUES (...)`의 `?` 개수와 `setXxx` 호출 개수(17개) 정확히 일치해야 함
 
 **체크리스트**
-- [ ] Part 1: Oracle vs MSSQL 컬럼·시퀀스 매핑 분석 완료
-- [ ] Part 2: 이마트 JSP 구조 재사용 방식 확인
-- [ ] Part 3: JSP INSERT 쿼리 전환 + 파라미터 세팅 17개 구현
-- [ ] Part 4: JSP Tomcat 재시작 후 문법 오류 없음 확인
-- [ ] Part 5: 단위테스트 (MSSQL에서 INSERT 직접 실행)
-- [ ] Part 6: 회귀테스트 없음 (JSP 단독, Java 영향 없음)
+- [x] Part 1: Oracle vs MSSQL 컬럼·시퀀스 매핑 분석 완료 (소스분석47 + 사전 시뮬레이션)
+- [x] Part 2: 이마트 JSP 구조 재사용 방식 확인 (이마트 insert_goods_wet.jsp L49~88과 동일 쿼리)
+- [x] Part 3: JSP INSERT 쿼리 전환 + 파라미터 세팅 17개 구현 (2026-04-22)
+- [ ] Part 4: JSP Tomcat 재시작 후 문법 오류 없음 확인 (Step 3 이관 — 실기기 테스트 시 수행)
+- [ ] Part 5: 단위테스트 (MSSQL에서 INSERT 직접 실행) (Step 3 이관 — 실기기 테스트 시 수행)
+- [x] Part 6: 회귀테스트 없음 (JSP 단독, Java 영향 없음) — Step 3에서 5개 searchType + 이마트 회귀
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: `insert_goods_wet_new.jsp` INSERT 쿼리를 Oracle `W_GOODS_WET` 기반(13개 필드, `W_GOODS_WET_SEQ.NEXTVAL`) → MSSQL `SM_출고계근` 기반(18개 필드, `NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ`)로 전환. 배치 for 루프 + `##` 구분자 구조 그대로 유지. Java 측 수정 없음.
+- **왜**: DB 접속은 이미 MSSQL로 전환됐으나 INSERT 쿼리가 Oracle 전용 W_GOODS_WET 테이블과 Oracle 시퀀스 문법을 사용하여 실행 시 오류 발생 상태. MSSQL SM_출고계근 테이블의 한글 컬럼명에 맞춰 매핑하고 NOT NULL 제약을 만족시키기 위해 회사코드·출고LOTSEQ·수정사원/일자/시간 필드 추가 필요. Java는 이미 15개 필드(splitData[0]~[14])를 packet으로 전송 중이므로 JSP 측만 수정하면 됨. 이마트 `insert_goods_wet.jsp`가 이미 동일 패턴으로 MSSQL 전환을 완료한 선례가 있어 쿼리 구조를 그대로 재사용.
 - **어떻게**:
+  1. 테이블명: `W_GOODS_WET` → `SM_출고계근`
+  2. 시퀀스: `W_GOODS_WET_SEQ.NEXTVAL` → `NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ`
+  3. PK 컬럼명: `GOODS_WET_ID` → `SEQ`
+  4. 컬럼명 한글 전환 11건 (GI_D_ID→출고상세SEQ, WEIGHT→계근중량, WEIGHT_UNIT→계근중량단위, PACKER_PRODUCT_CODE→ppCode, BARCODE→계근바코드, PACKER_CLIENT_CODE→패커코드, MAKINGDATE→제조일자, BOXSERIAL→박스시리얼, BOX_CNT→계근순번, REG_ID→등록사원, REG_DATE→등록일자, REG_TIME→등록시간)
+  5. MSSQL 필수 컬럼 5개 추가: 출고LOTSEQ(splitData[14])·회사코드(splitData[10])·수정사원(splitData[9] 동일값)·수정일자(dateStr)·수정시간(timeStr)
+  6. VALUES `?` 개수 12 → 17로 증가
+  7. for 루프 내 파라미터 세팅 12회 → 17회로 확장 (splitData 매핑 순서: 0, 14, 1, 2, 3, 4, 5, 6, 7, 8, 9, dateStr, timeStr, 10, 9, dateStr, timeStr)
+  8. 배치 for 루프 + `##` 구분자 + `clearParameters()` + commit 루프 외부 1회 구조 모두 유지
+  9. out.println / catch / rollback 블록 수정 없음
+- **검증**: ⑤ code-verifier(7항목 PASS) + ⑥ original-comparator(14항목 전체 원본 동일/허용차이) 모두 COMMIT OK 판정
 
 ---
 
@@ -578,7 +588,7 @@ Step 3: 통합 테스트 (5개 searchType 회귀 + 이마트 회귀)
 | Step | 작업 | 상태 |
 |------|------|------|
 | 사전 시뮬레이션 | ⑤ code-verifier 정합성 검증 | ✅ PASS (2026-04-22) |
-| 1 | W_GOODS_WET → SM_출고계근 INSERT 쿼리 전환 | ⏳ 대기 |
+| 1 | W_GOODS_WET → SM_출고계근 INSERT 쿼리 전환 | ✅ 완료 (2026-04-22, ⑤⑥ 사후 검증 PASS) |
 | 2 | 배치 처리 루프 + `##` 구분자 유지 검증 | ⏳ 대기 |
 | 3 | 통합 테스트 (5개 searchType 회귀 + 이마트 회귀) | ⏳ 대기 |
 
