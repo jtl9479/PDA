@@ -426,17 +426,31 @@ AsyncTask 완료 → ProgressDialog 종료
 - 주의사항: Step 1에서 파라미터 개수·순서만 변경되므로 루프 구조에는 영향 없음
 
 **체크리스트**
-- [ ] Part 1: 배치 for 루프 구조 유지 확인
-- [ ] Part 2: `##` 구분자 처리 유지 확인
-- [ ] Part 3: `clearParameters()` 호출 순서 유지 확인
-- [ ] Part 4: commit 1회 (루프 외) 유지 확인
-- [ ] Part 5: Java packet 조립 `::` + `##` 구조 확인 (BixolonShipmentActivity.java:2668~2694)
-- [ ] Part 6: 회귀테스트 없음 (JSP 단독)
+- [x] Part 1: 배치 for 루프 구조 유지 확인 (수정 후 JSP L75: `for (int i = 0; i < splitDataTotal.length; i++)` 그대로)
+- [x] Part 2: `##` 구분자 처리 유지 확인 (L35: `data.split("##")` 그대로, L77: 루프 내 `splitDataTotal[i].split("::")` 유지)
+- [x] Part 3: `clearParameters()` 호출 순서 유지 확인 (L102: `pstmt.executeUpdate()` 직후 `pstmt.clearParameters()` 호출)
+- [x] Part 4: commit 1회 (루프 외) 유지 확인 (L113: 루프 L111 종료 후 `conn.commit()` 1회만 실행)
+- [x] Part 5: Java packet 조립 `::` + `##` 구조 확인 (BixolonShipmentActivity.java L2668~2694에서 15개 필드 조립, L2684에서 `+ "##"` 행 종결자 확인)
+- [x] Part 6: 회귀테스트 없음 (JSP 단독) — Step 3에서 5개 searchType + 이마트 회귀 테스트로 수행
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: Step 1에서 INSERT 쿼리를 SM_출고계근 기반 18컬럼/17파라미터로 변경한 후에도 `insert_goods_wet_new.jsp`의 배치 처리 구조(`##` 구분자, for 루프, `clearParameters()`, commit 루프 외 1회, catch rollback)가 원본과 동일하게 유지되는지 정적 구조 검증.
+- **왜**: Step 1의 쿼리 변경이 배치 처리 흐름에 영향을 주지 않았음을 공식 확인해야 함. 5개 searchType(1/3/4/5/7)이 공용으로 사용하는 JSP이므로 배치 구조 손상 시 모든 searchType에서 장애 발생 가능. Java 측 packet 조립도 수정 없음 검증 필요.
 - **어떻게**:
+  1. 수정 후 JSP L33~127 전체를 재판독하여 배치 구조 7개 체크포인트 확인
+     - `data.split("##")` — L35 유지
+     - `for (int i = 0; i < splitDataTotal.length; i++)` — L75 유지
+     - `splitDataTotal[i].split("::")` — L77 유지
+     - `pstmt.executeUpdate()` 루프 내 — L101 유지
+     - `pstmt.clearParameters()` 루프 내 — L102 유지
+     - `conn.commit()` 루프 외 1회 — L113 유지
+     - `conn.rollback()` catch 블록 — L125 유지
+  2. Java 측 `BixolonShipmentActivity.java` L2668~2694 재판독
+     - for 루프로 15개 필드 packet 조립 유지
+     - `::` 컬럼 구분자 + `##` 행 종결자 조합 유지
+     - Java 파일 git status로 수정 없음 확인
+  3. 구조 변경 없음 확인 → 본 단계는 순수 정적 검증, 실제 코드 수정 0건
+- **검증**: Step 1 수행 시 ⑤ code-verifier와 ⑥ original-comparator가 이미 배치 구조 유지를 교차 검증했으며, 본 Step 2는 이를 명시적으로 문서화. 컴파일/단위테스트/회귀테스트는 Step 3 통합 테스트로 이관
 
 ---
 
@@ -589,7 +603,7 @@ Step 3: 통합 테스트 (5개 searchType 회귀 + 이마트 회귀)
 |------|------|------|
 | 사전 시뮬레이션 | ⑤ code-verifier 정합성 검증 | ✅ PASS (2026-04-22) |
 | 1 | W_GOODS_WET → SM_출고계근 INSERT 쿼리 전환 | ✅ 완료 (2026-04-22, ⑤⑥ 사후 검증 PASS) |
-| 2 | 배치 처리 루프 + `##` 구분자 유지 검증 | ⏳ 대기 |
+| 2 | 배치 처리 루프 + `##` 구분자 유지 검증 | ✅ 완료 (2026-04-22, 정적 구조 검증 7항목 PASS, 컴파일/테스트는 Step 3 이관) |
 | 3 | 통합 테스트 (5개 searchType 회귀 + 이마트 회귀) | ⏳ 대기 |
 
 ---
