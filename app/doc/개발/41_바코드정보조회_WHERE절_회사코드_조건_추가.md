@@ -277,17 +277,24 @@ data = data + ") AND SBI.회사코드 = '" + Common.selectCompanyCode + "'";
 - 주의사항: JSP 파일 수정은 하지 않음. Java 수정만으로 qry_where에 회사코드 포함 전달
 
 **체크리스트**
-- [ ] Part 1: 현재 L49, L67~69 구조 분석 완료
-- [ ] Part 2: 괄호 + 회사코드 AND 구조 설계 확인
-- [ ] Part 3: Java 파일 수정 수행
-- [ ] Part 4: 컴파일 오류 없음 확인
-- [ ] Part 5: 단위테스트 (Tomcat 로그에 조립된 쿼리 출력 확인)
-- [ ] Part 6: 회귀테스트 (searchType=5 search_homeplus_nonfixed2.jsp 동작 확인 필요)
+- [x] Part 1: 현재 L49, L67~69 구조 분석 완료 (사전 시뮬레이션)
+- [x] Part 2: 괄호 + 회사코드 AND 구조 설계 확인 (가이드 4.1장 명세 확정)
+- [x] Part 3: Java 파일 수정 수행 (2026-04-24)
+- [x] Part 4: 컴파일 오류 없음 확인 (⑤ code-verifier 정적 분석 PASS, Common.selectCompanyCode 존재 확인)
+- [ ] Part 5: 단위테스트 (Tomcat 로그에 조립된 쿼리 출력 확인) — 실기기 테스트 시 수행
+- [ ] Part 6: 회귀테스트 (searchType=5 search_homeplus_nonfixed2.jsp 동작 확인) — 실기기 테스트 시 수행
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: `ProgressDlgBarcodeSearch.java` doInBackground() 메서드의 WHERE 절 조립 로직에 괄호와 회사코드 AND 조건 추가 (2곳 수정).
+- **왜**: 바코드정보조회 쿼리에 회사코드 필터 부재 → 멀티회사 환경에서 타 회사 품목 혼입 방지 필요. CLAUDE.md 제1원칙의 "회사코드 예외" 규정 적용. 기존 OR 체인에 AND 조건을 단순 추가하면 연산자 우선순위상 잘못 해석되므로 괄호로 OR 체인 감싸는 구조 변경 동반. 이 괄호 추가는 기존에 잠재하던 `WHERE A OR B AND extra` 결함도 부수적으로 해결.
 - **어떻게**:
+  1. L49: `" WHERE "` → `" WHERE ("` 로 변경 (괄호 시작)
+  2. `if(list_code_info.size() == 0)` 블록 종료 후 1줄 추가:
+     `data = data + ") AND SBI.회사코드 = '" + Common.selectCompanyCode + "'";`
+  3. for 루프 내부 OR 체인 조립 로직 수정 없음 (원본 유지)
+  4. searchType 분기 로직 수정 없음
+  5. JSP 파일 수정 없음 (Java가 전달하는 qry_where에 회사코드 포함되어 자동 적용)
+- **검증**: ⑤ code-verifier 9항목 PASS + ⑥ original-comparator 전 항목 허용 차이(회사코드 예외/MSSQL 전환)로 모두 COMMIT OK 판정. `Common.selectCompanyCode = "20"` 상수 Common.java:41 확인.
 
 ---
 
@@ -411,7 +418,7 @@ Step 2: 통합 테스트 (8개 searchType 전부 회귀)
 | Step | 작업 | 상태 |
 |------|------|------|
 | 사전 시뮬레이션 | ⑤ code-verifier 정합성 검증 | ✅ PASS (2026-04-24, searchType=5 WARN) |
-| 1 | Java WHERE 절 괄호 + 회사코드 조건 추가 | ⏳ 대기 |
+| 1 | Java WHERE 절 괄호 + 회사코드 조건 추가 | ✅ 완료 (2026-04-24, ⑤⑥ 사후 검증 PASS) |
 | 2 | 통합 테스트 (7개 searchType 회귀 + searchType=5 별도 확인) | ⏳ 대기 |
 
 ---

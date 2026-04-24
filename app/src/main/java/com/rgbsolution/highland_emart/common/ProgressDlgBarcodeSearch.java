@@ -46,7 +46,7 @@ public class ProgressDlgBarcodeSearch extends AsyncTask<Integer, String, Integer
                 list_code_info = DBHandler.selectqueryCodeList(mContext);
             }
 
-            String data = " WHERE ";
+            String data = " WHERE (";
             for (int i = 0; i < list_code_info.size(); i++) {
                 if(Common.searchType.equals("4") || Common.searchType.equals("5")){
                     if (i == list_code_info.size() - 1) {
@@ -67,6 +67,9 @@ public class ProgressDlgBarcodeSearch extends AsyncTask<Integer, String, Integer
             if(list_code_info.size() == 0){
                 data = data + "1=0";
             }
+
+            // 괄호 닫고 회사코드 AND 조건 추가 (멀티회사 환경 대비, 개발41)
+            data = data + ") AND SBI.회사코드 = '" + Common.selectCompanyCode + "'";
 
             Log.i(TAG, "Barcode Code List : " + data);
 
