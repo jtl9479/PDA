@@ -1,15 +1,5 @@
 # S_BARCODE_INFO와 B_ITEM의 동명 컬럼 중복 설계 — 의도성 여부
 
-## 기본 정보
-
-| 항목 | 내용 |
-|------|------|
-| **순번** | 02 |
-| **발견 일자** | 2026-04-22 |
-| **상태** | ⏳ 대기 (답변 필요) |
-| **우선순위** | 중간 |
-| **확인 대상** | ERP 기획자 / DB 설계자 / 업무 PO |
-| **관련 JSP/소스** | `search_barcode_info.jsp` (원본), `search_barcode_info_nonfixed.jsp` (원본) |
 
 ---
 
@@ -21,7 +11,6 @@
 
 ## 2. 발견 경위
 
-- 2026-04-22 이마트 바코드정보조회 JSP와 비정량 바코드정보조회 JSP의 원본 비교 분석(소스분석46) 작업 중 발견
 - 이마트 원본 JSP는 `FROM S_BARCODE_INFO SBI` 기반으로 바코드 파싱 규칙 컬럼 조회
 - 비정량 원본 JSP는 `FROM B_ITEM sbi` 기반이지만 **동일한 컬럼명**(`SBI.ZEROPOINT`, `SBI.BARCODEGOODS_FROM` 등) 참조
 - 두 테이블이 같은 컬럼명을 갖지 않으면 비정량 JSP가 Oracle에서 실행될 수 없음
@@ -30,16 +19,13 @@
 
 ## 3. 기술적 사실 (확정)
 
-| 항목 | 내용 | 근거 위치 |
-|------|------|----------|
-| 1 | 이마트 원본 JSP는 S_BARCODE_INFO를 메인 테이블로 사용 (3-way JOIN) | `apache-tomcat-7.0.78_PDA_IN(원본)/webapps/ROOT/inno/search_barcode_info.jsp:41~70` |
-| 2 | 비정량 원본 JSP는 B_ITEM 단독 사용 (JOIN 없음) | `apache-tomcat-7.0.78_PDA_IN(원본)/webapps/ROOT/inno/search_barcode_info_nonfixed.jsp:40~66` |
-| 3 | 비정량 JSP는 `SBI.ZEROPOINT`, `SBI.BARCODEGOODS_FROM/TO`, `SBI.WEIGHT_FROM/TO`, `SBI.MAKINGDATE_FROM/TO`, `SBI.BOXSERIAL_FROM/TO`, `SBI.PACKER_PRD_CODE_FROM/TO`, `SBI.STATUS`, `SBI.REG_ID/DATE/TIME` 참조 (SBI = B_ITEM alias) | 비정량 JSP L48~62 |
-| 4 | S_BARCODE_INFO도 동일 이름의 컬럼 보유 | `app/doc/view/S_BARCODE_INFO.md` |
-| 5 | 따라서 원본 Oracle DB에서 두 테이블은 **동명 컬럼을 중복 보유**하는 상태로 운영됨 | 위 3, 4의 논리적 귀결 (쿼리가 실행 가능하려면 필수) |
-| 6 | MSSQL 전환(HL ERP) 시: S_BARCODE_INFO는 존재하지 않음, B_ITEM→CO_품목코드 1:1 매핑 | `PDA_HL_ERP_전환_공수분석.md:96, 184` |
-| 7 | CO_품목코드에는 `소수점`, `바코드상품코드시작/끝`, `중량시작/끝`, `제조일자시작/끝`, `박스시리얼시작/끝`, `생산품상태` 컬럼 존재 (B_ITEM 확장 컬럼과 매핑) | 개발36 6장 매핑표 |
-| 8 | CO_품목코드에는 `PACKER_PRD_CODE_FROM/TO`, `REG_ID/DATE/TIME` 컬럼이 **없음** (이 부분은 B_ITEM에만 있었거나 CO_품목코드 매핑 시 탈락) | 개발36 5개 빈값 처리 항목 |
+| 항목  | 내용                                                                                                                                                                                                                         | 근거 위치                                                                                      |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 1   | 이마트 원본 JSP는 S_BARCODE_INFO를 메인 테이블로 사용 (3-way JOIN)                                                                                                                                                                        | `apache-tomcat-7.0.78_PDA_IN(원본)/webapps/ROOT/inno/search_barcode_info.jsp:41~70`          |
+| 2   | 비정량 원본 JSP는 B_ITEM 단독 사용 (JOIN 없음)                                                                                                                                                                                         | `apache-tomcat-7.0.78_PDA_IN(원본)/webapps/ROOT/inno/search_barcode_info_nonfixed.jsp:40~66` |
+| 3   | 비정량 JSP는 `SBI.ZEROPOINT`, `SBI.BARCODEGOODS_FROM/TO`, `SBI.WEIGHT_FROM/TO`, `SBI.MAKINGDATE_FROM/TO`, `SBI.BOXSERIAL_FROM/TO`, `SBI.PACKER_PRD_CODE_FROM/TO`, `SBI.STATUS`, `SBI.REG_ID/DATE/TIME` 참조 (SBI = B_ITEM alias) | 비정량 JSP L48~62                                                                             |
+| 5   | 따라서 원본 Oracle DB에서 두 테이블은 **동명 컬럼을 중복 보유**하는 상태로 운영됨                                                                                                                                                                       |                                                                                            |
+
 
 ---
 
@@ -50,22 +36,19 @@
     - 다르다면: 정량·비정량이 서로 다른 바코드 포맷을 사용한다는 의미
     - 같다면: 데이터 일관성 유지가 어떻게 보장되었는가 (트리거, 프로시저, 배치 등)?
 - B_ITEM의 바코드 파싱 컬럼은 **원래 있던 설계**인가, **비정량 라인 추가 시 확장**된 것인가?
-- CO_품목코드로 통합된 현재, 이마트(S_BARCODE_INFO 값)와 비정량(B_ITEM 값)이 서로 다른 파싱 규칙을 썼다면 MSSQL 전환 후 **한쪽이 잘못된 데이터를 참조할 위험** 존재
 
 ---
 
-## 5. 가능한 해석
+## 5. 확인 요청 사항
 
-| 해석 | 내용 | 가능성 |
-|:----:|------|:----:|
-| A | 의도된 이중 설계: 정량(S_BARCODE_INFO)과 비정량(B_ITEM)이 서로 다른 바코드 포맷을 사용하며, 값 자체가 다름 | 중간 |
-| B | 데이터 동기화 설계: 두 테이블 모두 같은 값을 보유하되 용도별 조회를 위해 의도적으로 중복 | 낮음 |
-| C | 레거시 확장: B_ITEM이 원래는 품목 기본 마스터였으나, 비정량 라인 도입 시 바코드 컬럼을 확장 추가 (S_BARCODE_INFO 복제) | **높음** |
-| D | 우연한 중복: 두 테이블이 각자 독립적으로 개발되다가 이름이 겹침, 실제 데이터는 서로 무관 | 낮음 |
+### 🔑 핵심 질문
 
----
+**현재 HL ERP의 `C0705`(품목코드관리) 화면에서 바코드 파싱 규칙(바코드상품코드시작/끝, 중량시작/끝, 제조일자시작/끝, 박스시리얼시작/끝, 소수점, 생산품상태 등)을 관리해도 되는가?**
 
-## 6. 확인 요청 사항
+- 즉 기존 원본 Oracle에서 `S_BARCODE_INFO`에 입력하던 바코드 규칙 정보를 **MSSQL 전환 후에는 C0705 화면 1곳에서만 관리하면 업무상 문제 없는가**?
+- 별도의 바코드 규칙 관리 화면이 필요한가, 아니면 `CO_품목코드` 통합으로 충분한가?
+
+### 참고 세부 질문
 
 1. `S_BARCODE_INFO.WEIGHT_FROM`과 `B_ITEM.WEIGHT_FROM`은 같은 품목에 대해 같은 값을 가지는가, 다른 값을 가지는가? (샘플 데이터 확인 요청)
 2. 위 동명 컬럼들의 데이터 관리 주체·갱신 시점·책임 부서가 각각 어디인가?
