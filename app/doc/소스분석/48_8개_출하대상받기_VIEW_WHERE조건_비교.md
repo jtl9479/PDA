@@ -266,18 +266,18 @@ WHERE     1 = 1
       AND IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')
 ```
 
-| 조건 | 설명 |
-|------|------|
-| `ID.PACKING_QTY = 0` | 아직 포장(계근) 처리가 안 된 건만 |
-| `ID.GI_REQ_PKG <> 0` | 출하요청수량이 있는 건만 |
-| `WR.CONTRACT_TYPE = '40'` | 국내매입만 |
-| `ID.CHECK_YN = 'Y'` | 확인(승인)된 건만 |
-| `ID.EOI_ID IS NULL` | 도매 전용 (발주서 미연결) |
-| `BI.STATUS = 'Y'` | 활성 아이템만 |
-| `BI.ITEM_TYPE = '10'` | 아이템 타입 10인 건만 |
-| `IH.SEND_FLAG <> 'N'` | 전송 대기 상태가 아닌 건만 |
-| `WR.GR_WAREHOUSE_CODE = '4001'` | 창고코드 4001만 |
-| `IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')` | 오늘 이후 출하요청일만 |
+| 조건                                              | 설명                   |
+| ----------------------------------------------- | -------------------- |
+| `ID.PACKING_QTY = 0`                            | 아직 포장(계근) 처리가 안 된 건만 |
+| `ID.GI_REQ_PKG <> 0`                            | 출하요청수량이 있는 건만        |
+| `WR.CONTRACT_TYPE = '40'`                       | 국내매입만                |
+| `ID.CHECK_YN = 'Y'`                             | 확인(승인)된 건만           |
+| `ID.EOI_ID IS NULL`                             | 도매 전용 (발주서 미연결)      |
+| `BI.STATUS = 'Y'`                               | 활성 아이템만              |
+| `BI.ITEM_TYPE = '10'`                           | 아이템 타입 10인 건만        |
+| `IH.SEND_FLAG <> 'N'`                           | 전송 대기 상태가 아닌 건만      |
+| `WR.GR_WAREHOUSE_CODE = '4001'`                 | 창고코드 4001만           |
+| `IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')` | 오늘 이후 출하요청일만         |
 
 ---
 
@@ -471,23 +471,22 @@ DDL 파일이 `app/doc/view/` 폴더에 없어 WHERE 조건 추출 불가.
 
 WHERE 절은 아니지만 JOIN ON 조건에서 데이터를 필터링하는 항목. **VIEW 식별·구분의 핵심 조건들이 여기 위치**.
 
-| JOIN 필터 조건 | 이마트(0) | 생산(1) | 홈플(2) | 도매(3) | **비정량(4)** | 홈비정(5) | 롯데(6) | 생산라벨(7) |
-|------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **`EB.ITEM_TYPE = 'W'`** (원료육) | O | X | O | **X** ※1 | X | X | X | ? |
-| **`EB.ITEM_TYPE IN ('J', 'B')`** (가공육+비정량) ★ | X | X | X | X | **O** | X | X | ? |
-| **`EB.BARCODE_TYPE = 'M8'`** (이마트 비정량) ★ | X | X | X | X | **O** | X | X | ? |
-| `BEB.ITEM_TYPE = 'W'` (홈비정) | X | X | X | X | X | **X** ※2 | X | ? |
-| `beb.BARCODE_TYPE LIKE 'L%'` (롯데) | X | X | X | X | X | X | O | ? |
-| `BCC.STATUS = 'Y'` (롯데 거래처 활성) | X | X | X | X | X | X | O | ? |
+| JOIN 필터 조건                                   | 이마트(0) | 생산(1) | 홈플(2) |  도매(3)   | **비정량(4)** |  홈비정(5)  | 롯데(6) | 생산라벨(7) |
+| -------------------------------------------- | :----: | :---: | :---: | :------: | :--------: | :------: | :---: | :-----: |
+| **`EB.ITEM_TYPE = 'W'`** (원료육)               |   O    |   X   |   O   | **X** ※1 |     X      |    X     |   X   |    ?    |
+| **`EB.ITEM_TYPE IN ('J', 'B')`** (가공육+비정량) ★ |   X    |   X   |   X   |    X     |   **O**    |    X     |   X   |    ?    |
+| **`EB.BARCODE_TYPE = 'M8'`** (이마트 비정량) ★     |   X    |   X   |   X   |    X     |   **O**    |    X     |   X   |    ?    |
+| `beb.BARCODE_TYPE LIKE 'L%'` (롯데)            |   X    |   X   |   X   |    X     |     X      |    X     |   O   |    ?    |
+| `BCC.STATUS = 'Y'` (롯데 거래처 활성)               |   X    |   X   |   X   |    X     |     X      |    X     |   O   |    ?    |
 
 ※1 도매(3) 정정: B_EMART_BARCODE 조인 자체가 없음 (B_ITEM만 조인)  
-※2 홈비정(5) 정정: 해당 VIEW에 `BEB.ITEM_TYPE='W'` 조건 없음 (단순 EMARTITEM_CODE 조인만)  
 ★ 표시: 비정량 VIEW만의 핵심 식별 조건 (다른 VIEW와 절대적으로 구분되는 항목)
 
-**참고 — JOIN 매트릭스에서 제거된 조건**:
+**참고 — JOIN 매트릭스에서 제거된 조건 (정정 이력)**:
 - `BEB.BARCODE_TYPE = 'H5'` 행: 본 조건은 **WHERE 절에 위치** (홈비정 DDL L45). 메인 매트릭스(2장)의 별도 행으로 이미 표기되어 있어 본 매트릭스에서 제거 (중복/오분류 방지)
 - `BI.STATUS = 'Y'` 행: 도매(3)의 경우 **WHERE 절** 조건 (도매 DDL L91)이며, 이마트(0)/홈플(2)에는 해당 조건 자체가 없음. 본 매트릭스에서 제거 (메인 매트릭스에 도매 O로 정상 기재됨)
 - `S_BARCODE_INFO STATUS = 'Y'` 행: BARCODEGOODS 스칼라 서브쿼리 내부 조건이며 VIEW 식별 필터로 작용하지 않으므로 제거
+- **`BEB.ITEM_TYPE = 'W'` (홈비정) 행**: 전수 검색 결과 홈비정 VIEW(`VW_PDA_WID_LIST_NONFIXED_HP`) **어디에도 해당 필터 조건이 존재하지 않음** (SELECT 절 컬럼 출력으로만 등장, L26). 모든 셀이 X로 무의미한 행이며 롯데 `beb.ITEM_TYPE='W'` (메인 매트릭스 21번째 행에 정상 기재)와 별칭(BEB vs beb)만 다른 시각적 혼동 유발하므로 본 매트릭스에서 제거.
 
 ---
 
