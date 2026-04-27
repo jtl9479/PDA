@@ -37,7 +37,7 @@
 **용도**: 이마트 계근 사용  
 **구조**: UNION ALL 2블록 (블록1=해외매입, 블록2=국내매입)
 
-#### 블록 1 (해외매입 / I_BL_D 조인)
+#### A. 메인 WHERE 절 — 블록 1 (해외매입 / I_BL_D 조인)
 
 ```sql
 WHERE     1 = 1
@@ -58,7 +58,7 @@ WHERE     1 = 1
 | `IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')` | 오늘 이후 출하요청일만 |
 | ~~`IH.SEND_FLAG = 'Y'`~~ | 주석처리됨 (비활성) |
 
-#### 블록 2 (국내매입 / I_OFFER_D 조인)
+#### A. 메인 WHERE 절 — 블록 2 (국내매입 / I_OFFER_D 조인)
 
 ```sql
 WHERE     1 = 1
@@ -78,6 +78,31 @@ WHERE     1 = 1
 | `WR.CONTRACT_TYPE = '40'` | 국내매입 계약 타입(40)만 |
 | `IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')` | 오늘 이후 출하요청일만 |
 | ~~`IH.SEND_FLAG = 'Y'`~~ | 주석처리됨 (비활성) |
+
+#### B. 서브쿼리 EO 내부 JOIN 조건 (실질 필터 효과)
+
+이마트 VIEW의 **타입구분 필터**. 서브쿼리 EO의 `B_EMART_BARCODE EB` 조인 ON 절에 위치.
+
+```sql
+-- 블록1 L135, 블록2 L272 동일 위치
+INNER JOIN B_EMART_BARCODE EB
+    ON EB.EMARTITEM_CODE = EOI.ITEM_CODE
+   AND EB.ITEM_TYPE = 'W'              -- ★ 이마트 정량 핵심 필터: 원료육만
+```
+
+| 조건 | 설명 | 위치 |
+|------|------|:----:|
+| **`EB.ITEM_TYPE = 'W'`** | **타입구분 W(원료육) 만 조회** ← 이마트 정량 VIEW 식별 핵심 | JOIN ON (블록1·2 모두) |
+
+**중요**: SQL 위치는 JOIN ON 절이지만 **필터링 효과는 WHERE와 동일**. 비정량(4)의 `IN ('J', 'B')`와 대조되는 핵심 차이점.
+
+#### 참고: SELECT 절 ITEM_TYPE 주석 (DDL L79)
+
+```sql
+EO.ITEM_TYPE,                     -- 원료육 :  W, 제품 : J, 비정량 : B
+```
+
+→ DDL 주석이 **W/J/B의 의미를 직접 명시**. 4.5장에서 종합 정리.
 
 ---
 
@@ -163,6 +188,31 @@ WHERE     1 = 1
 | `WR.CONTRACT_TYPE = '40'` | 국내매입 계약 타입(40)만 |
 | `IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')` | 오늘 이후 출하요청일만 |
 | ~~`IH.SEND_FLAG = 'Y'`~~ | 주석처리됨 (비활성) |
+
+#### B. 서브쿼리 EO 내부 JOIN 조건 (실질 필터 효과)
+
+홈플러스 정량 VIEW의 **타입구분 필터**. 서브쿼리 EO의 `B_EMART_BARCODE EB` 조인 ON 절에 위치.
+
+```sql
+-- 블록1 L108, 블록2 L208 동일 위치
+INNER JOIN B_EMART_BARCODE EB
+    ON EB.EMARTITEM_CODE = EOI.ITEM_CODE
+   AND EB.ITEM_TYPE = 'W'              -- ★ 홈플러스 정량 핵심 필터: 원료육만
+```
+
+| 조건 | 설명 | 위치 |
+|------|------|:----:|
+| **`EB.ITEM_TYPE = 'W'`** | **타입구분 W(원료육) 만 조회** ← 홈플러스 정량 VIEW 식별 핵심 | JOIN ON (블록1·2 모두) |
+
+#### 참고: SELECT 절 ITEM_TYPE 주석 (DDL L71-72)
+
+```sql
+--EO.ITEM_TYPE,
+'S' AS ITEM_TYPE, --PDA에서 소수점 2자리 계근 가능한 경우는 ITEM_TYPE S아님 J일 경우임
+                 -- J는 제품의 의미로 사용하고 있기때문에 S로 하드코딩
+```
+
+→ DDL 주석이 **"J는 제품의 의미"**임을 명시 (이마트 L79와 일관).
 
 ---
 
@@ -338,7 +388,7 @@ WHERE     1 = 1
 | `IH.GI_REQ_DATE >= TO_CHAR(SYSDATE,'YYYYMMDD')` | 오늘 이후 출하요청일만 |
 | `bcc.USER_ID = 'LOTTE'` | 롯데 거래처 담당자 코드로 필터 |
 | `ID.STATUS = '10'` | 출고상세 상태 10인 건만 |
-| ~~`ID.PACKING_QTY = 0`~~ | 블록1에는 없음 (주석으로 `--AND ID.PACKING_QTY = 0` 표시) |
+| `ID.PACKING_QTY = 0` | **블록1에는 해당 조건 라인 자체가 없음** (주석도 없음) |
 
 **JOIN 조건 내 필터**:  
 - `BCC.STATUS = 'Y'` (B_CLIENT_CHARGE 조인 시)  
@@ -355,6 +405,7 @@ WHERE     1 = 1
       AND bcc.USER_ID  = 'LOTTE'
       AND beb.ITEM_TYPE = 'W'
       AND ID.STATUS = '10'
+      --   AND ID.PACKING_QTY = 0
 ```
 
 | 조건 | 설명 |
@@ -366,7 +417,7 @@ WHERE     1 = 1
 | `bcc.USER_ID = 'LOTTE'` | 롯데 거래처 담당자 코드로 필터 |
 | `beb.ITEM_TYPE = 'W'` | 원료육만 (블록2 추가 조건) |
 | `ID.STATUS = '10'` | 출고상세 상태 10인 건만 |
-| ~~`ID.PACKING_QTY = 0`~~ | 블록2에도 없음 (주석 처리됨) |
+| ~~`ID.PACKING_QTY = 0`~~ | **블록2에만 주석 표시 존재** (`--AND ID.PACKING_QTY = 0`, 비활성) |
 
 **JOIN 조건 내 필터**:  
 - `BCC.STATUS = 'Y'` (B_CLIENT_CHARGE 조인 시)  
@@ -422,17 +473,21 @@ WHERE 절은 아니지만 JOIN ON 조건에서 데이터를 필터링하는 항�
 
 | JOIN 필터 조건 | 이마트(0) | 생산(1) | 홈플(2) | 도매(3) | **비정량(4)** | 홈비정(5) | 롯데(6) | 생산라벨(7) |
 |------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **`EB.ITEM_TYPE = 'W'`** (원료육) | O | X | O | O | X | X | X | ? |
+| **`EB.ITEM_TYPE = 'W'`** (원료육) | O | X | O | **X** ※1 | X | X | X | ? |
 | **`EB.ITEM_TYPE IN ('J', 'B')`** (가공육+비정량) ★ | X | X | X | X | **O** | X | X | ? |
-| `BEB.ITEM_TYPE = 'W'` (홈비정 블록2) | X | X | X | X | X | O | X | ? |
 | **`EB.BARCODE_TYPE = 'M8'`** (이마트 비정량) ★ | X | X | X | X | **O** | X | X | ? |
-| `BEB.BARCODE_TYPE = 'H5'` (홈플 비정량) | X | X | X | X | X | O | X | ? |
+| `BEB.ITEM_TYPE = 'W'` (홈비정) | X | X | X | X | X | **X** ※2 | X | ? |
 | `beb.BARCODE_TYPE LIKE 'L%'` (롯데) | X | X | X | X | X | X | O | ? |
-| `BI.STATUS = 'Y'` (품목 활성) | O | X | O | O | X | X | X | ? |
-| `STATUS = 'Y'` (S_BARCODE_INFO) | X | X | X | X | X | X | X | ? |
-| `BCC.STATUS = 'Y'` (롯데 코드 활성) | X | X | X | X | X | X | O | ? |
+| `BCC.STATUS = 'Y'` (롯데 거래처 활성) | X | X | X | X | X | X | O | ? |
 
+※1 도매(3) 정정: B_EMART_BARCODE 조인 자체가 없음 (B_ITEM만 조인)  
+※2 홈비정(5) 정정: 해당 VIEW에 `BEB.ITEM_TYPE='W'` 조건 없음 (단순 EMARTITEM_CODE 조인만)  
 ★ 표시: 비정량 VIEW만의 핵심 식별 조건 (다른 VIEW와 절대적으로 구분되는 항목)
+
+**참고 — JOIN 매트릭스에서 제거된 조건**:
+- `BEB.BARCODE_TYPE = 'H5'` 행: 본 조건은 **WHERE 절에 위치** (홈비정 DDL L45). 메인 매트릭스(2장)의 별도 행으로 이미 표기되어 있어 본 매트릭스에서 제거 (중복/오분류 방지)
+- `BI.STATUS = 'Y'` 행: 도매(3)의 경우 **WHERE 절** 조건 (도매 DDL L91)이며, 이마트(0)/홈플(2)에는 해당 조건 자체가 없음. 본 매트릭스에서 제거 (메인 매트릭스에 도매 O로 정상 기재됨)
+- `S_BARCODE_INFO STATUS = 'Y'` 행: BARCODEGOODS 스칼라 서브쿼리 내부 조건이며 VIEW 식별 필터로 작용하지 않으므로 제거
 
 ---
 
@@ -488,19 +543,38 @@ VIEW DDL에서 직접 확인 가능한 코드만 정리.
 
 | searchType | 명칭 | **핵심 식별 조건** |
 |:---:|------|------|
-| 0 | 이마트 정량 | `EB.ITEM_TYPE = 'W'` (JOIN) + `BI.STATUS = 'Y'` (JOIN) + UNION ALL 해외/국내 |
-| 1 | 생산 | `BI.ITEM_TYPE = '10'` + `GI_TYPE = 'M1'` + `PROC_PUT_FLAG = 'N'` |
-| 2 | 홈플러스 정량 | `EB.ITEM_TYPE = 'W'` (JOIN) + UNION ALL 해외/국내 |
-| 3 | 도매 | `EOI_ID IS NULL` + `CHECK_YN = 'Y'` + `GR_WAREHOUSE_CODE = '4001'` |
+| 0 | 이마트 정량 | `EB.ITEM_TYPE = 'W'` (JOIN, 블록1·2 모두) + UNION ALL 해외/국내 |
+| 1 | 생산 | `BI.ITEM_TYPE = '10'` (SELECT 변환) + `GI_TYPE = 'M1'` + `PROC_PUT_FLAG = 'N'` |
+| 2 | 홈플러스 정량 | `EB.ITEM_TYPE = 'W'` (JOIN, 블록1·2 모두) + UNION ALL 해외/국내 |
+| 3 | 도매 | `EOI_ID IS NULL` + `CHECK_YN = 'Y'` + `GR_WAREHOUSE_CODE = '4001'` + `BI.STATUS = 'Y'` (WHERE) |
 | **4** | **이마트 비정량** | **`EB.ITEM_TYPE IN ('J', 'B')` (JOIN) + `EB.BARCODE_TYPE = 'M8'` (JOIN)** ★ |
-| 5 | 홈플러스 비정량 | `BEB.BARCODE_TYPE = 'H5'` + `BEB.ITEM_TYPE = 'W'` (블록2 JOIN) |
-| 6 | 롯데 | `bcc.USER_ID = 'LOTTE'` + `beb.BARCODE_TYPE LIKE 'L%'` (JOIN) |
+| 5 | 홈플러스 비정량 | `BEB.BARCODE_TYPE = 'H5'` (WHERE) + `R.GR_DATE > '20240101'` (WHERE, 날짜 하드코딩) |
+| 6 | 롯데 | `bcc.USER_ID = 'LOTTE'` + `beb.BARCODE_TYPE LIKE 'L%'` (JOIN) + `beb.ITEM_TYPE = 'W'` (블록2 WHERE) |
 | 7 | 생산 라벨 | DDL 없어 분석 불가 |
 
 ★ **이마트 비정량(searchType=4)의 본질**:
-- `IN ('J', 'B')`: J=가공육, B=비정량 (문의사항 Q01 답변 대기 중)
+- `IN ('J', 'B')`: 타입구분 - DDL L79 주석에 "원료육: W, 제품: J, 비정량: B"로 명시
 - `'M8'`: 이마트 비정량 전용 바코드 타입
 - 두 조건 모두 **JOIN ON 절에 있지만 WHERE 절과 동일한 필터 효과**를 가지므로 WHERE 분석 시 반드시 함께 검토 필요
+
+---
+
+### 4.5 DDL SELECT 절 ITEM_TYPE 주석 종합 (Q01 단서)
+
+**문의사항 Q01 (`IN ('J', 'B')`의 'J' 의미)**의 답변에 결정적 1차 자료. 3개 VIEW DDL이 SELECT 절 주석에 ITEM_TYPE 코드 의미를 직접 명시하고 있음.
+
+| VIEW | 라인 | DDL 주석 인용 | 핵심 내용 |
+|------|:----:|------------|---------|
+| 이마트(0) | L79 | `EO.ITEM_TYPE,                     -- 원료육 :  W, 제품 : J, 비정량 : B` | **W=원료육 / J=제품 / B=비정량** 직접 명시 |
+| 홈플러스(2) | L71-72 | `'S' AS ITEM_TYPE, --PDA에서 소수점 2자리 계근 가능한 경우는 ITEM_TYPE S아님 J일 경우임 J는 제품의 의미로 사용하고 있기때문에 S로 하드코딩` | **J = 제품의 의미** 재확인 |
+| 도매(3) | L63 | (홈플러스(2)와 동일 주석) | 동일 |
+
+**3개 DDL 주석 일관성**: J = "제품"으로 일관 명시. 사용자가 Q01 작성 시 표기한 "J = 가공육"은 동일한 카테고리의 다른 표현(가공육 ⊂ 제품)으로 추정.
+
+**시사점 (해석 금지·자료 제시만)**:
+- DDL 주석은 **공식 정의에 가까운 1차 자료**
+- Q01 답변 시 본 자료를 함께 제출하면 답변자가 "J=제품" 정의를 확인 후 가공육 포함 여부를 판정 가능
+- 단, DDL 주석 작성 시점이 언제인지 불명 → 현재 운영 정의와 일치하는지는 별도 확인 필요 (해석은 본 문서 범위 외)
 
 ---
 
