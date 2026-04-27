@@ -74,6 +74,14 @@ public class SettingActivity extends AppCompatActivity {
     private ProgressDialog cDialog = null;
 
     /**
+     * 연결 시도 중 플래그 (개발42 보완)
+     * - connect()는 disconnect() → setState(STATE_NONE) → setState(STATE_CONNECTING) 순으로 호출됨
+     * - disconnect 단계의 STATE_NONE이 핸들러로 전달되어 "연결 실패" Toast가 잘못 발생하는 문제 방지
+     * - STATE_CONNECTING 수신 후의 STATE_NONE만 진짜 실패로 인식
+     */
+    private boolean wasConnecting = false;
+
+    /**
      * 액티비티 생성 시 호출
      * - UI 초기화
      * - SharedPreferences 초기화
@@ -294,8 +302,14 @@ public class SettingActivity extends AppCompatActivity {
                     Log.d(TAG, "Bixolon state -> " + newState);
 
                     switch (newState) {
+                        case BixolonSocketPrinter.STATE_CONNECTING:
+                            // 연결 시도 시작 — 진짜 실패 판정 플래그 ON
+                            wasConnecting = true;
+                            break;
+
                         case BixolonSocketPrinter.STATE_CONNECTED:
                             // 연결 성공 → 다이얼로그 닫기 + 테스트 라벨 출력
+                            wasConnecting = false;
                             if (cDialog != null && cDialog.isShowing()) {
                                 cDialog.dismiss();
                             }
@@ -307,12 +321,16 @@ public class SettingActivity extends AppCompatActivity {
                             break;
 
                         case BixolonSocketPrinter.STATE_NONE:
-                            // 연결 실패 → 다이얼로그 닫기 + 실패 Toast
-                            if (cDialog != null && cDialog.isShowing()) {
-                                cDialog.dismiss();
+                            // STATE_CONNECTING 이후 발생한 STATE_NONE만 진짜 실패로 처리
+                            // (connect() 내부 disconnect() 호출 시 발생하는 가짜 STATE_NONE 무시)
+                            if (wasConnecting) {
+                                wasConnecting = false;
+                                if (cDialog != null && cDialog.isShowing()) {
+                                    cDialog.dismiss();
+                                }
+                                Toast.makeText(getApplicationContext(),
+                                        "프린터 연결 실패", Toast.LENGTH_SHORT).show();
                             }
-                            Toast.makeText(getApplicationContext(),
-                                    "프린터 연결 실패", Toast.LENGTH_SHORT).show();
                             break;
                     }
                     break;
