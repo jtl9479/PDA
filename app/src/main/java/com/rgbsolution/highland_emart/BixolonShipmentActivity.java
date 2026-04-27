@@ -18,6 +18,8 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -1034,6 +1036,40 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             }
         }
     };
+
+    /**
+     * 액션바 메뉴 생성 (개발42)
+     * - bixolon_shipment_menu.xml inflate
+     * - 6개 항목: 프린터설정/출하대상/바코드정보/계근데이터/날짜설정 + 테스트 출력
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.bixolon_shipment_menu, menu);
+        return true;
+    }
+
+    /**
+     * 액션바 메뉴 클릭 처리 (개발42)
+     * - action_test_print: 연결된 프린터로 테스트 라벨 1장 출력
+     *   · mBixolonPrinter null 체크 + isConnected() 체크 후 printTestLabel() 호출
+     *   · 미연결 시 Toast "프린터가 연결되지 않았습니다"
+     * - 그 외 항목: super.onOptionsItemSelected(item) 위임 (기존 동작 유지)
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_test_print) {
+            if (mBixolonPrinter == null || !mBixolonPrinter.isConnected()) {
+                Toast.makeText(this, "프린터가 연결되지 않았습니다", Toast.LENGTH_SHORT).show();
+            } else {
+                mBixolonPrinter.printTestLabel();
+            }
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     protected void setMessage(String msg) {
@@ -2604,6 +2640,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
                             packet += list_send_info.get(i).getBOX_ORDER() + "::";
                             packet += list_send_info.get(i).getGI_L_ID();
+
 
                             if (Common.D) {
                                 Log.d(TAG, "Send Packet : '" + packet + "'");

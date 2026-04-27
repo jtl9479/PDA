@@ -1,0 +1,42 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.rgbexaxm.material_navigation_drawer_exam01.MainActivity" >
+
+    <item
+        android:id="@+id/action_pinrtsettings"
+        android:orderInCategory="100"
+        android:title="프린터설정"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_shipmentlist"
+        android:orderInCategory="100"
+        android:title="출하대상"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_barcodeinfolist"
+        android:orderInCategory="100"
+        android:title="바코드정보"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_goodswetlist"
+        android:orderInCategory="100"
+        android:title="계근데이터"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_daysettings"
+        android:orderInCategory="100"
+        android:title="날짜설정"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_test_print"
+        android:orderInCategory="200"
+        android:title="테스트 출력"
+        app:showAsAction="never"/>
+
+</menu>
