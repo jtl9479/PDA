@@ -331,7 +331,8 @@ public class BixolonSocketPrinter {
     }
 
     /**
-     * 테스트 라벨 출력 - preview.bmp 이미지 비트맵 방식
+     * 테스트 라벨 출력 - SLCS 텍스트 명령어 방식 (단순 라벨)
+     * - 1MB 비트맵 전송 대비 수백 바이트 텍스트만 전송 → 매우 빠름
      */
     public void printTestLabel() {
         if (!isConnected()) {
@@ -339,53 +340,24 @@ public class BixolonSocketPrinter {
             return;
         }
 
-        /*
-        // 기존 텍스트 기반 SLCS 명령어 방식
         try {
             StringBuilder cmd = new StringBuilder();
             cmd.append("CB\r\n");
             cmd.append("CS13,0\r\n");
             cmd.append("SW600\r\n");
             cmd.append("SL480\r\n");
-            cmd.append("V252,54,K,55,55,0,N,B,N,0,L,0,'장림점'\r\n");
-            cmd.append("V243,149,K,94,94,0,N,B,N,0,L,0,'1790'\r\n");
-            cmd.append("V395,234,K,16,16,0,N,B,N,0,L,0,'옥수수먹고자란돼지목심(미국산)_100g'\r\n");
-            cmd.append("V577,335,K,29,29,0,N,B,N,0,L,0,'10.43/0525'\r\n");
-            cmd.append("V239,334,K,35,35,0,N,B,N,0,L,0,'미국'\r\n");
-            cmd.append("V242,384,K,31,31,0,N,B,N,0,L,0,'2022년04월26일'\r\n");
-            cmd.append("V243,434,K,29,29,0,N,B,N,0,L,0,'(주)하이랜드푸드'\r\n");
-            cmd.append("V242,284,K,36,36,0,N,B,N,0,L,0,'BOX'\r\n");
+            cmd.append("V100,100,K,55,55,0,N,B,N,0,L,0,'TEST PRINT'\r\n");
+            cmd.append("V100,200,K,30,30,0,N,B,N,0,L,0,'프린터 정상 작동'\r\n");
             cmd.append("P1\r\n");
 
             byte[] data = cmd.toString().getBytes("EUC-KR");
             write(data);
 
-            Log.d(TAG, "테스트 라벨 명령어 전송 완료");
+            Log.d(TAG, "테스트 라벨 명령어 전송 완료, 데이터 크기: " + data.length + " bytes");
 
             if (mHandler != null) {
                 mHandler.sendEmptyMessage(MESSAGE_PRINT_COMPLETE);
             }
-
-        } catch (Exception e) {
-            Log.e(TAG, "printTestLabel error: " + e.getMessage(), e);
-            sendToast("테스트 라벨 출력 오류: " + e.getMessage());
-        }
-        */
-
-        // 이미지 비트맵 방식 - preview.bmp 파일을 1비트 모노크롬 HEX 변환 후 출력
-        try {
-            InputStream is = mContext.getAssets().open("preview.bmp");
-            Bitmap bitmap = BitmapFactory.decodeStream(is);
-            is.close();
-
-            if (bitmap == null) {
-                sendToast("preview.bmp 파일을 로드할 수 없습니다.");
-                return;
-            }
-
-            Log.d(TAG, "preview.bmp 로드 완료: " + bitmap.getWidth() + "x" + bitmap.getHeight());
-            printBitmap(bitmap, 0, 0);
-            bitmap.recycle();
 
         } catch (Exception e) {
             Log.e(TAG, "printTestLabel error: " + e.getMessage(), e);
