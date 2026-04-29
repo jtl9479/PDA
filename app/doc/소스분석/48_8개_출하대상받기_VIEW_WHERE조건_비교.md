@@ -443,29 +443,29 @@ DDL 파일이 `app/doc/view/` 폴더에 없어 WHERE 조건 추출 불가.
 
 > 참고: UNION ALL/UNION 구조 VIEW는 각 블록에 동일 조건이 있는 경우 O로 표시
 
-| 조건 | 이마트(0) | 생산(1) | 홈플(2) | 도매(3) | 비정량(4) | 홈비정(5) | 롯데(6) | 생산라벨(7) |
-|------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `PACKING_QTY = 0` | O | O | O | O | O | X | X | ? |
-| `GI_REQ_PKG <> 0` | O | O | O | O | O | X | O | ? |
-| `GI_REQ_DATE >= SYSDATE` | O | O | O | O | O | X | O | ? |
-| `CONTRACT_TYPE <> '40'` (블록1) | O | X | O | O | X | X | O | ? |
-| `CONTRACT_TYPE = '40'` (블록2) | O | O | O | O | O | X | O | ? |
-| `EOI_ID IS NOT NULL` | O | X | O | X | O | X | X | ? |
-| `EOI_ID IS NULL` | X | X | X | O | X | X | X | ? |
-| `SEND_FLAG = 'N'` | X | O | X | X | X | X | X | ? |
-| `SEND_FLAG <> 'N'` (활성) | △주석 | X | △주석 | O | △주석 | X | O | ? |
-| `STATUS = '10'` | X | O | X | X | X | O | O | ? |
-| `CHECK_YN = 'Y'` | X | X | X | O | X | X | X | ? |
-| `BI.STATUS = 'Y'` | X | X | X | O | X | X | X | ? |
-| `BI.ITEM_TYPE = '10'` | X | X | X | O | X | X | X | ? |
-| `GR_WAREHOUSE_CODE = '4001'` | X | X | X | O | X | X | X | ? |
-| `PROC_DATE IS NULL` | X | O | X | X | X | X | X | ? |
-| `PROC_PUT_FLAG = 'N'` | X | O | X | X | X | X | X | ? |
-| `GI_TYPE = 'M1'` | X | O | X | X | X | X | X | ? |
-| `GR_DATE > '20240101'` | X | X | X | X | X | O | X | ? |
-| `BARCODE_TYPE = 'H5'` | X | X | X | X | X | O | X | ? |
-| `bcc.USER_ID = 'LOTTE'` | X | X | X | X | X | X | O | ? |
-| `beb.ITEM_TYPE = 'W'` (블록2) | X | X | X | X | X | X | O | ? |
+| 조건                            | 이마트(0) | 생산(1) | 홈플(2) | 도매(3) | 비정량(4) | 홈비정(5) | 롯데(6) | 생산라벨(7) |
+| ----------------------------- | :----: | :---: | :---: | :---: | :----: | :----: | :---: | :-----: |
+| `PACKING_QTY = 0`             |   O    |   O   |   O   |   O   |   O    |   X    |   X   |    ?    |
+| `GI_REQ_PKG <> 0`             |   O    |   O   |   O   |   O   |   O    |   X    |   O   |    ?    |
+| `GI_REQ_DATE >= SYSDATE`      |   O    |   O   |   O   |   O   |   O    |   X    |   O   |    ?    |
+| `CONTRACT_TYPE <> '40'` (블록1) |   O    |   X   |   O   |   O   |   X    |   X    |   O   |    ?    |
+| `CONTRACT_TYPE = '40'` (블록2)  |   O    |   O   |   O   |   O   |   O    |   X    |   O   |    ?    |
+| `EOI_ID IS NOT NULL`          |   O    |   X   |   O   |   X   |   O    |   X    |   X   |    ?    |
+| `EOI_ID IS NULL`              |   X    |   X   |   X   |   O   |   X    |   X    |   X   |    ?    |
+| `SEND_FLAG = 'N'`             |   X    |   O   |   X   |   X   |   X    |   X    |   X   |    ?    |
+| `SEND_FLAG <> 'N'` (활성)       |  △주석   |   X   |  △주석  |   O   |  △주석   |   X    |   O   |    ?    |
+| `STATUS = '10'`               |   X    |   O   |   X   |   X   |   X    |   O    |   O   |    ?    |
+| `CHECK_YN = 'Y'`              |   X    |   X   |   X   |   O   |   X    |   X    |   X   |    ?    |
+| `BI.STATUS = 'Y'`             |   X    |   X   |   X   |   O   |   X    |   X    |   X   |    ?    |
+| `BI.ITEM_TYPE = '10'`         |   X    |   X   |   X   |   O   |   X    |   X    |   X   |    ?    |
+| `GR_WAREHOUSE_CODE = '4001'`  |   X    |   X   |   X   |   O   |   X    |   X    |   X   |    ?    |
+| `PROC_DATE IS NULL`           |   X    |   O   |   X   |   X   |   X    |   X    |   X   |    ?    |
+| `PROC_PUT_FLAG = 'N'`         |   X    |   O   |   X   |   X   |   X    |   X    |   X   |    ?    |
+| `GI_TYPE = 'M1'`              |   X    |   O   |   X   |   X   |   X    |   X    |   X   |    ?    |
+| `GR_DATE > '20240101'`        |   X    |   X   |   X   |   X   |   X    |   O    |   X   |    ?    |
+| `BARCODE_TYPE = 'H5'`         |   X    |   X   |   X   |   X   |   X    |   O    |   X   |    ?    |
+| `bcc.USER_ID = 'LOTTE'`       |   X    |   X   |   X   |   X   |   X    |   X    |   O   |    ?    |
+| `beb.ITEM_TYPE = 'W'` (블록2)   |   X    |   X   |   X   |   X   |   X    |   X    |   O   |    ?    |
 
 ### 2.1 JOIN ON 절 필터 매트릭스 (실질 필터 효과 동일)
 

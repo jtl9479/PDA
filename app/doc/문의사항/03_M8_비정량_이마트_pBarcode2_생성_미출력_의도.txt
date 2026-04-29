@@ -32,6 +32,7 @@
         근거: LabelPrintHelper.java:811
         -> slcsBarcode(..., pBarcode) 무조건 호출
 
+
 [항목 3] pBarcode2는 M3/M4/M9에서만 인쇄됨
         근거: LabelPrintHelper.java:832~843
 

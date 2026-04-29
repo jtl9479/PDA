@@ -13,7 +13,6 @@
 
 - 이마트 원본 JSP는 `FROM S_BARCODE_INFO SBI` 기반으로 바코드 파싱 규칙 컬럼 조회
 - 비정량 원본 JSP는 `FROM B_ITEM sbi` 기반이지만 **동일한 컬럼명**(`SBI.ZEROPOINT`, `SBI.BARCODEGOODS_FROM` 등) 참조
-- 두 테이블이 같은 컬럼명을 갖지 않으면 비정량 JSP가 Oracle에서 실행될 수 없음
 
 ---
 
