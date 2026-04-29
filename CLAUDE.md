@@ -156,6 +156,10 @@ JSP 프로젝트 경로
 목적 : JSP 파일에 관해 데이터를 읽을때 해당 경로에서 확인하라
 D:\PDA\apache-tomcat-8.5.29\apache-tomcat-8.5.29
 
+JSP 원본 프로젝트 경로
+목적 : JSP 원본 프로젝트의 경로이다.
+D:\PDA\apache-tomcat-8.5.29\apache-tomcat-7.0.78_PDA_IN(원본)
+
 APP 원본 프로젝트 경로
 목적 : 해당 프로그램은 원본 프로그램과 기능이 100% 동일해야함으로 비교하기 위한 용도이다.
 D:\PDA\PDA-INNO(원본)
@@ -165,6 +169,7 @@ HL_ERP 프로젝트 경로
 D:\HL_ERP\workspace\SGIS_HL_WEBERP
 
 단 읽을때는 나에게 허락을 받지 않아도 괜찮다.
+
 
 ## 서브 에이전트
 
