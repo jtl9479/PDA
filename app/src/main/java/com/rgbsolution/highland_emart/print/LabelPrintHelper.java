@@ -725,24 +725,6 @@ public class LabelPrintHelper {
             // 바코드 타입별 업체명/지점명 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 // M3, M4는 여기서 출력 없음
-            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                String vendorName = "[" + COMPANY_NAME + "]";
-                labelData.write(slcsBitmapText(330, 13, 25, vendorName, true));       // 업체명 출력
-
-                String storeNamePlusCode = pointName + "(" +  si.getSTORE_CODE() +")";
-
-                if (11 < si.CLIENTNAME.toString().length()) {
-                    labelData.write(slcsBitmapText(10, 270, 35, storeNamePlusCode.toString(), true));  // 지점명 출력
-                    if (Common.D)
-                        Log.i(TAG, "지점명 > 11 ,  size 30");
-                } else {
-                    labelData.write(slcsBitmapText(10, 270, 40, storeNamePlusCode.toString(), true));  // 지점명 출력
-                    if (Common.D)
-                        Log.i(TAG, "지점명 <= 11 ,  size 40");
-                }
-                // 저울스캔용 표시
-                String usePurpose = "[저울 스캔용]";
-                labelData.write(slcsBitmapText(400, 270, 25, usePurpose, true));
             } else {
                 if (11 < si.CLIENTNAME.toString().length()) {
                     labelData.write(slcsBitmapText(20, 60, 35, pointName.toString(), true));          // 지점명 출력
@@ -759,8 +741,6 @@ public class LabelPrintHelper {
             int itemX = 80, itemY = 120;  // 기본 위치
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 itemX = 15; itemY = 65;
-            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                itemX = 15; itemY = 70;
             }
             if (si.EMARTITEM.length() > 14) {
                 labelData.write(slcsBitmapText(itemX, itemY, 35, si.EMARTITEM, true));
@@ -771,17 +751,13 @@ public class LabelPrintHelper {
             Log.i(TAG, "===============EMARTITEM============" + si.EMARTITEM);
             Log.i(TAG, "===============sBarcode============" + sBarcode);
 
-            // sBarcode 바코드 출력 (M9 제외)
-            if (!si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                labelData.write(slcsBarcode(420, 20, 60, sBarcode).getBytes("EUC-KR"));
-            }
+            // sBarcode 바코드 출력
+            labelData.write(slcsBarcode(420, 20, 60, sBarcode).getBytes("EUC-KR"));
 
             Log.i(TAG, "===============sBarcode2============" + sBarcodeStr);
 
-            // sBarcodeStr 텍스트 출력 (M9 제외)
-            if (!si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                labelData.write(slcsBitmapText(450, 80, 25, sBarcodeStr, true));      // 바코드번호(숫자) 출력
-            }
+            // sBarcodeStr 텍스트 출력
+            labelData.write(slcsBitmapText(450, 80, 25, sBarcodeStr, true));      // 바코드번호(숫자) 출력
 
             Log.i(TAG, "===============pBarcode============" + pBarcode);
             Log.i(TAG, "===============pBarcode2============" + pBarcode2);
@@ -801,13 +777,11 @@ public class LabelPrintHelper {
                 barcodeX = 70; barcodeY = 115;
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 barcodeX = 145; barcodeY = 115;
-            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                barcodeX = 90; barcodeY = 125;
             }
             labelData.write(slcsBarcode(barcodeX, barcodeY, 60, pBarcode).getBytes("EUC-KR"));
 
             // 바코드 타입별 바코드번호(숫자) 출력
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
                 labelData.write(slcsBitmapText(75, 240, 20, pBarcodeStr, true));
             }
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M1)) {
@@ -820,22 +794,13 @@ public class LabelPrintHelper {
                 labelData.write(slcsBitmapText(25, 175, 25, pBarcodeStr + "  PC매입", true));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 labelData.write(slcsBitmapText(117, 175, 25, pBarcodeStr + "  PC매입", true));
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
-                labelData.write(slcsBitmapText(90, 192, 25, pBarcodeStr, true));
             }
 
-            // M3, M4, M9 추가 바코드 출력
+            // M3, M4 추가 바코드 출력
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
                 labelData.write(slcsBarcode(70, 205, 60, pBarcode2).getBytes("EUC-KR"));
             } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
                 labelData.write(slcsBarcode(145, 205, 60, pBarcode2).getBytes("EUC-KR"));
-            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)){
-                labelData.write(slcsBarcode(125, 325, 60, pBarcode2).getBytes("EUC-KR"));
-                String ctName = si.getCT_NAME();
-                labelData.write(slcsBitmapText(450, 330, 25, ctName, true));
-                labelData.write(slcsBitmapText(125, 390, 25, pBarcodeStr2, true));
-                String belowBarcodeString = si.EMARTITEM +","+si.getUSE_NAME();
-                labelData.write(slcsBitmapText(80, 420, 25, belowBarcodeString, true));
             }
 
             // M3, M4 PC출하 텍스트 출력
@@ -858,11 +823,6 @@ public class LabelPrintHelper {
                 labelData.write(slcsBitmapText(15, 388, 30, "업        체 : " + pCompCode + "   " + pCompName, true));
                 labelData.write(slcsBitmapText(15, 428, 30, expiryDayConvert, true)); // 소비기한
 
-            } else if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
-                Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
-                String tempDate = si.getSTORE_IN_DATE().substring(0, 4) + "년 " + si.getSTORE_IN_DATE().substring(4, 6) + "월 " + si.getSTORE_IN_DATE().substring(6, 8) + "일";
-                labelData.write(slcsBitmapText(90, 220, 30, "납품일 : " + tempDate, true));
-
             } else {
                 labelData.write(slcsBitmapText(20, 280, 40, "중량 : ", true));
                 labelData.write(slcsBitmapText(180, 280, 40, String.valueOf(print_weight_double) + " KG", true));
@@ -881,11 +841,6 @@ public class LabelPrintHelper {
             Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
             if(whArea != null || !whArea.equals("")){
                 labelData.write(slcsBitmapText(430, 385, 65, whArea, true));
-            }
-
-            // M9 가로선 그리기
-            if(si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
-                labelData.write(slcsLine(0, 260, 560, 260, 5).getBytes("EUC-KR"));
             }
 
             // 인쇄 실행
