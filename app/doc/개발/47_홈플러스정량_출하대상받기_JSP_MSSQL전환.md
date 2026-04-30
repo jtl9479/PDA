@@ -210,7 +210,9 @@ String quertystring = "SELECT /* 홈플러스 출하대상 조회 */"
     + "  AND V.LOTNO = L.LOTNO"
     + " LEFT JOIN SM_수주상세 SD"
     + "   ON SD.마트사SEQ = HE.SEQ"
-    + " WHERE D.출고수량 > 0"
+    + " WHERE H.마트사구분 = '4'"
+    + "   AND D.출고수량 > 0"
+    + "   AND COALESCE(M1.타입구분, M2.타입구분) = 'W'"
     + qry_where
     + " ORDER BY HE.납품처코드 ASC, I.PPCODE ASC, I.품목명 ASC";
 
@@ -411,7 +413,7 @@ MSSQL `SM_마트사발주홈플러스` Entity에는 **점포코드/점포명 컬
   - `ITEM_TYPE`: `'S'` 하드코딩 (Oracle에서도 동일)
   - `EMARTLOGIS_CODE`: Oracle에서 `EO.STORECODE` 동일 역할 → `HE.납품처코드`
   - ORDER BY: `HE.납품처코드 ASC, I.PPCODE ASC, I.품목명 ASC` (EOI_ID 제거)
-  - WHERE 고정 조건: `D.출고수량 > 0`
+  - WHERE 고정 조건: `H.마트사구분 = '4' AND D.출고수량 > 0 AND COALESCE(M1.타입구분, M2.타입구분) = 'W'`
   - out.println: 24개 컬럼, index 0=GI_D_ID ~ index 23=EMARTLOGIS_CODE, 마지막 ";;"
 - 주의사항:
   - qry_where 변수는 반드시 WHERE 구문 내 AND 절 뒤에 위치 (`WHERE D.출고수량 > 0 [qry_where] ORDER BY`)
