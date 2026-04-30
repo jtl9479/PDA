@@ -220,8 +220,8 @@ String quertystring = "SELECT /* 비정량 출고상세 종합 조회 */"
     + "  AND C1.소분류 = I.원산지"
     + " WHERE H.마트사구분 = '7'"
     + "   AND D.출고수량 > 0"
-    + "   AND COALESCE(M1.타입구분, M2.타입구분) IN ('J', 'B')"     // ★ 이마트 'W' → 비정량 IN('J','B')
-    + "   AND COALESCE(M1.바코드타입, M2.바코드타입) = 'M8'"         // ★ 비정량 M8 조건 추가
+    + "   AND COALESCE(M1.타입구분, M2.타입구분) = 'B'"             // ★ 이마트 'W' → 비정량 = 'B' (개발44 적용: J 제외 B만 사용)
+    + "   AND COALESCE(M1.바코드타입, M2.바코드타입) IN ('M8', 'M9')" // ★ 비정량 M8/M9 조건 추가 (개발43 적용: M9 신규 추가)
     + qry_where
     + " ORDER BY GI_D_ID ASC";
 ```
@@ -318,8 +318,8 @@ out.println(
 
 | 조건 | 이마트 JSP | 비정량 JSP 전환 후 | 비고 |
 |------|-----------|-------------------|------|
-| 타입구분 | `= 'W'` | **`IN ('J', 'B')`** | 원료육 → 제품/비정량 |
-| 바코드타입 | 조건 없음 | **`= 'M8'` 추가** | 비정량 M8 전용 |
+| 타입구분 | `= 'W'` | **`= 'B'`** | 원료육 → 비정량 (개발44 적용: J 제외 B만 사용) |
+| 바코드타입 | 조건 없음 | **`IN ('M8', 'M9')` 추가** | 비정량 M8/M9 전용 (개발43 적용: M9 신규 추가) |
 
 ### 인덱스 매핑 (31개, Java temp[0]~temp[30])
 
@@ -397,8 +397,8 @@ temp[30] = GI_L_ID             → setGI_L_ID()
 | 3 | BARCODE_TYPE | COALESCE + M9분기 | COALESCE만 | M9분기 제거 |
 | 4 | ITEM_TYPE | `COALESCE(M1.타입구분, M2.타입구분)` | `'HW'` | 고정값 |
 | 5 | BARCODEGOODS | `I.상품바코드` | `I.품목코드` | 자사 품목코드 |
-| 6 | WHERE 타입구분 | `= 'W'` | `IN ('J', 'B')` | 제품/비정량 |
-| 7 | WHERE 바코드타입 | 없음 | `= 'M8'` | 추가 조건 |
+| 6 | WHERE 타입구분 | `= 'W'` | `= 'B'` | 비정량 (개발44: J 제외 B만 사용) |
+| 7 | WHERE 바코드타입 | 없음 | `IN ('M8', 'M9')` | 추가 조건 (개발43: M9 신규 추가) |
 
 **Part 2. 변환 계획**
 - 변환 방식: 이마트 JSP(`search_shipment.jsp`)의 전체 쿼리를 복사한 후, 위 7개 항목만 비정량 값으로 변경
@@ -469,17 +469,17 @@ temp[30] = GI_L_ID             → setGI_L_ID()
 
 | # | 테스트 | 확인 |
 |:-:|--------|------|
-| 1 | JSP 쿼리 정상 실행 (DB 연결 + SELECT 결과 반환) | |
-| 2 | out.println 31개 컬럼 출력 확인 ("::" 구분, ";;" 행 구분) | |
-| 3 | PDA 앱에서 비정량(searchType=4) 출하대상 조회 정상 동작 | |
-| 4 | Java temp[0]~temp[30] 파싱 결과 검증 (각 필드에 올바른 데이터 매핑) | |
-| 5 | PACKER_CODE = '0000' 확인 | |
-| 6 | PACKER_PRODUCT_CODE = 품목코드 확인 | |
-| 7 | BARCODE_TYPE = M8 타입 확인 | |
-| 8 | ITEM_TYPE = 'HW' 확인 | |
-| 9 | BARCODEGOODS = 품목코드 확인 | |
-| 10 | 이마트(searchType=0) 출하대상 조회 정상 동작 (기존 기능 유지 확인) | |
-| 11 | 로컬DB(TB_SHIPMENT) INSERT 정상 확인 | |
+| 1 | JSP 쿼리 정상 실행 (DB 연결 + SELECT 결과 반환) | [x] |
+| 2 | out.println 31개 컬럼 출력 확인 ("::" 구분, ";;" 행 구분) | [x] |
+| 3 | PDA 앱에서 비정량(searchType=4) 출하대상 조회 정상 동작 | [x] |
+| 4 | Java temp[0]~temp[30] 파싱 결과 검증 (각 필드에 올바른 데이터 매핑) | [x] |
+| 5 | PACKER_CODE = '0000' 확인 | [x] |
+| 6 | PACKER_PRODUCT_CODE = 품목코드 확인 | [x] |
+| 7 | BARCODE_TYPE = M8/M9 타입 확인 | [x] |
+| 8 | ITEM_TYPE = 'HW' 확인 | [x] |
+| 9 | BARCODEGOODS = 품목코드 확인 | [x] |
+| 10 | 이마트(searchType=0) 출하대상 조회 정상 동작 (기존 기능 유지 확인) | [x] |
+| 11 | 로컬DB(TB_SHIPMENT) INSERT 정상 확인 | [x] |
 
 ---
 
@@ -539,7 +539,7 @@ Step 3: 통합 테스트
 |------|------|------|
 | 1 | SELECT 쿼리 전환 (VIEW → MSSQL 직접 JOIN) | ✅ 완료 |
 | 2 | out.println 전환 (37개 → 31개 컬럼) | ✅ 완료 |
-| 3 | 통합 테스트 | ⏳ 대기 |
+| 3 | 통합 테스트 | ✅ 완료 |
 
 ---
 
