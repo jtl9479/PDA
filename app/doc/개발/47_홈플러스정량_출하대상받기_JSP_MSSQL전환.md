@@ -457,17 +457,17 @@ MSSQL `SM_마트사발주홈플러스` Entity에는 **점포코드/점포명 컬
 - 주의사항: 이 한 줄만 수정. 다른 searchType 분기는 이미 D. 포함되어 있으므로 건드리지 않음
 
 **체크리스트**
-- [ ] Part 1: 현재 코드 136번 줄 확인 완료
-- [ ] Part 2: 변환 계획 검토 완료
-- [ ] Part 3: 136번 줄 D. 추가 수정 수행
-- [ ] Part 4: 컴파일 확인 (Android Studio 빌드 오류 없음)
+- [x] Part 1: 현재 코드 136번 줄 확인 완료
+- [x] Part 2: 변환 계획 검토 완료
+- [x] Part 3: 136번 줄 D. 추가 수정 수행
+- [x] Part 4: 컴파일 확인 (Android Studio 빌드 오류 없음)
 - [ ] Part 5: searchType=2로 창고코드 선택 후 조회 조건 로그 확인
-- [ ] Part 6: 회귀테스트 (다른 searchType 창고코드 조건 영향 없음 확인)
+- [x] Part 6: 회귀테스트 (다른 searchType 창고코드 조건 영향 없음 확인)
 
 **Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+- **무엇을**: ProgressDlgShipSearch.java searchType=2 분기 창고코드 WHERE 조건
+- **왜**: 테이블 별칭 D. 누락으로 MSSQL 다중 JOIN 환경에서 ambiguous 오류 가능
+- **어떻게**: 136번 줄 `" AND 창고코드 = '"` → `" AND D.창고코드 = '"` (D. 추가)
 
 ---
 
@@ -557,7 +557,7 @@ Step 3: 통합 테스트
 | Step | 작업 | 상태 |
 |------|------|------|
 | 1 | search_shipment_homeplus.jsp MSSQL 직접 JOIN 쿼리 작성 (24개 컬럼) | ✅ 완료 |
-| 2 | ProgressDlgShipSearch.java searchType=2 창고코드 D. 별칭 수정 | ⏳ 대기 |
+| 2 | ProgressDlgShipSearch.java searchType=2 창고코드 D. 별칭 수정 | ✅ 완료 |
 | 3 | 통합 테스트 | ⏳ 대기 |
 
 ---
