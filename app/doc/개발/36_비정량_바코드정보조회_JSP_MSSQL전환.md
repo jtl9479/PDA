@@ -447,21 +447,21 @@ onPostExecute() → ProgressDlgGoodsWetSearch 실행
 
 | # | 테스트 | 확인 |
 |:-:|--------|------|
-| 1 | 비정량(searchType=4) 출하대상 조회 성공 후 바코드정보 조회 자동 실행 | □ |
-| 2 | JSP Tomcat 로그에 SELECT 쿼리 출력 확인 (System.out.println) | □ |
-| 3 | 응답 데이터가 24개 컬럼 "::" 구분, ";;" 행 구분으로 수신됨 | □ |
-| 4 | temp[0] = '이마트용' 확인 | □ |
-| 5 | temp[1] = 품목코드 값 확인 | □ |
-| 6 | temp[4] = 품목명 값 확인 | □ |
-| 7 | temp[6] = 품목코드 값 (BARCODEGOODS) 확인 | □ |
-| 8 | temp[7] = 'KG' 확인 | □ |
-| 9 | temp[8] = 소수점 숫자값 확인 | □ |
-| 10 | temp[9] = '' (빈값, PACKER_PRD_CODE_FROM) 확인 | □ |
-| 11 | temp[11]~temp[18] = 바코드 파싱 위치 숫자값 확인 | □ |
-| 12 | temp[23] = '0000' (memo) 확인 | □ |
-| 13 | TB_BARCODE_INFO에 정상 INSERT 확인 (DBHandler.insertqueryBarcodeInfo) | □ |
-| 14 | 바코드 스캔 시 find_work_info() 정상 매칭 확인 | □ |
-| 15 | 계근 후 서버 전송 패킷에 PACKER_CLIENT_CODE='이마트용' 포함 확인 | □ |
+| 1 | 비정량(searchType=4) 출하대상 조회 성공 후 바코드정보 조회 자동 실행 | [x] |
+| 2 | JSP Tomcat 로그에 SELECT 쿼리 출력 확인 (System.out.println) | [x] |
+| 3 | 응답 데이터가 24개 컬럼 "::" 구분, ";;" 행 구분으로 수신됨 | [x] |
+| 4 | temp[0] = '이마트용' 확인 | [x] |
+| 5 | temp[1] = 품목코드 값 확인 | [x] |
+| 6 | temp[4] = 품목명 값 확인 | [x] |
+| 7 | temp[6] = 품목코드 값 (BARCODEGOODS) 확인 | [x] |
+| 8 | temp[7] = 'KG' 확인 | [x] |
+| 9 | temp[8] = 소수점 숫자값 확인 | [x] |
+| 10 | temp[9] = '' (빈값, PACKER_PRD_CODE_FROM) 확인 | [x] |
+| 11 | temp[11]~temp[18] = 바코드 파싱 위치 숫자값 확인 | [x] |
+| 12 | temp[23] = '0000' (memo) 확인 | [x] |
+| 13 | TB_BARCODE_INFO에 정상 INSERT 확인 (DBHandler.insertqueryBarcodeInfo) | [x] |
+| 14 | 바코드 스캔 시 find_work_info() 정상 매칭 확인 | [x] |
+| 15 | 계근 후 서버 전송 패킷에 PACKER_CLIENT_CODE='이마트용' 포함 확인 | [x] |
 
 ---
 
@@ -572,7 +572,7 @@ Step 3: 통합 테스트
 | 사전 시뮬레이션 | ⑤ code-verifier 정합성 검증 | ✅ PASS (2026-04-22) |
 | 1 | B_ITEM → CO_품목코드 SELECT 쿼리 전환 | ✅ 완료 (2026-04-22, ⑤⑥ 사후 검증 PASS) |
 | 2 | out.println 24개 컬럼 수/순서 검증 | ✅ 완료 (2026-04-22, 정적 구조 검증 PASS, 컴파일/테스트는 Step 3 이관) |
-| 3 | 통합 테스트 | ⏳ 대기 |
+| 3 | 통합 테스트 | ✅ 완료 |
 
 ---
 
