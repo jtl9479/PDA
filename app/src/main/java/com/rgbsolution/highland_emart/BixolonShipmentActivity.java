@@ -135,8 +135,6 @@ import static com.rgbsolution.highland_emart.R.id.sp_center;
  *   <li>{@link Barcodes_Info} : 바코드 정보 DTO</li>
  *   <li>{@link DBHandler} : 로컬 SQLite DB 핸들러</li>
  *   <li>{@link ShipmentListAdapter} : 출하 리스트 어댑터</li>
- *   <li>{@link BluetoothPrintService} : 블루투스 프린터 서비스</li>
- *   <li>{@link WoosimService} : Woosim 프린터 명령어 서비스</li>
  * </ul>
  *
  * <h2>관련 VIEW</h2>
@@ -148,7 +146,6 @@ import static com.rgbsolution.highland_emart.R.id.sp_center;
  *   <li>VW_PDA_WID_HOMEPLUS_LIST : 홈플러스 출하용</li>
  * </ul>
  *
- * @see ScannerActivity 바코드 스캐너 기본 Activity
  * @see LoginActivity 로그인 및 출하 유형 선택
  * @see MainActivity 메인 화면
  */
@@ -2652,7 +2649,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             if(Common.searchType.equals(SEARCH_TYPE_EMART)||Common.searchType.equals(SEARCH_TYPE_WHOLESALE)) {
                                 result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
                             }else if(Common.searchType.equals(SEARCH_TYPE_HOMEPLUS)||Common.searchType.equals(SEARCH_TYPE_LOTTE)){   // 홈플러스, 롯데 같이 태우기
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_HOMEPLUS);
+                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
                             }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION)){
                                 result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
                             }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)){
@@ -2742,7 +2739,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         if(Common.searchType.equals(SEARCH_TYPE_EMART)) {   // 출하대상 리스트, 스토어 코드 넣은 이유는 앱을 종료로 안 닫고 앱정리로 닫은 후 생산리스트를 다운받지 않은 상태에서 계근입력후 전송하면 하이랜드 스키마로 데이터가 입력될 수 있음
                             result = HttpHelper.getInstance().sendData(packet, "goodswet_insert", Common.URL_INSERT_GOODS_WET);
                         }else if(Common.searchType.equals(SEARCH_TYPE_HOMEPLUS)){
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_HOMEPLUS);
+                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
                         }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION) || Common.searchType.equals(SEARCH_TYPE_NONFIXED)|| Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)|| Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)){
                             Log.i(TAG, "===================send packet 확인==================" + packet);
                             result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_NEW);
