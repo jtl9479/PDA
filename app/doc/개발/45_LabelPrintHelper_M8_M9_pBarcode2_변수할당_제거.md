@@ -461,17 +461,17 @@ callback.sendData(labelData) → Bixolon 프린터 전송
 - 주의사항: 비정량 M9는 개발43에서 신규 추가된 타입이므로 실기 테스트 시 M9 품목 데이터 필요
 
 **체크리스트**
-- [ ] Part 1: 컴파일 BUILD SUCCESSFUL
-- [ ] Part 2: ⑤ code-verifier 검증 PASS
-- [ ] Part 3: ⑥ original-comparator 검증 PASS (M8 동작 동일 확인)
-- [ ] Part 4: PDA 실기 — M8 라벨 출력 정상 (기존과 동일, pBarcode만 인쇄)
-- [ ] Part 5: PDA 실기 — M9 라벨 출력 정상 (18자리 바코드만 인쇄, pBarcode2 미인쇄 동일)
-- [ ] Part 6: PDA 실기 — M3/M4 라벨 출력 정상 (pBarcode2 인쇄 유지, 회귀 없음)
+- [x] Part 1: 컴파일 BUILD SUCCESSFUL
+- [x] Part 2: ⑤ code-verifier 검증 PASS
+- [x] Part 3: ⑥ original-comparator 검증 PASS (M8 동작 동일 확인)
+- [x] Part 4: PDA 실기 — M8 라벨 출력 정상 (기존과 동일, pBarcode만 인쇄)
+- [x] Part 5: PDA 실기 — M9 라벨 출력 정상 (18자리 바코드만 인쇄, pBarcode2 미인쇄 동일)
+- [x] Part 6: PDA 실기 — M3/M4 라벨 출력 정상 (pBarcode2 인쇄 유지, 회귀 없음)
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: Step 1~2(M9/M8 pBarcode2 할당 제거) 코드 변경 이후 PDA 실기 테스트로 동작 동일성 최종 확인
+- **왜**: EMARTLOGIS_CODE 빈 문자열 예외 위험 제거 후 M8/M9 라벨 출력이 기존과 동일하게 동작하는지, M3/M4 pBarcode2 인쇄 분기에 회귀가 없는지 실기로 검증
+- **어떻게**: PDA 실기 테스트 — M8 라벨(pBarcode만 인쇄 확인), M9 라벨(18자리 바코드 인쇄 + pBarcode2 미인쇄 확인), M3/M4 라벨(pBarcode2 정상 인쇄 회귀 확인) 3종 시나리오 모두 PASS
 
 ---
 
@@ -556,7 +556,7 @@ Step 3: 통합 테스트 (컴파일 + code-verifier + 실기)
 |------|------|------|
 | 1 | case "M9" pBarcode2/pBarcodeStr2 변수 할당 제거 (L661~663) | ✅ 완료 |
 | 2 | case "M8" pBarcode2/pBarcodeStr2 변수 할당 제거 (L681~682) | ✅ 완료 |
-| 3 | 통합 테스트 | ⏳ 대기 |
+| 3 | 통합 테스트 | ✅ 완료 |
 
 ---
 
