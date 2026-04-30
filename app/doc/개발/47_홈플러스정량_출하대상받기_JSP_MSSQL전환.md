@@ -185,6 +185,7 @@ String quertystring = "SELECT /* 홈플러스 출하대상 조회 */"
     + " JOIN CO_거래처MASTER B"
     + "   ON HE.회사코드 = B.회사코드"
     + "  AND HE.납품처코드 = B.마트사거래처코드"
+    + "  AND B.마트사구분 = '4'"
     + " LEFT JOIN CO_거래처MASTER G"
     + "   ON G.회사코드 = D.회사코드"
     + "  AND G.거래처코드 = H.출고거래처"
@@ -408,7 +409,7 @@ MSSQL `SM_마트사발주홈플러스` Entity에는 **점포코드/점포명 컬
 - 변환 방식: search_shipment.jsp(이마트) 기반으로 홈플러스 전용 부분 변경
   - `SM_마트사발주이마트 ME` → `SM_마트사발주홈플러스 HE`
   - `ME.점포코드`, `ME.점포명` → `HE.납품처코드`, `HE.납품처명`
-  - `CO_거래처MASTER B JOIN` 조건: `B.마트사거래처코드` 매핑 대상을 HE.납품처코드로 변경, 마트사구분 조건은 홈플러스 구분값으로 변경 또는 제거 (이마트는 `B.마트사구분 = '7'` 사용)
+  - `CO_거래처MASTER B JOIN` 조건: `HE.납품처코드 = B.마트사거래처코드 AND B.마트사구분 = '4'` (이마트 `B.마트사구분 = '7'`과 동일 패턴)
   - `STORE_IN_DATE`: `SM_수주상세 SD LEFT JOIN ON SD.마트사SEQ = HE.SEQ`로 납기일자 가져오기
   - `ITEM_TYPE`: `'S'` 하드코딩 (Oracle에서도 동일)
   - `EMARTLOGIS_CODE`: Oracle에서 `EO.STORECODE` 동일 역할 → `HE.납품처코드`
