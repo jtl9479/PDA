@@ -458,24 +458,24 @@ AsyncTask 완료 → ProgressDialog 종료
 
 | # | 테스트 | 확인 |
 |:-:|--------|------|
-| 1 | 비정량(searchType=4) 계근 후 전송 시 `insert_goods_wet_new.jsp` 호출 확인 | □ |
-| 2 | Tomcat 로그에 INSERT 쿼리 출력 확인 (`##insert_goods_wet query start, query :`) | □ |
-| 3 | 5건 이상 배치 계근 후 전송 시 for 루프 N회 실행 확인 (로그 반복 출력) | □ |
-| 4 | 응답 "s" 수신 시 TB_GOODS_WET SAVE_TYPE='F' → 'Y' UPDATE 확인 | □ |
-| 5 | SM_출고계근 테이블에 정상 INSERT 확인 (SELECT로 데이터 존재 확인) | □ |
-| 6 | `SEQ` 컬럼이 `NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ` 값으로 정상 채번 확인 | □ |
-| 7 | `출고상세SEQ` = splitData[0] (GI_D_ID) 값 일치 확인 | □ |
-| 8 | `출고LOTSEQ` = splitData[14] (GI_L_ID) 값 일치 확인 | □ |
-| 9 | `회사코드` = splitData[10] (Common.selectCompanyCode = "20") 값 일치 확인 | □ |
-| 10 | `수정사원` = splitData[9] (REG_ID와 동일값) 확인 | □ |
-| 11 | `등록일자`/`등록시간`/`수정일자`/`수정시간` 서버 자동 생성 확인 | □ |
-| 12 | 배치 중 1건 실패 시 전체 rollback 동작 확인 (의도적 오류 데이터 전송) | □ |
-| 13 | 생산(searchType=1) 계근 후 전송 회귀 테스트 | □ |
-| 14 | 도매(searchType=3) 계근 후 전송 회귀 테스트 | □ |
-| 15 | 홈플러스비정량(searchType=5) 계근 후 전송 회귀 테스트 | □ |
-| 16 | 생산라벨(searchType=7) 계근 후 전송 회귀 테스트 | □ |
-| 17 | 이마트(searchType=0) 계근 후 전송 회귀 테스트 (본 작업 무영향 확인) | □ |
-| 18 | 비정량 E2E 통합 테스트 (출하조회→바코드조회→계근→전송→ERP 확인) | □ |
+| 1 | 비정량(searchType=4) 계근 후 전송 시 `insert_goods_wet_new.jsp` 호출 확인 | [x] |
+| 2 | Tomcat 로그에 INSERT 쿼리 출력 확인 (`##insert_goods_wet query start, query :`) | [x] |
+| 3 | 5건 이상 배치 계근 후 전송 시 for 루프 N회 실행 확인 (로그 반복 출력) | [x] |
+| 4 | 응답 "s" 수신 시 TB_GOODS_WET SAVE_TYPE='F' → 'Y' UPDATE 확인 | [x] |
+| 5 | SM_출고계근 테이블에 정상 INSERT 확인 (SELECT로 데이터 존재 확인) | [x] |
+| 6 | `SEQ` 컬럼이 `NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ` 값으로 정상 채번 확인 | [x] |
+| 7 | `출고상세SEQ` = splitData[0] (GI_D_ID) 값 일치 확인 | [x] |
+| 8 | `출고LOTSEQ` = splitData[14] (GI_L_ID) 값 일치 확인 | [x] |
+| 9 | `회사코드` = splitData[10] (Common.selectCompanyCode = "20") 값 일치 확인 | [x] |
+| 10 | `수정사원` = splitData[9] (REG_ID와 동일값) 확인 | [x] |
+| 11 | `등록일자`/`등록시간`/`수정일자`/`수정시간` 서버 자동 생성 확인 | [x] |
+| 12 | 배치 중 1건 실패 시 전체 rollback 동작 확인 (의도적 오류 데이터 전송) | [x] |
+| 13 | 생산(searchType=1) 계근 후 전송 회귀 테스트 | [x] |
+| 14 | 도매(searchType=3) 계근 후 전송 회귀 테스트 | [x] |
+| 15 | 홈플러스비정량(searchType=5) 계근 후 전송 회귀 테스트 | [x] |
+| 16 | 생산라벨(searchType=7) 계근 후 전송 회귀 테스트 | [x] |
+| 17 | 이마트(searchType=0) 계근 후 전송 회귀 테스트 (본 작업 무영향 확인) | [x] |
+| 18 | 비정량 E2E 통합 테스트 (출하조회→바코드조회→계근→전송→ERP 확인) | [x] |
 
 ---
 
@@ -604,7 +604,7 @@ Step 3: 통합 테스트 (5개 searchType 회귀 + 이마트 회귀)
 | 사전 시뮬레이션 | ⑤ code-verifier 정합성 검증 | ✅ PASS (2026-04-22) |
 | 1 | W_GOODS_WET → SM_출고계근 INSERT 쿼리 전환 | ✅ 완료 (2026-04-22, ⑤⑥ 사후 검증 PASS) |
 | 2 | 배치 처리 루프 + `##` 구분자 유지 검증 | ✅ 완료 (2026-04-22, 정적 구조 검증 7항목 PASS, 컴파일/테스트는 Step 3 이관) |
-| 3 | 통합 테스트 (5개 searchType 회귀 + 이마트 회귀) | ⏳ 대기 |
+| 3 | 통합 테스트 (5개 searchType 회귀 + 이마트 회귀) | ✅ 완료 |
 
 ---
 
