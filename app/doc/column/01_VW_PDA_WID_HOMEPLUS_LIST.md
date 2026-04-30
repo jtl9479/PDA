@@ -7,48 +7,41 @@
 
 ---
 
-## MSSQL 전환 기준 인덱스 정의 (목표: 31개 컬럼)
+## MSSQL 전환 기준 인덱스 정의 (목표: 24개 컬럼)
 
-> Oracle VIEW 32개 → 미사용 8개 제거 → 누락 7개 추가 → **MSSQL 31개**
+> Oracle VIEW 32개 → Java 미파싱 8개 제거 → **MSSQL 24개**
+> 제거 기준: Java(ProgressDlgShipSearch)에서 파싱하지 않는 컬럼
 >
 > 참조: `app/doc/소스분석/56_홈플러스정량_출하_전체흐름분석.md` §2.6
 
 | Index | JSP 컬럼 별칭 | MSSQL 원본 컬럼 | 테이블 별칭 | Java setter | 로컬DB(TB_SHIPMENT) | 비고 |
 |:-----:|:------------:|---------------|:---------:|:----------:|:------------------:|------|
-| 0 | GI_D_ID | D.SEQ | SM_출고상세 | setGI_D_ID | O | 이마트와 동일 |
-| 1 | ITEM_CODE | I.품목코드 | CO_품목코드 | setITEM_CODE | O | 이마트와 동일 |
-| 2 | ITEM_NAME | I.품목명 | CO_품목코드 | setITEM_NAME | O | 이마트와 동일 |
-| 3 | EMARTITEM_CODE | HE.상품코드 | SM_마트사발주홈플러스 | setEMARTITEM_CODE | O | 이마트 ME.상품코드 대응 |
-| 4 | EMARTITEM | HE.상품명 | SM_마트사발주홈플러스 | setEMARTITEM | O | 이마트 ME.상품명 대응 |
-| 5 | GI_REQ_PKG | L.박스수량 | SM_출고LOT | setGI_REQ_PKG | O | 이마트와 동일 |
-| 6 | GI_REQ_QTY | L.중량 | SM_출고LOT | setGI_REQ_QTY | O | 이마트와 동일 |
-| 7 | GI_REQ_DATE | D.출고일자 | SM_출고상세 | setGI_REQ_DATE | O | 이마트와 동일 |
-| 8 | BL_NO | COALESCE(V.BLNO, V.이력번호) | 월품목별재고화일_LOT별_VIEW | setBL_NO | O | 이마트와 동일 |
-| 9 | BRAND_CODE | '' (빈값) | 상수 | setBRAND_CODE | O | 이마트와 동일 |
+| 0 | GI_D_ID | D.SEQ | SM_출고상세 | setGI_D_ID | O | |
+| 1 | ITEM_CODE | I.품목코드 | CO_품목코드 | setITEM_CODE | O | |
+| 2 | ITEM_NAME | I.품목명 | CO_품목코드 | setITEM_NAME | O | |
+| 3 | EMARTITEM_CODE | HE.상품코드 | SM_마트사발주홈플러스 | setEMARTITEM_CODE | O | |
+| 4 | EMARTITEM | HE.상품명 | SM_마트사발주홈플러스 | setEMARTITEM | O | |
+| 5 | GI_REQ_PKG | L.박스수량 | SM_출고LOT | setGI_REQ_PKG | O | |
+| 6 | GI_REQ_QTY | L.중량 | SM_출고LOT | setGI_REQ_QTY | O | |
+| 7 | GI_REQ_DATE | D.출고일자 | SM_출고상세 | setGI_REQ_DATE | O | |
+| 8 | BL_NO | COALESCE(V.BLNO, V.이력번호) | 월품목별재고화일_LOT별_VIEW | setBL_NO | O | |
+| 9 | BRAND_CODE | '' (빈값) | 상수 | setBRAND_CODE | O | |
 | 10 | CLIENT_CODE | HE.점포코드 | SM_마트사발주홈플러스 | setCLIENT_CODE | O | 홈플러스 점포코드 |
 | 11 | CLIENTNAME | HE.점포명 | SM_마트사발주홈플러스 | setCLIENTNAME | O | 홈플러스 점포명 |
-| 12 | CENTERNAME | B.상호 | CO_거래처MASTER | setCENTERNAME | O | 이마트와 동일 |
-| 13 | ITEM_SPEC | I.규격 | CO_품목코드 | setITEM_SPEC | O | 이마트와 동일 |
-| 14 | CT_CODE | I.원산지 | CO_품목코드 | setCT_CODE | O | 이마트와 동일 |
-| 15 | IMPORT_ID_NO | V.이력번호 | 월품목별재고화일_LOT별_VIEW | setIMPORT_ID_NO | O | 이마트와 동일 |
-| 16 | PACKER_CODE | I.패커코드 | CO_품목코드 | setPACKER_CODE | O | 이마트와 동일 |
-| 17 | PACKER_PRODUCT_CODE | I.PPCODE | CO_품목코드 | setPACKER_PRODUCT_CODE | O | 이마트와 동일 |
-| 18 | BARCODE_TYPE | COALESCE(M1.바코드타입, M2.바코드타입) | CO_매출처품목코드매핑 | setBARCODE_TYPE | O | 이마트와 동일 |
-| 19 | ITEM_TYPE | 'S' 하드코딩 | 상수 | setITEM_TYPE | O | Oracle VIEW도 'S' 하드코딩 |
-| 20 | PACKWEIGHT | COALESCE(NULLIF(V.평균중량,0), I.박스중량) | VIEW / CO_품목코드 | setPACKWEIGHT | O | 이마트와 동일 |
-| 21 | BARCODEGOODS | I.상품바코드 | CO_품목코드 | setBARCODEGOODS | O | 이마트와 동일 |
-| 22 | STORE_IN_DATE | SD.납기일자 | SM_수주상세 | setSTORE_IN_DATE | O | 이마트와 동일 |
+| 12 | CENTERNAME | B.상호 | CO_거래처MASTER | setCENTERNAME | O | |
+| 13 | ITEM_SPEC | I.규격 | CO_품목코드 | setITEM_SPEC | O | |
+| 14 | CT_CODE | I.원산지 | CO_품목코드 | setCT_CODE | O | |
+| 15 | IMPORT_ID_NO | V.이력번호 | 월품목별재고화일_LOT별_VIEW | setIMPORT_ID_NO | O | |
+| 16 | PACKER_CODE | I.패커코드 | CO_품목코드 | setPACKER_CODE | O | |
+| 17 | PACKER_PRODUCT_CODE | I.PPCODE | CO_품목코드 | setPACKER_PRODUCT_CODE | O | |
+| 18 | BARCODE_TYPE | COALESCE(M1.바코드타입, M2.바코드타입) | CO_매출처품목코드매핑 | setBARCODE_TYPE | O | |
+| 19 | ITEM_TYPE | 'S' 하드코딩 | 상수 | setITEM_TYPE | O | Oracle VIEW도 'S' 하드코딩 유지 |
+| 20 | PACKWEIGHT | COALESCE(NULLIF(V.평균중량,0), I.박스중량) | VIEW / CO_품목코드 | setPACKWEIGHT | O | |
+| 21 | BARCODEGOODS | I.상품바코드 | CO_품목코드 | setBARCODEGOODS | O | |
+| 22 | STORE_IN_DATE | SD.납기일자 | SM_수주상세 | setSTORE_IN_DATE | O | |
 | 23 | EMARTLOGIS_CODE | HE.점포코드 | SM_마트사발주홈플러스 | setEMARTLOGIS_CODE | O | Oracle: EO.STORECODE AS EMARTLOGIS_CODE |
-| 24 | WH_AREA | B.창고구역 또는 '' | CO_거래처MASTER | setWH_AREA | O | 홈플러스 미사용 시 '' |
-| 25 | USE_NAME | C.명칭 또는 '' | CO_각종소분류코드 | setUSE_NAME | O | 홈플러스 미사용 시 '' |
-| 26 | USE_CODE | I.제품용도 또는 '' | CO_품목코드 | setUSE_CODE | O | 홈플러스 미사용 시 '' |
-| 27 | CT_NAME | C1.명칭 또는 '' | CO_각종소분류코드 | setCT_NAME | O | 홈플러스 미사용 시 '' |
-| 28 | STORE_CODE | HE.점포코드 | SM_마트사발주홈플러스 | setSTORE_CODE | O | HOMPLUS_STORE_CODE → ORDER BY에도 사용 |
-| 29 | EMART_PLANT_CODE | '' (빈값) | 상수 | setEMART_PLANT_CODE | O | 홈플러스 미사용 → 빈값 |
-| 30 | GI_L_ID | L.SEQ | SM_출고LOT | setGI_L_ID | O | 동기화 복합키 — 필수 추가 |
 
 **제거 컬럼 8개**: GI_H_ID, EOI_ID, AMOUNT, GOODS_R_ID, GR_REF_NO, BRANDNAME, PACKERNAME, EMARTLOGIS_NAME
-**추가 컬럼 7개**: WH_AREA(24), USE_NAME(25), USE_CODE(26), CT_NAME(27), STORE_CODE(28), EMART_PLANT_CODE(29), GI_L_ID(30)
 
 ---
 
