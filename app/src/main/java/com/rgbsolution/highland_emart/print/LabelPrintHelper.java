@@ -646,25 +646,21 @@ public class LabelPrintHelper {
                 break;
 
             case "M9":
-                // 이마트 우육 센터납
-                // 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
+                // 비정량 이마트 M9 (문의사항05 답변: 정량 이마트 우육 센터납 임시 사용 종료)
+                // 상품코드 앞자리 6자리 + 중량 6자리 + 회사코드 6자리 = 18자리
                 if (Common.D) {
-                    Log.e(TAG, "::::::::: M9 ::::::::");
+                    Log.e(TAG, "::::::::: M9 (비정량 이마트) ::::::::");
                     Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
                     Log.d(TAG, "중량 6자리 :" + print_weight_str);
                     Log.d(TAG, "회사코드 : " + pCompCode);
-                    Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
-                    Log.d(TAG, "용도명 : " + si.getUSE_NAME());
                 }
 
-                pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-                pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
+                pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode;
+                pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode;
 
-                pBarcode2 = si.getEMARTITEM_CODE().substring(0, 6) +  si.getIMPORT_ID_NO() +  si.getUSE_CODE();
-                pBarcodeStr2 = si.getEMARTITEM_CODE().substring(0, 6) + " " + si.getIMPORT_ID_NO() + " " + si.getUSE_CODE();
-
-                //제품명 + 용도
-                pBarcodeStr3 = si.EMARTITEM +","+si.getUSE_NAME();
+                // pBarcode2: 변수 생성만, 인쇄 안 함 (M8과 동일 정책)
+                pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + si.getIMPORT_ID_NO() + print_weight_str + pCompCode;
+                pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
 
                 break;
 
