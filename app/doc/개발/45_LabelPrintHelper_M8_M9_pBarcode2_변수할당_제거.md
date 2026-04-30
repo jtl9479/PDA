@@ -400,17 +400,17 @@ callback.sendData(labelData) → Bixolon 프린터 전송
 - 주의사항: 삭제 후 case "M9" 블록 구조(break; 포함)가 유지되는지 확인. 인접 case "M8"에 영향이 없는지 확인.
 
 **체크리스트**
-- [ ] Part 1: L661~663 정확한 라인 위치 확인
-- [ ] Part 2: 삭제 후 case "M9" 블록 구조(break; 포함) 정상 유지 확인
-- [ ] Part 3: 코드 삭제 수행
-- [ ] Part 4: 컴파일 BUILD SUCCESSFUL 확인
-- [ ] Part 5: case "M9" 단위 — pBarcode 할당값이 정상인지 로그 확인
-- [ ] Part 6: 회귀테스트 — M3/M4 case pBarcode2 인쇄 분기에 영향 없음 확인
+- [x] Part 1: L661~663 정확한 라인 위치 확인
+- [x] Part 2: 삭제 후 case "M9" 블록 구조(break; 포함) 정상 유지 확인
+- [x] Part 3: 코드 삭제 수행
+- [x] Part 4: 컴파일 BUILD SUCCESSFUL 확인
+- [x] Part 5: case "M9" 단위 — pBarcode 할당값이 정상인지 로그 확인
+- [x] Part 6: 회귀테스트 — M3/M4 case pBarcode2 인쇄 분기에 영향 없음 확인
 
 **Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+- **무엇을**: case "M9" 블록 내 pBarcode2/pBarcodeStr2 할당 2줄 + 관련 주석 1줄(총 3줄) 제거
+- **왜**: 해당 할당은 인쇄 분기(M3/M4 전용)에 포함되지 않아 실제 라벨에 출력되지 않는 미사용 코드임. EMARTLOGIS_CODE가 빈 문자열일 경우 substring(0,6) 에서 StringIndexOutOfBoundsException 발생 위험(오류 21번 동일 패턴)이 존재하므로 제거
+- **어떻게**: L661~663 (주석 + pBarcode2 할당 + pBarcodeStr2 할당) 3줄 삭제. pBarcode/pBarcodeStr 할당 및 break; 는 유지. ⑤ code-verifier BUILD SUCCESSFUL (11s) + ⑥ original-comparator PASS 확인
 
 ---
 
@@ -434,17 +434,17 @@ callback.sendData(labelData) → Bixolon 프린터 전송
 - 주의사항: 삭제 후 case "M8"이 마지막 case이므로 break; 뒤에 닫는 `}` (switch 종료)가 정상인지 확인.
 
 **체크리스트**
-- [ ] Part 1: L681~682 정확한 라인 위치 확인
-- [ ] Part 2: 삭제 후 switch 블록 구조 정상 유지 확인
-- [ ] Part 3: 코드 삭제 수행
-- [ ] Part 4: 컴파일 BUILD SUCCESSFUL 확인
-- [ ] Part 5: case "M8" 단위 — pBarcode 할당값이 정상인지 로그 확인
-- [ ] Part 6: 회귀테스트 — M3/M4 case pBarcode2 인쇄 분기에 영향 없음 확인
+- [x] Part 1: L681~682 정확한 라인 위치 확인
+- [x] Part 2: 삭제 후 switch 블록 구조 정상 유지 확인
+- [x] Part 3: 코드 삭제 수행
+- [x] Part 4: 컴파일 BUILD SUCCESSFUL 확인
+- [x] Part 5: case "M8" 단위 — pBarcode 할당값이 정상인지 로그 확인
+- [x] Part 6: 회귀테스트 — M3/M4 case pBarcode2 인쇄 분기에 영향 없음 확인
 
 **Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+- **무엇을**: case "M8" 블록 내 pBarcode2/pBarcodeStr2 할당 2줄 제거
+- **왜**: 인쇄 분기(M3/M4 전용)에 M8이 포함되지 않아 실제 출력되지 않는 미사용 할당. EMARTLOGIS_CODE 빈 문자열 시 substring 예외 위험(오류 21번 동일 패턴) 자동 해소 목적
+- **어떻게**: L681~682 (pBarcode2 할당 + pBarcodeStr2 할당) 2줄 삭제. pBarcode/pBarcodeStr 할당 및 break; 는 유지. ⑤ code-verifier BUILD SUCCESSFUL (11s) + ⑥ original-comparator PASS 확인
 
 ---
 
@@ -554,8 +554,8 @@ Step 3: 통합 테스트 (컴파일 + code-verifier + 실기)
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | case "M9" pBarcode2/pBarcodeStr2 변수 할당 제거 (L661~663) | ⏳ 대기 |
-| 2 | case "M8" pBarcode2/pBarcodeStr2 변수 할당 제거 (L681~682) | ⏳ 대기 |
+| 1 | case "M9" pBarcode2/pBarcodeStr2 변수 할당 제거 (L661~663) | ✅ 완료 |
+| 2 | case "M8" pBarcode2/pBarcodeStr2 변수 할당 제거 (L681~682) | ✅ 완료 |
 | 3 | 통합 테스트 | ⏳ 대기 |
 
 ---
