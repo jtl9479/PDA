@@ -560,6 +560,7 @@ Step 3: 통합 테스트
 ## 관련 문서
 
 - `app/doc/소스분석/52_홈플러스정량_출하계근대상_JSP_Java파싱_인덱스분석.md` — JSP/Java 인덱스 상세 대조
+- `app/doc/소스분석/54_홈플러스_계근데이터전송_JSP_MSSQL전환전_구조분석.md` — 계근 전송 JSP 구조 분석 (전체 흐름 맥락 파악)
 - `app/doc/소스분석/55_홈플러스정량_출하대상받기_원본비교분석.md` — 원본 vs 현재 비교, 변경 사유
 - `app/doc/소스분석/56_홈플러스정량_출하_전체흐름분석.md` — 전체 흐름 분석 (1~4단계)
 - `app/doc/view/VW_PDA_WID_HOMEPLUS_LIST` — Oracle VIEW DDL (JOIN 구조 참조)

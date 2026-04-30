@@ -555,6 +555,7 @@ Step 4: 통합 테스트
 ## 관련 문서
 
 - `app/doc/소스분석/54_홈플러스_계근데이터전송_JSP_MSSQL전환전_구조분석.md` — 본 개발의 사전 구조 분석 (splitData 매핑, Oracle/MSSQL 컬럼 비교, 변경 범위 요약)
+- `app/doc/소스분석/55_홈플러스정량_출하대상받기_원본비교분석.md` — 출하대상받기 원본 비교 분석 (전체 흐름 맥락 파악)
 - `app/doc/소스분석/56_홈플러스정량_출하_전체흐름분석.md` — 홈플러스 정량 전체 흐름 §5: 3단계 서버 전송 위치 정의
 - `app/doc/개발/37_비정량_계근데이터전송_JSP_MSSQL전환.md` — 공용 배치 계근 전송 MSSQL 전환 완료 사례 (배치 구조 비교 참조)
 - **JSP 전환 대상**: `D:\PDA\apache-tomcat-8.5.29\apache-tomcat-8.5.29\webapps\ROOT\inno\insert_goods_wet_homeplus.jsp`
