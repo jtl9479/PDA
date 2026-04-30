@@ -429,6 +429,8 @@ MSSQL `SM_마트사발주홈플러스` Entity에는 **점포코드/점포명 컬
 - **무엇을**: search_shipment_homeplus.jsp의 Oracle VIEW(`VW_PDA_WID_HOMEPLUS_LIST`) 참조 쿼리를 MSSQL 직접 JOIN 쿼리로 교체하고, out.println 출력을 32개에서 24개 컬럼으로 축소
 - **왜**: MSSQL 환경에 Oracle 전용 VIEW가 존재하지 않아 실행 즉시 SQL 오류 발생 — 직접 JOIN 쿼리로 대체하여 MSSQL에서 정상 동작하도록 함
 - **어떻게**: `SM_출고상세 D`를 기준으로 `SM_출고머리 H`, `CO_품목코드 I`, `SM_마트사발주홈플러스 HE`, `CO_거래처MASTER B`, `SM_출고LOT L`, `월품목별재고화일_LOT별_VIEW V`, `SM_수주상세 SD` 등을 JOIN하여 24개 컬럼(index 0=GI_D_ID ~ index 23=EMARTLOGIS_CODE) 출력. Java temp[0]~temp[23] 파싱 구조와 정확히 일치하도록 out.println 순서 맞춤
+- WHERE H.마트사구분 = '4' 조건 추가 (이마트/홈플러스 SEQ 충돌 방지)
+- WHERE COALESCE(M1.타입구분, M2.타입구분) = 'W' 조건 추가 (Oracle VIEW의 EB.ITEM_TYPE='W' 누락 보완)
 
 ---
 
