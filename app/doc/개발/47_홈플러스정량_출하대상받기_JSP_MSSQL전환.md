@@ -418,17 +418,17 @@ MSSQL `SM_마트사발주홈플러스` Entity에는 **점포코드/점포명 컬
   - 공백 확인: qry_where 앞뒤 공백이 있어야 ORDER BY와 붙지 않음
 
 **체크리스트**
-- [ ] Part 1: JSP 현재 코드 및 이마트 JSP 구조 확인 완료
-- [ ] Part 2: 변환 계획 검토 완료
-- [ ] Part 3: JSP 쿼리 + out.println 수정 수행
-- [ ] Part 4: 구문 오류 없이 저장 확인
+- [x] Part 1: JSP 현재 코드 및 이마트 JSP 구조 확인 완료
+- [x] Part 2: 변환 계획 검토 완료
+- [x] Part 3: JSP 쿼리 + out.println 수정 수행
+- [x] Part 4: 구문 오류 없이 저장 확인
 - [ ] Part 5: MSSQL 쿼리 직접 실행 (SQL 도구에서 홈플러스 데이터 있는 날짜로 확인)
-- [ ] Part 6: 24개 컬럼 index 순서 재검증
+- [x] Part 6: 24개 컬럼 index 순서 재검증
 
 **Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+- **무엇을**: search_shipment_homeplus.jsp의 Oracle VIEW(`VW_PDA_WID_HOMEPLUS_LIST`) 참조 쿼리를 MSSQL 직접 JOIN 쿼리로 교체하고, out.println 출력을 32개에서 24개 컬럼으로 축소
+- **왜**: MSSQL 환경에 Oracle 전용 VIEW가 존재하지 않아 실행 즉시 SQL 오류 발생 — 직접 JOIN 쿼리로 대체하여 MSSQL에서 정상 동작하도록 함
+- **어떻게**: `SM_출고상세 D`를 기준으로 `SM_출고머리 H`, `CO_품목코드 I`, `SM_마트사발주홈플러스 HE`, `CO_거래처MASTER B`, `SM_출고LOT L`, `월품목별재고화일_LOT별_VIEW V`, `SM_수주상세 SD` 등을 JOIN하여 24개 컬럼(index 0=GI_D_ID ~ index 23=EMARTLOGIS_CODE) 출력. Java temp[0]~temp[23] 파싱 구조와 정확히 일치하도록 out.println 순서 맞춤
 
 ---
 
@@ -551,7 +551,7 @@ Step 3: 통합 테스트
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | search_shipment_homeplus.jsp MSSQL 직접 JOIN 쿼리 작성 (24개 컬럼) | ⏳ 대기 |
+| 1 | search_shipment_homeplus.jsp MSSQL 직접 JOIN 쿼리 작성 (24개 컬럼) | ✅ 완료 |
 | 2 | ProgressDlgShipSearch.java searchType=2 창고코드 D. 별칭 수정 | ⏳ 대기 |
 | 3 | 통합 테스트 | ⏳ 대기 |
 
