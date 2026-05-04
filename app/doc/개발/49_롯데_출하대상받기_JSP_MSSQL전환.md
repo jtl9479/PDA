@@ -632,10 +632,21 @@ Step 4: 통합 테스트
 
 | Step | 작업 | 상태 |
 |------|------|------|
+| 사전 | ⑤⑥ 사전 검증 | ✅ 완료 (PASS) |
 | 1 | search_shipment_lotte.jsp MSSQL 직접 JOIN (26개 컬럼) | ⏳ 대기 |
 | 2 | ProgressDlgShipSearch.java D.창고코드 별칭 추가 | ⏳ 대기 |
 | 3 | EMARTLOGIS_CODE 운영팀 확인 후 최종 적용 | ⏳ 대기 (운영팀 확인) |
 | 4 | 통합 테스트 | ⏳ 대기 |
+
+**⑤ code-verifier 사전 검증 결과**:
+- 전환 후 26개 인덱스 시뮬레이션 26/26 PASS (Java temp[0]~temp[25] 완전 일치)
+- Java 파싱 코드는 이미 전환 후 26개 기준으로 작성됨 (JSP만 전환 전)
+- 컴파일 BUILD SUCCESSFUL
+- WARN: 창고코드 `D.` 별칭 없음 → Step 2에서 수정
+
+**⑥ original-comparator 사전 검증 결과**:
+- 현재 JSP 34개 컬럼·순서·WHERE·ORDER BY → 원본과 완전 일치 PASS
+- 허용 차이: DB접속 Oracle→MSSQL, 인코딩 UTF-8, 로그 방식 변경
 
 ---
 
