@@ -142,7 +142,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             }else if(Common.searchType.equals("3")){
                 // 창고별 조건 추가
                 if (!Common.selectWarehouseCode.isEmpty()) {
-                    data += " AND 창고코드 = '" + Common.selectWarehouseCode + "'";
+                    data += " AND D.창고코드 = '" + Common.selectWarehouseCode + "'";
                 }
                 receiveData = HttpHelper.getInstance().sendDataDb(data, "inno", "search_shipment", Common.URL_SEARCH_SHIPMENT_WHOLESALE);
                 Log.d(TAG, "============== 출하리스트 조회조건 홈플러스로 들어옴 : " + data + "================");

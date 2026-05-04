@@ -473,19 +473,19 @@ onPostExecute() → ShipmentActivity UI 갱신
 - 주의사항: `qry_where`는 기존과 동일하게 WHERE 절 뒤에 이어 붙임, `getMSSQLConnection()` 및 Statement/ResultSet 처리 코드는 변경하지 않음
 
 **체크리스트**
-- [ ] Part 1: SELECT 24개 컬럼 구성 확인 (제거 9개 누락 없는지 검증)
-- [ ] Part 1: out.println 순서 24개 확인 (temp[0]~temp[23] 인덱스 일치)
-- [ ] Part 2: MSSQL JOIN 구조 작성 완료
-- [ ] Part 2: WHERE H.마트사구분='' AND D.출고수량>0 포함 확인
-- [ ] Part 2: ORDER BY D.SEQ ASC 교체 확인
-- [ ] Part 3: JSP 파일 저장 완료
+- [x] Part 1: SELECT 24개 컬럼 구성 확인 (제거 9개 누락 없는지 검증)
+- [x] Part 1: out.println 순서 24개 확인 (temp[0]~temp[23] 인덱스 일치)
+- [x] Part 2: MSSQL JOIN 구조 작성 완료
+- [x] Part 2: WHERE H.마트사구분='' AND D.출고수량>0 포함 확인
+- [x] Part 2: ORDER BY D.SEQ ASC 교체 확인
+- [x] Part 3: JSP 파일 저장 완료
 - [ ] Part 4: Tomcat 재시작 후 JSP 컴파일 오류 없음 확인
 - [ ] Part 5: MSSQL에서 해당 쿼리 직접 실행하여 결과 24개 컬럼 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `search_shipment_wholesale.jsp`의 Oracle VIEW(`VW_PDA_WID_WHOLESALE_LIST`) 쿼리를 MSSQL 직접 JOIN 쿼리로 교체하고, out.println을 33개→24개로 축소
+- **왜**: getMSSQLConnection()으로 MSSQL 연결 시 Oracle 전용 VIEW 없어 SQL 오류 발생. Java temp[] 인덱스가 이미 24컬럼(0=GI_D_ID) 기준으로 업데이트되어 있어 JSP도 맞춰야 함
+- **어떻게**: SM_출고상세→SM_출고머리→CO_품목코드→CO_거래처MASTER→SM_출고LOT→월품목별재고화일_LOT별_VIEW JOIN, WHERE H.마트사구분='' AND D.출고수량>0, ORDER BY D.SEQ ASC. 9개 미파싱 컬럼(GI_H_ID, EOI_ID, AMOUNT, GOODS_R_ID, GR_REF_NO, BRANDNAME, PACKERNAME, EMARTLOGIS_NAME, WH_AREA) 제거. ⑤⑥ 검증 PASS 확인(2026-05-04)
 
 ---
 
@@ -506,16 +506,16 @@ onPostExecute() → ShipmentActivity UI 갱신
 - 주의사항: searchType="3" 분기만 수정, 다른 분기 코드 변경하지 않음
 
 **체크리스트**
-- [ ] Part 1: searchType="3" 분기 창고코드 위치 확인 (L144~145)
-- [ ] Part 2: `D.창고코드` 수정 완료
-- [ ] Part 3: 수정 후 주변 코드 변경 없음 확인
+- [x] Part 1: searchType="3" 분기 창고코드 위치 확인 (L144~145)
+- [x] Part 2: `D.창고코드` 수정 완료
+- [x] Part 3: 수정 후 주변 코드 변경 없음 확인
 - [ ] Part 4: 컴파일 오류 없음 확인
-- [ ] Part 5: searchType=0, 2, 6 분기 창고코드 조건과 패턴 일치 확인
+- [x] Part 5: searchType=0, 2, 6 분기 창고코드 조건과 패턴 일치 확인 (D.창고코드 동일 패턴)
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `ProgressDlgShipSearch.java` searchType="3" 분기의 창고코드 WHERE 조건 `AND 창고코드 =` → `AND D.창고코드 =`
+- **왜**: MSSQL 직접 JOIN 쿼리에서 창고코드가 SM_출고상세(D)와 월품목별재고화일_LOT별_VIEW(V) 양쪽에 존재하여 ambiguous 오류 발생 가능. searchType=0,2,6 분기는 이미 D. 별칭 사용 중
+- **어떻게**: L145 단일 위치 문자열 치환. 원본 Oracle VIEW 쿼리에서는 하드코딩된 창고코드를 사용했으나 MSSQL 전환 후 사용자 선택 창고코드로 동적 필터링 적용
 
 ---
 
@@ -583,8 +583,8 @@ Step 3: 통합 테스트
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | search_shipment_wholesale.jsp MSSQL 직접 JOIN (24개 컬럼) | ⏳ 대기 |
-| 2 | ProgressDlgShipSearch.java D.창고코드 별칭 추가 | ⏳ 대기 |
+| 1 | search_shipment_wholesale.jsp MSSQL 직접 JOIN (24개 컬럼) | ✅ 완료 |
+| 2 | ProgressDlgShipSearch.java D.창고코드 별칭 추가 | ✅ 완료 |
 | 3 | 통합 테스트 | ⏳ 대기 |
 
 ---
