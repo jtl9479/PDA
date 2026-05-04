@@ -661,22 +661,29 @@ onPostExecute() → ShipmentActivity UI 갱신
 - BARCODE_TYPE 조건: `COALESCE(M1.바코드타입, M2.바코드타입) = 'H5'` (홈플러스 비정량 전용)
 - 주의사항: `qry_where`는 기존과 동일하게 WHERE 절 뒤에 이어 붙임, `getMSSQLConnection()` 및 Statement/ResultSet 처리 코드는 변경하지 않음
 
+**사전 ⑤⑥ 검증 결과 (코드 수정 전)**
+
+| 검증 | 결과 | 비고 |
+|------|------|------|
+| ⑤ code-verifier | PASS | 인덱스 29개, WHERE 조건, 로컬DB 정합성, GI_L_ID 미사용, NULL 처리 전체 이상 없음 |
+| ⑥ original-comparator | PASS | 허용 차이 9건 (STATUS/GR_DATE 조건 제거, ORDER BY 변경, PACKER_CODE 동적화 등), 비허용 차이 0건 |
+
 **체크리스트**
-- [ ] Part 1: SELECT 29개 컬럼 구성 확인 (제거 8개 누락 없는지 검증)
-- [ ] Part 1: out.println 순서 29개 확인 (temp[0]~temp[28] 인덱스 일치)
-- [ ] Part 2: MSSQL JOIN 구조 작성 완료
-- [ ] Part 2: WHERE H.마트사구분='4' AND D.출고수량>0 AND COALESCE(M1.바코드타입,M2.바코드타입)='H5' 포함 확인
-- [ ] Part 2: CENTERNAME = B.상호 (CO_거래처MASTER JOIN) 확인
-- [ ] Part 2: CT_NAME = C1.명칭 (CO_각종소분류코드 LEFT JOIN) 확인
-- [ ] Part 2: ORDER BY 추가 확인
-- [ ] Part 3: JSP 파일 저장 완료
+- [x] Part 1: SELECT 29개 컬럼 구성 확인 (제거 8개 누락 없는지 검증)
+- [x] Part 1: out.println 순서 29개 확인 (temp[0]~temp[28] 인덱스 일치)
+- [x] Part 2: MSSQL JOIN 구조 작성 완료
+- [x] Part 2: WHERE H.마트사구분='4' AND D.출고수량>0 AND COALESCE(M1.바코드타입,M2.바코드타입)='H5' 포함 확인
+- [x] Part 2: CENTERNAME = B.상호 (CO_거래처MASTER JOIN) 확인
+- [x] Part 2: CT_NAME = C1.명칭 (CO_각종소분류코드 LEFT JOIN) 확인
+- [x] Part 2: ORDER BY 추가 확인
+- [x] Part 3: JSP 파일 저장 완료
 - [ ] Part 4: Tomcat 재시작 후 JSP 컴파일 오류 없음 확인
 - [ ] Part 5: MSSQL에서 해당 쿼리 직접 실행하여 결과 29개 컬럼 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `search_homeplus_nonfixed.jsp` Oracle VIEW `VW_PDA_WID_LIST_NONFIXED_HP` 참조 제거 → MSSQL 직접 JOIN 쿼리로 교체, out.println 37개 → 29개로 정리
+- **왜**: MSSQL 접속 후 Oracle 전용 VIEW 참조로 실행 즉시 SQL 오류 발생, Java temp[0]~temp[28] 기대 인덱스와 37개 출력 인덱스가 전부 불일치(index shift 8) 상태
+- **어떻게**: Oracle `DE_COMMON` 함수 → `CO_거래처MASTER B (B.마트사구분='4')` JOIN, Oracle 서브쿼리 CT_NAME → `CO_각종소분류코드 C1 (대분류='Q14')` LEFT JOIN, 미파싱 8개 컬럼(GI_H_ID, EOI_ID, AMOUNT, GOODS_R_ID, GR_REF_NO, BRANDNAME, PACKERNAME, EMARTLOGIS_NAME) 제거, BARCODE_TYPE 조건 `COALESCE(M1.바코드타입,M2.바코드타입)='H5'` 적용
 
 ---
 
@@ -762,7 +769,7 @@ Step 2: 통합 테스트
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | search_homeplus_nonfixed.jsp MSSQL 직접 JOIN (29개 컬럼) | ⏳ 대기 |
+| 1 | search_homeplus_nonfixed.jsp MSSQL 직접 JOIN (29개 컬럼) | ✅ 완료 |
 | 2 | 통합 테스트 | ⏳ 대기 |
 
 ---
