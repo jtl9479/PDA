@@ -649,6 +649,15 @@ Step 4: 통합 테스트
   2. `IH.SEND_FLAG <> 'N'` 조건 누락: MSSQL SM_출고머리(DlivyHeadEntity)에 SEND_FLAG 컬럼 자체 없음 + 이마트/홈플러스 JSP도 동일하게 해당 조건 없음 → 허용 차이
 - **최종 판정: PASS**
 
+**동작 시뮬레이션 결과 (2026-05-04)**:
+- JSP 응답(26컬럼 `::` 구분) → temp[] split → setter 매핑 26개 전체 PASS
+- GI_REQ_PKG `(int) Double.parseDouble()` 변환 PASS
+- GI_REQ_QTY 소수점 처리 PASS
+- NULL 시나리오 4건 (PACKWEIGHT/LAST_BOX_ORDER/EMARTLOGIS_CODE/BL_NO) — `Common.nullCheck("null","")` → `""` 변환 전체 PASS
+- TB_SHIPMENT INSERT 흐름 PASS (GI_L_ID="" 빈문자 — 롯데 의도된 설계)
+- 주의: LAST_BOX_ORDER NULL 저장 시 이후 박스순번 로직 NULL 체크는 Step 4 실기 테스트에서 확인
+- **최종 판정: PASS**
+
 **가이드 주요 변경 이력 (2026-05-04)**:
 - EMARTLOGIS_CODE: placeholder 제거 → `COALESCE(M1.물류코드, M2.물류코드)` 확정 (이마트 JSP L60 근거)
 - PACKWEIGHT: `COALESCE(NULLIF(V.평균중량,0), I.박스중량)` → `NULL AS PACKWEIGHT` (Oracle 원본 하드코딩 NULL 따름)
