@@ -680,6 +680,21 @@ onPostExecute() → ShipmentActivity UI 갱신
 - [ ] Part 4: Tomcat 재시작 후 JSP 컴파일 오류 없음 확인
 - [ ] Part 5: MSSQL에서 해당 쿼리 직접 실행하여 결과 29개 컬럼 확인
 
+**동작 시뮬레이션 결과 (2026-05-04)**
+
+| Phase | 검증 항목 | 결과 |
+|:-----:|----------|:----:|
+| 1 | PDA → JSP 호출 qry_where 구성 | PASS |
+| 2 | JSP WHERE 조건 포함 여부 | PASS |
+| 3 | JSP JOIN 구조 | PASS |
+| 4 | JSP out.println 인덱스 29개 | PASS |
+| 5 | Java temp[] 인덱스 매핑 | PASS |
+| 6 | searchType="5" 추가 파싱 (temp[24]~temp[28]) | PASS |
+| 7 | GI_L_ID 미사용 처리 (의도된 설계) | PASS |
+| 8 | 로컬DB INSERT 컬럼 정합성 | PASS |
+| 9 | 동기화 비교 로직 (GI_L_ID="") | PASS |
+| 10 | 회귀 - 다른 searchType 영향 없음 | PASS |
+
 **Part 6. 변경 내용**:
 - **무엇을**: `search_homeplus_nonfixed.jsp` Oracle VIEW `VW_PDA_WID_LIST_NONFIXED_HP` 참조 제거 → MSSQL 직접 JOIN 쿼리로 교체, out.println 37개 → 29개로 정리
 - **왜**: MSSQL 접속 후 Oracle 전용 VIEW 참조로 실행 즉시 SQL 오류 발생, Java temp[0]~temp[28] 기대 인덱스와 37개 출력 인덱스가 전부 불일치(index shift 8) 상태
