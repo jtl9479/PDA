@@ -443,7 +443,7 @@ onPostExecute() → ShipmentActivity UI 갱신
 | 1 | Oracle VIEW 참조 | JSP L72 | `FROM VW_PDA_WID_LIST_LOTTE` 제거 |
 | 2 | SELECT 34개 컬럼 | JSP L38~71 | 26개로 교체 (제거 8개: GI_H_ID, EOI_ID, AMOUNT, GOODS_R_ID, GR_REF_NO, BRANDNAME, PACKERNAME, EMARTLOGIS_NAME) |
 | 3 | out.println 34개 | JSP L85~94 | 26개로 교체 |
-| 4 | ORDER BY EOI_ID | JSP L74 | `LE.센터코드 ASC, I.PPCODE ASC, I.품목명 ASC`으로 교체 |
+| 4 | ORDER BY EOI_ID | JSP L74 | `LE.SEQ ASC`으로 교체 (Oracle ORDER BY EOI_ID ASC 대응) |
 
 **Part 2. 변환 계획**
 - 변환 방식: 4.1절 변경 후 코드 기준으로 전체 쿼리 교체
@@ -525,7 +525,7 @@ onPostExecute() → ShipmentActivity UI 갱신
 | 1 | EMARTLOGIS_CODE | Step 1 JSP 수정 시 함께 적용 | `COALESCE(M1.물류코드, M2.물류코드)` |
 
 **체크리스트**
-- [x] Part 1: MSSQL 등가 표현식 확정 (`COALESCE(M1.물류코드, M2.물류코드)`)
+- [x] Part 1: MSSQL 등가 표현식 확정 (`COALESCE(M1.물류코드, M2.물류코드)`) — Step 1 적용 시 함께 처리
 - [ ] Part 3: MSSQL에서 실제 롯데 출하 데이터로 EMARTLOGIS_CODE 출력값 검증
 - [ ] Part 4: LabelPrintHelper L0 바코드 출력값이 기존과 동일한지 확인
 

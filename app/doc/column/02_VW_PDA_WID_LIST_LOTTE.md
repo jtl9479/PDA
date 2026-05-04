@@ -4,7 +4,7 @@
 - **VIEW 명**: VW_PDA_WID_LIST_LOTTE
 - **스키마**: INNO
 - **용도**: 롯데마트 계근 리스트
-- **searchType**: 2 (추정)
+- **searchType**: 6 (롯데)
 
 ---
 
