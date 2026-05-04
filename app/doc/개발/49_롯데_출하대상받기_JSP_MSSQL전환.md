@@ -633,6 +633,22 @@ Step 4: 통합 테스트
 - 현재 JSP 34개 컬럼·순서·WHERE·ORDER BY → 원본과 완전 일치 PASS
 - 허용 차이: DB접속 Oracle→MSSQL, 인코딩 UTF-8, 로그 방식 변경
 
+**⑤ code-verifier 사후 검증 결과 (Step 1+2 완료 후, 2026-05-04)**:
+- JSP out.println 인덱스 0~25 ↔ Java temp[0]~temp[25] 완전 일치 PASS
+- WHERE절 4개 조건(마트사구분='6', 출고수량>0, COALESCE타입구분='W', qry_where) PASS
+- ORDER BY LE.SEQ ASC PASS
+- Java D.창고코드 수정 확인 (searchType="6" L165, 타 분기 영향 없음) PASS
+- 컬럼 26개 SELECT+출력 순서 완전 일치 PASS
+- 컴파일 assembleDebug BUILD SUCCESSFUL PASS
+- **최종 판정: PASS**
+
+**⑥ original-comparator 사후 검증 결과 (Step 1+2 완료 후, 2026-05-04)**:
+- 허용 차이 14건 확인 (DB전환, 컬럼 26개 축소, ORDER BY 교체 등)
+- FAIL 후보 2건 → **허용 차이로 재분류**:
+  1. `ID.STATUS = '10'` 조건 누락: MSSQL SM_출고상세(DlivyDetailEntity)에 STATUS 컬럼 자체 없음 + 이마트/홈플러스 JSP도 동일하게 해당 조건 없음 → 허용 차이
+  2. `IH.SEND_FLAG <> 'N'` 조건 누락: MSSQL SM_출고머리(DlivyHeadEntity)에 SEND_FLAG 컬럼 자체 없음 + 이마트/홈플러스 JSP도 동일하게 해당 조건 없음 → 허용 차이
+- **최종 판정: PASS**
+
 **가이드 주요 변경 이력 (2026-05-04)**:
 - EMARTLOGIS_CODE: placeholder 제거 → `COALESCE(M1.물류코드, M2.물류코드)` 확정 (이마트 JSP L60 근거)
 - PACKWEIGHT: `COALESCE(NULLIF(V.평균중량,0), I.박스중량)` → `NULL AS PACKWEIGHT` (Oracle 원본 하드코딩 NULL 따름)
