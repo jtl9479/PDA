@@ -559,6 +559,7 @@ Step 3: 통합 테스트
 | 1 | search_shipment_homeplus.jsp MSSQL 직접 JOIN 쿼리 작성 (24개 컬럼) | ✅ 완료 |
 | 2 | ProgressDlgShipSearch.java searchType=2 창고코드 D. 별칭 수정 | ✅ 완료 |
 | 3 | 통합 테스트 | ✅ 완료 (실기 6·7번 제외) |
+| 4 | ⑤⑥ 소스 정합성 검증 | ✅ 완료 (PASS) |
 
 ---
 
