@@ -452,19 +452,19 @@ onPostExecute() → ShipmentActivity UI 갱신
 - 주의사항: `qry_where`는 기존과 동일하게 WHERE 절 뒤에 이어 붙임, `getMSSQLConnection()` 및 Statement/ResultSet 처리 코드는 변경하지 않음
 
 **체크리스트**
-- [ ] Part 1: SELECT 26개 컬럼 구성 확인 (제거 8개 누락 없는지 검증)
-- [ ] Part 1: out.println 순서 26개 확인 (temp[0]~temp[25] 인덱스 일치)
-- [ ] Part 2: MSSQL JOIN 구조 작성 완료
-- [ ] Part 2: WHERE H.마트사구분='6' AND D.출고수량>0 포함 확인
-- [ ] Part 2: ORDER BY 교체 확인
-- [ ] Part 3: JSP 파일 저장 완료
+- [x] Part 1: SELECT 26개 컬럼 구성 확인 (제거 8개 누락 없는지 검증)
+- [x] Part 1: out.println 순서 26개 확인 (temp[0]~temp[25] 인덱스 일치)
+- [x] Part 2: MSSQL JOIN 구조 작성 완료
+- [x] Part 2: WHERE H.마트사구분='6' AND D.출고수량>0 포함 확인
+- [x] Part 2: ORDER BY 교체 확인
+- [x] Part 3: JSP 파일 저장 완료
 - [ ] Part 4: Tomcat 재시작 후 JSP 컴파일 오류 없음 확인
 - [ ] Part 5: MSSQL에서 해당 쿼리 직접 실행하여 결과 26개 컬럼 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `search_shipment_lotte.jsp` 전체 쿼리 블록을 Oracle VIEW `VW_PDA_WID_LIST_LOTTE` SELECT에서 MSSQL 직접 JOIN 쿼리(26개 컬럼)로 교체, out.println 34개 → 26개 축소
+- **왜**: Oracle VIEW는 MSSQL에 존재하지 않아 실행 즉시 오류 발생; 필요한 컬럼만 직접 JOIN으로 구성하여 MSSQL에서 동작 가능하게 전환
+- **어떻게**: GI_H_ID·EOI_ID·AMOUNT·GOODS_R_ID·GR_REF_NO·BRANDNAME·EMARTLOGIS_NAME·PACKERNAME 8개 미파싱 컬럼 제거, EMARTLOGIS_CODE=`COALESCE(M1.물류코드,M2.물류코드)`, STORE_IN_DATE=`SD.납기일자`, ORDER BY=`LE.SEQ ASC`, WHERE에 `COALESCE(M1.타입구분,M2.타입구분)='W'` 추가
 
 ---
 
@@ -485,16 +485,16 @@ onPostExecute() → ShipmentActivity UI 갱신
 - 주의사항: searchType="6" 분기만 수정, 다른 분기 코드 변경하지 않음
 
 **체크리스트**
-- [ ] Part 1: searchType="6" 분기 창고코드 위치 확인 (L164~165)
-- [ ] Part 2: `D.창고코드` 수정 완료
-- [ ] Part 3: 수정 후 주변 코드 변경 없음 확인
+- [x] Part 1: searchType="6" 분기 창고코드 위치 확인 (L164~165)
+- [x] Part 2: `D.창고코드` 수정 완료
+- [x] Part 3: 수정 후 주변 코드 변경 없음 확인
 - [ ] Part 4: 컴파일 오류 없음 확인
-- [ ] Part 5: searchType=0, 2 분기 창고코드 조건과 패턴 일치 확인
+- [x] Part 5: searchType=0, 2 분기 창고코드 조건과 패턴 일치 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `ProgressDlgShipSearch.java` L165 searchType="6" 분기의 `" AND 창고코드 = '"` → `" AND D.창고코드 = '"`로 수정
+- **왜**: MSSQL 직접 JOIN 쿼리에서 여러 테이블에 `창고코드` 컬럼이 존재하여 테이블 별칭 없으면 ambiguous 오류 발생 가능; 출고상세 테이블(D) 기준이 정확
+- **어떻게**: searchType="6" 분기 L165 문자열 1곳만 수정, 도매(searchType="3") 등 다른 분기는 건드리지 않음
 
 ---
 
@@ -618,8 +618,8 @@ Step 4: 통합 테스트
 | Step | 작업 | 상태 |
 |------|------|------|
 | 사전 | ⑤⑥ 사전 검증 | ✅ 완료 (PASS) |
-| 1 | search_shipment_lotte.jsp MSSQL 직접 JOIN (26개 컬럼) | ⏳ 대기 |
-| 2 | ProgressDlgShipSearch.java D.창고코드 별칭 추가 | ⏳ 대기 |
+| 1 | search_shipment_lotte.jsp MSSQL 직접 JOIN (26개 컬럼) | ✅ 완료 |
+| 2 | ProgressDlgShipSearch.java D.창고코드 별칭 추가 | ✅ 완료 |
 | 3 | EMARTLOGIS_CODE 실제 값 검증 (L0 바코드 출력값 확인) | ⏳ 대기 |
 | 4 | 통합 테스트 | ⏳ 대기 |
 

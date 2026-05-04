@@ -162,7 +162,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
             }else if(Common.searchType.equals("6")){
                 // 창고별 조건 추가
                 if (!Common.selectWarehouseCode.isEmpty()) {
-                    data += " AND 창고코드 = '" + Common.selectWarehouseCode + "'";
+                    data += " AND D.창고코드 = '" + Common.selectWarehouseCode + "'";
                 }
                 Log.d(TAG, "==============  Common.URL_SEARCH_SHIPMENT_LOTTE : " + Common.URL_SEARCH_SHIPMENT_LOTTE + "================");
                 // 롯데는 DB: highland 사용
