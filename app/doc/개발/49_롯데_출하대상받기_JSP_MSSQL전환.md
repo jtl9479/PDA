@@ -93,7 +93,7 @@ ORDER BY EOI_ID ASC
 2. **인덱스 전부 불일치**: 현재 JSP index 0 = `GI_H_ID`, Java temp[0] = `GI_D_ID` → 34개 중 26개 파싱 컬럼 전부 인덱스 불일치
 3. **창고코드 조건 별칭 누락**: `AND 창고코드 = '...'` → MSSQL 직접 JOIN 쿼리에서 여러 테이블 JOIN 시 ambiguous 오류 발생 가능 (이마트는 `AND D.창고코드 = '...'`로 정상 처리)
 4. **제거 컬럼 8개 포함**: GI_H_ID 등 8개는 Java에서 파싱하지 않으므로 출력 불필요
-5. **EMARTLOGIS_CODE 매핑 미확인**: Oracle에서 `B_COMMON_CODE.MASTER_CODE LIKE 'LOTTE_STORE_CODE'` 서브쿼리로 조회하던 값 → MSSQL 등가 테이블 미확인 (운영팀 확인 필요)
+5. **EMARTLOGIS_CODE 매핑 확정**: Oracle에서 `B_COMMON_CODE.MASTER_CODE LIKE 'LOTTE_STORE_CODE'` 서브쿼리로 조회하던 값 → MSSQL에서 `COALESCE(M1.물류코드, M2.물류코드)` 로 처리 (이마트 search_shipment.jsp L60에서 동일 패턴 확인)
 
 ---
 
@@ -250,10 +250,10 @@ String quertystring = "SELECT "
     + ", I.PPCODE AS PACKER_PRODUCT_CODE"
     + ", COALESCE(M1.바코드타입, M2.바코드타입) AS BARCODE_TYPE"
     + ", 'S' AS ITEM_TYPE"
-    + ", COALESCE(NULLIF(V.평균중량, 0), I.박스중량) AS PACKWEIGHT"
+    + ", NULL AS PACKWEIGHT"
     + ", I.상품바코드 AS BARCODEGOODS"
     + ", SD.납기일자 AS STORE_IN_DATE"
-    + ", [EMARTLOGIS_CODE] AS EMARTLOGIS_CODE"  // ⚠ Step 3에서 확정 — 임시 플레이스홀더
+    + ", COALESCE(M1.물류코드, M2.물류코드) AS EMARTLOGIS_CODE"
     + ", '' AS WH_AREA"
     + ", (SELECT TOP 1 W.박스순번"
     + "    FROM SM_출고계근 W"
@@ -274,9 +274,10 @@ String quertystring = "SELECT "
     + " LEFT JOIN 월품목별재고화일_LOT별_VIEW V ON V.회사코드=D.회사코드 AND V.사업장=D.출고사업장 AND V.창고코드=D.창고코드 AND V.품목코드=D.출고품목코드 AND V.LOTNO=L.LOTNO"
     + " LEFT JOIN SM_수주상세 SD ON SD.마트사SEQ=LE.SEQ"
     + " WHERE H.마트사구분='6'"
-    + " AND D.출고수량>0"
+    + "   AND D.출고수량>0"
+    + "   AND COALESCE(M1.타입구분, M2.타입구분) = 'W'"
     + qry_where
-    + " ORDER BY LE.센터코드 ASC, I.PPCODE ASC, I.품목명 ASC";
+    + " ORDER BY LE.SEQ ASC";
 
 // out.println (26개 — temp[] 인덱스 그대로 유지)
 out.println(rs.getString("GI_D_ID") + "::" + rs.getString("ITEM_CODE") + "::" + rs.getString("ITEM_NAME") + "::"
@@ -432,9 +433,10 @@ onPostExecute() → ShipmentActivity UI 갱신
 - 범위: JSP 전체 쿼리 블록 (L37~94)
 - 용도: Oracle VIEW `VW_PDA_WID_LIST_LOTTE` 제거, MSSQL 직접 JOIN 쿼리로 교체, out.println 34개 → 26개로 정리
 - 주의할 점:
-  - EMARTLOGIS_CODE는 Step 3 확정 전까지 임시값 사용 (LE.센터코드 또는 '' 중 선택)
+  - EMARTLOGIS_CODE = `COALESCE(M1.물류코드, M2.물류코드)` (이마트 JSP L60 패턴 확정)
+  - PACKWEIGHT = `NULL` (Oracle VIEW 하드코딩 NULL 그대로 유지 — 이마트/홈플러스와 다름)
+  - WHERE절 `COALESCE(M1.타입구분, M2.타입구분) = 'W'` 포함 필수
   - out.println 순서가 Java temp[] 인덱스와 정확히 일치해야 함
-  - 홈플러스 JSP(`search_shipment_homeplus.jsp`) 전환 패턴 참고
 
 | # | 항목 | 위치 | 내용 |
 |---|------|------|------|
@@ -445,7 +447,8 @@ onPostExecute() → ShipmentActivity UI 갱신
 
 **Part 2. 변환 계획**
 - 변환 방식: 4.1절 변경 후 코드 기준으로 전체 쿼리 교체
-- EMARTLOGIS_CODE 임시 처리: `LE.센터코드 AS EMARTLOGIS_CODE` 로 임시 적용 (Step 3에서 최종 확정)
+- EMARTLOGIS_CODE: `COALESCE(M1.물류코드, M2.물류코드)` 확정 적용 (Step 3 별도 수정 불필요)
+- PACKWEIGHT: Oracle 원본 `NULL AS PACKWEIGHT` 그대로 유지 (이마트/홈플러스와 달리 하드코딩 NULL)
 - 주의사항: `qry_where`는 기존과 동일하게 WHERE 절 뒤에 이어 붙임, `getMSSQLConnection()` 및 Statement/ResultSet 처리 코드는 변경하지 않음
 
 **체크리스트**
@@ -495,9 +498,7 @@ onPostExecute() → ShipmentActivity UI 갱신
 
 ---
 
-### Step 3: EMARTLOGIS_CODE 확인 후 최종 적용
-
-> **⚠ 운영팀 확인 필수 — 코드 수정 전 반드시 완료**
+### Step 3: EMARTLOGIS_CODE 확정 적용 (Step 1에 포함)
 
 **Part 1. 분석**
 
@@ -510,37 +511,21 @@ onPostExecute() → ShipmentActivity UI 갱신
 ) AS EMARTLOGIS_CODE
 ```
 
+**MSSQL 확정 처리**:
+- `COALESCE(M1.물류코드, M2.물류코드) AS EMARTLOGIS_CODE`
+- **근거**: 이마트 `search_shipment.jsp` L60에서 동일 패턴으로 EMARTLOGIS_CODE 처리 확인
+- Oracle B_COMMON_CODE → MSSQL CO_매출처품목코드매핑.물류코드 (M1: 직접 거래처 / M2: 부모 거래처)
+
 **용도**:
 - `LabelPrintHelper.java:1240`: `pCompCode_lotte = si.EMARTLOGIS_CODE`
 - `LabelPrintHelper.java:1342`: L0 바코드 앞부분 = `pCompCode_lotte + making_date + 중량 + 마트상품코드 + 박스순번`
-- EMARTLOGIS_CODE가 올바르지 않으면 L0 바코드 전체가 잘못 출력됨
-
-**MSSQL 현황**:
-- ERP(SGIS_HL_WEBERP) 전체 검색에서 `LOTTE_STORE_CODE` 미발견
-- `CO_각종소분류코드.대분류`는 VARCHAR(3) → 'LOTTE_STORE_CODE'(14자) 길이 불일치
-
-**가능한 방안**:
-
-| 방안 | 내용 | 확인 필요 사항 |
-|------|------|--------------|
-| 방안 A | `LE.센터코드 AS EMARTLOGIS_CODE` 직접 사용 | 센터코드가 L0 바코드 업체코드와 동일한지 운영팀 확인 |
-| 방안 B | `CO_거래처MASTER`에서 마트사거래처코드=LE.센터코드, 마트사구분='6' → 거래처코드 사용 | 거래처코드가 L0 바코드 업체코드와 동일한지 운영팀 확인 |
-| 방안 C | Oracle `B_COMMON_CODE`의 MSSQL 등가 테이블 발굴 | ERP 담당자에게 LOTTE_STORE_CODE 등가 코드 테이블 확인 |
-
-**Step 1 임시 처리**: `LE.센터코드 AS EMARTLOGIS_CODE` (방안 A 잠정)
 
 | # | 항목 | 위치 | 내용 |
 |---|------|------|------|
-| 1 | EMARTLOGIS_CODE 임시값 | JSP Step 1에서 적용한 임시 표현식 | 운영팀 확인 후 최종 표현식으로 교체 |
-
-**Part 2. 변환 계획**
-- 운영팀 확인 결과에 따라 방안 A/B/C 중 하나 적용
-- 변환 위치: `search_shipment_lotte.jsp` SELECT 절 `EMARTLOGIS_CODE` 표현식 1개만 변경
+| 1 | EMARTLOGIS_CODE | Step 1 JSP 수정 시 함께 적용 | `COALESCE(M1.물류코드, M2.물류코드)` |
 
 **체크리스트**
-- [ ] Part 1: 운영팀에 L0 바코드 업체코드 원천 확인 완료
-- [ ] Part 1: MSSQL에서 등가 표현식 특정 완료
-- [ ] Part 2: JSP EMARTLOGIS_CODE 표현식 최종 수정
+- [x] Part 1: MSSQL 등가 표현식 확정 (`COALESCE(M1.물류코드, M2.물류코드)`)
 - [ ] Part 3: MSSQL에서 실제 롯데 출하 데이터로 EMARTLOGIS_CODE 출력값 검증
 - [ ] Part 4: LabelPrintHelper L0 바코드 출력값이 기존과 동일한지 확인
 
@@ -568,11 +553,11 @@ onPostExecute() → ShipmentActivity UI 갱신
 ### 개발 순서 요약
 
 ```
-Step 1: search_shipment_lotte.jsp MSSQL 직접 JOIN (26개 컬럼, EMARTLOGIS_CODE 임시)
+Step 1: search_shipment_lotte.jsp MSSQL 직접 JOIN (26개 컬럼, EMARTLOGIS_CODE 확정 포함)
     ↓
 Step 2: ProgressDlgShipSearch.java D.창고코드 별칭 추가
     ↓
-Step 3: EMARTLOGIS_CODE 운영팀 확인 후 최종 적용 (⚠ 대기 가능)
+Step 3: EMARTLOGIS_CODE 실제 값 검증 (L0 바코드 출력값 확인)
     ↓
 Step 4: 통합 테스트
 ```
@@ -635,7 +620,7 @@ Step 4: 통합 테스트
 | 사전 | ⑤⑥ 사전 검증 | ✅ 완료 (PASS) |
 | 1 | search_shipment_lotte.jsp MSSQL 직접 JOIN (26개 컬럼) | ⏳ 대기 |
 | 2 | ProgressDlgShipSearch.java D.창고코드 별칭 추가 | ⏳ 대기 |
-| 3 | EMARTLOGIS_CODE 운영팀 확인 후 최종 적용 | ⏳ 대기 (운영팀 확인) |
+| 3 | EMARTLOGIS_CODE 실제 값 검증 (L0 바코드 출력값 확인) | ⏳ 대기 |
 | 4 | 통합 테스트 | ⏳ 대기 |
 
 **⑤ code-verifier 사전 검증 결과**:
@@ -647,6 +632,12 @@ Step 4: 통합 테스트
 **⑥ original-comparator 사전 검증 결과**:
 - 현재 JSP 34개 컬럼·순서·WHERE·ORDER BY → 원본과 완전 일치 PASS
 - 허용 차이: DB접속 Oracle→MSSQL, 인코딩 UTF-8, 로그 방식 변경
+
+**가이드 주요 변경 이력 (2026-05-04)**:
+- EMARTLOGIS_CODE: placeholder 제거 → `COALESCE(M1.물류코드, M2.물류코드)` 확정 (이마트 JSP L60 근거)
+- PACKWEIGHT: `COALESCE(NULLIF(V.평균중량,0), I.박스중량)` → `NULL AS PACKWEIGHT` (Oracle 원본 하드코딩 NULL 따름)
+- WHERE절: `COALESCE(M1.타입구분, M2.타입구분) = 'W'` 추가 (이마트/홈플러스 동일 조건)
+- ORDER BY: `LE.센터코드/PPCODE/품목명` → `LE.SEQ ASC` (Oracle ORDER BY EOI_ID ASC 대응)
 
 ---
 
