@@ -586,6 +586,7 @@ Step 3: 통합 테스트
 |------|------|------|
 | 1 | search_shipment_wholesale.jsp MSSQL 직접 JOIN (24개 컬럼) | ✅ 완료 |
 | 2 | ProgressDlgShipSearch.java D.창고코드 별칭 추가 | ✅ 완료 |
+| 사후 | ⑤ code-verifier PASS + ⑥ original-comparator PASS + 동작 시뮬레이션 PASS (2026-05-06) | ✅ 완료 |
 | 3 | 통합 테스트 | ⏳ 대기 |
 
 ---
