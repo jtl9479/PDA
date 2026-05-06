@@ -269,6 +269,7 @@ String quertystring = "SELECT "
     + "  AND V.LOTNO = L.LOTNO"
     + " WHERE H.마트사구분 = ''"
     + "   AND D.출고수량 > 0"
+    + "   AND I.원료육여부 = '1'"
     + qry_where
     + " ORDER BY D.SEQ ASC";
 
@@ -426,7 +427,7 @@ search_shipment_wholesale.jsp
     │     LEFT JOIN CO_거래처MASTER G ...
     │     JOIN SM_출고LOT L ...
     │     LEFT JOIN 월품목별재고화일_LOT별_VIEW V ...
-    │     WHERE H.마트사구분='' AND D.출고수량>0
+    │     WHERE H.마트사구분='' AND D.출고수량>0 AND I.원료육여부='1'
     └── out.println (24개 컬럼, ";;" 구분자)
     ↓
 ProgressDlgShipSearch.doInBackground()
@@ -476,7 +477,7 @@ onPostExecute() → ShipmentActivity UI 갱신
 - [x] Part 1: SELECT 24개 컬럼 구성 확인 (제거 9개 누락 없는지 검증)
 - [x] Part 1: out.println 순서 24개 확인 (temp[0]~temp[23] 인덱스 일치)
 - [x] Part 2: MSSQL JOIN 구조 작성 완료
-- [x] Part 2: WHERE H.마트사구분='' AND D.출고수량>0 포함 확인
+- [x] Part 2: WHERE H.마트사구분='' AND D.출고수량>0 AND I.원료육여부='1' 포함 확인
 - [x] Part 2: ORDER BY D.SEQ ASC 교체 확인
 - [x] Part 3: JSP 파일 저장 완료
 - [ ] Part 4: Tomcat 재시작 후 JSP 컴파일 오류 없음 확인
@@ -485,7 +486,7 @@ onPostExecute() → ShipmentActivity UI 갱신
 **Part 6. 변경 내용**:
 - **무엇을**: `search_shipment_wholesale.jsp`의 Oracle VIEW(`VW_PDA_WID_WHOLESALE_LIST`) 쿼리를 MSSQL 직접 JOIN 쿼리로 교체하고, out.println을 33개→24개로 축소
 - **왜**: getMSSQLConnection()으로 MSSQL 연결 시 Oracle 전용 VIEW 없어 SQL 오류 발생. Java temp[] 인덱스가 이미 24컬럼(0=GI_D_ID) 기준으로 업데이트되어 있어 JSP도 맞춰야 함
-- **어떻게**: SM_출고상세→SM_출고머리→CO_품목코드→CO_거래처MASTER→SM_출고LOT→월품목별재고화일_LOT별_VIEW JOIN, WHERE H.마트사구분='' AND D.출고수량>0, ORDER BY D.SEQ ASC. 9개 미파싱 컬럼(GI_H_ID, EOI_ID, AMOUNT, GOODS_R_ID, GR_REF_NO, BRANDNAME, PACKERNAME, EMARTLOGIS_NAME, WH_AREA) 제거. ⑤⑥ 검증 PASS 확인(2026-05-04)
+- **어떻게**: SM_출고상세→SM_출고머리→CO_품목코드→CO_거래처MASTER→SM_출고LOT→월품목별재고화일_LOT별_VIEW JOIN, WHERE H.마트사구분='' AND D.출고수량>0 AND I.원료육여부='1'(원료육=CO_품목코드.원료육여부='1', Oracle BI.ITEM_TYPE='10' 매핑), ORDER BY D.SEQ ASC. 9개 미파싱 컬럼(GI_H_ID, EOI_ID, AMOUNT, GOODS_R_ID, GR_REF_NO, BRANDNAME, PACKERNAME, EMARTLOGIS_NAME, WH_AREA) 제거. ⑤⑥ 검증 PASS 확인(2026-05-06)
 
 ---
 
