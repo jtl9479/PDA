@@ -417,7 +417,11 @@
 <span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span>  <span class="cm">← 앱: 회사코드</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜(Common.selectDay)</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.창고코드 = <span class="vl">?</span>  <span class="cm">← 앱: 창고 선택 시</span><br>
-<span class="cm">-- ORDER BY GI_D_ID ASC</span></div>
+<span class="cm">-- ORDER BY GI_D_ID ASC</span><br><br>
+<span class="cm">-- [JOIN ON 추가 필터]</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'7'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> C.대분류 = <span class="vl">'043'</span> / C1.대분류 = <span class="vl">'Q14'</span>  <span class="cm">← 코드명칭(제품용도/원산지)</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -509,7 +513,10 @@
 <span class="cm">-- ORDER BY HE.납품처코드, I.PPCODE, I.품목명</span><br><br>
 <span class="kw">LEFT JOIN</span> SM_수주상세 SD <span class="kw">ON</span> SD.마트사SEQ = HE.SEQ<br>
 <span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ⚠ WARN: 행 팽창 위험 (L99~100)</span><br>
-<span class="cm">-- SELECT: 'S' AS ITEM_TYPE (홈플정량 고정값)</span></div>
+<span class="cm">-- SELECT: 'S' AS ITEM_TYPE (홈플정량 고정값)</span><br>
+<span class="cm">-- [JOIN ON 추가 필터]</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'4'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -555,7 +562,8 @@
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
 <span class="kw">&nbsp;&nbsp;AND</span> I.원료육여부 = <span class="vl">'1'</span>  <span class="cm">← 도매 식별 조건 (개발51)</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span> <span class="kw">AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜(+창고 선택 시)</span><br>
-<span class="cm">-- ORDER BY D.SEQ ASC</span></div>
+<span class="cm">-- ORDER BY D.SEQ ASC</span><br><br>
+<span class="cm">-- [JOIN ON 추가 필터] 없음 (거래처MASTER 마트사구분 2차 필터·대분류·M2폴백 미사용)</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -600,7 +608,11 @@
 <span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'B'</span>  <span class="cm">← 개발44: 'J' 제외</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.바코드타입, M2.바코드타입) <span class="kw">IN</span> (<span class="vl">'M8'</span>,<span class="vl">'M9'</span>)  <span class="cm">← 개발43: M9 추가</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span> <span class="kw">AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜 (창고코드 조건 없음)</span><br>
-<span class="cm">-- ORDER BY GI_D_ID ASC</span></div>
+<span class="cm">-- ORDER BY GI_D_ID ASC</span><br><br>
+<span class="cm">-- [JOIN ON 추가 필터]</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'7'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> C.대분류 = <span class="vl">'043'</span> / C1.대분류 = <span class="vl">'Q14'</span>  <span class="cm">← 코드명칭(제품용도/원산지)</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -647,7 +659,11 @@
 <span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span> <span class="kw">AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜 (창고코드 조건 없음)</span><br>
 <span class="cm">-- ORDER BY HE.납품처코드, I.품목코드</span><br><br>
 <span class="kw">LEFT JOIN</span> SM_수주상세 SD <span class="kw">ON</span> SD.마트사SEQ = HE.SEQ<br>
-<span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ⚠ WARN: 행 팽창 (홈플정량과 동일 패턴)</span></div>
+<span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ⚠ WARN: 행 팽창 (홈플정량과 동일 패턴)</span><br>
+<span class="cm">-- [JOIN ON 추가 필터]</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'4'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> C1.대분류 = <span class="vl">'Q14'</span>  <span class="cm">← 코드명칭(원산지)</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -696,7 +712,10 @@
 (<span class="kw">SELECT TOP 1</span> 박스순번 <span class="kw">FROM</span> SM_출고계근 W<br>
 &nbsp;<span class="kw">WHERE</span> W.출고상세SEQ = D.SEQ <span class="kw">AND</span> 박스순번 <span class="kw">IS NOT NULL</span><br>
 &nbsp;<span class="kw">ORDER BY</span> W.계근ID <span class="kw">DESC</span>)<br>
-<span class="cm">-- 메인 ORDER BY LE.SEQ ASC</span></div>
+<span class="cm">-- 메인 ORDER BY LE.SEQ ASC</span><br><br>
+<span class="cm">-- [JOIN ON 추가 필터]</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> W.박스순번 IS NOT NULL  <span class="cm">← LAST_BOX_ORDER 서브쿼리</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
