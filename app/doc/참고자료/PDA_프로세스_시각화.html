@@ -290,13 +290,14 @@
     <tr><td>홈플러스비정량출하대상받기</td><td class="mono">search_homeplus_nonfixed.jsp</td><td class="c">5</td><td class="c"><span class="badge b-wait">⚠️ 바코드정보 미전환</span></td></tr>
     <tr><td>롯데출하대상받기</td><td class="mono">search_shipment_lotte.jsp</td><td class="c">6</td><td class="c"><span class="badge b-done">✅</span></td></tr>
     <tr><td>생산대상받기(라벨)</td><td class="mono">search_production_4label.jsp</td><td class="c">7</td><td class="c"><span class="badge b-fail">❌ Oracle 미전환</span></td></tr>
-    <tr><td><b>바코드정보 받기 (정량)</b></td><td><span class="mono">search_barcode_info.jsp</span> → TB_BARCODE_INFO (바코드 파싱규칙 다운로드)</td><td class="c">0·1·2·3·6·7</td><td class="c"><span class="badge b-done">✅</span></td></tr>
-    <tr><td><b>바코드정보 받기 (비정량)</b></td><td class="mono">search_barcode_info_nonfixed.jsp</td><td class="c">4</td><td class="c"><span class="badge b-done">✅</span></td></tr>
-    <tr><td><b>바코드정보 받기 (홈플비정량)</b></td><td class="mono">search_homeplus_nonfixed2.jsp</td><td class="c">5</td><td class="c"><span class="badge b-fail">❌ B_ITEM Oracle 미전환</span></td></tr>
     <tr><td><b>출하대상 삭제</b></td><td>TB_SHIPMENT 전체 삭제 (deletequeryShipment)</td><td class="c">-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
     <tr><td><b>출하대상 목록 팝업</b></td><td>메뉴 → TB_SHIPMENT 내용 조회 다이얼로그</td><td class="c">-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
     <tr><td><b>바코드정보 목록 팝업</b></td><td>메뉴 → TB_BARCODE_INFO 내용 조회 다이얼로그</td><td class="c">-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
   </table>
+  <div class="note">
+    <b>출하대상받기 = 출하대상 + 바코드정보 자동 연쇄</b> — 각 "대상받기" 버튼은 별도 조작 없이 출하대상 조회(<span class="mono">ProgressDlgShipSearch</span>) 완료 후 바코드정보 조회(<span class="mono">ProgressDlgBarcodeSearch</span>)를 <b>자동 실행</b>해 TB_SHIPMENT·TB_BARCODE_INFO를 함께 채웁니다.
+    바코드정보 JSP: 정량(0·1·2·3·6·7) <span class="mono">search_barcode_info.jsp</span> ✅ · 비정량(4) <span class="mono">search_barcode_info_nonfixed.jsp</span> ✅ · 홈플비정량(5) <span class="mono">search_homeplus_nonfixed2.jsp</span> ❌ B_ITEM Oracle 미전환 → 그래서 (5)는 출하대상은 받아도 바코드정보 단계에서 막힘.
+  </div>
 
   <h3 class="sub">⚖️ 계근 입력 (BixolonShipmentActivity)</h3>
   <table>
@@ -351,8 +352,8 @@
   </table>
 
   <div class="note warn">
-    <b>동작 요약</b> — ❌ 미동작 4건: 생산 출하대상받기(1)·생산라벨 출하대상받기(7)·홈플비정량 바코드정보 받기(5)·생산계근계산 바코드정보(모두 Oracle VIEW/테이블 미전환) ·
-    ⚠️ 부분/이슈 3건: 홈플정량(2) SM_수주상세 행팽창 · 홈플비정량(5) 출하대상은 받으나 바코드정보 미전환으로 전체 흐름 제한 · 생산라벨 인쇄(7). 그 외 기능은 정상 동작.
+    <b>동작 요약</b> — ❌ 미동작 3건: 생산 출하대상받기(1)·생산라벨 출하대상받기(7)·생산계근계산 바코드정보(모두 Oracle VIEW/테이블 미전환) ·
+    ⚠️ 부분/이슈 3건: 홈플정량(2) SM_수주상세 행팽창 · 홈플비정량(5) 출하대상은 받으나 바코드정보(search_homeplus_nonfixed2.jsp) 미전환으로 전체 흐름 제한 · 생산라벨 인쇄(7). 그 외 기능은 정상 동작.
   </div>
 </section>
 
