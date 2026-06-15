@@ -585,7 +585,8 @@
           <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'7'</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
 <span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'B'</span>  <span class="cm">← 개발44: 'J' 제외</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.바코드타입, M2.바코드타입) <span class="kw">IN</span> (<span class="vl">'M8'</span>,<span class="vl">'M9'</span>)  <span class="cm">← 개발43: M9 추가</span></div>
+<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.바코드타입, M2.바코드타입) <span class="kw">IN</span> (<span class="vl">'M8'</span>,<span class="vl">'M9'</span>)  <span class="cm">← 개발43: M9 추가</span><br>
+<span class="cm">-- ORDER BY GI_D_ID ASC</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -628,7 +629,8 @@
           <div class="hd">WHERE 핵심 조건 — search_homeplus_nonfixed.jsp</div>
           <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'4'</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
-<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.바코드타입, M2.바코드타입) = <span class="vl">'H5'</span><br><br>
+<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.바코드타입, M2.바코드타입) = <span class="vl">'H5'</span><br>
+<span class="cm">-- ORDER BY HE.납품처코드, I.품목코드</span><br><br>
 <span class="kw">LEFT JOIN</span> SM_수주상세 SD <span class="kw">ON</span> SD.마트사SEQ = HE.SEQ<br>
 <span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ⚠ WARN: 행 팽창 (홈플정량과 동일 패턴)</span></div>
         </div>
