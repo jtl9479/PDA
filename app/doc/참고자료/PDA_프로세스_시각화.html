@@ -419,7 +419,7 @@
 <span class="cm">-- ORDER BY GI_D_ID ASC</span><br><br>
 <span class="cm">-- [JOIN ON 추가 필터]</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'7'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 폴백 매핑 결정 → WHERE COALESCE(타입구분/바코드타입) 필터에 영향</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -514,7 +514,7 @@
 <span class="cm">-- SELECT: 'S' AS ITEM_TYPE (홈플정량 고정값)</span><br>
 <span class="cm">-- [JOIN ON 추가 필터]</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'4'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 폴백 매핑 결정 → WHERE COALESCE(타입구분/바코드타입) 필터에 영향</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -609,7 +609,7 @@
 <span class="cm">-- ORDER BY GI_D_ID ASC</span><br><br>
 <span class="cm">-- [JOIN ON 추가 필터]</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'7'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 폴백 매핑 결정 → WHERE COALESCE(타입구분/바코드타입) 필터에 영향</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -659,7 +659,7 @@
 <span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ⚠ WARN: 행 팽창 (홈플정량과 동일 패턴)</span><br>
 <span class="cm">-- [JOIN ON 추가 필터]</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'4'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 폴백 매핑 결정 → WHERE COALESCE(타입구분/바코드타입) 필터에 영향</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -710,7 +710,7 @@
 &nbsp;<span class="kw">ORDER BY</span> W.계근ID <span class="kw">DESC</span>)<br>
 <span class="cm">-- 메인 ORDER BY LE.SEQ ASC</span><br><br>
 <span class="cm">-- [JOIN ON 추가 필터]</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 폴백 매핑 결정 → WHERE COALESCE(타입구분/바코드타입) 필터에 영향</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
