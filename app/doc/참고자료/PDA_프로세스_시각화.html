@@ -470,7 +470,7 @@
     <div class="phead">
       <div class="big">2</div>
       <h3>홈플러스 하이퍼 (정량)<small>홈플러스출하대상받기 → 홈플러스 계근입력시작</small></h3>
-      <span class="badge b-done">전환완료</span><span class="badge b-fail">검증 FAIL 1건</span>
+      <span class="badge b-done">전환완료</span><span class="badge b-done">검증 PASS</span><span class="badge b-wait">행팽창 WARN</span>
     </div>
     <div class="pbody">
       <div class="infobar">
@@ -482,7 +482,7 @@
         <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">미사용 ("" 고정)</span></div>
       </div>
       <div class="steps">
-        <div class="step bad"><div class="sc">1</div><div class="st">출하대상받기 ❌</div><span class="sj">search_shipment_homeplus.jsp</span><div class="sd">SM_수주상세 JOIN 행 팽창 FAIL</div></div>
+        <div class="step ok"><div class="sc">1</div><div class="st">출하대상받기</div><span class="sj">search_shipment_homeplus.jsp</span><div class="sd">SM_수주상세 JOIN (행팽창 WARN)</div></div>
         <div class="step ok"><div class="sc">2</div><div class="st">바코드정보</div><span class="sj">search_barcode_info.jsp</span><div class="sd">정량 공용</div></div>
         <div class="step"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd">홈플러스 전용 라벨 분기</div></div>
         <div class="step ok"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet.jsp</span><div class="sd">롯데와 동일 분기</div></div>
@@ -496,14 +496,16 @@
 <span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'W'</span><br>
 <span class="cm">-- ORDER BY HE.납품처코드, I.PPCODE, I.품목명</span><br><br>
 <span class="kw">LEFT JOIN</span> SM_수주상세 SD <span class="kw">ON</span> SD.마트사SEQ = HE.SEQ<br>
-<span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ❌ FAIL: 행 팽창 위험 (L99~100)</span></div>
+<span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ⚠ WARN: 행 팽창 위험 (L99~100)</span><br>
+<span class="cm">-- SELECT: 'S' AS ITEM_TYPE (홈플정량 고정값)</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
           <ul>
-            <li class="bad"><b>FAIL — SM_수주상세 행 팽창</b>: 마트사SEQ는 UNIQUE 제약 없는 외래키. 동일 SEQ에 N건이면 출하대상 N배 중복 INSERT → TOP 1 서브쿼리/OUTER APPLY 전환 또는 실DB 중복 0건 확인 필요</li>
-            <li class="ok">STORE_IN_DATE(SD.납기일자)는 <b>VARCHAR(8)</b> 확인 → CONVERT 불필요 (오류22-1 오탐 해소)</li>
-            <li class="ok">인덱스 0~23 · packet · 로컬DB 전수 일치</li>
+            <li class="warn"><b>WARN — SM_수주상세 행 팽창 가능</b>: 마트사SEQ는 UNIQUE 제약 없는 외래키. 동일 SEQ에 N건이면 출하대상 N배 중복 → 실DB 중복 0건 확인 또는 TOP 1 서브쿼리/OUTER APPLY 전환 필요 (5·6 동일 패턴)</li>
+            <li class="warn">STORE_IN_DATE(SD.납기일자) 컬럼 타입 확인 대기 — 오류22-1 미해소. datetime이면 substring 오류로 <span class="mono">CONVERT(VARCHAR(8),...,112)</span> 필요</li>
+            <li class="info">출하대상 응답의 ITEM_TYPE은 <span class="mono">'S' AS ITEM_TYPE</span> 하드코딩 (홈플정량 고정)</li>
+            <li class="ok">인덱스 0~23 · packet · 로컬DB 전수 일치 (인덱스/파라미터 검증 PASS)</li>
             <li class="info">SM_마트사발주홈플러스(HE) 기준 납품처코드 정렬</li>
           </ul>
         </div>
@@ -634,7 +636,7 @@
           <div class="hd">특이사항 · 검증 결과</div>
           <ul>
             <li class="bad"><b>미전환 잔여</b>: 바코드정보조회(<span class="mono">ProgressDlgBarcodeSearch:85</span>)가 B_ITEM 잔재 JSP 호출 — ERP 답변 없이 즉시 전환 가능</li>
-            <li class="warn">SM_수주상세 LEFT JOIN 행 팽창 가능 (홈플정량 FAIL과 동일 패턴)</li>
+            <li class="warn">SM_수주상세 LEFT JOIN 행 팽창 가능 (홈플정량 WARN과 동일 패턴)</li>
             <li class="ok">출하대상 인덱스 0~28 · NULL 방어(Common.nullCheck) 전수 일치 (검증 PASS)</li>
             <li class="info">바코드타입 'H5' 단일 필터 (타입구분 조건 없음)</li>
           </ul>
@@ -675,7 +677,8 @@
 <span class="cm">-- LAST_BOX_ORDER (Index 25):</span><br>
 (<span class="kw">SELECT TOP 1</span> 박스순번 <span class="kw">FROM</span> SM_출고계근 W<br>
 &nbsp;<span class="kw">WHERE</span> W.출고상세SEQ = D.SEQ <span class="kw">AND</span> 박스순번 <span class="kw">IS NOT NULL</span><br>
-&nbsp;<span class="kw">ORDER BY</span> W.계근ID <span class="kw">DESC</span>)</div>
+&nbsp;<span class="kw">ORDER BY</span> W.계근ID <span class="kw">DESC</span>)<br>
+<span class="cm">-- 메인 ORDER BY LE.SEQ ASC</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -738,10 +741,10 @@
     <tr><th>구분</th><th>마트사구분</th><th>식별 필터</th><th>컬럼</th><th>창고코드</th><th>바코드정보 JSP</th><th>계근전송</th><th>GI_L_ID</th><th>상태</th></tr>
     <tr><td><b>0 이마트</b></td><td class="c">'7'</td><td class="c">타입구분 'W'</td><td class="c">31</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">구로직</td><td class="c">⭕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>1 생산</b></td><td class="c">-</td><td class="c">Oracle VIEW</td><td class="c">32</td><td class="c">-</td><td class="c">정량 공용</td><td class="c">신로직</td><td class="c">-</td><td class="c"><span class="badge b-wait">대기</span></td></tr>
-    <tr><td><b>2 홈플 정량</b></td><td class="c">'4'</td><td class="c">타입구분 'W'</td><td class="c">24</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">구로직</td><td class="c">✕</td><td class="c"><span class="badge b-fail">FAIL 1</span></td></tr>
+    <tr><td><b>2 홈플 정량</b></td><td class="c">'4'</td><td class="c">타입구분 'W'</td><td class="c">24</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">구로직</td><td class="c">✕</td><td class="c"><span class="badge b-done">PASS</span> <span class="badge b-wait">WARN</span></td></tr>
     <tr><td><b>3 도매</b></td><td class="c">''</td><td class="c">원료육여부 '1'</td><td class="c">24</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">신로직</td><td class="c">✕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>4 비정량</b></td><td class="c">'7'</td><td class="c">'B' + M8/M9</td><td class="c">31</td><td class="c">없음</td><td class="c">비정량 전용</td><td class="c">신로직</td><td class="c">⭕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
-    <tr><td><b>5 홈플 비정량</b></td><td class="c">'4'</td><td class="c">바코드타입 'H5'</td><td class="c">29</td><td class="c">없음</td><td class="c"><span class="badge b-fail">미전환</span></td><td class="c">신로직</td><td class="c">✕</td><td class="c"><span class="badge b-warn b-fail">이슈</span></td></tr>
+    <tr><td><b>5 홈플 비정량</b></td><td class="c">'4'</td><td class="c">바코드타입 'H5'</td><td class="c">29</td><td class="c">없음</td><td class="c"><span class="badge b-fail">미전환</span></td><td class="c">신로직</td><td class="c">✕</td><td class="c"><span class="badge b-fail">이슈</span></td></tr>
     <tr><td><b>6 롯데</b></td><td class="c">'6'</td><td class="c">타입구분 'W'</td><td class="c">26</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">구로직</td><td class="c">✕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>7 생산라벨</b></td><td class="c">-</td><td class="c">Oracle VIEW</td><td class="c">32</td><td class="c">-</td><td class="c">정량 공용</td><td class="c">신로직</td><td class="c">-</td><td class="c"><span class="badge b-wait">대기</span></td></tr>
   </table>
@@ -772,7 +775,7 @@
     <tr><th>용도</th><th>JSP</th><th>호출 클래스</th><th>MSSQL 대상</th><th>로컬DB</th><th>상태</th></tr>
     <tr><td>로그인</td><td class="mono">manager_login.jsp</td><td>ProgressDlgLogin</td><td>CO_비밀번호/GR_개인기본</td><td class="c">-</td><td class="c"><span class="badge b-done">완료</span></td></tr>
     <tr><td>출하대상 (0 이마트)</td><td class="mono">search_shipment.jsp</td><td rowspan="8">ProgressDlgShipSearch</td><td rowspan="6">SM_출고상세·머리·LOT<br>CO_품목코드·매출처품목코드매핑<br>월품목별재고화일_LOT별_VIEW 등</td><td rowspan="8" class="c">TB_SHIPMENT</td><td class="c"><span class="badge b-done">완료</span></td></tr>
-    <tr><td>출하대상 (2 홈플정량)</td><td class="mono">search_shipment_homeplus.jsp</td><td class="c"><span class="badge b-done">완료</span> <span class="badge b-fail">FAIL 1</span></td></tr>
+    <tr><td>출하대상 (2 홈플정량)</td><td class="mono">search_shipment_homeplus.jsp</td><td class="c"><span class="badge b-done">완료</span> <span class="badge b-wait">행팽창 WARN</span></td></tr>
     <tr><td>출하대상 (3 도매)</td><td class="mono">search_shipment_wholesale.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
     <tr><td>출하대상 (4 비정량)</td><td class="mono">search_production_nonfixed.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
     <tr><td>출하대상 (5 홈플비정량)</td><td class="mono">search_homeplus_nonfixed.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
@@ -807,7 +810,7 @@
     <tr><th>searchType</th><th>인덱스/파라미터/WHERE/로컬DB/Oracle잔재</th><th>종합</th></tr>
     <tr><td><b>0 이마트</b></td><td>인덱스 0~30 · packet · 로컬DB 전수 일치 · GI_L_ID(Index30) 수신</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>1 생산</b></td><td>Oracle <span class="mono">VW_PDA_WID_PRO_LIST</span> 잔재 — 출하대상 JSP 1본 미전환 (ERP VIEW 답변 대기)</td><td class="c"><span class="badge b-wait">미전환</span></td></tr>
-    <tr><td><b>2 홈플러스정량</b></td><td>인덱스 0~23 일치 · <b>SM_수주상세 LEFT JOIN 행 팽창</b> (마트사SEQ 비유니크)</td><td class="c"><span class="badge b-fail">FAIL 1</span></td></tr>
+    <tr><td><b>2 홈플러스정량</b></td><td>인덱스 0~23 일치(검증 PASS) · <b>SM_수주상세 LEFT JOIN 행 팽창 WARN</b> (마트사SEQ 비유니크, 5·6 동일 패턴)</td><td class="c"><span class="badge b-done">PASS</span> <span class="badge b-wait">WARN</span></td></tr>
     <tr><td><b>3 도매</b></td><td>인덱스 0~23 · WHERE 실컬럼명(원료육여부='1') · 로컬DB 전수 일치</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>4 비정량(이마트)</b></td><td>인덱스 0~30 · 타입구분'B'(개발44)·M9(개발43) 반영 · GI_L_ID(Index30) 수신</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>5 홈플러스비정량</b></td><td>출하대상 인덱스 0~28 전수 일치 / 바코드정보 <span class="mono">B_ITEM</span> 잔재 미전환 · SM_수주상세 행 팽창 WARN</td><td class="c"><span class="badge b-done">출하 PASS</span> <span class="badge b-fail">바코드 미전환</span></td></tr>
