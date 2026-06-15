@@ -405,7 +405,9 @@
           <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'7'</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
 <span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'W'</span><br>
-<span class="cm">-- + 앱: AND D.회사코드=? AND D.출고일자=? [AND D.창고코드=?]</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span>  <span class="cm">← 앱: 회사코드</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜(Common.selectDay)</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.창고코드 = <span class="vl">?</span>  <span class="cm">← 앱: 창고 선택 시</span><br>
 <span class="cm">-- ORDER BY GI_D_ID ASC</span></div>
         </div>
         <div class="ibox">
@@ -494,6 +496,7 @@
           <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'4'</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
 <span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'W'</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span> <span class="kw">AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜(+창고 선택 시)</span><br>
 <span class="cm">-- ORDER BY HE.납품처코드, I.PPCODE, I.품목명</span><br><br>
 <span class="kw">LEFT JOIN</span> SM_수주상세 SD <span class="kw">ON</span> SD.마트사SEQ = HE.SEQ<br>
 <span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ⚠ WARN: 행 팽창 위험 (L99~100)</span><br>
@@ -542,7 +545,8 @@
           <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">''</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
 <span class="kw">&nbsp;&nbsp;AND</span> I.원료육여부 = <span class="vl">'1'</span>  <span class="cm">← 도매 식별 조건 (개발51)</span><br>
-<span class="cm">-- + 앱 전송 조건 · ORDER BY D.SEQ ASC</span></div>
+<span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span> <span class="kw">AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜(+창고 선택 시)</span><br>
+<span class="cm">-- ORDER BY D.SEQ ASC</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
@@ -586,6 +590,7 @@
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
 <span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'B'</span>  <span class="cm">← 개발44: 'J' 제외</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.바코드타입, M2.바코드타입) <span class="kw">IN</span> (<span class="vl">'M8'</span>,<span class="vl">'M9'</span>)  <span class="cm">← 개발43: M9 추가</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span> <span class="kw">AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜 (창고코드 조건 없음)</span><br>
 <span class="cm">-- ORDER BY GI_D_ID ASC</span></div>
         </div>
         <div class="ibox">
@@ -630,6 +635,7 @@
           <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'4'</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
 <span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.바코드타입, M2.바코드타입) = <span class="vl">'H5'</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span> <span class="kw">AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜 (창고코드 조건 없음)</span><br>
 <span class="cm">-- ORDER BY HE.납품처코드, I.품목코드</span><br><br>
 <span class="kw">LEFT JOIN</span> SM_수주상세 SD <span class="kw">ON</span> SD.마트사SEQ = HE.SEQ<br>
 <span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ⚠ WARN: 행 팽창 (홈플정량과 동일 패턴)</span></div>
@@ -675,7 +681,8 @@
           <div class="hd">WHERE 핵심 조건 — search_shipment_lotte.jsp</div>
           <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'6'</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
-<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'W'</span><br><br>
+<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'W'</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span> <span class="kw">AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜(+창고 선택 시)</span><br><br>
 <span class="cm">-- LAST_BOX_ORDER (Index 25):</span><br>
 (<span class="kw">SELECT TOP 1</span> 박스순번 <span class="kw">FROM</span> SM_출고계근 W<br>
 &nbsp;<span class="kw">WHERE</span> W.출고상세SEQ = D.SEQ <span class="kw">AND</span> 박스순번 <span class="kw">IS NOT NULL</span><br>
