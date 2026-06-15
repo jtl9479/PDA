@@ -366,12 +366,11 @@
   </p>
 
   <div class="note warn">
-    <b>WHERE 박스는 SELECT의 WHERE절만 발췌</b>한 것입니다. 각 쿼리의 <b>JOIN ON절에 다음 추가 필터</b>가 더 있습니다:
-    ① <span class="mono">B.마트사구분 = '?'</span> — CO_거래처MASTER에 거는 <b>2차 마트사구분 필터</b> (0·2·4·5, WHERE의 H.마트사구분과 별개) ·
-    ② <span class="mono">C.대분류='043'</span>(제품용도 명칭)·<span class="mono">C1.대분류='Q14'</span>(원산지 명칭) — 코드명칭 조회용 JOIN (0·4·5) ·
-    ③ <span class="mono">G2.거래처코드 != H.출고거래처</span> — M2 대체 매출처품목코드매핑 폴백 (0·2·4·5·6) ·
-    ④ 롯데(6) LAST_BOX_ORDER 서브쿼리 <span class="mono">W.박스순번 IS NOT NULL</span>.
-    도매(3)는 거래처MASTER에 마트사구분 필터 없이 WHERE <span class="mono">H.마트사구분=''</span>만 사용합니다.
+    <b>WHERE 박스는 SELECT의 WHERE절만 발췌</b>한 것입니다. <b>조회 결과(행 선택)에 영향을 주는 JOIN ON 필터</b>는 다음과 같습니다:
+    ① <span class="mono">B.마트사구분 = '?'</span> — CO_거래처MASTER(<b>INNER JOIN</b>)에 거는 <b>2차 마트사구분 필터</b> (0·2·4·5, WHERE의 H.마트사구분과 별개로 행을 거름) ·
+    ② <span class="mono">G2.거래처코드 != H.출고거래처</span> — M2 대체 매출처품목코드매핑을 결정 → WHERE의 <span class="mono">COALESCE(M1,M2)타입구분/바코드타입</span> 필터 결과에 영향 (0·2·4·5·6).
+    도매(3)는 거래처MASTER에 마트사구분 2차 필터 없이 WHERE <span class="mono">H.마트사구분=''</span>만 사용합니다.
+    <br>※ <span class="mono">C.대분류='043'</span>·<span class="mono">C1.대분류='Q14'</span> 등은 코드명칭(USE_NAME/CT_NAME) <b>LEFT JOIN 룩업 구분자</b>로 <b>조회 결과에는 영향 없음</b> → 조회 조건에서 제외.
   </div>
 
   <div class="tabs">
@@ -420,7 +419,6 @@
 <span class="cm">-- ORDER BY GI_D_ID ASC</span><br><br>
 <span class="cm">-- [JOIN ON 추가 필터]</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'7'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> C.대분류 = <span class="vl">'043'</span> / C1.대분류 = <span class="vl">'Q14'</span>  <span class="cm">← 코드명칭(제품용도/원산지)</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
         </div>
         <div class="ibox">
@@ -611,7 +609,6 @@
 <span class="cm">-- ORDER BY GI_D_ID ASC</span><br><br>
 <span class="cm">-- [JOIN ON 추가 필터]</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'7'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> C.대분류 = <span class="vl">'043'</span> / C1.대분류 = <span class="vl">'Q14'</span>  <span class="cm">← 코드명칭(제품용도/원산지)</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
         </div>
         <div class="ibox">
@@ -662,7 +659,6 @@
 <span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ⚠ WARN: 행 팽창 (홈플정량과 동일 패턴)</span><br>
 <span class="cm">-- [JOIN ON 추가 필터]</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> B.마트사구분 = <span class="vl">'4'</span>  <span class="cm">← 거래처MASTER 2차 필터</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> C1.대분류 = <span class="vl">'Q14'</span>  <span class="cm">← 코드명칭(원산지)</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
         </div>
         <div class="ibox">
@@ -714,8 +710,7 @@
 &nbsp;<span class="kw">ORDER BY</span> W.계근ID <span class="kw">DESC</span>)<br>
 <span class="cm">-- 메인 ORDER BY LE.SEQ ASC</span><br><br>
 <span class="cm">-- [JOIN ON 추가 필터]</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> W.박스순번 IS NOT NULL  <span class="cm">← LAST_BOX_ORDER 서브쿼리</span></div>
+<span class="kw">&nbsp;&nbsp;AND</span> G2.거래처코드 != H.출고거래처  <span class="cm">← M2 대체매핑 폴백</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
