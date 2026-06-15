@@ -365,6 +365,15 @@
     (탭의 ● : <span style="color:var(--green)">초록=전환완료</span> · <span style="color:var(--orange)">주황=전환대기</span> · <span style="color:var(--red)">빨강=이슈 보유</span>)
   </p>
 
+  <div class="note warn">
+    <b>WHERE 박스는 SELECT의 WHERE절만 발췌</b>한 것입니다. 각 쿼리의 <b>JOIN ON절에 다음 추가 필터</b>가 더 있습니다:
+    ① <span class="mono">B.마트사구분 = '?'</span> — CO_거래처MASTER에 거는 <b>2차 마트사구분 필터</b> (0·2·4·5, WHERE의 H.마트사구분과 별개) ·
+    ② <span class="mono">C.대분류='043'</span>(제품용도 명칭)·<span class="mono">C1.대분류='Q14'</span>(원산지 명칭) — 코드명칭 조회용 JOIN (0·4·5) ·
+    ③ <span class="mono">G2.거래처코드 != H.출고거래처</span> — M2 대체 매출처품목코드매핑 폴백 (0·2·4·5·6) ·
+    ④ 롯데(6) LAST_BOX_ORDER 서브쿼리 <span class="mono">W.박스순번 IS NOT NULL</span>.
+    도매(3)는 거래처MASTER에 마트사구분 필터 없이 WHERE <span class="mono">H.마트사구분=''</span>만 사용합니다.
+  </div>
+
   <div class="tabs">
     <div class="tab active" data-p="p0"><span class="tno">0</span>이마트<span class="dot g"></span></div>
     <div class="tab" data-p="p1"><span class="tno">1</span>생산<span class="dot o"></span></div>
