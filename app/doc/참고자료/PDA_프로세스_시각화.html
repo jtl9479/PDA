@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDA-INNO 프로세스 시각화</title>
+<style>
+  :root {
+    --blue: #2563eb; --blue-bg: #eff6ff;
+    --green: #16a34a; --green-bg: #f0fdf4;
+    --orange: #ea580c; --orange-bg: #fff7ed;
+    --red: #dc2626; --red-bg: #fef2f2;
+    --purple: #7c3aed; --purple-bg: #f5f3ff;
+    --gray: #64748b; --gray-bg: #f8fafc;
+    --border: #e2e8f0; --text: #1e293b; --navy: #1e3a8a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Malgun Gothic", "맑은 고딕", "Segoe UI", sans-serif;
+    color: var(--text); background: #f1f5f9; line-height: 1.55; padding: 24px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  header.page {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff;
+    border-radius: 14px; padding: 28px 32px; margin-bottom: 24px;
+  }
+  header.page h1 { font-size: 26px; margin-bottom: 6px; }
+  header.page p { opacity: .92; font-size: 14px; }
+  header.page .meta { margin-top: 10px; font-size: 12.5px; opacity: .8; }
+
+  section.card {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 24px 28px; margin-bottom: 22px;
+  }
+  section.card > h2 {
+    font-size: 19px; margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--blue); color: var(--navy);
+  }
+  section.card > h2 .num {
+    display: inline-block; background: var(--blue); color: #fff; border-radius: 8px;
+    font-size: 13px; padding: 2px 9px; margin-right: 8px; vertical-align: 2px;
+  }
+  h3.sub { font-size: 15px; margin: 18px 0 10px; color: #334155; }
+
+  .badge { display: inline-block; font-size: 11.5px; font-weight: 700; border-radius: 99px; padding: 2px 10px; vertical-align: middle; }
+  .b-done { background: var(--green-bg); color: var(--green); border: 1px solid #bbf7d0; }
+  .b-wait { background: var(--orange-bg); color: var(--orange); border: 1px solid #fed7aa; }
+  .b-fail { background: var(--red-bg); color: var(--red); border: 1px solid #fecaca; }
+  .b-info { background: var(--blue-bg); color: var(--blue); border: 1px solid #bfdbfe; }
+  .b-gray { background: var(--gray-bg); color: var(--gray); border: 1px solid var(--border); }
+
+  .flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0; margin: 12px 0; }
+  .fbox {
+    flex: 1 1 0; min-width: 150px; border-radius: 10px; padding: 12px 14px;
+    border: 1.5px solid; text-align: center; position: relative;
+  }
+  .fbox .t { font-weight: 700; font-size: 13.5px; margin-bottom: 4px; }
+  .fbox .d { font-size: 11.5px; color: #475569; }
+  .fbox .code { font-family: Consolas, monospace; font-size: 11px; color: var(--purple); display: block; margin-top: 4px; word-break: break-all; }
+  .fb-blue   { border-color: #93c5fd; background: var(--blue-bg); }
+  .fb-green  { border-color: #86efac; background: var(--green-bg); }
+  .fb-orange { border-color: #fdba74; background: var(--orange-bg); }
+  .fb-purple { border-color: #c4b5fd; background: var(--purple-bg); }
+  .fb-gray   { border-color: #cbd5e1; background: var(--gray-bg); }
+  .fb-red    { border-color: #fca5a5; background: var(--red-bg); }
+  .arrow-r {
+    flex: 0 0 34px; display: flex; align-items: center; justify-content: center;
+    color: var(--gray); font-size: 19px; font-weight: 700;
+  }
+  .arrow-d { text-align: center; color: var(--gray); font-size: 19px; font-weight: 700; margin: 4px 0; }
+
+  .lane { display: flex; gap: 14px; flex-wrap: wrap; }
+  .lane .zone { flex: 1 1 280px; border: 1.5px dashed #94a3b8; border-radius: 12px; padding: 14px; }
+  .lane .zone h4 { font-size: 13.5px; color: #475569; margin-bottom: 10px; text-align: center; }
+  .zone .item { border-radius: 8px; border: 1.5px solid; padding: 9px 11px; margin-bottom: 8px; font-size: 12.5px; }
+  .zone .item b { display: block; font-size: 13px; }
+  .zone .item span { color: #475569; font-size: 11.5px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { background: var(--navy); color: #fff; padding: 8px 10px; font-size: 12.5px; text-align: center; }
+  td { border: 1px solid var(--border); padding: 7px 10px; vertical-align: middle; }
+  tr:nth-child(even) td { background: #fafbfd; }
+  td.c { text-align: center; }
+  code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 12px; color: var(--purple); background: var(--purple-bg); padding: 1px 5px; border-radius: 4px; }
+
+  .note { border-left: 4px solid var(--blue); background: var(--blue-bg); border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 12.5px; margin: 12px 0; }
+  .note.warn { border-color: var(--orange); background: var(--orange-bg); }
+  .note.danger { border-color: var(--red); background: var(--red-bg); }
+
+  /* ════════════════ 마트사별 탭 ════════════════ */
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tab {
+    border: 1.5px solid var(--border); border-bottom: none; background: var(--gray-bg);
+    border-radius: 10px 10px 0 0; padding: 8px 14px; cursor: pointer; font-size: 13px;
+    font-weight: 700; color: #475569; user-select: none; display: flex; align-items: center; gap: 7px;
+  }
+  .tab .tno {
+    background: #94a3b8; color: #fff; border-radius: 6px; font-size: 11.5px;
+    width: 21px; height: 21px; display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .tab.active .tno { background: #fff; color: var(--navy); }
+  .tab .dot { width: 8px; height: 8px; border-radius: 99px; flex: none; }
+  .dot.g { background: var(--green); } .dot.o { background: var(--orange); } .dot.r { background: var(--red); }
+
+  .panel {
+    display: none; border: 1.5px solid var(--navy); border-radius: 0 12px 12px 12px;
+    background: #fff; overflow: hidden;
+  }
+  .panel.active { display: block; }
+
+  /* 패널 헤더 스트립 */
+  .phead {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    padding: 16px 22px; background: linear-gradient(135deg, #1e3a8a, #2d4eb8); color: #fff;
+  }
+  .phead.st-wait { background: linear-gradient(135deg, #9a3412, #ea580c); }
+  .phead .big {
+    background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.5);
+    font-weight: 800; border-radius: 10px; padding: 4px 14px; font-size: 19px;
+  }
+  .phead h3 { font-size: 18px; flex: 1 1 auto; min-width: 140px; }
+  .phead h3 small { display: block; font-size: 11.5px; font-weight: 400; opacity: .85; margin-top: 2px; }
+  .phead .badge { border: none; }
+
+  .pbody { padding: 18px 22px 20px; }
+
+  /* 정보 타일 (8개 패널 공통 6종) */
+  .infobar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 18px; }
+  @media (max-width: 980px) { .infobar { grid-template-columns: repeat(3, 1fr); } }
+  .it { border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px; background: var(--gray-bg); text-align: center; }
+  .it b { display: block; font-size: 10.5px; color: var(--gray); font-weight: 700; margin-bottom: 4px; letter-spacing: .02em; }
+  .it span { font-size: 13px; font-weight: 700; color: var(--text); word-break: keep-all; }
+  .it span.sm { font-size: 11.5px; }
+  .it.hl { background: var(--blue-bg); border-color: #bfdbfe; }
+
+  /* 5단계 스테퍼 */
+  .steps { display: flex; align-items: flex-start; margin: 4px 0 18px; }
+  .step { flex: 1 1 0; min-width: 0; text-align: center; position: relative; padding: 0 5px; }
+  .step::before {
+    content: ""; position: absolute; top: 16px; left: -50%; width: 100%; height: 3px;
+    background: #cbd5e1; z-index: 0;
+  }
+  .step:first-child::before { display: none; }
+  .sc {
+    position: relative; z-index: 1; width: 34px; height: 34px; border-radius: 99px;
+    background: var(--blue); color: #fff; font-weight: 800; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 7px;
+    border: 3px solid #dbeafe;
+  }
+  .step.ok .sc { background: var(--green); border-color: #dcfce7; }
+  .step.bad .sc { background: var(--red); border-color: #fee2e2; }
+  .step.hold .sc { background: var(--orange); border-color: #ffedd5; }
+  .step.off .sc { background: #94a3b8; border-color: #e2e8f0; }
+  .st { font-size: 12.5px; font-weight: 700; margin-bottom: 4px; }
+  .step.bad .st { color: var(--red); } .step.hold .st { color: var(--orange); }
+  .sj {
+    display: inline-block; font-family: Consolas, monospace; font-size: 10.5px;
+    background: var(--purple-bg); color: var(--purple); border-radius: 5px; padding: 1px 6px;
+    margin-bottom: 4px; max-width: 100%; word-break: break-all;
+  }
+  .step.bad .sj { background: var(--red-bg); color: var(--red); }
+  .step.hold .sj { background: var(--orange-bg); color: var(--orange); }
+  .sd { font-size: 11px; color: #475569; }
+
+  /* WHERE + 특이사항 2단 */
+  .duo { display: grid; grid-template-columns: 1.05fr .95fr; gap: 12px; align-items: stretch; }
+  @media (max-width: 880px) { .duo { grid-template-columns: 1fr; } }
+  .sqlbox { background: #0f172a; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .sqlbox .hd {
+    background: #1e293b; color: #94a3b8; font-size: 11px; font-weight: 700;
+    padding: 7px 14px; letter-spacing: .04em;
+  }
+  .sqlbox .bd {
+    color: #e2e8f0; padding: 12px 16px; font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px; line-height: 1.75; overflow-x: auto; flex: 1;
+  }
+  .sqlbox .cm { color: #64748b; } .sqlbox .kw { color: #7dd3fc; } .sqlbox .vl { color: #fbbf24; }
+  .ibox { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .ibox .hd { background: var(--gray-bg); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: #475569; padding: 7px 14px; letter-spacing: .04em; }
+  .ibox ul { list-style: none; padding: 10px 14px; flex: 1; }
+  .ibox li { font-size: 12.5px; padding: 5px 0 5px 24px; position: relative; border-bottom: 1px dashed #eef2f7; }
+  .ibox li:last-child { border-bottom: none; }
+  .ibox li::before { position: absolute; left: 0; top: 5px; font-size: 13px; }
+  .ibox li.ok::before { content: "✅"; }
+  .ibox li.warn::before { content: "⚠️"; }
+  .ibox li.bad::before { content: "❌"; }
+  .ibox li.info::before { content: "ℹ️"; }
+
+  footer { text-align: center; color: var(--gray); font-size: 12px; padding: 18px 0 8px; }
+  @media print { body { background: #fff; padding: 0; } section.card { break-inside: avoid; } .panel { display: block !important; margin-bottom: 14px; border-radius: 12px; } .tabs { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <h1>📦 PDA-INNO 프로세스 시각화</h1>
+  <p>Highland E-Mart PDA — 출하/계근/라벨 전체 프로세스 · PDA 전체 기능·동작여부 · Oracle→MSSQL 전환 현황 · 마트사별 상세</p>
+  <div class="meta">갱신일: 2026-06-15 · 기준: 기능/03·04·05·06, 개발/00_개발진행현황, code-verifier 전수 검증(8영역)·기능 전수 검증 결과 반영</div>
+</header>
+
+<!-- 1. 시스템 아키텍처 -->
+<section class="card">
+  <h2><span class="num">1</span>시스템 아키텍처</h2>
+  <div class="lane">
+    <div class="zone">
+      <h4>📱 PDA (Honeywell EDA51)</h4>
+      <div class="item fb-blue"><b>Android 앱 (Java)</b><span>BixolonShipmentActivity 중심 · 바코드 Intent 수신</span></div>
+      <div class="item fb-blue"><b>로컬 SQLite</b><span>TB_SHIPMENT · TB_BARCODE_INFO · TB_GOODS_WET 등</span></div>
+      <div class="item fb-purple"><b>BIXOLON 프린터 (Bluetooth/Socket)</b><span>LabelPrintHelper → BixolonSocketPrinter 라벨 출력</span></div>
+    </div>
+    <div class="zone">
+      <h4>🌐 중계 서버 (Tomcat 8.5 / JSP)</h4>
+      <div class="item fb-orange"><b>조회 JSP</b><span>search_shipment*.jsp · search_barcode_info*.jsp · search_goods_wet.jsp</span></div>
+      <div class="item fb-orange"><b>등록 JSP</b><span>insert_goods_wet.jsp · insert_goods_wet_new.jsp</span></div>
+      <div class="item fb-gray"><b>통신 규약</b><span>HTTP POST "data" 파라미터 → 응답 "::" 컬럼 / ";;" 행 구분</span></div>
+    </div>
+    <div class="zone">
+      <h4>🗄 HL ERP DB (MSSQL)</h4>
+      <div class="item fb-green"><b>출고</b><span>SM_출고머리 · SM_출고상세 · SM_출고LOT · SM_출고계근</span></div>
+      <div class="item fb-green"><b>기준정보</b><span>CO_품목코드 · CO_매출처품목코드매핑 · CO_거래처MASTER</span></div>
+      <div class="item fb-green"><b>마트사</b><span>SM_마트사발주홈플러스 · SM_수주상세 · 월품목별재고화일_LOT별_VIEW</span></div>
+    </div>
+  </div>
+  <div class="flow" style="margin-top:14px">
+    <div class="fbox fb-blue"><div class="t">PDA 앱</div><div class="d">packet 조립 (WHERE절 / "::"·"##")</div></div>
+    <div class="arrow-r">⇄</div>
+    <div class="fbox fb-orange"><div class="t">JSP (Tomcat)</div><div class="d">getMSSQLConnection() · PreparedStatement</div></div>
+    <div class="arrow-r">⇄</div>
+    <div class="fbox fb-green"><div class="t">MSSQL (HL ERP)</div><div class="d">직접 JOIN 쿼리 (VIEW 재작성 없음)</div></div>
+  </div>
+</section>
+
+<!-- 2. 화면(Activity) 흐름 -->
+<section class="card">
+  <h2><span class="num">2</span>화면(Activity) 흐름</h2>
+  <div class="flow">
+    <div class="fbox fb-blue"><div class="t">LoginActivity</div><div class="d">로그인 · SQLite 테이블 생성 · 센터 선택 · 프린터 설정 로드</div><span class="code">manager_login.jsp</span></div>
+    <div class="arrow-r">→</div>
+    <div class="fbox fb-blue"><div class="t">MainActivity</div><div class="d">날짜 선택 · 출하대상받기 8종 버튼 · 계근입력시작</div></div>
+  </div>
+  <div class="arrow-d">▼</div>
+  <div class="flow">
+    <div class="fbox fb-green"><div class="t">BixolonShipmentActivity</div><div class="d">바코드 스캔 → 계근 입력 → 라벨 인쇄 → 서버 전송 (현행 메인 화면)</div></div>
+    <div class="arrow-r">·</div>
+    <div class="fbox fb-purple"><div class="t">ProductionActivity</div><div class="d">생산 계근 계산 (바코드/수기)</div><span class="code">search_production_calc.jsp ⚠ 미전환</span></div>
+    <div class="arrow-r">·</div>
+    <div class="fbox fb-gray"><div class="t">SettingActivity</div><div class="d">프린터 ON/OFF · 계근내역 삭제</div></div>
+  </div>
+  <div class="flow">
+    <div class="fbox fb-orange" style="max-width:340px"><div class="t">ExpiryEnterActivity</div><div class="d">유통기한·중량 수기 입력 (BixolonShipmentActivity에서 호출)</div></div>
+    <div class="fbox fb-gray" style="max-width:340px"><div class="t">DeviceListActivity</div><div class="d">블루투스 프린터 선택/페어링</div></div>
+    <div class="fbox fb-gray" style="max-width:340px"><div class="t">HoneywellScannerActivity</div><div class="d">바코드 수신 부모 클래스 (Intent: scantointent BARCODE_DATA)</div></div>
+  </div>
+  <div class="note">구 <b>ShipmentActivity</b>(기존 PDA용)는 소스에 남아 있으나 현행 실행 경로는 <b>BixolonShipmentActivity</b>(Honeywell+BIXOLON 전환판)입니다.</div>
+</section>
+
+<!-- 3. PDA 전체 기능 -->
+<section class="card">
+  <h2><span class="num">3</span>PDA 전체 기능 · 동작 여부</h2>
+  <p style="font-size:13px; color:#475569; margin-bottom:12px">
+    작업자가 PDA에서 사용하는 모든 조작 기능을 묶음별로 정리하고, 전환 프로젝트 기준으로 <b>현재 동작 여부</b>를 표기했습니다.
+    바코드를 읽지 못하는 상품을 처리하는 <b>바코드 수기등록</b>, 소비기한 직접 입력 등 예외 대응 기능을 포함합니다.
+    동작 여부: <span class="badge b-done">✅ 동작</span> 전환완료·정상 ·
+    <span class="badge b-wait">⚠️ 부분/이슈</span> 동작하나 의존 기능 미전환 또는 알려진 이슈 ·
+    <span class="badge b-fail">❌ 미동작</span> 의존 JSP가 Oracle 잔재 미전환
+  </p>
+
+  <h3 class="sub">🔐 인증 · 설정</h3>
+  <table>
+    <tr><th>기능</th><th>설명</th><th>화면</th><th>동작</th></tr>
+    <tr><td><b>로그인</b></td><td>ID/PW 입력 후 서버 인증 (manager_login.jsp)</td><td>LoginActivity</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>창고(센터) 선택</b></td><td><span class="mono">search_warehouse.jsp</span>로 창고 목록을 <b>DB 조회</b>해 스피너 구성 (조회 실패 시 '삼일냉장' fallback)</td><td>LoginActivity</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>프린터 사용 ON/OFF</b></td><td>라벨 인쇄 사용 여부 토글 (SharedPreferences 저장)</td><td>SettingActivity</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>블루투스 프린터 페어링</b></td><td>BIXOLON 프린터 검색·선택·연결</td><td>DeviceListActivity</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>계근 내역 전체 삭제</b></td><td>프린터 이미지(<span class="mono">printer_second</span>) 7회 클릭하는 숨김 기능 → 확인 다이얼로그 후 전체 삭제(deletequeryAllGoodsWet)</td><td>SettingActivity</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>앱 종료</b></td><td>뒤로가기 → "종료하시겠습니까?" 다이얼로그</td><td>Main/Login</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+  </table>
+
+  <h3 class="sub">📋 대상 조회 · 다운로드 (MainActivity)</h3>
+  <table>
+    <tr><th>기능</th><th>설명 · JSP</th><th>searchType</th><th>동작</th></tr>
+    <tr><td><b>날짜 선택</b></td><td>DatePicker로 작업일자 선택 → 해당일 대상 조회</td><td class="c">-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td>이마트 출하대상받기</td><td class="mono">search_shipment.jsp</td><td class="c">0</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td>생산계근대상받기</td><td class="mono">search_production.jsp</td><td class="c">1</td><td class="c"><span class="badge b-fail">❌ Oracle 미전환</span></td></tr>
+    <tr><td>홈플러스출하대상받기</td><td class="mono">search_shipment_homeplus.jsp</td><td class="c">2</td><td class="c"><span class="badge b-wait">⚠️ 행팽창 이슈</span></td></tr>
+    <tr><td>도매업체출하대상받기</td><td class="mono">search_shipment_wholesale.jsp</td><td class="c">3</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td>비정량출하대상받기</td><td class="mono">search_production_nonfixed.jsp</td><td class="c">4</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td>홈플러스비정량출하대상받기</td><td class="mono">search_homeplus_nonfixed.jsp</td><td class="c">5</td><td class="c"><span class="badge b-wait">⚠️ 바코드정보 미전환</span></td></tr>
+    <tr><td>롯데출하대상받기</td><td class="mono">search_shipment_lotte.jsp</td><td class="c">6</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td>생산대상받기(라벨)</td><td class="mono">search_production_4label.jsp</td><td class="c">7</td><td class="c"><span class="badge b-fail">❌ Oracle 미전환</span></td></tr>
+    <tr><td><b>출하대상 삭제</b></td><td>TB_SHIPMENT 전체 삭제 (deletequeryShipment)</td><td class="c">-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>출하대상 목록 팝업</b></td><td>메뉴 → TB_SHIPMENT 내용 조회 다이얼로그</td><td class="c">-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>바코드정보 목록 팝업</b></td><td>메뉴 → TB_BARCODE_INFO 내용 조회 다이얼로그</td><td class="c">-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+  </table>
+
+  <h3 class="sub">⚖️ 계근 입력 (BixolonShipmentActivity)</h3>
+  <table>
+    <tr><th>기능</th><th>설명</th><th>비고</th><th>동작</th></tr>
+    <tr><td><b>계근입력 시작</b></td><td>채널별 버튼 → 계근 화면 진입</td><td>전환된 채널(0·2·3·4·5·6)만 실사용</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>바코드 스캔</b></td><td>Honeywell 스캐너 Intent 수신 → 상품정보·중량 자동 추출</td><td>scantointent</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>바코드 수기등록 (수기 중량 입력)</b></td><td>스캔 불가 시 작업모드 "수기"로 중량 직접 입력</td><td>work_flag=0</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>상품코드 직접 입력</b></td><td>작업모드 "상품코드"로 코드 입력해 대상 검색</td><td>work_flag=2</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>유통기한(소비기한) 수기 입력</b></td><td>수입육 등 소비기한 필요 품목 날짜 직접 입력</td><td>ExpiryEnterActivity</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>센터·BL·지점 선택</b></td><td>스피너로 계근 대상 좁히기</td><td>sp_center_name/bl_no/point_name</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>스캔 순서 초기화</b></td><td>스캔 순서가 꼬였을 때 처음부터 다시 시작</td><td>btn_init</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>바코드 중복 확인</b></td><td>이미 스캔한 바코드 재스캔 시 경고</td><td>정량 채널</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>비정량 중복확인 제외</b></td><td>비정량(4·5)은 동일 바코드 반복 스캔 허용</td><td>searchType 4·5</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>계근 항목 개별 삭제</b></td><td>계근 내역 목록에서 선택 항목만 삭제 (확인 다이얼로그)</td><td>detail_btn_delete</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>센터 합계 표시</b></td><td>선택 센터의 요청/완료 수량·중량 합계 실시간 표시</td><td>centerTotal/Work</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+  </table>
+
+  <h3 class="sub">🖨 라벨 · 프린터</h3>
+  <table>
+    <tr><th>기능</th><th>설명</th><th>비고</th><th>동작</th></tr>
+    <tr><td><b>라벨 자동 인쇄 ON/OFF</b></td><td>계근 완료 시 라벨 자동 출력 여부를 스위치로 제어</td><td>swt_print</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>라벨 재출력</b></td><td>이미 계근된 항목의 라벨을 다시 출력</td><td>메뉴 reprint</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>마트사별 라벨 양식 분기</b></td><td>이마트/홈플러스/롯데/비정량 등 양식 분화 (LabelPrintHelper)</td><td>setPrinting* 분기</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>테스트 라벨 인쇄</b></td><td>메뉴 → 프린터 연결 테스트 출력</td><td>printTestLabel</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>합계 라벨 인쇄</b></td><td>계근 내역 중량 합산 라벨 출력 (페이지별 총 중량, SLCS)</td><td>합계 버튼</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td>생산 라벨 인쇄</td><td>생산라벨(7) 전용 양식 출력</td><td>출하대상(7) 미전환 의존</td><td class="c"><span class="badge b-wait">⚠️</span></td></tr>
+  </table>
+
+  <h3 class="sub">📤 서버 전송</h3>
+  <table>
+    <tr><th>기능</th><th>설명 · JSP</th><th>대상</th><th>동작</th></tr>
+    <tr><td><b>계근 전송 (구로직)</b></td><td class="mono">insert_goods_wet.jsp</td><td class="c">0·2·6</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>계근 전송 (신로직·배치)</b></td><td class="mono">insert_goods_wet_new.jsp</td><td class="c">1·3·4·5·7</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+  </table>
+
+  <h3 class="sub">🧮 생산 계근 계산 (ProductionActivity)</h3>
+  <table>
+    <tr><th>기능</th><th>설명</th><th>비고</th><th>동작</th></tr>
+    <tr><td><b>생산계근계산 시작</b></td><td>ProductionActivity 진입 (바코드/수기 중량 누적 계산)</td><td>btnProdWetCalc</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>바코드/수기 방식 선택</b></td><td>작업방식 스피너 (바코드 / 수기)</td><td>sp_work</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>중량 누적 계산</b></td><td>박스별 중량 누적 → 총 박스수/총 중량 표시</td><td>-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td>바코드 정보 수신</td><td class="mono">search_production_calc.jsp</td><td>B_SUPPLIER_ITEM+S_BARCODE_INFO Oracle 잔재</td><td class="c"><span class="badge b-fail">❌ 미전환</span></td></tr>
+  </table>
+
+  <h3 class="sub">⚙️ 마트사별 특수 처리</h3>
+  <table>
+    <tr><th>기능</th><th>설명</th><th>대상</th><th>동작</th></tr>
+    <tr><td><b>중량 Round 처리</b></td><td>이마트만 중량 반올림 적용</td><td class="c">0</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>롯데 박스순번 이어가기</b></td><td>LAST_BOX_ORDER 이어받아 박스순번 자동 증가(1~9999)</td><td class="c">6</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>비정량 ITEM_TYPE 'B' 처리</b></td><td>가공육 'J' 제외, 박스계근 'B'만 처리 (개발44)</td><td class="c">4</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>회사코드 조건 추가</b></td><td>전 JSP WHERE절에 회사코드 조건 추가</td><td class="c">전체</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+  </table>
+
+  <div class="note warn">
+    <b>동작 요약</b> — ❌ 미동작 3건: 생산 출하대상받기(1)·생산라벨 출하대상받기(7)·생산계근계산 바코드정보(모두 Oracle VIEW/테이블 미전환) ·
+    ⚠️ 부분/이슈 3건: 홈플정량(2) SM_수주상세 행팽창 · 홈플비정량(5) 바코드정보 JSP 미전환 · 생산라벨 인쇄(7). 그 외 기능은 정상 동작.
+  </div>
+</section>
+
+<!-- 4. 마트사별 상세 프로세스 (탭) -->
+<section class="card">
+  <h2><span class="num">4</span>마트사별 상세 프로세스</h2>
+  <p style="font-size:13px; color:#475569; margin-bottom:12px">
+    탭 클릭 시 해당 마트사 전용 화면으로 전환됩니다. 모든 마트사는 동일한 <b>6종 정보 타일 + 5단계 흐름 + WHERE 조건/특이사항</b> 구성으로 정리되어 서로 비교하기 쉽습니다.
+    (탭의 ● : <span style="color:var(--green)">초록=전환완료</span> · <span style="color:var(--orange)">주황=전환대기</span> · <span style="color:var(--red)">빨강=이슈 보유</span>)
+  </p>
+
+  <div class="tabs">
+    <div class="tab active" data-p="p0"><span class="tno">0</span>이마트<span class="dot g"></span></div>
+    <div class="tab" data-p="p1"><span class="tno">1</span>생산<span class="dot o"></span></div>
+    <div class="tab" data-p="p2"><span class="tno">2</span>홈플러스 정량<span class="dot r"></span></div>
+    <div class="tab" data-p="p3"><span class="tno">3</span>도매<span class="dot g"></span></div>
+    <div class="tab" data-p="p4"><span class="tno">4</span>비정량(이마트)<span class="dot g"></span></div>
+    <div class="tab" data-p="p5"><span class="tno">5</span>홈플러스 비정량<span class="dot r"></span></div>
+    <div class="tab" data-p="p6"><span class="tno">6</span>롯데<span class="dot g"></span></div>
+    <div class="tab" data-p="p7"><span class="tno">7</span>생산(라벨)<span class="dot o"></span></div>
+  </div>
+
+  <!-- ════════ 0 이마트 ════════ -->
+  <div class="panel active" id="p0">
+    <div class="phead">
+      <div class="big">0</div>
+      <h3>이마트 출하<small>출하대상받기 → 이마트 계근입력시작</small></h3>
+      <span class="badge b-done">전환완료</span><span class="badge b-done">검증 PASS</span>
+    </div>
+    <div class="pbody">
+      <div class="infobar">
+        <div class="it hl"><b>마트사구분</b><span>'7'</span></div>
+        <div class="it"><b>식별 필터</b><span>타입구분 'W'</span></div>
+        <div class="it"><b>출하대상 컬럼</b><span>31개 (0~30)</span></div>
+        <div class="it"><b>창고코드 조건</b><span class="sm">선택 시 추가</span></div>
+        <div class="it"><b>계근전송</b><span class="sm">구로직 (1건씩)</span></div>
+        <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">사용 ⭕ (Index 30)</span></div>
+      </div>
+      <div class="steps">
+        <div class="step ok"><div class="sc">1</div><div class="st">출하대상받기</div><span class="sj">search_shipment.jsp</span><div class="sd">출고상세+머리+LOT+재고VIEW JOIN</div></div>
+        <div class="step ok"><div class="sc">2</div><div class="st">바코드정보</div><span class="sj">search_barcode_info.jsp</span><div class="sd">CO_품목코드 · 회사코드 조건</div></div>
+        <div class="step"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd">수입육 수기입력 시 소비기한 창<br>중량 round 처리</div></div>
+        <div class="step ok"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet.jsp</span><div class="sd">"::" 15필드 → SM_출고계근</div></div>
+        <div class="step"><div class="sc">5</div><div class="st">라벨 인쇄</div><div class="sd">이마트 양식<br>(LabelPrintHelper)</div></div>
+      </div>
+      <div class="duo">
+        <div class="sqlbox">
+          <div class="hd">WHERE 핵심 조건 — search_shipment.jsp</div>
+          <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'7'</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
+<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'W'</span><br>
+<span class="cm">-- + 앱: AND D.회사코드=? AND D.출고일자=? [AND D.창고코드=?]</span><br>
+<span class="cm">-- ORDER BY GI_D_ID ASC</span></div>
+        </div>
+        <div class="ibox">
+          <div class="hd">특이사항 · 검증 결과</div>
+          <ul>
+            <li class="info">8종 중 유일하게 <b>GI_L_ID(LOT SEQ)</b>를 출하대상에서 직접 수신</li>
+            <li class="info">BL_NO는 <span class="mono">COALESCE(NULLIF(V.BLNO,''), V.이력번호)</span> 폴백</li>
+            <li class="ok">인덱스 0~30 · packet · 로컬DB 전수 일치 (검증 PASS)</li>
+            <li class="warn">출고일자(D/H) 컬럼 타입 미확인 — CONVERT 필요 여부 ERP 확인 대기</li>
+            <li class="warn">GI_REQ_PKG parseDouble 방어 없음 (원본 동일 → 수정 제외)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ 1 생산 ════════ -->
+  <div class="panel" id="p1">
+    <div class="phead st-wait">
+      <div class="big">1</div>
+      <h3>생산 계근<small>생산계근대상받기 → 생산계근입력시작</small></h3>
+      <span class="badge b-wait">미전환 — ERP VIEW 답변 대기 ⏸</span>
+    </div>
+    <div class="pbody">
+      <div class="infobar">
+        <div class="it hl"><b>마트사구분</b><span class="sm">- (Oracle VIEW)</span></div>
+        <div class="it"><b>식별 필터</b><span class="sm">VW_PDA_WID_PRO_LIST</span></div>
+        <div class="it"><b>출하대상 컬럼</b><span>32개 (0~31)</span></div>
+        <div class="it"><b>창고코드 조건</b><span class="sm">- (전환 시 확정)</span></div>
+        <div class="it"><b>계근전송</b><span class="sm">신로직 (배치)</span></div>
+        <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">- (전환 시 확정)</span></div>
+      </div>
+      <div class="steps">
+        <div class="step hold"><div class="sc">1</div><div class="st">출하대상받기 ⏸</div><span class="sj">search_production.jsp</span><div class="sd">Oracle VIEW → MSSQL 전환 필요</div></div>
+        <div class="step ok"><div class="sc">2</div><div class="st">바코드정보</div><span class="sj">search_barcode_info.jsp</span><div class="sd">전환완료 JSP 공용</div></div>
+        <div class="step"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd">블루투스 확인 생략<br>(생산은 라벨 없음)</div></div>
+        <div class="step ok"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet_new.jsp</span><div class="sd">"##" 배치 → SM_출고계근</div></div>
+        <div class="step off"><div class="sc">5</div><div class="st">라벨 없음</div><div class="sd">계근 중심 작업</div></div>
+      </div>
+      <div class="duo">
+        <div class="sqlbox">
+          <div class="hd">현재 상태 — Oracle 잔재</div>
+          <div class="bd"><span class="cm">-- search_production.jsp (미전환)</span><br>
+<span class="kw">SELECT</span> ... <span class="kw">FROM</span> <span class="vl">VW_PDA_WID_PRO_LIST</span>  <span class="cm">← Oracle VIEW</span><br>
+<span class="cm">-- 구조 분석 완료(2026-05-06) · ERP VIEW 구조 확정 답변 수신 후</span><br>
+<span class="cm">-- SM_출고머리/상세 기반 MSSQL 직접 JOIN으로 전환 예정</span></div>
+        </div>
+        <div class="ibox">
+          <div class="hd">특이사항 · 진행 조건</div>
+          <ul>
+            <li class="warn">출하대상 JSP 1본만 전환하면 완료 (바코드·계근 JSP는 공용 전환완료)</li>
+            <li class="bad">연관: ProductionActivity의 <span class="mono">search_production_calc.jsp</span>도 Oracle 잔재 — ERP 답변 불필요, 즉시 전환 가능</li>
+            <li class="info">생산 계근은 프린터/블루투스 확인을 생략하는 전용 흐름</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ 2 홈플러스 정량 ════════ -->
+  <div class="panel" id="p2">
+    <div class="phead">
+      <div class="big">2</div>
+      <h3>홈플러스 하이퍼 (정량)<small>홈플러스출하대상받기 → 홈플러스 계근입력시작</small></h3>
+      <span class="badge b-done">전환완료</span><span class="badge b-fail">검증 FAIL 1건</span>
+    </div>
+    <div class="pbody">
+      <div class="infobar">
+        <div class="it hl"><b>마트사구분</b><span>'4'</span></div>
+        <div class="it"><b>식별 필터</b><span>타입구분 'W'</span></div>
+        <div class="it"><b>출하대상 컬럼</b><span>24개 (0~23)</span></div>
+        <div class="it"><b>창고코드 조건</b><span class="sm">선택 시 추가</span></div>
+        <div class="it"><b>계근전송</b><span class="sm">구로직 (1건씩)</span></div>
+        <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">미사용 ("" 고정)</span></div>
+      </div>
+      <div class="steps">
+        <div class="step bad"><div class="sc">1</div><div class="st">출하대상받기 ❌</div><span class="sj">search_shipment_homeplus.jsp</span><div class="sd">SM_수주상세 JOIN 행 팽창 FAIL</div></div>
+        <div class="step ok"><div class="sc">2</div><div class="st">바코드정보</div><span class="sj">search_barcode_info.jsp</span><div class="sd">정량 공용</div></div>
+        <div class="step"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd">홈플러스 전용 라벨 분기</div></div>
+        <div class="step ok"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet.jsp</span><div class="sd">롯데와 동일 분기</div></div>
+        <div class="step"><div class="sc">5</div><div class="st">라벨 인쇄</div><div class="sd">홈플러스 양식<br>(비트맵 품질 체크 대상)</div></div>
+      </div>
+      <div class="duo">
+        <div class="sqlbox">
+          <div class="hd">WHERE 핵심 조건 — search_shipment_homeplus.jsp</div>
+          <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'4'</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
+<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'W'</span><br>
+<span class="cm">-- ORDER BY HE.납품처코드, I.PPCODE, I.품목명</span><br><br>
+<span class="kw">LEFT JOIN</span> SM_수주상세 SD <span class="kw">ON</span> SD.마트사SEQ = HE.SEQ<br>
+<span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ❌ FAIL: 행 팽창 위험 (L99~100)</span></div>
+        </div>
+        <div class="ibox">
+          <div class="hd">특이사항 · 검증 결과</div>
+          <ul>
+            <li class="bad"><b>FAIL — SM_수주상세 행 팽창</b>: 마트사SEQ는 UNIQUE 제약 없는 외래키. 동일 SEQ에 N건이면 출하대상 N배 중복 INSERT → TOP 1 서브쿼리/OUTER APPLY 전환 또는 실DB 중복 0건 확인 필요</li>
+            <li class="ok">STORE_IN_DATE(SD.납기일자)는 <b>VARCHAR(8)</b> 확인 → CONVERT 불필요 (오류22-1 오탐 해소)</li>
+            <li class="ok">인덱스 0~23 · packet · 로컬DB 전수 일치</li>
+            <li class="info">SM_마트사발주홈플러스(HE) 기준 납품처코드 정렬</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ 3 도매 ════════ -->
+  <div class="panel" id="p3">
+    <div class="phead">
+      <div class="big">3</div>
+      <h3>도매업체<small>도매업체출하대상받기 → 도매업체 계근입력시작</small></h3>
+      <span class="badge b-done">전환완료</span><span class="badge b-done">검증 PASS</span>
+    </div>
+    <div class="pbody">
+      <div class="infobar">
+        <div class="it hl"><b>마트사구분</b><span>'' (빈값)</span></div>
+        <div class="it"><b>식별 필터</b><span class="sm">원료육여부 '1' (개발51)</span></div>
+        <div class="it"><b>출하대상 컬럼</b><span>24개 (0~23)</span></div>
+        <div class="it"><b>창고코드 조건</b><span class="sm">선택 시 추가</span></div>
+        <div class="it"><b>계근전송</b><span class="sm">신로직 (배치)</span></div>
+        <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">미사용 ("" 고정)</span></div>
+      </div>
+      <div class="steps">
+        <div class="step ok"><div class="sc">1</div><div class="st">출하대상받기</div><span class="sj">search_shipment_wholesale.jsp</span><div class="sd">CO_거래처MASTER JOIN · ORDER BY D.SEQ</div></div>
+        <div class="step ok"><div class="sc">2</div><div class="st">바코드정보</div><span class="sj">search_barcode_info.jsp</span><div class="sd">정량 공용</div></div>
+        <div class="step"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd">도매 전용 화면 분기</div></div>
+        <div class="step ok"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet_new.jsp</span><div class="sd">"##" 배치 전송</div></div>
+        <div class="step"><div class="sc">5</div><div class="st">라벨 인쇄</div><div class="sd">도매 양식</div></div>
+      </div>
+      <div class="duo">
+        <div class="sqlbox">
+          <div class="hd">WHERE 핵심 조건 — search_shipment_wholesale.jsp</div>
+          <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">''</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
+<span class="kw">&nbsp;&nbsp;AND</span> I.원료육여부 = <span class="vl">'1'</span>  <span class="cm">← 도매 식별 조건 (개발51)</span><br>
+<span class="cm">-- + 앱 전송 조건 · ORDER BY D.SEQ ASC</span></div>
+        </div>
+        <div class="ibox">
+          <div class="hd">특이사항 · 검증 결과</div>
+          <ul>
+            <li class="info">타입구분/바코드타입 필터 없음 — <b>원료육여부='1'</b>이 도매 식별 조건</li>
+            <li class="ok">인덱스 0~23 · WHERE 실컬럼명 · 로컬DB 전수 일치 (검증 PASS)</li>
+            <li class="warn">GI_REQ_PKG parseDouble 방어 없음 (원본 동일 → 수정 제외)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ 4 비정량(이마트) ════════ -->
+  <div class="panel" id="p4">
+    <div class="phead">
+      <div class="big">4</div>
+      <h3>비정량 출하 (이마트)<small>비정량출하대상받기 → 비정량 계근입력시작</small></h3>
+      <span class="badge b-done">전환완료</span><span class="badge b-done">검증 PASS</span>
+    </div>
+    <div class="pbody">
+      <div class="infobar">
+        <div class="it hl"><b>마트사구분</b><span>'7'</span></div>
+        <div class="it"><b>식별 필터</b><span class="sm">타입구분 'B' + M8/M9</span></div>
+        <div class="it"><b>출하대상 컬럼</b><span>31개 (0~30)</span></div>
+        <div class="it"><b>창고코드 조건</b><span class="sm">없음</span></div>
+        <div class="it"><b>계근전송</b><span class="sm">신로직 (배치)</span></div>
+        <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">사용 ⭕ (Index 30)</span></div>
+      </div>
+      <div class="steps">
+        <div class="step ok"><div class="sc">1</div><div class="st">출하대상받기</div><span class="sj">search_production_nonfixed.jsp</span><div class="sd">SM_마트사발주이마트 JOIN</div></div>
+        <div class="step ok"><div class="sc">2</div><div class="st">바코드정보 (전용)</div><span class="sj">search_barcode_info_nonfixed.jsp</span><div class="sd">CO_품목코드 · ITEM_CODE→품목코드 치환</div></div>
+        <div class="step"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd"><b>바코드 중복확인 제외</b><br>(비정량 특성)</div></div>
+        <div class="step ok"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet_new.jsp</span><div class="sd">"##" 배치 전송</div></div>
+        <div class="step"><div class="sc">5</div><div class="st">라벨 인쇄</div><div class="sd">M8/M9 라벨<br>(물류코드 substring 사용)</div></div>
+      </div>
+      <div class="duo">
+        <div class="sqlbox">
+          <div class="hd">WHERE 핵심 조건 — search_production_nonfixed.jsp</div>
+          <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'7'</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
+<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'B'</span>  <span class="cm">← 개발44: 'J' 제외</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.바코드타입, M2.바코드타입) <span class="kw">IN</span> (<span class="vl">'M8'</span>,<span class="vl">'M9'</span>)  <span class="cm">← 개발43: M9 추가</span></div>
+        </div>
+        <div class="ibox">
+          <div class="hd">특이사항 · 검증 결과</div>
+          <ul>
+            <li class="info">이마트와 마트사구분('7') 공유, <b>타입구분 'B' + 바코드타입 M8/M9</b>로 구분</li>
+            <li class="info">비정량 특성상 동일 바코드 반복 허용 (중복확인 제외)</li>
+            <li class="ok">인덱스 0~30 · 타입구분 'B'(개발44) · M9(개발43) 반영 확인 (검증 PASS)</li>
+            <li class="warn">오류21: EMARTLOGIS_CODE 빈값 시 라벨 substring 예외 — <b>ERP 물류코드 데이터 입력으로 해결</b> 결정(코드 미수정), 신규 품목 등록 시 물류코드 필수</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ 5 홈플러스 비정량 ════════ -->
+  <div class="panel" id="p5">
+    <div class="phead">
+      <div class="big">5</div>
+      <h3>홈플러스 비정량<small>홈플러스비정량출하대상받기 → 홈플러스비정량 계근입력시작</small></h3>
+      <span class="badge b-done">출하대상 전환완료</span><span class="badge b-fail">바코드정보 JSP 미전환</span>
+    </div>
+    <div class="pbody">
+      <div class="infobar">
+        <div class="it hl"><b>마트사구분</b><span>'4'</span></div>
+        <div class="it"><b>식별 필터</b><span class="sm">바코드타입 'H5'</span></div>
+        <div class="it"><b>출하대상 컬럼</b><span>29개 (0~28)</span></div>
+        <div class="it"><b>창고코드 조건</b><span class="sm">없음</span></div>
+        <div class="it"><b>계근전송</b><span class="sm">신로직 (배치)</span></div>
+        <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">미사용 ("" 고정)</span></div>
+      </div>
+      <div class="steps">
+        <div class="step ok"><div class="sc">1</div><div class="st">출하대상받기</div><span class="sj">search_homeplus_nonfixed.jsp</span><div class="sd">HE+SD JOIN (홈플정량과 동일 패턴)</div></div>
+        <div class="step bad"><div class="sc">2</div><div class="st">바코드정보 ❌ 미전환</div><span class="sj">search_homeplus_nonfixed2.jsp</span><div class="sd">Oracle <b>B_ITEM</b> 잔재 → CO_품목코드 전환 필요</div></div>
+        <div class="step"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd">바코드 중복확인 제외<br>홈플러스 라벨 분기 공유</div></div>
+        <div class="step ok"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet_new.jsp</span><div class="sd">"##" 배치 전송</div></div>
+        <div class="step"><div class="sc">5</div><div class="st">라벨 인쇄</div><div class="sd">홈플 비정량 양식<br>(PACKWEIGHT NULL 고정)</div></div>
+      </div>
+      <div class="duo">
+        <div class="sqlbox">
+          <div class="hd">WHERE 핵심 조건 — search_homeplus_nonfixed.jsp</div>
+          <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'4'</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
+<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.바코드타입, M2.바코드타입) = <span class="vl">'H5'</span><br><br>
+<span class="kw">LEFT JOIN</span> SM_수주상세 SD <span class="kw">ON</span> SD.마트사SEQ = HE.SEQ<br>
+<span class="cm">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↑ ⚠ WARN: 행 팽창 (홈플정량과 동일 패턴)</span></div>
+        </div>
+        <div class="ibox">
+          <div class="hd">특이사항 · 검증 결과</div>
+          <ul>
+            <li class="bad"><b>미전환 잔여</b>: 바코드정보조회(<span class="mono">ProgressDlgBarcodeSearch:85</span>)가 B_ITEM 잔재 JSP 호출 — ERP 답변 없이 즉시 전환 가능</li>
+            <li class="warn">SM_수주상세 LEFT JOIN 행 팽창 가능 (홈플정량 FAIL과 동일 패턴)</li>
+            <li class="ok">출하대상 인덱스 0~28 · NULL 방어(Common.nullCheck) 전수 일치 (검증 PASS)</li>
+            <li class="info">바코드타입 'H5' 단일 필터 (타입구분 조건 없음)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ 6 롯데 ════════ -->
+  <div class="panel" id="p6">
+    <div class="phead">
+      <div class="big">6</div>
+      <h3>롯데<small>롯데출하대상받기 → 롯데 계근입력시작</small></h3>
+      <span class="badge b-done">전환완료</span><span class="badge b-done">검증 PASS</span>
+    </div>
+    <div class="pbody">
+      <div class="infobar">
+        <div class="it hl"><b>마트사구분</b><span>'6'</span></div>
+        <div class="it"><b>식별 필터</b><span>타입구분 'W'</span></div>
+        <div class="it"><b>출하대상 컬럼</b><span>26개 (0~25)</span></div>
+        <div class="it"><b>창고코드 조건</b><span class="sm">선택 시 추가</span></div>
+        <div class="it"><b>계근전송</b><span class="sm">구로직 (1건씩)</span></div>
+        <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">미사용 ("" 고정)</span></div>
+      </div>
+      <div class="steps">
+        <div class="step ok"><div class="sc">1</div><div class="st">출하대상받기</div><span class="sj">search_shipment_lotte.jsp</span><div class="sd">SM_마트사발주롯데마트+SD JOIN<br>+박스순번 서브쿼리</div></div>
+        <div class="step ok"><div class="sc">2</div><div class="st">바코드정보</div><span class="sj">search_barcode_info.jsp</span><div class="sd">정량 공용</div></div>
+        <div class="step"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd">수기입력 시 소비기한 창<br>LAST_BOX_ORDER+1 박스순번 이어가기</div></div>
+        <div class="step ok"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet.jsp</span><div class="sd">홈플러스와 동일 분기</div></div>
+        <div class="step"><div class="sc">5</div><div class="st">라벨 인쇄</div><span class="sj">setPrintingLotte()</span><div class="sd">롯데 전용 양식</div></div>
+      </div>
+      <div class="duo">
+        <div class="sqlbox">
+          <div class="hd">WHERE 핵심 조건 — search_shipment_lotte.jsp</div>
+          <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'6'</span><br>
+<span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
+<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'W'</span><br><br>
+<span class="cm">-- LAST_BOX_ORDER (Index 25):</span><br>
+(<span class="kw">SELECT TOP 1</span> 박스순번 <span class="kw">FROM</span> SM_출고계근 W<br>
+&nbsp;<span class="kw">WHERE</span> W.출고상세SEQ = D.SEQ <span class="kw">AND</span> 박스순번 <span class="kw">IS NOT NULL</span><br>
+&nbsp;<span class="kw">ORDER BY</span> W.계근ID <span class="kw">DESC</span>)</div>
+        </div>
+        <div class="ibox">
+          <div class="hd">특이사항 · 검증 결과</div>
+          <ul>
+            <li class="info">8종 중 유일하게 <b>LAST_BOX_ORDER</b>(Index 25) 추가 수신 — 박스순번 이어가기 용도. WH_AREA(Index 24)는 <span class="mono">'' AS WH_AREA</span> 빈값 고정(실데이터 없음)</li>
+            <li class="ok">인덱스 0~25 · TOP 1 서브쿼리 구조 · 로컬DB 전수 일치 (검증 PASS)</li>
+            <li class="warn">SM_수주상세 LEFT JOIN 행 팽창 가능 (홈플과 동일 패턴)</li>
+            <li class="warn">최초 출하 시 LAST_BOX_ORDER NULL → parseInt 예외 가능 — <b>원본 동일(오류22-9) → 수정 제외</b>, try-catch로 크래시 방지됨</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ 7 생산(라벨) ════════ -->
+  <div class="panel" id="p7">
+    <div class="phead st-wait">
+      <div class="big">7</div>
+      <h3>생산 (라벨)<small>생산대상받기(라벨) → 생산입력시작(라벨)</small></h3>
+      <span class="badge b-wait">미전환 — ERP VIEW 답변 대기 ⏸</span>
+    </div>
+    <div class="pbody">
+      <div class="infobar">
+        <div class="it hl"><b>마트사구분</b><span class="sm">- (Oracle VIEW)</span></div>
+        <div class="it"><b>식별 필터</b><span class="sm">VW_PDA_WID_PRO_4LABEL_LIST</span></div>
+        <div class="it"><b>출하대상 컬럼</b><span>32개 (0~31)</span></div>
+        <div class="it"><b>창고코드 조건</b><span class="sm">- (전환 시 확정)</span></div>
+        <div class="it"><b>계근전송</b><span class="sm">신로직 (배치)</span></div>
+        <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">- (전환 시 확정)</span></div>
+      </div>
+      <div class="steps">
+        <div class="step hold"><div class="sc">1</div><div class="st">출하대상받기 ⏸</div><span class="sj">search_production_4label.jsp</span><div class="sd">Oracle VIEW → MSSQL 전환 필요</div></div>
+        <div class="step ok"><div class="sc">2</div><div class="st">바코드정보</div><span class="sj">search_barcode_info.jsp</span><div class="sd">전환완료 JSP 공용</div></div>
+        <div class="step"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd">생산라벨 전용 화면 분기</div></div>
+        <div class="step ok"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet_new.jsp</span><div class="sd">"##" 배치 전송</div></div>
+        <div class="step"><div class="sc">5</div><div class="st">라벨 인쇄</div><div class="sd">생산 라벨 양식<br>유통기한 입력(ExpiryEnter) 연계</div></div>
+      </div>
+      <div class="duo">
+        <div class="sqlbox">
+          <div class="hd">현재 상태 — Oracle 잔재</div>
+          <div class="bd"><span class="cm">-- search_production_4label.jsp (미전환)</span><br>
+<span class="kw">SELECT</span> ... <span class="kw">FROM</span> <span class="vl">VW_PDA_WID_PRO_4LABEL_LIST</span>  <span class="cm">← Oracle VIEW</span><br>
+<span class="cm">-- 구조 분석 완료(2026-05-06) · searchType=1과 함께 전환 예정</span></div>
+        </div>
+        <div class="ibox">
+          <div class="hd">특이사항 · 진행 조건</div>
+          <ul>
+            <li class="warn">출하대상 JSP 1본만 전환하면 완료 (바코드·계근 JSP는 공용 전환완료)</li>
+            <li class="info">생산품 <b>라벨 출력 중심</b> 작업 — searchType=1(계근 중심)과 구분</li>
+            <li class="info">유통기한 수기 입력(ExpiryEnterActivity) 연계 흐름</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 마트사 비교 요약 -->
+  <h3 class="sub">📊 마트사 8종 한눈 비교</h3>
+  <table>
+    <tr><th>구분</th><th>마트사구분</th><th>식별 필터</th><th>컬럼</th><th>창고코드</th><th>바코드정보 JSP</th><th>계근전송</th><th>GI_L_ID</th><th>상태</th></tr>
+    <tr><td><b>0 이마트</b></td><td class="c">'7'</td><td class="c">타입구분 'W'</td><td class="c">31</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">구로직</td><td class="c">⭕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td><b>1 생산</b></td><td class="c">-</td><td class="c">Oracle VIEW</td><td class="c">32</td><td class="c">-</td><td class="c">정량 공용</td><td class="c">신로직</td><td class="c">-</td><td class="c"><span class="badge b-wait">대기</span></td></tr>
+    <tr><td><b>2 홈플 정량</b></td><td class="c">'4'</td><td class="c">타입구분 'W'</td><td class="c">24</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">구로직</td><td class="c">✕</td><td class="c"><span class="badge b-fail">FAIL 1</span></td></tr>
+    <tr><td><b>3 도매</b></td><td class="c">''</td><td class="c">원료육여부 '1'</td><td class="c">24</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">신로직</td><td class="c">✕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td><b>4 비정량</b></td><td class="c">'7'</td><td class="c">'B' + M8/M9</td><td class="c">31</td><td class="c">없음</td><td class="c">비정량 전용</td><td class="c">신로직</td><td class="c">⭕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td><b>5 홈플 비정량</b></td><td class="c">'4'</td><td class="c">바코드타입 'H5'</td><td class="c">29</td><td class="c">없음</td><td class="c"><span class="badge b-fail">미전환</span></td><td class="c">신로직</td><td class="c">✕</td><td class="c"><span class="badge b-warn b-fail">이슈</span></td></tr>
+    <tr><td><b>6 롯데</b></td><td class="c">'6'</td><td class="c">타입구분 'W'</td><td class="c">26</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">구로직</td><td class="c">✕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td><b>7 생산라벨</b></td><td class="c">-</td><td class="c">Oracle VIEW</td><td class="c">32</td><td class="c">-</td><td class="c">정량 공용</td><td class="c">신로직</td><td class="c">-</td><td class="c"><span class="badge b-wait">대기</span></td></tr>
+  </table>
+</section>
+
+<!-- 5. 공통 프로세스 -->
+<section class="card">
+  <h2><span class="num">5</span>공통 프로세스 — 데이터 흐름 규약</h2>
+  <div class="flow">
+    <div class="fbox fb-blue"><div class="t">① WHERE 조립</div><div class="d">회사코드 + 출고일자 (+창고코드) → POST "data"</div><span class="code">ProgressDlgShipSearch</span></div>
+    <div class="arrow-r">→</div>
+    <div class="fbox fb-orange"><div class="t">② JSP 응답</div><div class="d">"::" 컬럼 구분 / ";;" 행 구분</div></div>
+    <div class="arrow-r">→</div>
+    <div class="fbox fb-blue"><div class="t">③ temp[] 파싱</div><div class="d">split("::", -1) → 인덱스별 setter (공통 0~23 + 채널별 추가)</div></div>
+    <div class="arrow-r">→</div>
+    <div class="fbox fb-green"><div class="t">④ 로컬 동기화</div><div class="d">GI_D_ID+GI_L_ID 기준 비교 → INSERT/DELETE</div><span class="code">TB_SHIPMENT</span></div>
+  </div>
+  <div class="flow">
+    <div class="fbox fb-gray" style="max-width:560px"><div class="t">계근 packet 공통 15필드</div><div class="d">GI_D_ID · WEIGHT · 단위 · ppCode · 바코드 · 패커코드 · 제조일자 · 박스시리얼 · 계근순번 · 등록사원 · <b>회사코드(개발32)</b> · BRAND_CODE · CLIENT_TYPE · BOX_ORDER · <b>GI_L_ID(개발31)</b></div></div>
+    <div class="fbox fb-green" style="max-width:420px"><div class="t">SM_출고계근 INSERT</div><div class="d">시퀀스 <span class="mono">NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ</span> · 계근 내역 재조회는 search_goods_wet.jsp (14컬럼)</div></div>
+  </div>
+</section>
+
+<!-- 6. JSP 전체 매핑 -->
+<section class="card">
+  <h2><span class="num">6</span>실행 경로 JSP 전체 매핑 · 전환 상태</h2>
+  <table>
+    <tr><th>용도</th><th>JSP</th><th>호출 클래스</th><th>MSSQL 대상</th><th>로컬DB</th><th>상태</th></tr>
+    <tr><td>로그인</td><td class="mono">manager_login.jsp</td><td>ProgressDlgLogin</td><td>CO_비밀번호/GR_개인기본</td><td class="c">-</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>출하대상 (0 이마트)</td><td class="mono">search_shipment.jsp</td><td rowspan="8">ProgressDlgShipSearch</td><td rowspan="6">SM_출고상세·머리·LOT<br>CO_품목코드·매출처품목코드매핑<br>월품목별재고화일_LOT별_VIEW 등</td><td rowspan="8" class="c">TB_SHIPMENT</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>출하대상 (2 홈플정량)</td><td class="mono">search_shipment_homeplus.jsp</td><td class="c"><span class="badge b-done">완료</span> <span class="badge b-fail">FAIL 1</span></td></tr>
+    <tr><td>출하대상 (3 도매)</td><td class="mono">search_shipment_wholesale.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>출하대상 (4 비정량)</td><td class="mono">search_production_nonfixed.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>출하대상 (5 홈플비정량)</td><td class="mono">search_homeplus_nonfixed.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>출하대상 (6 롯데)</td><td class="mono">search_shipment_lotte.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>출하대상 (1 생산)</td><td class="mono">search_production.jsp</td><td>Oracle VW_PDA_WID_PRO_LIST</td><td class="c"><span class="badge b-wait">미전환</span></td></tr>
+    <tr><td>출하대상 (7 생산라벨)</td><td class="mono">search_production_4label.jsp</td><td>Oracle VW_PDA_WID_PRO_4LABEL_LIST</td><td class="c"><span class="badge b-wait">미전환</span></td></tr>
+    <tr><td>바코드정보 (0·1·2·3·6·7)</td><td class="mono">search_barcode_info.jsp</td><td rowspan="3">ProgressDlgBarcodeSearch</td><td>CO_품목코드</td><td rowspan="3" class="c">TB_BARCODE_INFO</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>바코드정보 (4 비정량)</td><td class="mono">search_barcode_info_nonfixed.jsp</td><td>CO_품목코드</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>바코드정보 (5 홈플비정량)</td><td class="mono">search_homeplus_nonfixed2.jsp</td><td>Oracle B_ITEM 잔재</td><td class="c"><span class="badge b-fail">미전환</span></td></tr>
+    <tr><td>계근 전송 (0·2·6 구로직)</td><td class="mono">insert_goods_wet.jsp</td><td rowspan="2">BixolonShipmentActivity</td><td rowspan="2">SM_출고계근 (SM_DLIVY_WEIGH_SEQ)</td><td rowspan="2" class="c">TB_GOODS_WET</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>계근 전송 (1·3·4·5·7 배치)</td><td class="mono">insert_goods_wet_new.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>계근 내역 조회</td><td class="mono">search_goods_wet.jsp</td><td>ProgressDlgGoodsWetSearch</td><td>SM_출고계근</td><td class="c">TB_GOODS_WET</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>생산 계근 계산</td><td class="mono">search_production_calc.jsp</td><td>ProductionActivity</td><td>Oracle B_SUPPLIER_ITEM+S_BARCODE_INFO 잔재</td><td class="c">TB_GOODS_WET_PRODUCTION_CALC</td><td class="c"><span class="badge b-fail">미전환</span></td></tr>
+  </table>
+</section>
+
+<!-- 7. 진행 현황 + 검증 결과 -->
+<section class="card">
+  <h2><span class="num">7</span>전환 진행 현황 · 검증 결과 요약</h2>
+  <h3 class="sub">Phase 진행률</h3>
+  <table>
+    <tr><th>Phase</th><th>내용</th><th>진행률</th><th>상태</th></tr>
+    <tr><td class="c">1</td><td>현행 코드 정리 (프린터 전환·LabelPrintHelper 분리 등)</td><td class="c">100%</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td class="c">2</td><td>현행 분석/문서화</td><td class="c">100%</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td class="c">3</td><td>Oracle→MSSQL 전환 (JSP 직접 JOIN 방식)</td><td class="c">75%</td><td class="c"><span class="badge b-info">진행중</span></td></tr>
+    <tr><td class="c">4</td><td>Android 앱 리뉴얼 (91 M/D)</td><td class="c">0%</td><td class="c"><span class="badge b-gray">미착수</span></td></tr>
+    <tr><td class="c">5</td><td>테스트/안정화 (단위→통합→실기기)</td><td class="c">0%</td><td class="c"><span class="badge b-gray">미착수</span></td></tr>
+  </table>
+
+  <h3 class="sub">code-verifier 전수 검증 (2026-06-12, 8영역 병렬) — 마트사별</h3>
+  <table>
+    <tr><th>searchType</th><th>인덱스/파라미터/WHERE/로컬DB/Oracle잔재</th><th>종합</th></tr>
+    <tr><td><b>0 이마트</b></td><td>인덱스 0~30 · packet · 로컬DB 전수 일치 · GI_L_ID(Index30) 수신</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td><b>1 생산</b></td><td>Oracle <span class="mono">VW_PDA_WID_PRO_LIST</span> 잔재 — 출하대상 JSP 1본 미전환 (ERP VIEW 답변 대기)</td><td class="c"><span class="badge b-wait">미전환</span></td></tr>
+    <tr><td><b>2 홈플러스정량</b></td><td>인덱스 0~23 일치 · <b>SM_수주상세 LEFT JOIN 행 팽창</b> (마트사SEQ 비유니크)</td><td class="c"><span class="badge b-fail">FAIL 1</span></td></tr>
+    <tr><td><b>3 도매</b></td><td>인덱스 0~23 · WHERE 실컬럼명(원료육여부='1') · 로컬DB 전수 일치</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td><b>4 비정량(이마트)</b></td><td>인덱스 0~30 · 타입구분'B'(개발44)·M9(개발43) 반영 · GI_L_ID(Index30) 수신</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td><b>5 홈플러스비정량</b></td><td>출하대상 인덱스 0~28 전수 일치 / 바코드정보 <span class="mono">B_ITEM</span> 잔재 미전환 · SM_수주상세 행 팽창 WARN</td><td class="c"><span class="badge b-done">출하 PASS</span> <span class="badge b-fail">바코드 미전환</span></td></tr>
+    <tr><td><b>6 롯데</b></td><td>인덱스 0~25 · LAST_BOX_ORDER TOP 1 서브쿼리 구조 · 로컬DB 전수 일치 · SM_수주상세 행 팽창 WARN</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td><b>7 생산(라벨)</b></td><td>Oracle <span class="mono">VW_PDA_WID_PRO_4LABEL_LIST</span> 잔재 — 출하대상 JSP 1본 미전환 (ERP VIEW 답변 대기)</td><td class="c"><span class="badge b-wait">미전환</span></td></tr>
+    <tr><td>공통 — 바코드정보조회 (정량/비정량)</td><td>25/24컬럼 전수 일치 · 회사코드 조건(개발41) 반영</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td>공통 — 계근 송수신 (구/신로직)</td><td>15필드 매핑 일치 · GI_L_ID(개발31)·회사코드(개발32) 반영</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+  </table>
+</section>
+
+<footer>
+  PDA-INNO · app/doc/참고자료/PDA_프로세스_시각화.html · 관련 문서: 기능/03_PDA_기능_프로세스 · 기능/04_출하계근_프로세스 · 개발/00_개발진행현황 · 오류/21·22·23
+</footer>
+
+</div>
+<script>
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.p).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
