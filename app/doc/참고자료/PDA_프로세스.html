@@ -115,6 +115,7 @@
     padding: 16px 22px; background: linear-gradient(135deg, #1e3a8a, #2d4eb8); color: #fff;
   }
   .phead.st-wait { background: linear-gradient(135deg, #9a3412, #ea580c); }
+  .phead.st-off { background: linear-gradient(135deg, #475569, #94a3b8); }
   .phead .big {
     background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.5);
     font-weight: 800; border-radius: 10px; padding: 4px 14px; font-size: 19px;
@@ -238,7 +239,7 @@
   <div class="flow">
     <div class="fbox fb-blue"><div class="t">LoginActivity</div><div class="d">로그인 · SQLite 테이블 생성 · 센터 선택 · 프린터 설정 로드</div></div>
     <div class="arrow-r">→</div>
-    <div class="fbox fb-blue"><div class="t">MainActivity</div><div class="d">날짜 선택 · 출하대상받기 8종 버튼 · 계근입력시작</div></div>
+    <div class="fbox fb-blue"><div class="t">MainActivity</div><div class="d">날짜 선택 · 출하대상받기 7종 버튼 · 계근입력시작</div></div>
   </div>
   <div class="arrow-d">▼</div>
   <div class="flow">
@@ -290,14 +291,13 @@
     <tr><td>비정량출하대상받기</td><td class="mono">search_production_nonfixed.jsp</td><td class="c">4</td><td class="c"><span class="badge b-done">✅</span></td></tr>
     <tr><td>홈플러스비정량출하대상받기</td><td class="mono">search_homeplus_nonfixed.jsp</td><td class="c">5</td><td class="c"><span class="badge b-wait">⚠️ 바코드정보 미전환</span></td></tr>
     <tr><td>롯데출하대상받기</td><td class="mono">search_shipment_lotte.jsp</td><td class="c">6</td><td class="c"><span class="badge b-done">✅</span></td></tr>
-    <tr><td>생산대상받기(라벨)</td><td class="mono">search_production_4label.jsp</td><td class="c">7</td><td class="c"><span class="badge b-fail">❌ Oracle 미전환</span></td></tr>
     <tr><td><b>출하대상 삭제</b></td><td>TB_SHIPMENT 전체 삭제 (deletequeryShipment)</td><td class="c">-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
     <tr><td><b>출하대상 목록 팝업</b></td><td>메뉴 → TB_SHIPMENT 내용 조회 다이얼로그</td><td class="c">-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
     <tr><td><b>바코드정보 목록 팝업</b></td><td>메뉴 → TB_BARCODE_INFO 내용 조회 다이얼로그</td><td class="c">-</td><td class="c"><span class="badge b-done">✅</span></td></tr>
   </table>
   <div class="note">
     <b>출하대상받기 = 출하대상 + 바코드정보 자동 연쇄</b> — 각 "대상받기" 버튼은 별도 조작 없이 출하대상 조회(<span class="mono">ProgressDlgShipSearch</span>) 완료 후 바코드정보 조회(<span class="mono">ProgressDlgBarcodeSearch</span>)를 <b>자동 실행</b>해 TB_SHIPMENT·TB_BARCODE_INFO를 함께 채웁니다.
-    바코드정보 JSP: 정량(0·1·2·3·6·7) <span class="mono">search_barcode_info.jsp</span> ✅ · 비정량(4) <span class="mono">search_barcode_info_nonfixed.jsp</span> ✅ · 홈플비정량(5) <span class="mono">search_homeplus_nonfixed2.jsp</span> ❌ B_ITEM Oracle 미전환 → 그래서 (5)는 출하대상은 받아도 바코드정보 단계에서 막힘.
+    바코드정보 JSP: 정량(0·1·2·3·6) <span class="mono">search_barcode_info.jsp</span> ✅ · 비정량(4) <span class="mono">search_barcode_info_nonfixed.jsp</span> ✅ · 홈플비정량(5) <span class="mono">search_homeplus_nonfixed2.jsp</span> ❌ B_ITEM Oracle 미전환 → 그래서 (5)는 출하대상은 받아도 바코드정보 단계에서 막힘.
   </div>
 
   <h3 class="sub">⚖️ 계근 입력 (BixolonShipmentActivity)</h3>
@@ -324,14 +324,13 @@
     <tr><td><b>마트사별 라벨 양식 분기</b></td><td>이마트/홈플러스/롯데/비정량 등 양식 분화 (LabelPrintHelper)</td><td>setPrinting* 분기</td><td class="c"><span class="badge b-done">✅</span></td></tr>
     <tr><td><b>테스트 라벨 인쇄</b></td><td>메뉴 → 프린터 연결 테스트 출력</td><td>printTestLabel</td><td class="c"><span class="badge b-done">✅</span></td></tr>
     <tr><td><b>합계 라벨 인쇄</b></td><td>계근 내역 중량 합산 라벨 출력 (페이지별 총 중량, SLCS)</td><td>합계 버튼</td><td class="c"><span class="badge b-done">✅</span></td></tr>
-    <tr><td>생산 라벨 인쇄</td><td>생산라벨(7) 전용 양식 출력</td><td>출하대상(7) 미전환 의존</td><td class="c"><span class="badge b-wait">⚠️</span></td></tr>
   </table>
 
   <h3 class="sub">📤 서버 전송</h3>
   <table>
     <tr><th>기능</th><th>설명 · JSP</th><th>대상</th><th>동작</th></tr>
     <tr><td><b>계근 전송 (구로직)</b></td><td class="mono">insert_goods_wet.jsp</td><td class="c">0·2·6</td><td class="c"><span class="badge b-done">✅</span></td></tr>
-    <tr><td><b>계근 전송 (신로직·배치)</b></td><td class="mono">insert_goods_wet_new.jsp</td><td class="c">1·3·4·5·7</td><td class="c"><span class="badge b-done">✅</span></td></tr>
+    <tr><td><b>계근 전송 (신로직·배치)</b></td><td class="mono">insert_goods_wet_new.jsp</td><td class="c">1·3·4·5</td><td class="c"><span class="badge b-done">✅</span></td></tr>
   </table>
 
   <h3 class="sub">🧮 생산 계근 계산 (ProductionActivity)</h3>
@@ -353,8 +352,9 @@
   </table>
 
   <div class="note warn">
-    <b>동작 요약</b> — ❌ 미동작 3건: 생산 출하대상받기(1)·생산라벨 출하대상받기(7)·생산계근계산 바코드정보(모두 Oracle VIEW/테이블 미전환) ·
-    ⚠️ 부분/이슈 3건: 홈플정량(2) SM_수주상세 행팽창 · 홈플비정량(5) 출하대상은 받으나 바코드정보(search_homeplus_nonfixed2.jsp) 미전환으로 전체 흐름 제한 · 생산라벨 인쇄(7). 그 외 기능은 정상 동작.
+    <b>동작 요약</b> — ❌ 미동작 2건: 생산 출하대상받기(1)·생산계근계산 바코드정보(모두 Oracle VIEW/테이블 미전환) ·
+    ⚠️ 부분/이슈 2건: 홈플정량(2) SM_수주상세 행팽창 · 홈플비정량(5) 출하대상은 받으나 바코드정보(search_homeplus_nonfixed2.jsp) 미전환으로 전체 흐름 제한 ·
+    🚫 개발 미진행 1건: 생산라벨(7) — 앱 미노출(MainActivity 버튼 미표시). 그 외 기능은 정상 동작.
   </div>
 </section>
 
@@ -382,7 +382,7 @@
     <div class="tab" data-p="p4"><span class="tno">4</span>비정량(이마트)<span class="dot g"></span></div>
     <div class="tab" data-p="p5"><span class="tno">5</span>홈플러스 비정량<span class="dot r"></span></div>
     <div class="tab" data-p="p6"><span class="tno">6</span>롯데<span class="dot g"></span></div>
-    <div class="tab" data-p="p7"><span class="tno">7</span>생산(라벨)<span class="dot o"></span></div>
+    <div class="tab" data-p="p7"><span class="tno">7</span>생산(라벨)<span class="dot" style="background:#94a3b8"></span></div>
   </div>
 
   <!-- ════════ 0 이마트 ════════ -->
@@ -728,40 +728,40 @@
 
   <!-- ════════ 7 생산(라벨) ════════ -->
   <div class="panel" id="p7">
-    <div class="phead st-wait">
+    <div class="phead st-off">
       <div class="big">7</div>
       <h3>생산 (라벨)<small>생산대상받기(라벨) → 생산입력시작(라벨)</small></h3>
-      <span class="badge b-wait">미전환 — ERP VIEW 답변 대기 ⏸</span>
+      <span class="badge b-gray">개발 미진행 — 앱 미노출</span>
     </div>
     <div class="pbody">
       <div class="infobar">
-        <div class="it hl"><b>마트사구분</b><span class="sm">- (Oracle VIEW)</span></div>
+        <div class="it hl"><b>마트사구분</b><span class="sm">- (개발 미진행)</span></div>
         <div class="it"><b>식별 필터</b><span class="sm">VW_PDA_WID_PRO_4LABEL_LIST</span></div>
         <div class="it"><b>출하대상 컬럼</b><span>32개 (0~31)</span></div>
-        <div class="it"><b>창고코드 조건</b><span class="sm">- (전환 시 확정)</span></div>
-        <div class="it"><b>계근전송</b><span class="sm">신로직 (배치)</span></div>
-        <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">- (전환 시 확정)</span></div>
+        <div class="it"><b>창고코드 조건</b><span class="sm">-</span></div>
+        <div class="it"><b>계근전송</b><span class="sm">- (미사용)</span></div>
+        <div class="it"><b>GI_L_ID (LOT)</b><span class="sm">-</span></div>
       </div>
       <div class="steps">
-        <div class="step hold"><div class="sc">1</div><div class="st">출하대상받기 ⏸</div><span class="sj">search_production_4label.jsp</span><div class="sd">Oracle VIEW → MSSQL 전환 필요</div></div>
-        <div class="step ok"><div class="sc">2</div><div class="st">바코드정보</div><span class="sj">search_barcode_info.jsp</span><div class="sd">전환완료 JSP 공용</div></div>
-        <div class="step"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd">생산라벨 전용 화면 분기</div></div>
-        <div class="step ok"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet_new.jsp</span><div class="sd">"##" 배치 전송</div></div>
-        <div class="step"><div class="sc">5</div><div class="st">라벨 인쇄</div><div class="sd">생산 라벨 양식<br>유통기한 입력(ExpiryEnter) 연계</div></div>
+        <div class="step off"><div class="sc">1</div><div class="st">출하대상받기</div><span class="sj">search_production_4label.jsp</span><div class="sd">개발 미진행 (앱 미노출)</div></div>
+        <div class="step off"><div class="sc">2</div><div class="st">바코드정보</div><span class="sj">search_barcode_info.jsp</span><div class="sd">공용 JSP (미사용)</div></div>
+        <div class="step off"><div class="sc">3</div><div class="st">스캔·계근</div><div class="sd">개발 미진행</div></div>
+        <div class="step off"><div class="sc">4</div><div class="st">계근전송</div><span class="sj">insert_goods_wet_new.jsp</span><div class="sd">공용 JSP (미사용)</div></div>
+        <div class="step off"><div class="sc">5</div><div class="st">라벨 인쇄</div><div class="sd">개발 미진행</div></div>
       </div>
       <div class="duo">
         <div class="sqlbox">
-          <div class="hd">현재 상태 — Oracle 잔재</div>
-          <div class="bd"><span class="cm">-- search_production_4label.jsp (미전환)</span><br>
-<span class="kw">SELECT</span> ... <span class="kw">FROM</span> <span class="vl">VW_PDA_WID_PRO_4LABEL_LIST</span>  <span class="cm">← Oracle VIEW</span><br>
-<span class="cm">-- 구조 분석 완료(2026-05-06) · searchType=1과 함께 전환 예정</span></div>
+          <div class="hd">현재 상태 — 개발 미진행</div>
+          <div class="bd"><span class="cm">-- search_production_4label.jsp</span><br>
+<span class="kw">SELECT</span> ... <span class="kw">FROM</span> <span class="vl">VW_PDA_WID_PRO_4LABEL_LIST</span>  <span class="cm">← Oracle VIEW (분석만 완료)</span><br>
+<span class="cm">-- 구조 분석 완료(2026-05-06) · 개발 진행하지 않음 (앱 미노출)</span></div>
         </div>
         <div class="ibox">
           <div class="hd">특이사항 · 진행 조건</div>
           <ul>
-            <li class="warn">출하대상 JSP 1본만 전환하면 완료 (바코드·계근 JSP는 공용 전환완료)</li>
+            <li class="info"><b>개발 미진행</b> 결정 — 앱 MainActivity에 생산라벨 버튼 미노출</li>
             <li class="info">생산품 <b>라벨 출력 중심</b> 작업 — searchType=1(계근 중심)과 구분</li>
-            <li class="info">유통기한 수기 입력(ExpiryEnterActivity) 연계 흐름</li>
+            <li class="info">바코드·계근 JSP는 공용(전환완료)이나 개발 미진행으로 미사용</li>
           </ul>
         </div>
       </div>
@@ -779,7 +779,7 @@
     <tr><td><b>4 비정량</b></td><td class="c">'7'</td><td class="c">'B' + M8/M9</td><td class="c">31</td><td class="c">없음</td><td class="c">비정량 전용</td><td class="c">신로직</td><td class="c">⭕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>5 홈플 비정량</b></td><td class="c">'4'</td><td class="c">바코드타입 'H5'</td><td class="c">29</td><td class="c">없음</td><td class="c"><span class="badge b-fail">미전환</span></td><td class="c">신로직</td><td class="c">✕</td><td class="c"><span class="badge b-fail">이슈</span></td></tr>
     <tr><td><b>6 롯데</b></td><td class="c">'6'</td><td class="c">타입구분 'W'</td><td class="c">26</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">구로직</td><td class="c">✕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
-    <tr><td><b>7 생산라벨</b></td><td class="c">-</td><td class="c">Oracle VIEW</td><td class="c">32</td><td class="c">-</td><td class="c">정량 공용</td><td class="c">신로직</td><td class="c">-</td><td class="c"><span class="badge b-wait">대기</span></td></tr>
+    <tr><td><b>7 생산라벨</b></td><td class="c">-</td><td class="c">VW_PDA_WID_PRO_4LABEL</td><td class="c">32</td><td class="c">-</td><td class="c">미사용</td><td class="c">-</td><td class="c">-</td><td class="c"><span class="badge b-gray">개발 미진행</span></td></tr>
   </table>
 </section>
 
@@ -814,12 +814,12 @@
     <tr><td>출하대상 (5 홈플비정량)</td><td class="mono">search_homeplus_nonfixed.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
     <tr><td>출하대상 (6 롯데)</td><td class="mono">search_shipment_lotte.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
     <tr><td>출하대상 (1 생산)</td><td class="mono">search_production.jsp</td><td>Oracle VW_PDA_WID_PRO_LIST</td><td class="c"><span class="badge b-wait">미전환</span></td></tr>
-    <tr><td>출하대상 (7 생산라벨)</td><td class="mono">search_production_4label.jsp</td><td>Oracle VW_PDA_WID_PRO_4LABEL_LIST</td><td class="c"><span class="badge b-wait">미전환</span></td></tr>
-    <tr><td>바코드정보 (0·1·2·3·6·7)</td><td class="mono">search_barcode_info.jsp</td><td rowspan="3">ProgressDlgBarcodeSearch</td><td>CO_품목코드</td><td rowspan="3" class="c">TB_BARCODE_INFO</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>출하대상 (7 생산라벨)</td><td class="mono">search_production_4label.jsp</td><td>Oracle VW_PDA_WID_PRO_4LABEL_LIST</td><td class="c"><span class="badge b-gray">개발 미진행</span></td></tr>
+    <tr><td>바코드정보 (0·1·2·3·6)</td><td class="mono">search_barcode_info.jsp</td><td rowspan="3">ProgressDlgBarcodeSearch</td><td>CO_품목코드</td><td rowspan="3" class="c">TB_BARCODE_INFO</td><td class="c"><span class="badge b-done">완료</span></td></tr>
     <tr><td>바코드정보 (4 비정량)</td><td class="mono">search_barcode_info_nonfixed.jsp</td><td>CO_품목코드</td><td class="c"><span class="badge b-done">완료</span></td></tr>
     <tr><td>바코드정보 (5 홈플비정량)</td><td class="mono">search_homeplus_nonfixed2.jsp</td><td>Oracle B_ITEM 잔재</td><td class="c"><span class="badge b-fail">미전환</span></td></tr>
     <tr><td>계근 전송 (0·2·6 구로직)</td><td class="mono">insert_goods_wet.jsp</td><td rowspan="2">BixolonShipmentActivity</td><td rowspan="2">SM_출고계근 (SM_DLIVY_WEIGH_SEQ)</td><td rowspan="2" class="c">TB_GOODS_WET</td><td class="c"><span class="badge b-done">완료</span></td></tr>
-    <tr><td>계근 전송 (1·3·4·5·7 배치)</td><td class="mono">insert_goods_wet_new.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
+    <tr><td>계근 전송 (1·3·4·5 배치)</td><td class="mono">insert_goods_wet_new.jsp</td><td class="c"><span class="badge b-done">완료</span></td></tr>
     <tr><td>계근 내역 조회</td><td class="mono">search_goods_wet.jsp</td><td>ProgressDlgGoodsWetSearch</td><td>SM_출고계근</td><td class="c">TB_GOODS_WET</td><td class="c"><span class="badge b-done">완료</span></td></tr>
     <tr><td>생산 계근 계산</td><td class="mono">search_production_calc.jsp</td><td>ProductionActivity</td><td>Oracle B_SUPPLIER_ITEM+S_BARCODE_INFO 잔재</td><td class="c">TB_GOODS_WET_PRODUCTION_CALC</td><td class="c"><span class="badge b-fail">미전환</span></td></tr>
   </table>
@@ -838,7 +838,7 @@
     <tr><td><b>4 비정량(이마트)</b></td><td>인덱스 0~30 · 타입구분'B'(개발44)·M9(개발43) 반영 · GI_L_ID(Index30) 수신</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>5 홈플러스비정량</b></td><td>출하대상 인덱스 0~28 전수 일치 / 바코드정보 <span class="mono">B_ITEM</span> 잔재 미전환 · SM_수주상세 행 팽창 WARN</td><td class="c"><span class="badge b-done">출하 PASS</span> <span class="badge b-fail">바코드 미전환</span></td></tr>
     <tr><td><b>6 롯데</b></td><td>인덱스 0~25 · LAST_BOX_ORDER TOP 1 서브쿼리 구조 · 로컬DB 전수 일치 · SM_수주상세 행 팽창 WARN</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
-    <tr><td><b>7 생산(라벨)</b></td><td>Oracle <span class="mono">VW_PDA_WID_PRO_4LABEL_LIST</span> 잔재 — 출하대상 JSP 1본 미전환 (ERP VIEW 답변 대기)</td><td class="c"><span class="badge b-wait">미전환</span></td></tr>
+    <tr><td><b>7 생산(라벨)</b></td><td>생산라벨 화면 <b>개발 미진행</b> 결정 — 앱 미노출 · <span class="mono">search_production_4label.jsp</span> 구조 분석만 완료(2026-05-06)</td><td class="c"><span class="badge b-gray">개발 미진행</span></td></tr>
     <tr><td>공통 — 바코드정보조회 (정량/비정량)</td><td>25/24컬럼 전수 일치 · 회사코드 조건(개발41) 반영</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td>공통 — 계근 송수신 (구/신로직)</td><td>15필드 매핑 일치 · GI_L_ID(개발31)·회사코드(개발32) 반영</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
   </table>
