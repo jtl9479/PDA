@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 홈플러스 정량(searchType 2) 출하계근 E2E 테스트 시나리오</title>
+<style>
+  :root {
+    --blue: #2563eb; --blue-bg: #eff6ff;
+    --green: #16a34a; --green-bg: #f0fdf4;
+    --orange: #ea580c; --orange-bg: #fff7ed;
+    --red: #dc2626; --red-bg: #fef2f2;
+    --purple: #7c3aed; --purple-bg: #f5f3ff;
+    --gray: #64748b; --gray-bg: #f8fafc;
+    --border: #e2e8f0; --text: #1e293b; --navy: #1e3a8a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Malgun Gothic", "맑은 고딕", "Segoe UI", sans-serif;
+    color: var(--text); background: #f1f5f9; line-height: 1.55; padding: 24px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  header.page {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff;
+    border-radius: 14px; padding: 28px 32px; margin-bottom: 24px;
+  }
+  header.page h1 { font-size: 26px; margin-bottom: 6px; }
+  header.page p { opacity: .92; font-size: 14px; }
+  header.page .meta { margin-top: 10px; font-size: 12.5px; opacity: .8; }
+
+  section.card {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 24px 28px; margin-bottom: 22px;
+  }
+  section.card > h2 {
+    font-size: 19px; margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--blue); color: var(--navy);
+  }
+  section.card > h2 .num {
+    display: inline-block; background: var(--blue); color: #fff; border-radius: 8px;
+    font-size: 13px; padding: 2px 9px; margin-right: 8px; vertical-align: 2px;
+  }
+  h3.sub { font-size: 15px; margin: 18px 0 10px; color: #334155; }
+
+  .badge { display: inline-block; font-size: 11.5px; font-weight: 700; border-radius: 99px; padding: 2px 10px; vertical-align: middle; }
+  .b-done { background: var(--green-bg); color: var(--green); border: 1px solid #bbf7d0; }
+  .b-wait { background: var(--orange-bg); color: var(--orange); border: 1px solid #fed7aa; }
+  .b-fail { background: var(--red-bg); color: var(--red); border: 1px solid #fecaca; }
+  .b-info { background: var(--blue-bg); color: var(--blue); border: 1px solid #bfdbfe; }
+  .b-gray { background: var(--gray-bg); color: var(--gray); border: 1px solid var(--border); }
+
+  .flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0; margin: 12px 0; }
+  .fbox {
+    flex: 1 1 0; min-width: 150px; border-radius: 10px; padding: 12px 14px;
+    border: 1.5px solid; text-align: center; position: relative;
+  }
+  .fbox .t { font-weight: 700; font-size: 13.5px; margin-bottom: 4px; }
+  .fbox .d { font-size: 11.5px; color: #475569; }
+  .fbox .code { font-family: Consolas, monospace; font-size: 11px; color: var(--purple); display: block; margin-top: 4px; word-break: break-all; }
+  .fb-blue   { border-color: #93c5fd; background: var(--blue-bg); }
+  .fb-green  { border-color: #86efac; background: var(--green-bg); }
+  .fb-orange { border-color: #fdba74; background: var(--orange-bg); }
+  .fb-purple { border-color: #c4b5fd; background: var(--purple-bg); }
+  .fb-gray   { border-color: #cbd5e1; background: var(--gray-bg); }
+  .fb-red    { border-color: #fca5a5; background: var(--red-bg); }
+  .arrow-r {
+    flex: 0 0 34px; display: flex; align-items: center; justify-content: center;
+    color: var(--gray); font-size: 19px; font-weight: 700;
+  }
+  .arrow-d { text-align: center; color: var(--gray); font-size: 19px; font-weight: 700; margin: 4px 0; }
+
+  .lane { display: flex; gap: 14px; flex-wrap: wrap; }
+  .lane .zone { flex: 1 1 280px; border: 1.5px dashed #94a3b8; border-radius: 12px; padding: 14px; }
+  .lane .zone h4 { font-size: 13.5px; color: #475569; margin-bottom: 10px; text-align: center; }
+  .zone .item { border-radius: 8px; border: 1.5px solid; padding: 9px 11px; margin-bottom: 8px; font-size: 12.5px; }
+  .zone .item b { display: block; font-size: 13px; }
+  .zone .item span { color: #475569; font-size: 11.5px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { background: var(--navy); color: #fff; padding: 8px 10px; font-size: 12.5px; text-align: center; }
+  td { border: 1px solid var(--border); padding: 7px 10px; vertical-align: middle; }
+  tr:nth-child(even) td { background: #fafbfd; }
+  td.c { text-align: center; }
+  code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 12px; color: var(--purple); background: var(--purple-bg); padding: 1px 5px; border-radius: 4px; }
+
+  .note { border-left: 4px solid var(--blue); background: var(--blue-bg); border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 12.5px; margin: 12px 0; }
+  .note.warn { border-color: var(--orange); background: var(--orange-bg); }
+  .note.danger { border-color: var(--red); background: var(--red-bg); }
+
+  /* 코드/흐름 블록 */
+  pre.flowbox {
+    background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 14px 16px;
+    font-family: Consolas, "Courier New", monospace; font-size: 12.5px; line-height: 1.65;
+    overflow-x: auto; margin: 12px 0; white-space: pre;
+  }
+  pre.proc {
+    background: var(--gray-bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px; font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 8px 0 12px; white-space: pre;
+  }
+  pre.cmd {
+    background: #1e293b; color: #cbd5e1; border-radius: 7px; padding: 9px 14px;
+    font-family: Consolas, "Courier New", monospace; font-size: 11.5px; line-height: 1.55;
+    overflow-x: auto; margin: 8px 0 14px; white-space: pre;
+  }
+
+  /* 시나리오 카드 */
+  .scn {
+    border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+    margin: 16px 0; background: #fff;
+  }
+  .scn > h3 {
+    font-size: 15px; color: var(--navy); margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--blue-bg); display: flex; align-items: center; gap: 8px;
+  }
+  .scn > h3 .sn {
+    background: var(--blue); color: #fff; border-radius: 7px; font-size: 12px;
+    padding: 2px 10px; flex: none; font-weight: 800;
+  }
+  .scn h4.lbl { font-size: 12.5px; color: var(--gray); font-weight: 700; margin: 12px 0 6px; letter-spacing: .02em; }
+  .scn .bg { border-left: 4px solid var(--orange); background: var(--orange-bg); border-radius: 0 8px 8px 0; padding: 8px 12px; font-size: 12px; margin: 6px 0 10px; }
+
+  /* 체크박스 칸 */
+  table.chk td.ck { text-align: center; width: 44px; }
+  table.chk td.ck input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; accent-color: var(--blue); }
+  table.chk td.num { text-align: center; width: 36px; color: var(--gray); font-weight: 700; }
+
+  /* ════════════════ 마트사별 탭 ════════════════ */
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tab {
+    border: 1.5px solid var(--border); border-bottom: none; background: var(--gray-bg);
+    border-radius: 10px 10px 0 0; padding: 8px 14px; cursor: pointer; font-size: 13px;
+    font-weight: 700; color: #475569; user-select: none; display: flex; align-items: center; gap: 7px;
+  }
+  .tab .tno {
+    background: #94a3b8; color: #fff; border-radius: 6px; font-size: 11.5px;
+    width: 21px; height: 21px; display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .tab.active .tno { background: #fff; color: var(--navy); }
+  .tab .dot { width: 8px; height: 8px; border-radius: 99px; flex: none; }
+  .dot.g { background: var(--green); } .dot.o { background: var(--orange); } .dot.r { background: var(--red); }
+
+  .panel {
+    display: none; border: 1.5px solid var(--navy); border-radius: 0 12px 12px 12px;
+    background: #fff; overflow: hidden;
+  }
+  .panel.active { display: block; }
+
+  /* 패널 헤더 스트립 */
+  .phead {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    padding: 16px 22px; background: linear-gradient(135deg, #1e3a8a, #2d4eb8); color: #fff;
+  }
+  .phead.st-wait { background: linear-gradient(135deg, #9a3412, #ea580c); }
+  .phead.st-off { background: linear-gradient(135deg, #475569, #94a3b8); }
+  .phead .big {
+    background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.5);
+    font-weight: 800; border-radius: 10px; padding: 4px 14px; font-size: 19px;
+  }
+  .phead h3 { font-size: 18px; flex: 1 1 auto; min-width: 140px; }
+  .phead h3 small { display: block; font-size: 11.5px; font-weight: 400; opacity: .85; margin-top: 2px; }
+  .phead .badge { border: none; }
+
+  .pbody { padding: 18px 22px 20px; }
+
+  footer { text-align: center; color: var(--gray); font-size: 12px; padding: 18px 0 8px; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    section.card { break-inside: avoid; }
+    .panel { display: block !important; margin-bottom: 14px; border-radius: 12px; }
+    .scn { break-inside: avoid; }
+    .tabs { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <h1>📋 홈플러스 정량(searchType 2) 출하계근 E2E 테스트 시나리오</h1>
+  <p>대상: <b>홈플러스 정량(searchType 2)</b> · 전체 흐름: 출하대상받기 → 바코드정보 → 계근조회 → 계근입력 → 라벨 → 계근전송</p>
+  <div class="meta">갱신일: 2026-06-23 · 기준: 테스트/05_홈플러스 출하계근 전체 E2E · 체크박스는 인쇄·클릭 가능</div>
+</header>
+
+<section class="card">
+  <div class="panel active" id="p2" style="display:block">
+    <div class="phead">
+      <div class="big">2</div>
+      <h3>홈플러스 하이퍼 정량 출하계근<small>홈플러스 하이퍼 정량 출하계근 전체 흐름 (searchType=2)</small></h3>
+      <span class="badge b-done">searchType 2</span><span class="badge b-info">마트사구분 '4'</span><span class="badge b-info">타입구분 'W'</span><span class="badge b-wait">행팽창 WARN (오류22-2)</span><span class="badge b-wait">STORE_IN_DATE (오류22-1)</span>
+    </div>
+    
+    <div class="pbody">
+
+
+      <h3 class="sub">사전 조건</h3>
+      <table>
+        <tr><th>#</th><th>항목</th><th>조건</th></tr>
+        <tr><td class="c">1</td><td>Tomcat 서버</td><td>로컬 Tomcat 재시작 완료 (포트 4040), JSP 변경분 반영 확인</td></tr>
+        <tr><td class="c">2</td><td>DB</td><td>MSSQL <code>weberp_dev</code> 접속 가능</td></tr>
+        <tr><td class="c">3</td><td>앱 BASE_URL</td><td><code>http://192.168.0.28:4040/inno</code> (로컬)</td></tr>
+        <tr><td class="c">4</td><td>테스트 데이터</td><td>ERP에서 홈플러스 출고 데이터 입력 완료 (마트사구분='4', 타입구분='W')</td></tr>
+        <tr><td class="c">5</td><td>PDA 기기</td><td>동일 네트워크(Wi-Fi) 연결</td></tr>
+        <tr><td class="c">6</td><td>TEST_MODE</td><td><code>false</code></td></tr>
+        <tr><td class="c">7</td><td>프린터</td><td>BIXOLON 프린터 Wi-Fi 연결 확인</td></tr>
+        <tr><td class="c">8</td><td>searchType=2 확인</td><td>앱 홈플러스 출하대상받기 버튼 (searchType=2)</td></tr>
+      </table>
+
+      <h3 class="sub">홈플러스 정량 특이사항 요약</h3>
+      <table>
+        <tr><th>항목</th><th>내용</th></tr>
+        <tr><td>마트사구분</td><td><code>'4'</code> (CO_거래처MASTER B.마트사구분 = '4')</td></tr>
+        <tr><td>식별 필터</td><td><code>COALESCE(M1.타입구분, M2.타입구분) = 'W'</code></td></tr>
+        <tr><td>출하대상 컬럼</td><td>24개 (index 0~23)</td></tr>
+        <tr><td>ITEM_TYPE</td><td><code>'S'</code> AS ITEM_TYPE 하드코딩 고정</td></tr>
+        <tr><td>창고코드 조건</td><td>창고 선택 시 <code>AND D.창고코드 = '...'</code> 추가</td></tr>
+        <tr><td>GI_L_ID (LOT)</td><td>미사용 (빈 문자열 고정)</td></tr>
+        <tr><td>계근전송 JSP</td><td><code>insert_goods_wet.jsp</code> (구로직, 1건씩 전송)</td></tr>
+        <tr><td>정렬</td><td><code>HE.납품처코드 ASC, I.PPCODE ASC, I.품목명 ASC</code></td></tr>
+        <tr><td>행팽창 위험</td><td>SM_수주상세 LEFT JOIN — 마트사SEQ 비유니크 → 중복 가능 (오류22-2)</td></tr>
+        <tr><td>STORE_IN_DATE</td><td>SD.납기일자 컬럼 타입 확인 대기 (오류22-1) — datetime이면 substring 오류 가능</td></tr>
+      </table>
+
+      <h3 class="sub">호출 흐름</h3>
+      <pre class="flowbox">[MainActivity] 홈플러스 출하대상받기 버튼 (searchType=2)
+    ↓
+① search_shipment_homeplus.jsp (출하대상 조회, 24개 컬럼)
+    WHERE H.마트사구분='4' AND D.출고수량>0
+    AND COALESCE(M1.타입구분, M2.타입구분)='W'
+    LEFT JOIN SM_수주상세 SD ON SD.마트사SEQ = HE.SEQ
+    ↓ 자동
+② search_barcode_info.jsp (바코드 정보 조회, 정량 공용)
+    ↓ 자동
+③ search_goods_wet.jsp (계근 내역 조회)
+    ↓
+[바코드정보 없는 상품 다이얼로그 표시]
+    ↓ 사용자 개입
+④ 계근입력 (바코드 스캔 / 수기 중량입력)
+    → TB_GOODS_WET INSERT (SAVE_TYPE='F')
+    → 라벨 출력 (홈플러스 양식)
+    ↓ 사용자 개입
+⑤ 계근전송 버튼 클릭
+    → insert_goods_wet.jsp (1건씩, 구로직)
+    → SM_출고계근 INSERT
+    → TB_GOODS_WET.SAVE_TYPE 'F'→'Y' UPDATE</pre>
+
+      <!-- 시나리오 1 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 1</span> 정상 E2E 전체 흐름</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. Tomcat 서버 재시작 (search_shipment_homeplus.jsp 변경분 반영 확인)
+2. 앱 실행 → 로그인
+3. 창고 선택 (Spinner에서 서버 창고 목록 표시 확인)
+4. 날짜 선택 (홈플러스 출고 데이터가 있는 날짜)
+5. 홈플러스 출하대상받기 버튼 클릭 (searchType=2)
+6. 로딩 다이얼로그 3단계 확인 (출하대상 → 바코드정보 → 계근정보)
+7. 바코드정보 없는 상품 다이얼로그 확인
+8. 상품 목록에서 첫 번째 항목 선택 → 계근입력 시작
+9. 상품 바코드 스캔 (1차 스캔)
+10. BL번호 스캔 (2차 스캔, ITEM_TYPE='S' 경로)
+11. 계근 완료 후 라벨 자동 출력 확인
+12. 계근전송 버튼 클릭 → 서버 전송 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① search_shipment_homeplus.jsp 호출</td><td>서버 로그에 MSSQL JOIN 쿼리 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>① 응답 데이터</td><td><code>receiveData</code>에 24개 컬럼 데이터 ("::" 구분)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>① ITEM_TYPE 값</td><td>temp[19] = <code>S</code> (하드코딩 고정)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>① EMARTLOGIS_CODE 값</td><td>temp[23] = HE.납품처코드</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>① TB_SHIPMENT INSERT</td><td><code>insertqueryShipment</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>② search_barcode_info.jsp 호출</td><td><code>Barcode Code List : WHERE SBI.PPCODE = '...'</code> 로그</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>② 응답 데이터</td><td><code>Barcode receiveData</code>에 25개 컬럼 데이터</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>② TB_BARCODE_INFO INSERT</td><td><code>insertqueryBarcodeInfo</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>③ search_goods_wet.jsp 호출</td><td>계근 내역 조회 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>③ 응답 데이터</td><td>초회 조회 시 0건 (미계근 상태)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">11</td><td>계근입력 화면</td><td>홈플러스 상품 목록 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">12</td><td>바코드 스캔 (1차)</td><td>상품 바코드 매칭 성공</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">13</td><td>바코드 스캔 (2차)</td><td>BL번호 스캔 처리 (ITEM_TYPE='S' 경로)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">14</td><td>라벨 출력</td><td>홈플러스 전용 양식으로 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">15</td><td>⑤ insert_goods_wet.jsp 호출</td><td><code>insert_goods_wet start</code> 서버 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">16</td><td>⑤ SM_출고계근 INSERT</td><td>서버 DB 정상 INSERT (응답 "s")</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">17</td><td>⑤ TB_GOODS_WET 상태</td><td>SAVE_TYPE 'F' → 'Y' 업데이트</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">18</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" "pDlgBarcodeSearch" "pDlgGoodsWetSearch" "DBHandler" | tail -50</pre>
+      </div>
+
+      <!-- 시나리오 2 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 2</span> 출하대상 행 팽창(중복) 검증</h3>
+        <div class="bg"><b>배경</b>: SM_수주상세 LEFT JOIN 시 동일 마트사SEQ에 N건이 있으면 출하 건이 N배 중복 조회될 수 있음 (오류22-2).</div>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 홈플러스 출고 데이터가 있는 날짜 선택
+3. 홈플러스 출하대상받기 버튼 클릭
+4. 출하대상 목록 확인 (항목 수 기록)
+5. MSSQL에서 동일 날짜 SM_출고상세 건수 직접 조회 (별도 쿼리 실행)
+   SELECT COUNT(*) FROM SM_출고상세 D
+   INNER JOIN SM_출고머리 H ON ...
+   WHERE H.마트사구분='4' AND D.출고일자='[선택일자]'
+6. 앱 목록 건수 vs MSSQL 직접 조회 건수 비교</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>앱 출하대상 목록 건수</td><td>MSSQL 직접 조회 건수와 동일</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>중복 행 여부</td><td>동일 GI_D_ID가 2회 이상 표시되지 않음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>SM_수주상세 N건 케이스</td><td>마트사SEQ에 수주상세 2건 이상인 경우 N배 중복 없음 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>중복 발생 시</td><td>오류 문서(<code>app/doc/오류/</code>) 작성 후 오류22-2 수정 진행</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 3 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 3</span> STORE_IN_DATE 날짜 표시 검증</h3>
+        <div class="bg"><b>배경</b>: SD.납기일자 컬럼이 MSSQL datetime 타입이면 rs.getString() 시 <code>"2026-06-23 00:00:00.0"</code> 형식 반환 → Java substring 오류 가능 (오류22-1).</div>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 홈플러스 출하대상받기 버튼 클릭
+3. 출하대상 목록에서 STORE_IN_DATE가 표시되는 항목 확인
+4. 라벨 출력 후 라벨상의 납기일자(납품일) 확인
+5. Tomcat 서버 로그에서 STORE_IN_DATE 반환값 형식 직접 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>서버 로그 STORE_IN_DATE 값</td><td><code>"20260623"</code> 형식 (8자리 문자열)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>STORE_IN_DATE 표시</td><td>앱 화면에 날짜 정상 표시 (비정상 문자열 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>라벨 납기일자</td><td>라벨에 납기일 정상 출력 (substring 예외 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>datetime 형식 반환 시</td><td><code>"2026-06-23 00:00:00.0"</code> 형태 → 오류 문서 작성 및 CONVERT 수정 필요</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 4 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 4</span> 바코드 스캔 계근 (정상)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1의 출하대상받기 완료 후 (TB_SHIPMENT, TB_BARCODE_INFO 데이터 있는 상태)
+2. 홈플러스 상품 목록에서 계근입력 대상 항목 선택
+3. 1차 스캔: 상품 바코드 스캔 (BARCODEGOODS 기준 매칭)
+4. 2차 스캔: BL번호 바코드 스캔
+5. 계근 중량 표시 확인
+6. 계근수량 표시 확인 (N/GI_REQ_PKG)
+7. 다음 박스 반복 스캔</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>1차 바코드 매칭</td><td>BARCODEGOODS 기준 TB_BARCODE_INFO 매칭 성공</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>ITEM_TYPE='S' 처리</td><td>ITEM_TYPE='S' 경로 분기 정상 동작</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>2차 BL번호 스캔</td><td>중량 추출 또는 처리 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>계근 중량 표시</td><td>소수점 절사 처리 (공통 로직)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>계근순번 증가</td><td>BOX_CNT 1씩 증가, N/GI_REQ_PKG 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>TB_GOODS_WET INSERT</td><td><code>insertqueryGoodsWet</code> 로그, SAVE_TYPE='F'</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>라벨 자동 출력</td><td>계근 1건당 홈플러스 양식 라벨 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 5 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 5</span> 수기 중량입력 계근</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1의 출하대상받기 완료 후 계근입력 화면 진입
+2. 바코드 스캔 대신 수기 중량 입력 선택
+3. 중량 값 직접 입력 (키패드)
+4. 계근 확인 버튼 클릭
+5. 중량 표시 및 저장 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>수기 중량 입력 UI</td><td>입력 필드 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>중량 저장</td><td>TB_GOODS_WET INSERT 정상 (SAVE_TYPE='F')</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>계근 화면 갱신</td><td>계근수량 증가, 중량 표시 갱신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>라벨 출력</td><td>수기 입력 중량 기준 라벨 정상 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 6 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 6</span> 홈플러스 라벨 인쇄 품질 및 재출력</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 4 또는 5의 계근 완료 상태에서
+2. 라벨 출력 결과물 품질 육안 확인 (비트맵 품질)
+3. 라벨 내용 항목별 확인 (품목명, 중량, 납기일자, 납품처명 등)
+4. 메뉴 → 라벨 재출력 기능 실행
+5. 재출력 결과 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>라벨 비트맵 품질</td><td>선명하게 출력, 번짐 없음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>라벨 품목명</td><td>ITEM_NAME 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>라벨 중량</td><td>계근된 중량값 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>라벨 납기일자</td><td>STORE_IN_DATE 날짜 정상 표시 (substring 이상 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>라벨 납품처명</td><td>CLIENTNAME (HE.납품처명) 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>라벨 바코드</td><td>바코드 심볼 정상 인쇄, 스캐너 읽기 가능</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>홈플러스 양식 분기</td><td>LabelPrintHelper 홈플러스 양식으로 출력됨 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>라벨 재출력</td><td>동일 내용으로 재출력 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 7 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 7</span> 계근전송 성공 (insert_goods_wet.jsp)</h3>
+        <div class="bg"><b>배경</b>: 홈플러스/롯데 계근전송은 <code>insert_goods_wet.jsp</code> (구로직, 1건씩 전송) 사용.</div>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 4 또는 5의 계근 완료 후 (TB_GOODS_WET에 SAVE_TYPE='F' 데이터 있는 상태)
+2. 계근전송 버튼 클릭
+3. 서버 전송 진행 확인
+4. 전송 완료 후 상태 확인
+5. MSSQL SM_출고계근 테이블에서 데이터 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>insert_goods_wet.jsp 호출</td><td>서버 로그 <code>insert_goods_wet start</code> 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>packet 구조</td><td>15개 필드, <code>::</code> 구분자 (splitData[0]~[14])</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>출고상세SEQ</td><td>splitData[0] = GI_D_ID 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>계근중량</td><td>splitData[1] = WEIGHT 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>등록사원</td><td>splitData[9] = REG_ID (로그인 ID)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>회사코드</td><td>splitData[10] = Common.selectCompanyCode 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>SM_출고계근 INSERT</td><td>MSSQL DB에 데이터 정상 INSERT</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>서버 응답</td><td>"s" 수신 (성공)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>TB_GOODS_WET 상태 갱신</td><td>SAVE_TYPE 'F' → 'Y' 업데이트</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>전송 실패 시</td><td>"f" 수신 → 오류 메시지 표시, SAVE_TYPE 'F' 유지</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">11</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" "DBHandler" | grep -i "goods_wet\|insert\|SAVE_TYPE" | tail -20</pre>
+      </div>
+
+      <!-- 시나리오 8 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 8</span> 데이터 없는 날짜</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 홈플러스 출고 데이터가 없는 날짜 선택
+3. 홈플러스 출하대상받기 버튼 클릭</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① 응답 데이터</td><td><code>receiveData</code> 빈값</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>② 바코드 조회</td><td><code>WHERE 1=0</code> (TB_SHIPMENT 비어있음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>③ 계근 조회</td><td><code>WHERE 1=0</code> (TB_SHIPMENT 비어있음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>빈 목록 처리</td><td>상품 목록 빈 상태, 앱 정상 대기</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 9 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 9</span> 서버 미연결</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. Tomcat 서버 중지
+2. 앱 실행 → 로그인
+3. 홈플러스 출하대상받기 버튼 클릭</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>서버 연결 실패</td><td>에러 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>에러 메시지</td><td>사용자에게 연결 실패 알림 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 10 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 10</span> 재조회 동기화 (기존 데이터 있는 상태)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1 완료 후 (TB_SHIPMENT에 데이터 있는 상태)
+2. 동일 날짜로 홈플러스 출하대상받기 재클릭
+3. 동기화 처리 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>기존 데이터 처리</td><td><code>deletequeryShipment</code> 또는 동기화 로직 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>서버 데이터 재반영</td><td>서버에 있는 건 INSERT, 삭제된 건 제거</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>GI_L_ID 빈값</td><td>TB_SHIPMENT.GI_L_ID 빈 문자열 저장 (홈플러스 설계 의도)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 11 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 11</span> 창고코드 선택 조건 검증</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 창고 선택 Spinner에서 특정 창고 선택
+3. 홈플러스 출하대상받기 버튼 클릭
+4. 서버 로그에서 WHERE 절 확인
+5. 창고 선택 없이 다시 조회 → 비교</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>창고 선택 시 WHERE절</td><td><code>AND D.창고코드 = '창고코드'</code> (D. 별칭 포함)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>창고 미선택 시 WHERE절</td><td>창고코드 조건 없음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>결과 건수</td><td>창고 선택 시 해당 창고 데이터만 필터링</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>ambiguous 오류</td><td>발생하지 않음 (D. 별칭 정상 적용)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <h3 class="sub">테스트 결과 요약</h3>
+      <table class="chk">
+        <tr><th>시나리오</th><th>결과</th><th>비고</th></tr>
+        <tr><td>1. 정상 E2E 전체 흐름</td><td class="ck"><input type="checkbox"></td><td>24컬럼, ITEM_TYPE='S', 전체 단계 통합</td></tr>
+        <tr><td>2. 출하대상 행 팽창(중복) 검증</td><td class="ck"><input type="checkbox"></td><td>SM_수주상세 LEFT JOIN 중복 건수 확인</td></tr>
+        <tr><td>3. STORE_IN_DATE 날짜 표시 검증</td><td class="ck"><input type="checkbox"></td><td>datetime형식 반환 시 오류22-1 수정 필요</td></tr>
+        <tr><td>4. 바코드 스캔 계근</td><td class="ck"><input type="checkbox"></td><td>ITEM_TYPE='S' 경로, BL번호 2차 스캔</td></tr>
+        <tr><td>5. 수기 중량입력 계근</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>6. 홈플러스 라벨 인쇄 품질/재출력</td><td class="ck"><input type="checkbox"></td><td>비트맵 품질, 납기일자 표시 확인</td></tr>
+        <tr><td>7. 계근전송 성공</td><td class="ck"><input type="checkbox"></td><td>insert_goods_wet.jsp, SM_출고계근 INSERT</td></tr>
+        <tr><td>8. 데이터 없는 날짜</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>9. 서버 미연결</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>10. 재조회 동기화</td><td class="ck"><input type="checkbox"></td><td>GI_L_ID 빈값 설계 확인</td></tr>
+        <tr><td>11. 창고코드 선택 조건 검증</td><td class="ck"><input type="checkbox"></td><td>D. 별칭 포함 WHERE절 확인</td></tr>
+      </table>
+      <div class="note"><b>테스트 일자</b>: ____________________ &nbsp;·&nbsp; <b>테스트 결과</b>: ____________________</div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════ 6 롯데 ════════════════ -->
+    </div>
+  </div>
+</section>
+
+<footer>
+  PDA-INNO · app/doc/테스트/05_홈플러스 출하계근 전체 E2E · 갱신일 2026-06-23
+</footer>
+
+</div>
+</body>
+</html>
