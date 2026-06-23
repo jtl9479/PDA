@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마트사 출하계근 E2E 테스트 시나리오</title>
+<style>
+  :root {
+    --blue: #2563eb; --blue-bg: #eff6ff;
+    --green: #16a34a; --green-bg: #f0fdf4;
+    --orange: #ea580c; --orange-bg: #fff7ed;
+    --red: #dc2626; --red-bg: #fef2f2;
+    --purple: #7c3aed; --purple-bg: #f5f3ff;
+    --gray: #64748b; --gray-bg: #f8fafc;
+    --border: #e2e8f0; --text: #1e293b; --navy: #1e3a8a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Malgun Gothic", "맑은 고딕", "Segoe UI", sans-serif;
+    color: var(--text); background: #f1f5f9; line-height: 1.55; padding: 24px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  header.page {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff;
+    border-radius: 14px; padding: 28px 32px; margin-bottom: 24px;
+  }
+  header.page h1 { font-size: 26px; margin-bottom: 6px; }
+  header.page p { opacity: .92; font-size: 14px; }
+  header.page .meta { margin-top: 10px; font-size: 12.5px; opacity: .8; }
+
+  section.card {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 24px 28px; margin-bottom: 22px;
+  }
+  section.card > h2 {
+    font-size: 19px; margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--blue); color: var(--navy);
+  }
+  section.card > h2 .num {
+    display: inline-block; background: var(--blue); color: #fff; border-radius: 8px;
+    font-size: 13px; padding: 2px 9px; margin-right: 8px; vertical-align: 2px;
+  }
+  h3.sub { font-size: 15px; margin: 18px 0 10px; color: #334155; }
+
+  .badge { display: inline-block; font-size: 11.5px; font-weight: 700; border-radius: 99px; padding: 2px 10px; vertical-align: middle; }
+  .b-done { background: var(--green-bg); color: var(--green); border: 1px solid #bbf7d0; }
+  .b-wait { background: var(--orange-bg); color: var(--orange); border: 1px solid #fed7aa; }
+  .b-fail { background: var(--red-bg); color: var(--red); border: 1px solid #fecaca; }
+  .b-info { background: var(--blue-bg); color: var(--blue); border: 1px solid #bfdbfe; }
+  .b-gray { background: var(--gray-bg); color: var(--gray); border: 1px solid var(--border); }
+
+  .flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0; margin: 12px 0; }
+  .fbox {
+    flex: 1 1 0; min-width: 150px; border-radius: 10px; padding: 12px 14px;
+    border: 1.5px solid; text-align: center; position: relative;
+  }
+  .fbox .t { font-weight: 700; font-size: 13.5px; margin-bottom: 4px; }
+  .fbox .d { font-size: 11.5px; color: #475569; }
+  .fbox .code { font-family: Consolas, monospace; font-size: 11px; color: var(--purple); display: block; margin-top: 4px; word-break: break-all; }
+  .fb-blue   { border-color: #93c5fd; background: var(--blue-bg); }
+  .fb-green  { border-color: #86efac; background: var(--green-bg); }
+  .fb-orange { border-color: #fdba74; background: var(--orange-bg); }
+  .fb-purple { border-color: #c4b5fd; background: var(--purple-bg); }
+  .fb-gray   { border-color: #cbd5e1; background: var(--gray-bg); }
+  .fb-red    { border-color: #fca5a5; background: var(--red-bg); }
+  .arrow-r {
+    flex: 0 0 34px; display: flex; align-items: center; justify-content: center;
+    color: var(--gray); font-size: 19px; font-weight: 700;
+  }
+  .arrow-d { text-align: center; color: var(--gray); font-size: 19px; font-weight: 700; margin: 4px 0; }
+
+  .lane { display: flex; gap: 14px; flex-wrap: wrap; }
+  .lane .zone { flex: 1 1 280px; border: 1.5px dashed #94a3b8; border-radius: 12px; padding: 14px; }
+  .lane .zone h4 { font-size: 13.5px; color: #475569; margin-bottom: 10px; text-align: center; }
+  .zone .item { border-radius: 8px; border: 1.5px solid; padding: 9px 11px; margin-bottom: 8px; font-size: 12.5px; }
+  .zone .item b { display: block; font-size: 13px; }
+  .zone .item span { color: #475569; font-size: 11.5px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { background: var(--navy); color: #fff; padding: 8px 10px; font-size: 12.5px; text-align: center; }
+  td { border: 1px solid var(--border); padding: 7px 10px; vertical-align: middle; }
+  tr:nth-child(even) td { background: #fafbfd; }
+  td.c { text-align: center; }
+  code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 12px; color: var(--purple); background: var(--purple-bg); padding: 1px 5px; border-radius: 4px; }
+
+  .note { border-left: 4px solid var(--blue); background: var(--blue-bg); border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 12.5px; margin: 12px 0; }
+  .note.warn { border-color: var(--orange); background: var(--orange-bg); }
+  .note.danger { border-color: var(--red); background: var(--red-bg); }
+
+  /* 코드/흐름 블록 */
+  pre.flowbox {
+    background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 14px 16px;
+    font-family: Consolas, "Courier New", monospace; font-size: 12.5px; line-height: 1.65;
+    overflow-x: auto; margin: 12px 0; white-space: pre;
+  }
+  pre.proc {
+    background: var(--gray-bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px; font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 8px 0 12px; white-space: pre;
+  }
+  pre.cmd {
+    background: #1e293b; color: #cbd5e1; border-radius: 7px; padding: 9px 14px;
+    font-family: Consolas, "Courier New", monospace; font-size: 11.5px; line-height: 1.55;
+    overflow-x: auto; margin: 8px 0 14px; white-space: pre;
+  }
+
+  /* 시나리오 카드 */
+  .scn {
+    border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+    margin: 16px 0; background: #fff;
+  }
+  .scn > h3 {
+    font-size: 15px; color: var(--navy); margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--blue-bg); display: flex; align-items: center; gap: 8px;
+  }
+  .scn > h3 .sn {
+    background: var(--blue); color: #fff; border-radius: 7px; font-size: 12px;
+    padding: 2px 10px; flex: none; font-weight: 800;
+  }
+  .scn h4.lbl { font-size: 12.5px; color: var(--gray); font-weight: 700; margin: 12px 0 6px; letter-spacing: .02em; }
+  .scn .bg { border-left: 4px solid var(--orange); background: var(--orange-bg); border-radius: 0 8px 8px 0; padding: 8px 12px; font-size: 12px; margin: 6px 0 10px; }
+
+  /* 체크박스 칸 */
+  table.chk td.ck { text-align: center; width: 44px; }
+  table.chk td.ck input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; accent-color: var(--blue); }
+  table.chk td.num { text-align: center; width: 36px; color: var(--gray); font-weight: 700; }
+
+  /* ════════════════ 마트사별 탭 ════════════════ */
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tab {
+    border: 1.5px solid var(--border); border-bottom: none; background: var(--gray-bg);
+    border-radius: 10px 10px 0 0; padding: 8px 14px; cursor: pointer; font-size: 13px;
+    font-weight: 700; color: #475569; user-select: none; display: flex; align-items: center; gap: 7px;
+  }
+  .tab .tno {
+    background: #94a3b8; color: #fff; border-radius: 6px; font-size: 11.5px;
+    width: 21px; height: 21px; display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .tab.active .tno { background: #fff; color: var(--navy); }
+  .tab .dot { width: 8px; height: 8px; border-radius: 99px; flex: none; }
+  .dot.g { background: var(--green); } .dot.o { background: var(--orange); } .dot.r { background: var(--red); }
+
+  .panel {
+    display: none; border: 1.5px solid var(--navy); border-radius: 0 12px 12px 12px;
+    background: #fff; overflow: hidden;
+  }
+  .panel.active { display: block; }
+
+  /* 패널 헤더 스트립 */
+  .phead {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    padding: 16px 22px; background: linear-gradient(135deg, #1e3a8a, #2d4eb8); color: #fff;
+  }
+  .phead.st-wait { background: linear-gradient(135deg, #9a3412, #ea580c); }
+  .phead.st-off { background: linear-gradient(135deg, #475569, #94a3b8); }
+  .phead .big {
+    background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.5);
+    font-weight: 800; border-radius: 10px; padding: 4px 14px; font-size: 19px;
+  }
+  .phead h3 { font-size: 18px; flex: 1 1 auto; min-width: 140px; }
+  .phead h3 small { display: block; font-size: 11.5px; font-weight: 400; opacity: .85; margin-top: 2px; }
+  .phead .badge { border: none; }
+
+  .pbody { padding: 18px 22px 20px; }
+
+  footer { text-align: center; color: var(--gray); font-size: 12px; padding: 18px 0 8px; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    section.card { break-inside: avoid; }
+    .panel { display: block !important; margin-bottom: 14px; border-radius: 12px; }
+    .scn { break-inside: avoid; }
+    .tabs { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <h1>📋 마트사 출하계근 E2E 테스트 시나리오</h1>
+  <p>대상 4종: <b>이마트(searchType 0)</b> · <b>도매(3)</b> · <b>홈플러스 정량(2)</b> · <b>롯데(6)</b> · 전체 흐름: 출하대상받기 → 바코드정보 → 계근조회 → 계근입력 → 라벨 → 계근전송</p>
+  <div class="meta">갱신일: 2026-06-23 · 기준: 테스트/03·04·05·06 (이마트·도매·홈플러스·롯데 출하계근 전체 E2E) · 체크박스는 인쇄·클릭 가능</div>
+</header>
+
+<section class="card">
+  <h2><span class="num">4</span>마트사별 출하계근 E2E 테스트</h2>
+  <p style="font-size:13px; color:#475569; margin-bottom:12px">
+    탭 클릭 시 해당 마트사 전용 테스트 시나리오로 전환됩니다. 각 탭은 <b>사전 조건 + 호출 흐름 + 시나리오별 절차·확인 항목 + 결과 요약</b> 구성입니다.
+    확인 항목의 체크칸은 <b>클릭/인쇄 가능한 체크박스</b>로 렌더링됩니다.
+    (탭의 ● : <span style="color:var(--green)">초록=전환완료</span> · <span style="color:var(--red)">빨강=이슈 보유</span>)
+  </p>
+
+  <div class="tabs">
+    <div class="tab active" data-p="p0"><span class="tno">0</span>이마트<span class="dot g"></span></div>
+    <div class="tab" data-p="p3"><span class="tno">3</span>도매<span class="dot g"></span></div>
+    <div class="tab" data-p="p2"><span class="tno">2</span>홈플러스<span class="dot r"></span></div>
+    <div class="tab" data-p="p6"><span class="tno">6</span>롯데<span class="dot g"></span></div>
+  </div>
+
+  <!-- ════════════════ 0 이마트 ════════════════ -->
+  <div class="panel active" id="p0">
+    <div class="phead">
+      <div class="big">0</div>
+      <h3>이마트 출하계근<small>이마트 출하 → 계근 → 라벨 → 전송 전체 흐름 (searchType=0)</small></h3>
+      <span class="badge b-done">searchType 0</span><span class="badge b-info">LOT 사용 (Index 30)</span><span class="badge b-info">중량 Round</span><span class="badge b-info">구로직 1건씩</span>
+    </div>
+    <div class="pbody">
+
+      <h3 class="sub">사전 조건</h3>
+      <table>
+        <tr><th>#</th><th>항목</th><th>조건</th></tr>
+        <tr><td class="c">1</td><td>Tomcat 서버</td><td>로컬 Tomcat 실행 중 (포트 4040), JSP 최신 반영 확인</td></tr>
+        <tr><td class="c">2</td><td>DB</td><td>MSSQL <code>weberp_dev</code> 접속 가능</td></tr>
+        <tr><td class="c">3</td><td>앱 BASE_URL</td><td><code>http://192.168.0.28:4040/inno</code> (로컬)</td></tr>
+        <tr><td class="c">4</td><td>테스트 데이터</td><td>ERP에서 이마트(마트사구분='7') 출고 데이터 입력 완료, 타입구분='W', 출고수량&gt;0</td></tr>
+        <tr><td class="c">5</td><td>PDA 기기</td><td>동일 네트워크(Wi-Fi) 연결 (Honeywell EDA51)</td></tr>
+        <tr><td class="c">6</td><td>프린터</td><td>BIXOLON 프린터 Bluetooth/Socket 페어링 완료</td></tr>
+        <tr><td class="c">7</td><td>TEST_MODE</td><td><code>false</code></td></tr>
+      </table>
+
+      <h3 class="sub">호출 흐름</h3>
+      <pre class="flowbox">[MainActivity] 날짜 선택 → 이마트 출하대상받기 버튼 클릭
+    ↓
+① search_shipment.jsp (출하대상 조회, 31개 컬럼 0~30, 마트사구분='7', 타입구분='W')
+    ↓ 자동 (ProgressDlgShipSearch 완료 후)
+② search_barcode_info.jsp (바코드 정보 조회, CO_품목코드 기반, 25개 컬럼)
+    ↓ 자동 (ProgressDlgBarcodeSearch 완료 후)
+③ search_goods_wet.jsp (계근 내역 조회, SM_출고계근, 14개 컬럼)
+    ↓
+[완료] 바코드정보 없는 상품 다이얼로그 → BixolonShipmentActivity
+    ↓
+④ 바코드 스캔 또는 수기 중량입력 (계근 입력)
+    ↓ 수입육 등 소비기한 필요 상품의 경우
+④-1 ExpiryEnterActivity (소비기한 수기입력 화면)
+    ↓
+⑤ 라벨 인쇄 (LabelPrintHelper → BixolonSocketPrinter, 이마트 양식)
+    ↓
+⑥ 계근 전송: insert_goods_wet.jsp (구로직, "::" 15필드, SM_출고계근 INSERT, 1건씩)</pre>
+
+      <!-- 시나리오 1 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 1</span> 정상 E2E (출하대상받기 → 바코드 스캔 계근 → 라벨 → 전송)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행
+2. 로그인 (ID/PW 입력)
+3. 창고 선택 (Spinner에서 서버 창고 목록 표시 확인)
+4. 날짜 선택 (이마트 출고 데이터가 있는 날짜)
+5. 이마트 출하대상받기 버튼 클릭
+6. 로딩 다이얼로그 3단계 확인 (출하대상 → 바코드정보 → 계근정보)
+7. 바코드정보 없는 상품 다이얼로그 확인 후 닫기
+8. 이마트 계근입력시작 버튼 클릭 → BixolonShipmentActivity 진입
+9. 센터 / BL번호 / 지점 스피너에서 계근 대상 선택
+10. 첫 번째 상품 이마트 바코드 스캔
+11. 계근 중량 표시 확인 (Round 처리 포함)
+12. 라벨 자동 인쇄 스위치 ON 상태 확인
+13. 계근 완료 시 라벨 자동 출력 확인
+14. 계근 전송 버튼 클릭 → insert_goods_wet.jsp 호출 확인
+15. 전송 완료 후 계근완료 상태 변경 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① search_shipment.jsp 호출</td><td>서버 로그 "=========search_shipment============" 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>① WHERE절 조건</td><td>마트사구분='7', 출고수량&gt;0, 타입구분='W', 회사코드, 출고일자, 창고코드 포함</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>① 응답 데이터 컬럼 수</td><td><code>receiveData</code> "::" 기준 31개 컬럼 (Index 0~30)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>① GI_L_ID (Index 30)</td><td>LOT SEQ 정상 수신 (이마트·비정량만 LOT 사용)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>① BL_NO (Index 8)</td><td>COALESCE(NULLIF(V.BLNO,''), V.이력번호) 폴백 값</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>① TB_SHIPMENT INSERT</td><td><code>insertqueryShipment</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>② search_barcode_info.jsp 호출</td><td><code>=========search_barcode_info start==========</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>② WHERE절</td><td><code>SBI.PPCODE = '...'</code> (TB_SHIPMENT의 PACKER_PRODUCT_CODE 기반)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>② 응답 데이터</td><td>25개 컬럼 (";;" 행 구분)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>② TB_BARCODE_INFO INSERT</td><td><code>insertqueryBarcodeInfo</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">11</td><td>③ search_goods_wet.jsp 호출</td><td><code>=========search_goods_wet start=============</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">12</td><td>③ 응답 데이터</td><td>초회 조회 시 0건 (SM_출고계근 미계근 상태)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">13</td><td>바코드 스캔</td><td>이마트 바코드 스캔 → 상품정보·중량 자동 추출 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">14</td><td>중량 Round 처리</td><td>이마트 계근 중량 반올림(round) 적용 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">15</td><td>라벨 자동 인쇄</td><td>계근 완료 시 BIXOLON 프린터 이마트 양식 자동 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">16</td><td>⑥ insert_goods_wet.jsp 호출</td><td>"=========insert_goods_wet start=============" 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">17</td><td>⑥ 전송 데이터 splitData[0]</td><td>GI_D_ID (출고상세SEQ) 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">18</td><td>⑥ 전송 데이터 splitData[14]</td><td>GI_L_ID (출고LOTSEQ) 정상 (Index 14)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">19</td><td>⑥ SM_출고계근 INSERT</td><td>DB에 계근 레코드 정상 저장 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">20</td><td>⑥ 응답</td><td>전송 성공 시 <code>"s"</code> 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">21</td><td>계근완료 상태</td><td>해당 상품 계근완료 표시로 변경</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">22</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" "pDlgBarcodeSearch" "pDlgGoodsWetSearch" "DBHandler" "BixolonShipmentActivity" | tail -50</pre>
+      </div>
+
+      <!-- 시나리오 2 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 2</span> 바코드 스캔 계근 상세 검증</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1의 출하대상받기 완료 후 상태에서 진행
+2. 이마트 계근입력시작 클릭 → BixolonShipmentActivity 진입
+3. 첫 번째 상품 이마트 바코드 스캔 (GS1-128 등)
+4. 중량 값 및 상품정보 표시 확인
+5. 동일 바코드 재스캔
+6. 두 번째 박스 바코드 스캔
+7. 전체 박스 계근 완료 후 상태 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>첫 번째 바코드 스캔 매칭</td><td>TB_BARCODE_INFO 기준 PACKER_PRODUCT_CODE 매칭 성공</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>중량 표시</td><td>바코드 내 중량값 추출 후 Round 처리된 값 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>계근 수량 표시</td><td>스캔 후 계근수량 1/N 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>동일 바코드 재스캔</td><td>"이미 스캔한 바코드입니다" Toast + 진동 (중복 차단)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>두 번째 바코드 스캔</td><td>계근수량 2/N 정상 증가</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>센터 합계 표시</td><td>선택 센터의 요청/완료 수량·중량 합계 실시간 갱신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>전체 완료 감지</td><td>계근수량 = GI_REQ_PKG 도달 시 완료 다이얼로그 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" "DBHandler" | tail -30</pre>
+      </div>
+
+      <!-- 시나리오 3 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 3</span> 수기 중량입력 계근</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 출하대상받기 완료 후 BixolonShipmentActivity 진입
+2. 작업모드 스피너 → "수기"로 변경 (work_flag=0)
+3. 상품 선택 후 중량 수동 입력
+4. 입력 완료 후 계근 처리 확인
+5. 라벨 출력 확인
+6. 계근 전송 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>수기 모드 선택</td><td>작업모드 "수기" 변경 후 수동 입력 필드 활성화</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>중량 수동 입력</td><td>키패드로 중량값 직접 입력 가능</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>중량 Round 처리</td><td>수기 입력 중량도 이마트 Round 처리 적용 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>계근 처리</td><td>TB_GOODS_WET 로컬 INSERT 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>라벨 출력</td><td>BIXOLON 이마트 양식 라벨 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>계근 전송</td><td>insert_goods_wet.jsp → SM_출고계근 INSERT 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>전송 응답</td><td><code>"s"</code> 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" "DBHandler" | tail -30</pre>
+      </div>
+
+      <!-- 시나리오 4 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 4</span> 수입육 소비기한 수기입력 (ExpiryEnterActivity)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 출하대상받기 완료 후 BixolonShipmentActivity 진입
+2. 수입육 등 소비기한 필요 상품 바코드 스캔
+3. ExpiryEnterActivity 자동 호출 확인
+4. 소비기한(유통기한) 날짜 수기 입력
+5. 확인 후 계근 처리 확인
+6. 입력한 소비기한이 라벨에 반영되는지 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>ExpiryEnterActivity 자동 호출</td><td>소비기한 필요 상품 스캔 시 입력 화면 자동 전환</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>소비기한 입력 UI</td><td>날짜 입력 필드 표시 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>날짜 입력 형식</td><td>허용 형식 입력 가능, 비허용 형식 방어 처리</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>확인 후 BixolonShipmentActivity 복귀</td><td>입력값 전달하여 계근 화면으로 정상 복귀</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>소비기한 계근 데이터 반영</td><td>입력한 소비기한이 TB_GOODS_WET에 저장</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>라벨 소비기한 출력</td><td>이마트 양식 라벨에 소비기한 정상 인쇄</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>계근 전송</td><td>insert_goods_wet.jsp에 소비기한 포함 전송</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" "ExpiryEnterActivity" "DBHandler" | tail -30</pre>
+      </div>
+
+      <!-- 시나리오 5 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 5</span> 중량 Round 처리 검증 (이마트 전용)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 출하대상받기 완료 후 BixolonShipmentActivity 진입
+2. 이마트 바코드 스캔 (소수점 이하 반올림 대상 중량값 포함 바코드)
+   예: 중량 = 12.345kg → 반올림 후 12.35kg 또는 12.3kg 등
+3. 화면에 표시된 중량값 확인
+4. 수기 모드로도 소수점 중량 입력 후 반올림 확인
+5. 반올림된 중량으로 계근 전송 후 SM_출고계근 DB 값 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>바코드 내 원본 중량</td><td>바코드에서 추출된 소수점 포함 중량값 로그 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>Round 적용 중량 표시</td><td>화면에 반올림 처리된 중량값 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>수기 입력 Round 적용</td><td>수기 입력 소수점 중량도 반올림 처리</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>전송 중량값</td><td>insert_goods_wet.jsp splitData[1] = 반올림 중량</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>SM_출고계근 저장값</td><td>DB 계근중량 컬럼에 반올림된 값 저장 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>비정량(searchType=4)과 차이</td><td>비정량은 Round 미적용, 이마트만 적용 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" | grep -i "weight\|round\|중량" | tail -20</pre>
+      </div>
+
+      <!-- 시나리오 6 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 6</span> 라벨 인쇄 및 재출력</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1 또는 2 계근 완료 후 라벨 자동 인쇄 확인
+2. 메뉴 → 재출력 선택
+3. 이미 계근된 항목 선택 후 라벨 재출력
+4. 라벨 자동 인쇄 스위치 OFF 후 수동 인쇄 버튼으로 출력</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>라벨 자동 인쇄</td><td>swt_print ON 상태에서 계근 완료 시 자동 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>이마트 양식</td><td>LabelPrintHelper 이마트 분기 적용 라벨 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>라벨 내용 - 상품명</td><td>ITEM_NAME / EMARTITEM 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>라벨 내용 - 중량</td><td>Round 처리된 계근 중량 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>라벨 내용 - 바코드</td><td>이마트 바코드 정상 인쇄</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>라벨 재출력</td><td>메뉴 재출력(reprint) 기능 정상 동작</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>자동 인쇄 OFF</td><td>swt_print OFF 시 계근 후 자동 출력 없음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>합계 라벨 인쇄</td><td>합계 버튼 클릭 시 중량 합산 라벨 출력 (SLCS)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "LabelPrintHelper" "BixolonSocketPrinter" | tail -20</pre>
+      </div>
+
+      <!-- 시나리오 7 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 7</span> 계근 전송 성공 (insert_goods_wet.jsp 구로직 검증)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 바코드 스캔 계근 완료 상태
+2. 계근 전송 버튼 클릭
+3. insert_goods_wet.jsp 호출 확인 (1건씩 순차 전송)
+4. 서버 응답 "s" 확인
+5. 복수 건 계근 시 순차 전송 확인
+6. SM_출고계근 DB 레코드 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>insert_goods_wet.jsp 1건씩 호출</td><td>계근 건수만큼 순차 POST 요청 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>전송 파라미터 splitData[0]</td><td>GI_D_ID (출고상세SEQ) 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>전송 파라미터 splitData[1]</td><td>계근 중량 (round 처리값) 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>전송 파라미터 splitData[2]</td><td>계근중량단위 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>전송 파라미터 splitData[14]</td><td>GI_L_ID (출고LOTSEQ) 정상 (구로직 index 14)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>전송 파라미터 splitData[10]</td><td>회사코드 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>SM_출고계근 INSERT</td><td>NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ 채번 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>서버 응답 "s"</td><td>전송 성공 응답 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>서버 응답 "f" 시</td><td>실패 응답 수신 시 오류 처리(롤백) 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>전송 완료 후 화면</td><td>계근완료 상태 갱신 및 다음 상품 이동</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">11</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" | tail -30</pre>
+      </div>
+
+      <!-- 시나리오 8 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 8</span> 데이터 없는 날짜</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 이마트 출고 데이터가 없는 날짜 선택
+3. 이마트 출하대상받기 버튼 클릭</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① 응답 데이터</td><td><code>receiveData</code> 빈값 (0건)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>② 바코드 조회</td><td>TB_SHIPMENT 비어있으므로 <code>WHERE 1=0</code> 처리</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>③ 계근 조회</td><td>TB_SHIPMENT 비어있으므로 <code>WHERE 1=0</code> 처리</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>사용자 안내</td><td>"데이터가 없습니다" 또는 목록 빈 상태 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" "pDlgBarcodeSearch" "pDlgGoodsWetSearch" | tail -20</pre>
+      </div>
+
+      <!-- 시나리오 9 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 9</span> 서버 미연결 (Tomcat 중지)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. Tomcat 서버 중지
+2. 앱 실행 → 로그인
+3. 이마트 출하대상받기 버튼 클릭</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① 서버 연결 실패</td><td>에러 로그 출력 (ConnectException 등)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>사용자 에러 메시지</td><td>연결 실패 알림 다이얼로그 또는 Toast</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>②③ 체인 호출</td><td>서버 미연결 시 이후 체인 호출 차단</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 10 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 10</span> 재조회 동기화 (기존 데이터 있는 상태)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1 완료 후 (TB_SHIPMENT에 데이터 있는 상태)
+2. 동일 날짜로 이마트 출하대상받기 다시 클릭
+3. 서버 데이터 변경 여부 확인 (추가/삭제 건 동기화)</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>기존 데이터 삭제 후 재조회</td><td><code>deletequeryShipment</code> 로그 출력 후 재INSERT</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>동기화 처리</td><td>서버에 있는 건 INSERT, 삭제된 건 미포함</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>바코드·계근 체인 재실행</td><td>②③ JSP 재호출하여 최신 데이터 반영</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>기존 계근 데이터 유지</td><td>TB_GOODS_WET 로컬 계근 데이터 재조회 후 복원</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" "DBHandler" | tail -30</pre>
+      </div>
+
+      <!-- 시나리오 11 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 11</span> 창고코드 조건 검증</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 창고 선택 스피너 → 특정 창고 선택
+3. 이마트 출하대상받기 클릭
+4. 서버 쿼리 WHERE절에 창고코드 조건 포함 확인
+5. 창고 미선택(전체) 상태에서 재조회 후 결과 비교</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>창고 선택 시 WHERE 조건</td><td><code>AND D.창고코드 = '...'</code> 조건 쿼리 로그 포함</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>창고 미선택 시 WHERE 조건</td><td>창고코드 조건 없이 전체 조회</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>창고별 데이터 필터링</td><td>선택 창고에 해당하는 출고 데이터만 조회</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" | grep "search_shipment query" | tail -5</pre>
+      </div>
+
+      <!-- 시나리오 12 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 12</span> 계근 항목 개별 삭제 후 재계근</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 계근 완료 항목이 있는 상태에서 계근 내역 목록 진입
+2. 특정 항목 선택 후 삭제 버튼 클릭
+3. 확인 다이얼로그 → 삭제 확인
+4. 삭제 후 계근수량 갱신 확인
+5. 동일 바코드 재스캔 → 재계근 가능 여부 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>개별 삭제 다이얼로그</td><td>"삭제하시겠습니까?" 확인 다이얼로그 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>삭제 처리</td><td>TB_GOODS_WET에서 해당 항목 DELETE</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>계근수량 갱신</td><td>삭제 후 계근수량 N-1 감소</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>재스캔 가능</td><td>삭제한 바코드 재스캔 시 정상 계근</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>계근완료 상태 해제</td><td>삭제로 인해 미완료 상태로 복귀</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <h3 class="sub">테스트 결과 요약</h3>
+      <table class="chk">
+        <tr><th>시나리오</th><th>결과</th><th>비고</th></tr>
+        <tr><td>1. 정상 E2E (출하대상 → 스캔 → 라벨 → 전송)</td><td class="ck"><input type="checkbox"></td><td>전체 흐름 통합 검증</td></tr>
+        <tr><td>2. 바코드 스캔 계근 상세 검증</td><td class="ck"><input type="checkbox"></td><td>중복 차단, 수량 누적</td></tr>
+        <tr><td>3. 수기 중량입력 계근</td><td class="ck"><input type="checkbox"></td><td>work_flag=0</td></tr>
+        <tr><td>4. 수입육 소비기한 수기입력</td><td class="ck"><input type="checkbox"></td><td>ExpiryEnterActivity</td></tr>
+        <tr><td>5. 중량 Round 처리 검증</td><td class="ck"><input type="checkbox"></td><td>이마트 전용 반올림</td></tr>
+        <tr><td>6. 라벨 인쇄 및 재출력</td><td class="ck"><input type="checkbox"></td><td>이마트 양식, BIXOLON</td></tr>
+        <tr><td>7. 계근 전송 성공 (구로직)</td><td class="ck"><input type="checkbox"></td><td>insert_goods_wet.jsp, 1건씩</td></tr>
+        <tr><td>8. 데이터 없는 날짜</td><td class="ck"><input type="checkbox"></td><td>WHERE 1=0 처리 확인</td></tr>
+        <tr><td>9. 서버 미연결</td><td class="ck"><input type="checkbox"></td><td>에러 처리 확인</td></tr>
+        <tr><td>10. 재조회 동기화</td><td class="ck"><input type="checkbox"></td><td>deletequeryShipment 후 재INSERT</td></tr>
+        <tr><td>11. 창고코드 조건 검증</td><td class="ck"><input type="checkbox"></td><td>WHERE D.창고코드 조건</td></tr>
+        <tr><td>12. 계근 항목 개별 삭제 후 재계근</td><td class="ck"><input type="checkbox"></td><td>detail_btn_delete</td></tr>
+      </table>
+      <div class="note"><b>테스트 일자</b>: ____________________ &nbsp;·&nbsp; <b>테스트 결과</b>: ____________________</div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════ 3 도매 ════════════════ -->
+  <div class="panel" id="p3">
+    <div class="phead">
+      <div class="big">3</div>
+      <h3>도매업체 출하계근<small>도매업체 출하계근 E2E (searchType=3)</small></h3>
+      <span class="badge b-done">searchType 3</span><span class="badge b-info">원료육여부 '1'</span><span class="badge b-info">마트사구분 '' (빈값)</span><span class="badge b-info">신로직 배치 "##"</span>
+    </div>
+    <div class="pbody">
+
+      <h3 class="sub">사전 조건</h3>
+      <table>
+        <tr><th>#</th><th>항목</th><th>조건</th></tr>
+        <tr><td class="c">1</td><td>Tomcat 서버</td><td>로컬 Tomcat 실행 중 (포트 4040), <code>search_shipment_wholesale.jsp</code> 변경분 반영 확인</td></tr>
+        <tr><td class="c">2</td><td>DB</td><td>MSSQL <code>weberp_dev</code> 접속 가능</td></tr>
+        <tr><td class="c">3</td><td>앱 BASE_URL</td><td><code>http://192.168.0.28:4040/inno</code> (로컬)</td></tr>
+        <tr><td class="c">4</td><td>테스트 데이터</td><td>ERP에서 도매 출고 데이터 입력 완료 (H.마트사구분='' 이고 I.원료육여부='1' 인 품목)</td></tr>
+        <tr><td class="c">5</td><td>PDA 기기</td><td>동일 네트워크(Wi-Fi) 연결</td></tr>
+        <tr><td class="c">6</td><td>TEST_MODE</td><td><code>false</code></td></tr>
+        <tr><td class="c">7</td><td>프린터</td><td>BIXOLON 프린터 블루투스 페어링 완료 (라벨 인쇄 시나리오 한정)</td></tr>
+      </table>
+
+      <h3 class="sub">호출 흐름</h3>
+      <pre class="flowbox">[MainActivity] 도매업체출하대상받기 버튼 (searchType=3)
+    ↓
+① search_shipment_wholesale.jsp (출하대상 조회, 24개 컬럼)
+    WHERE H.마트사구분='' AND D.출고수량>0 AND I.원료육여부='1'
+    AND D.회사코드=? AND D.출고일자=?  [AND D.창고코드=? 창고 선택 시]
+    ORDER BY D.SEQ ASC
+    ↓ 자동
+② search_barcode_info.jsp (바코드 정보 조회, 정량 공용)
+    WHERE SBI.PPCODE = '...' AND SBI.ppCode != ''
+    ↓ 자동
+③ search_goods_wet.jsp (계근 내역 조회)
+    WHERE 출고상세SEQ IN (...)
+    ↓
+[완료] 바코드정보 없는 상품 다이얼로그 표시
+    ↓
+[계근입력시작] BixolonShipmentActivity (searchType=3 도매 분기)
+    ↓
+④ 바코드 스캔 / 수기 중량입력 → 계근 등록
+    ↓
+⑤ 라벨 인쇄 (도매 양식, LabelPrintHelper)
+    ↓
+⑥ 계근전송 → insert_goods_wet_new.jsp ("##" 배치 전송 → SM_출고계근 INSERT)</pre>
+
+      <!-- 시나리오 1 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 1</span> 정상 E2E (출하대상받기 → 바코드 스캔 계근 → 라벨 인쇄 → 계근전송)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 창고 선택 (Spinner에서 서버 창고 목록 표시 확인)
+3. 날짜 선택 (도매 출고 데이터가 있는 날짜)
+4. 도매업체출하대상받기 버튼 클릭 (searchType=3)
+5. 로딩 다이얼로그 3단계 확인 (출하대상 → 바코드정보 → 계근정보)
+6. 바코드정보 없는 상품 다이얼로그 확인
+7. 도매업체 계근입력시작 버튼 클릭
+8. 품목 목록에서 계근할 상품 선택 (CLIENTNAME/CENTERNAME = 거래처명 동일값 확인)
+9. 바코드 스캔 → 중량 확인 → 계근 등록
+10. 라벨 자동 인쇄 확인 (도매 양식)
+11. 모든 박스 계근 완료 → 계근전송 버튼 클릭
+12. 서버 전송 완료 확인 (응답 "s")</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① search_shipment_wholesale.jsp 호출</td><td>서버 로그: <code>=========search_shipment==========</code> 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>① WHERE 조건</td><td>로그: <code>H.마트사구분 = '' AND D.출고수량 > 0 AND I.원료육여부 = '1'</code> 포함</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>① ORDER BY</td><td>로그: <code>ORDER BY D.SEQ ASC</code> 적용 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>① 응답 데이터 컬럼 수</td><td><code>receiveData</code>에 24개 컬럼 데이터 ("::" 구분, ";;" 행 구분)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>① temp[0] GI_D_ID</td><td>D.SEQ 값 (출고상세 SEQ) 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>① temp[18] BARCODE_TYPE</td><td><code>'NA'</code> 고정값 (도매는 타입구분/바코드타입 필터 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>① temp[19] ITEM_TYPE</td><td><code>'S'</code> 고정값</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>① temp[23] EMARTLOGIS_CODE</td><td><code>'0000000'</code> 고정값</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>① CLIENTNAME = CENTERNAME</td><td>거래처명(G.상호) 동일값으로 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>① TB_SHIPMENT INSERT</td><td><code>insertqueryShipment</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">11</td><td>② search_barcode_info.jsp 호출</td><td><code>Barcode Code List : WHERE SBI.PPCODE = '...'</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">12</td><td>② 응답 데이터</td><td><code>Barcode receiveData</code>에 25개 컬럼 데이터</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">13</td><td>② TB_BARCODE_INFO INSERT</td><td><code>insertqueryBarcodeInfo</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">14</td><td>③ search_goods_wet.jsp 호출</td><td><code>Wet GI_D_ID List</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">15</td><td>③ 응답 데이터</td><td>초회 조회 시 0건 (미계근 상태)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">16</td><td>바코드 스캔 계근</td><td>상품정보·중량 자동 추출, 계근수량 1/N 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">17</td><td>라벨 인쇄</td><td>도매 양식 라벨 정상 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">18</td><td>계근전송</td><td>insert_goods_wet_new.jsp 호출, 응답 <code>"s"</code> 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">19</td><td>SM_출고계근 INSERT</td><td>배치("##") 전송 → SM_출고계근 테이블에 정상 INSERT</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">20</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" "pDlgBarcodeSearch" "pDlgGoodsWetSearch" "DBHandler" | tail -50</pre>
+      </div>
+
+      <!-- 시나리오 2 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 2</span> 원료육여부='1' 식별 조회 검증 (도매 식별 조건 확인)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인 → 날짜 선택 (도매 출고 데이터가 있는 날짜)
+2. 도매업체출하대상받기 버튼 클릭
+3. 서버 로그에서 실행된 WHERE 조건 확인
+4. 조회 결과 품목들의 원료육여부 값이 모두 '1'인지 ERP DB에서 교차 확인
+5. 타입구분/바코드타입 필터가 없음을 로그로 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>WHERE I.원료육여부='1' 적용</td><td>서버 로그 쿼리에 <code>I.원료육여부 = '1'</code> 포함</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>WHERE H.마트사구분='' 적용</td><td>서버 로그 쿼리에 <code>H.마트사구분 = ''</code> 포함 (빈문자열, 타 마트사와 구분)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>타입구분/바코드타입 필터 없음</td><td>쿼리에 COALESCE(M1.타입구분, M2.타입구분) 조건 없음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>거래처MASTER 2차 필터 없음</td><td>JOIN ON에 B.마트사구분 = '' 조건 없음 (이마트·홈플러스와 차이)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>조회 결과 품목</td><td>원료육여부='1' 인 품목만 목록에 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" | grep -i "search_shipment"</pre>
+      </div>
+
+      <!-- 시나리오 3 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 3</span> 창고 선택 시 D.창고코드 필터링 동작</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 창고 Spinner에서 특정 창고 선택
+3. 날짜 선택 → 도매업체출하대상받기 클릭
+4. 서버 로그에서 WHERE 절에 D.창고코드 조건 포함 여부 확인
+5. 해당 창고 품목만 목록에 표시되는지 확인
+6. 창고 선택 없이 다시 조회 → D.창고코드 조건 없음 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>창고 선택 시 WHERE 조건</td><td>서버 로그: <code>AND D.창고코드 = '선택창고코드'</code> 포함 (D. 별칭 포함)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>창고 미선택 시 WHERE 조건</td><td>서버 로그: <code>D.창고코드</code> 조건 없음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>창고 필터링 결과</td><td>선택한 창고의 출고 품목만 목록에 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>D. 별칭 확인</td><td><code>AND 창고코드 = '...'</code> 가 아닌 <code>AND D.창고코드 = '...'</code> 확인 (개발51 수정사항)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 4 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 4</span> 바코드 스캔 계근</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1 완료 후 (TB_SHIPMENT, TB_BARCODE_INFO 데이터 있는 상태)
+2. 도매업체 계근입력시작 버튼 클릭 → BixolonShipmentActivity 진입
+3. 품목 선택 후 바코드 스캔
+4. 정상 계근 확인 (중량 표시)
+5. 동일 바코드 재스캔 → 중복 차단 확인
+6. 다른 박스 바코드 스캔 → 정상 계근 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>바코드 스캔 수신</td><td>Honeywell 스캐너 Intent 수신 정상 (scantointent)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>첫 스캔 계근</td><td>계근수량 1/N, 중량 표시 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>동일 바코드 재스캔</td><td>중복 차단 (Toast/진동 경고)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>다른 바코드 스캔</td><td>계근수량 2/N, 누적 중량 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>ITEM_TYPE='S' 동작</td><td>도매 ITEM_TYPE 분기 정상 처리</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>GI_L_ID</td><td>insert_goods_wet_new.jsp splitData[14] = "" (도매 GI_L_ID 미사용, 빈값 고정)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 5 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 5</span> 수기 중량입력 계근</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. BixolonShipmentActivity에서 작업모드를 "수기"로 변경 (work_flag=0)
+2. 중량 값 직접 입력
+3. 계근 등록 확인
+4. TB_GOODS_WET에 수기 계근 데이터 저장 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>수기 입력 모드 전환</td><td>작업모드 "수기" 선택 후 중량 입력창 활성화</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>중량 수기 입력</td><td>입력한 중량값 계근 내역에 정상 반영</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>계근 등록</td><td>TB_GOODS_WET INSERT 정상 (로컬DB)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>계근 내역 표시</td><td>수기 계근 항목이 목록에 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 6 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 6</span> 라벨 인쇄 및 재출력</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 바코드 스캔 또는 수기 계근 완료 후 라벨 자동 인쇄 확인
+2. 메뉴 → 재출력(reprint) 선택 → 이미 계근된 항목 라벨 재출력
+3. 라벨 내용 확인 (도매 양식)</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>라벨 자동 인쇄</td><td>계근 완료 시 도매 양식 라벨 자동 출력 (swt_print ON 상태)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>라벨 양식</td><td>도매 전용 양식 (LabelPrintHelper 도매 분기) 적용</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>라벨 내용 - 품목명</td><td>ITEM_NAME 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>라벨 내용 - 중량</td><td>계근 중량값 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>라벨 내용 - 거래처명</td><td>CLIENTNAME(G.상호) 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>라벨 재출력</td><td>기존 계근 항목 선택 후 재출력 정상 동작</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 7 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 7</span> 신로직 배치 계근전송 성공 (insert_goods_wet_new.jsp)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 복수의 박스 계근 완료 (2박스 이상)
+2. 계근전송 버튼 클릭
+3. insert_goods_wet_new.jsp 배치("##") 전송 확인
+4. 서버 로그에서 배치 INSERT 처리 확인
+5. MSSQL SM_출고계근 테이블 INSERT 결과 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>insert_goods_wet_new.jsp 호출</td><td>서버 로그: <code>=========insert_goods_wet start=============</code> 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>"##" 배치 분리</td><td>로그: <code>####LENGTH CHECK#### : N</code> (N=전송 박스수)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>splitData[0] GI_D_ID</td><td>출고상세 SEQ 정상 전달</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>splitData[14] GI_L_ID</td><td><code>""</code> (도매 GI_L_ID 미사용, 빈값) → <code>Integer.parseInt("")</code> 예외 없음 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>splitData[1] WEIGHT</td><td>계근 중량값 정상 전달</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>splitData[10] 회사코드</td><td>Common.selectCompanyCode 정상 전달</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>서버 응답</td><td><code>"s"</code> (성공) 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>SM_출고계근 INSERT</td><td>MSSQL에 계근 레코드 정상 삽입 (NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>전송 완료 후 상태</td><td>해당 상품 계근완료 상태로 변경</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" | grep -i "insert_goods_wet"</pre>
+      </div>
+
+      <!-- 시나리오 8 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 8</span> 데이터 없는 날짜</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 도매 출고 데이터가 없는 날짜 선택
+3. 도매업체출하대상받기 클릭</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① 응답 데이터</td><td><code>receiveData</code> 빈값 (0건)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>② 바코드 조회</td><td><code>WHERE 1=0</code> (TB_SHIPMENT 비어있음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>③ 계근 조회</td><td><code>WHERE 1=0</code> (TB_SHIPMENT 비어있음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>출하대상 목록</td><td>빈 목록 표시 (또는 "출하 대상이 없습니다" 안내)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 9 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 9</span> 서버 미연결</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. Tomcat 서버 중지 (또는 Wi-Fi 연결 해제)
+2. 앱 실행 → 로그인
+3. 도매업체출하대상받기 클릭</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>서버 연결 실패</td><td>에러 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>에러 메시지</td><td>사용자에게 연결 실패 알림 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>② ③ 체인</td><td>연결 실패 시 바코드 조회 및 계근 조회 체인 중단</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 10 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 10</span> 재조회 동기화 (기존 데이터 있는 상태)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1 완료 후 (TB_SHIPMENT에 도매 데이터 있는 상태)
+2. 동일 날짜로 다시 도매업체출하대상받기 클릭
+3. 기존 데이터 삭제 후 재조회 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>기존 데이터 삭제</td><td><code>deletequeryShipment</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>재조회 후 동기화</td><td>서버 최신 데이터로 TB_SHIPMENT 갱신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>TB_BARCODE_INFO 갱신</td><td>기존 바코드정보 삭제 후 재조회 삽입</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>③ 계근내역</td><td>이미 전송된 계근 내역은 search_goods_wet.jsp 응답에 반영</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 11 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 11</span> 타 searchType 회귀 (도매 테스트 후 이마트 정상 동작 확인)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 도매(searchType=3) 테스트 완료 후
+2. 이마트(searchType=0) 출하대상받기 버튼 클릭
+3. 이마트 출고 데이터가 있는 날짜 선택 → 정상 조회 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>search_shipment.jsp 호출</td><td>이마트 JSP 호출 (search_shipment_wholesale.jsp 아님)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>응답 데이터 31개 컬럼</td><td>이마트 기준 데이터 정상 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>WHERE H.마트사구분='7'</td><td>이마트 마트사구분 조건 적용</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>바코드/계근 체인</td><td>search_barcode_info.jsp, search_goods_wet.jsp 정상 호출</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <h3 class="sub">테스트 결과 요약</h3>
+      <table class="chk">
+        <tr><th>시나리오</th><th>결과</th><th>비고</th></tr>
+        <tr><td>1. 정상 E2E (출하대상→계근→라벨→전송)</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>2. 원료육여부='1' 식별 조회 검증</td><td class="ck"><input type="checkbox"></td><td>타입구분/바코드타입 필터 없음 확인</td></tr>
+        <tr><td>3. 창고 선택 시 D.창고코드 필터링</td><td class="ck"><input type="checkbox"></td><td>D. 별칭 확인 (개발51 수정사항)</td></tr>
+        <tr><td>4. 바코드 스캔 계근</td><td class="ck"><input type="checkbox"></td><td>GI_L_ID 빈값("") 처리 확인</td></tr>
+        <tr><td>5. 수기 중량입력 계근</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>6. 라벨 인쇄 및 재출력</td><td class="ck"><input type="checkbox"></td><td>도매 양식 확인</td></tr>
+        <tr><td>7. 신로직 배치 계근전송 ("##")</td><td class="ck"><input type="checkbox"></td><td>insert_goods_wet_new.jsp</td></tr>
+        <tr><td>8. 데이터 없는 날짜</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>9. 서버 미연결</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>10. 재조회 동기화</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>11. 타 searchType 회귀 (이마트)</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+      </table>
+      <div class="note"><b>테스트 일자</b>: ____________________ &nbsp;·&nbsp; <b>테스트 결과</b>: ____________________</div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════ 2 홈플러스 ════════════════ -->
+  <div class="panel" id="p2">
+    <div class="phead">
+      <div class="big">2</div>
+      <h3>홈플러스 하이퍼 정량 출하계근<small>홈플러스 하이퍼 정량 출하계근 전체 흐름 (searchType=2)</small></h3>
+      <span class="badge b-done">searchType 2</span><span class="badge b-info">마트사구분 '4'</span><span class="badge b-info">타입구분 'W'</span><span class="badge b-wait">행팽창 WARN (오류22-2)</span><span class="badge b-wait">STORE_IN_DATE (오류22-1)</span>
+    </div>
+    <div class="pbody">
+
+      <h3 class="sub">사전 조건</h3>
+      <table>
+        <tr><th>#</th><th>항목</th><th>조건</th></tr>
+        <tr><td class="c">1</td><td>Tomcat 서버</td><td>로컬 Tomcat 재시작 완료 (포트 4040), JSP 변경분 반영 확인</td></tr>
+        <tr><td class="c">2</td><td>DB</td><td>MSSQL <code>weberp_dev</code> 접속 가능</td></tr>
+        <tr><td class="c">3</td><td>앱 BASE_URL</td><td><code>http://192.168.0.28:4040/inno</code> (로컬)</td></tr>
+        <tr><td class="c">4</td><td>테스트 데이터</td><td>ERP에서 홈플러스 출고 데이터 입력 완료 (마트사구분='4', 타입구분='W')</td></tr>
+        <tr><td class="c">5</td><td>PDA 기기</td><td>동일 네트워크(Wi-Fi) 연결</td></tr>
+        <tr><td class="c">6</td><td>TEST_MODE</td><td><code>false</code></td></tr>
+        <tr><td class="c">7</td><td>프린터</td><td>BIXOLON 프린터 Wi-Fi 연결 확인</td></tr>
+        <tr><td class="c">8</td><td>searchType=2 확인</td><td>앱 홈플러스 출하대상받기 버튼 (searchType=2)</td></tr>
+      </table>
+
+      <h3 class="sub">홈플러스 정량 특이사항 요약</h3>
+      <table>
+        <tr><th>항목</th><th>내용</th></tr>
+        <tr><td>마트사구분</td><td><code>'4'</code> (CO_거래처MASTER B.마트사구분 = '4')</td></tr>
+        <tr><td>식별 필터</td><td><code>COALESCE(M1.타입구분, M2.타입구분) = 'W'</code></td></tr>
+        <tr><td>출하대상 컬럼</td><td>24개 (index 0~23)</td></tr>
+        <tr><td>ITEM_TYPE</td><td><code>'S'</code> AS ITEM_TYPE 하드코딩 고정</td></tr>
+        <tr><td>창고코드 조건</td><td>창고 선택 시 <code>AND D.창고코드 = '...'</code> 추가</td></tr>
+        <tr><td>GI_L_ID (LOT)</td><td>미사용 (빈 문자열 고정)</td></tr>
+        <tr><td>계근전송 JSP</td><td><code>insert_goods_wet.jsp</code> (구로직, 1건씩 전송)</td></tr>
+        <tr><td>정렬</td><td><code>HE.납품처코드 ASC, I.PPCODE ASC, I.품목명 ASC</code></td></tr>
+        <tr><td>행팽창 위험</td><td>SM_수주상세 LEFT JOIN — 마트사SEQ 비유니크 → 중복 가능 (오류22-2)</td></tr>
+        <tr><td>STORE_IN_DATE</td><td>SD.납기일자 컬럼 타입 확인 대기 (오류22-1) — datetime이면 substring 오류 가능</td></tr>
+      </table>
+
+      <h3 class="sub">호출 흐름</h3>
+      <pre class="flowbox">[MainActivity] 홈플러스 출하대상받기 버튼 (searchType=2)
+    ↓
+① search_shipment_homeplus.jsp (출하대상 조회, 24개 컬럼)
+    WHERE H.마트사구분='4' AND D.출고수량>0
+    AND COALESCE(M1.타입구분, M2.타입구분)='W'
+    LEFT JOIN SM_수주상세 SD ON SD.마트사SEQ = HE.SEQ
+    ↓ 자동
+② search_barcode_info.jsp (바코드 정보 조회, 정량 공용)
+    ↓ 자동
+③ search_goods_wet.jsp (계근 내역 조회)
+    ↓
+[바코드정보 없는 상품 다이얼로그 표시]
+    ↓ 사용자 개입
+④ 계근입력 (바코드 스캔 / 수기 중량입력)
+    → TB_GOODS_WET INSERT (SAVE_TYPE='F')
+    → 라벨 출력 (홈플러스 양식)
+    ↓ 사용자 개입
+⑤ 계근전송 버튼 클릭
+    → insert_goods_wet.jsp (1건씩, 구로직)
+    → SM_출고계근 INSERT
+    → TB_GOODS_WET.SAVE_TYPE 'F'→'Y' UPDATE</pre>
+
+      <!-- 시나리오 1 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 1</span> 정상 E2E 전체 흐름</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. Tomcat 서버 재시작 (search_shipment_homeplus.jsp 변경분 반영 확인)
+2. 앱 실행 → 로그인
+3. 창고 선택 (Spinner에서 서버 창고 목록 표시 확인)
+4. 날짜 선택 (홈플러스 출고 데이터가 있는 날짜)
+5. 홈플러스 출하대상받기 버튼 클릭 (searchType=2)
+6. 로딩 다이얼로그 3단계 확인 (출하대상 → 바코드정보 → 계근정보)
+7. 바코드정보 없는 상품 다이얼로그 확인
+8. 상품 목록에서 첫 번째 항목 선택 → 계근입력 시작
+9. 상품 바코드 스캔 (1차 스캔)
+10. BL번호 스캔 (2차 스캔, ITEM_TYPE='S' 경로)
+11. 계근 완료 후 라벨 자동 출력 확인
+12. 계근전송 버튼 클릭 → 서버 전송 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① search_shipment_homeplus.jsp 호출</td><td>서버 로그에 MSSQL JOIN 쿼리 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>① 응답 데이터</td><td><code>receiveData</code>에 24개 컬럼 데이터 ("::" 구분)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>① ITEM_TYPE 값</td><td>temp[19] = <code>S</code> (하드코딩 고정)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>① EMARTLOGIS_CODE 값</td><td>temp[23] = HE.납품처코드</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>① TB_SHIPMENT INSERT</td><td><code>insertqueryShipment</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>② search_barcode_info.jsp 호출</td><td><code>Barcode Code List : WHERE SBI.PPCODE = '...'</code> 로그</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>② 응답 데이터</td><td><code>Barcode receiveData</code>에 25개 컬럼 데이터</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>② TB_BARCODE_INFO INSERT</td><td><code>insertqueryBarcodeInfo</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>③ search_goods_wet.jsp 호출</td><td>계근 내역 조회 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>③ 응답 데이터</td><td>초회 조회 시 0건 (미계근 상태)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">11</td><td>계근입력 화면</td><td>홈플러스 상품 목록 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">12</td><td>바코드 스캔 (1차)</td><td>상품 바코드 매칭 성공</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">13</td><td>바코드 스캔 (2차)</td><td>BL번호 스캔 처리 (ITEM_TYPE='S' 경로)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">14</td><td>라벨 출력</td><td>홈플러스 전용 양식으로 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">15</td><td>⑤ insert_goods_wet.jsp 호출</td><td><code>insert_goods_wet start</code> 서버 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">16</td><td>⑤ SM_출고계근 INSERT</td><td>서버 DB 정상 INSERT (응답 "s")</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">17</td><td>⑤ TB_GOODS_WET 상태</td><td>SAVE_TYPE 'F' → 'Y' 업데이트</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">18</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" "pDlgBarcodeSearch" "pDlgGoodsWetSearch" "DBHandler" | tail -50</pre>
+      </div>
+
+      <!-- 시나리오 2 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 2</span> 출하대상 행 팽창(중복) 검증</h3>
+        <div class="bg"><b>배경</b>: SM_수주상세 LEFT JOIN 시 동일 마트사SEQ에 N건이 있으면 출하 건이 N배 중복 조회될 수 있음 (오류22-2).</div>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 홈플러스 출고 데이터가 있는 날짜 선택
+3. 홈플러스 출하대상받기 버튼 클릭
+4. 출하대상 목록 확인 (항목 수 기록)
+5. MSSQL에서 동일 날짜 SM_출고상세 건수 직접 조회 (별도 쿼리 실행)
+   SELECT COUNT(*) FROM SM_출고상세 D
+   INNER JOIN SM_출고머리 H ON ...
+   WHERE H.마트사구분='4' AND D.출고일자='[선택일자]'
+6. 앱 목록 건수 vs MSSQL 직접 조회 건수 비교</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>앱 출하대상 목록 건수</td><td>MSSQL 직접 조회 건수와 동일</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>중복 행 여부</td><td>동일 GI_D_ID가 2회 이상 표시되지 않음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>SM_수주상세 N건 케이스</td><td>마트사SEQ에 수주상세 2건 이상인 경우 N배 중복 없음 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>중복 발생 시</td><td>오류 문서(<code>app/doc/오류/</code>) 작성 후 오류22-2 수정 진행</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 3 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 3</span> STORE_IN_DATE 날짜 표시 검증</h3>
+        <div class="bg"><b>배경</b>: SD.납기일자 컬럼이 MSSQL datetime 타입이면 rs.getString() 시 <code>"2026-06-23 00:00:00.0"</code> 형식 반환 → Java substring 오류 가능 (오류22-1).</div>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 홈플러스 출하대상받기 버튼 클릭
+3. 출하대상 목록에서 STORE_IN_DATE가 표시되는 항목 확인
+4. 라벨 출력 후 라벨상의 납기일자(납품일) 확인
+5. Tomcat 서버 로그에서 STORE_IN_DATE 반환값 형식 직접 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>서버 로그 STORE_IN_DATE 값</td><td><code>"20260623"</code> 형식 (8자리 문자열)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>STORE_IN_DATE 표시</td><td>앱 화면에 날짜 정상 표시 (비정상 문자열 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>라벨 납기일자</td><td>라벨에 납기일 정상 출력 (substring 예외 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>datetime 형식 반환 시</td><td><code>"2026-06-23 00:00:00.0"</code> 형태 → 오류 문서 작성 및 CONVERT 수정 필요</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 4 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 4</span> 바코드 스캔 계근 (정상)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1의 출하대상받기 완료 후 (TB_SHIPMENT, TB_BARCODE_INFO 데이터 있는 상태)
+2. 홈플러스 상품 목록에서 계근입력 대상 항목 선택
+3. 1차 스캔: 상품 바코드 스캔 (BARCODEGOODS 기준 매칭)
+4. 2차 스캔: BL번호 바코드 스캔
+5. 계근 중량 표시 확인
+6. 계근수량 표시 확인 (N/GI_REQ_PKG)
+7. 다음 박스 반복 스캔</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>1차 바코드 매칭</td><td>BARCODEGOODS 기준 TB_BARCODE_INFO 매칭 성공</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>ITEM_TYPE='S' 처리</td><td>ITEM_TYPE='S' 경로 분기 정상 동작</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>2차 BL번호 스캔</td><td>중량 추출 또는 처리 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>계근 중량 표시</td><td>소수점 절사 처리 (공통 로직)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>계근순번 증가</td><td>BOX_CNT 1씩 증가, N/GI_REQ_PKG 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>TB_GOODS_WET INSERT</td><td><code>insertqueryGoodsWet</code> 로그, SAVE_TYPE='F'</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>라벨 자동 출력</td><td>계근 1건당 홈플러스 양식 라벨 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 5 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 5</span> 수기 중량입력 계근</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1의 출하대상받기 완료 후 계근입력 화면 진입
+2. 바코드 스캔 대신 수기 중량 입력 선택
+3. 중량 값 직접 입력 (키패드)
+4. 계근 확인 버튼 클릭
+5. 중량 표시 및 저장 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>수기 중량 입력 UI</td><td>입력 필드 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>중량 저장</td><td>TB_GOODS_WET INSERT 정상 (SAVE_TYPE='F')</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>계근 화면 갱신</td><td>계근수량 증가, 중량 표시 갱신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>라벨 출력</td><td>수기 입력 중량 기준 라벨 정상 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 6 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 6</span> 홈플러스 라벨 인쇄 품질 및 재출력</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 4 또는 5의 계근 완료 상태에서
+2. 라벨 출력 결과물 품질 육안 확인 (비트맵 품질)
+3. 라벨 내용 항목별 확인 (품목명, 중량, 납기일자, 납품처명 등)
+4. 메뉴 → 라벨 재출력 기능 실행
+5. 재출력 결과 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>라벨 비트맵 품질</td><td>선명하게 출력, 번짐 없음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>라벨 품목명</td><td>ITEM_NAME 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>라벨 중량</td><td>계근된 중량값 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>라벨 납기일자</td><td>STORE_IN_DATE 날짜 정상 표시 (substring 이상 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>라벨 납품처명</td><td>CLIENTNAME (HE.납품처명) 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>라벨 바코드</td><td>바코드 심볼 정상 인쇄, 스캐너 읽기 가능</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>홈플러스 양식 분기</td><td>LabelPrintHelper 홈플러스 양식으로 출력됨 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>라벨 재출력</td><td>동일 내용으로 재출력 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 7 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 7</span> 계근전송 성공 (insert_goods_wet.jsp)</h3>
+        <div class="bg"><b>배경</b>: 홈플러스/롯데 계근전송은 <code>insert_goods_wet.jsp</code> (구로직, 1건씩 전송) 사용.</div>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 4 또는 5의 계근 완료 후 (TB_GOODS_WET에 SAVE_TYPE='F' 데이터 있는 상태)
+2. 계근전송 버튼 클릭
+3. 서버 전송 진행 확인
+4. 전송 완료 후 상태 확인
+5. MSSQL SM_출고계근 테이블에서 데이터 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>insert_goods_wet.jsp 호출</td><td>서버 로그 <code>insert_goods_wet start</code> 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>packet 구조</td><td>15개 필드, <code>::</code> 구분자 (splitData[0]~[14])</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>출고상세SEQ</td><td>splitData[0] = GI_D_ID 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>계근중량</td><td>splitData[1] = WEIGHT 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>등록사원</td><td>splitData[9] = REG_ID (로그인 ID)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>회사코드</td><td>splitData[10] = Common.selectCompanyCode 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>SM_출고계근 INSERT</td><td>MSSQL DB에 데이터 정상 INSERT</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>서버 응답</td><td>"s" 수신 (성공)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>TB_GOODS_WET 상태 갱신</td><td>SAVE_TYPE 'F' → 'Y' 업데이트</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>전송 실패 시</td><td>"f" 수신 → 오류 메시지 표시, SAVE_TYPE 'F' 유지</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">11</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" "DBHandler" | grep -i "goods_wet\|insert\|SAVE_TYPE" | tail -20</pre>
+      </div>
+
+      <!-- 시나리오 8 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 8</span> 데이터 없는 날짜</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 홈플러스 출고 데이터가 없는 날짜 선택
+3. 홈플러스 출하대상받기 버튼 클릭</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① 응답 데이터</td><td><code>receiveData</code> 빈값</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>② 바코드 조회</td><td><code>WHERE 1=0</code> (TB_SHIPMENT 비어있음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>③ 계근 조회</td><td><code>WHERE 1=0</code> (TB_SHIPMENT 비어있음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>빈 목록 처리</td><td>상품 목록 빈 상태, 앱 정상 대기</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 9 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 9</span> 서버 미연결</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. Tomcat 서버 중지
+2. 앱 실행 → 로그인
+3. 홈플러스 출하대상받기 버튼 클릭</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>서버 연결 실패</td><td>에러 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>에러 메시지</td><td>사용자에게 연결 실패 알림 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 10 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 10</span> 재조회 동기화 (기존 데이터 있는 상태)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1 완료 후 (TB_SHIPMENT에 데이터 있는 상태)
+2. 동일 날짜로 홈플러스 출하대상받기 재클릭
+3. 동기화 처리 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>기존 데이터 처리</td><td><code>deletequeryShipment</code> 또는 동기화 로직 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>서버 데이터 재반영</td><td>서버에 있는 건 INSERT, 삭제된 건 제거</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>GI_L_ID 빈값</td><td>TB_SHIPMENT.GI_L_ID 빈 문자열 저장 (홈플러스 설계 의도)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 11 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 11</span> 창고코드 선택 조건 검증</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 창고 선택 Spinner에서 특정 창고 선택
+3. 홈플러스 출하대상받기 버튼 클릭
+4. 서버 로그에서 WHERE 절 확인
+5. 창고 선택 없이 다시 조회 → 비교</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>창고 선택 시 WHERE절</td><td><code>AND D.창고코드 = '창고코드'</code> (D. 별칭 포함)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>창고 미선택 시 WHERE절</td><td>창고코드 조건 없음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>결과 건수</td><td>창고 선택 시 해당 창고 데이터만 필터링</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>ambiguous 오류</td><td>발생하지 않음 (D. 별칭 정상 적용)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <h3 class="sub">테스트 결과 요약</h3>
+      <table class="chk">
+        <tr><th>시나리오</th><th>결과</th><th>비고</th></tr>
+        <tr><td>1. 정상 E2E 전체 흐름</td><td class="ck"><input type="checkbox"></td><td>24컬럼, ITEM_TYPE='S', 전체 단계 통합</td></tr>
+        <tr><td>2. 출하대상 행 팽창(중복) 검증</td><td class="ck"><input type="checkbox"></td><td>SM_수주상세 LEFT JOIN 중복 건수 확인</td></tr>
+        <tr><td>3. STORE_IN_DATE 날짜 표시 검증</td><td class="ck"><input type="checkbox"></td><td>datetime형식 반환 시 오류22-1 수정 필요</td></tr>
+        <tr><td>4. 바코드 스캔 계근</td><td class="ck"><input type="checkbox"></td><td>ITEM_TYPE='S' 경로, BL번호 2차 스캔</td></tr>
+        <tr><td>5. 수기 중량입력 계근</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>6. 홈플러스 라벨 인쇄 품질/재출력</td><td class="ck"><input type="checkbox"></td><td>비트맵 품질, 납기일자 표시 확인</td></tr>
+        <tr><td>7. 계근전송 성공</td><td class="ck"><input type="checkbox"></td><td>insert_goods_wet.jsp, SM_출고계근 INSERT</td></tr>
+        <tr><td>8. 데이터 없는 날짜</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>9. 서버 미연결</td><td class="ck"><input type="checkbox"></td><td></td></tr>
+        <tr><td>10. 재조회 동기화</td><td class="ck"><input type="checkbox"></td><td>GI_L_ID 빈값 설계 확인</td></tr>
+        <tr><td>11. 창고코드 선택 조건 검증</td><td class="ck"><input type="checkbox"></td><td>D. 별칭 포함 WHERE절 확인</td></tr>
+      </table>
+      <div class="note"><b>테스트 일자</b>: ____________________ &nbsp;·&nbsp; <b>테스트 결과</b>: ____________________</div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════ 6 롯데 ════════════════ -->
+  <div class="panel" id="p6">
+    <div class="phead">
+      <div class="big">6</div>
+      <h3>롯데 출하계근<small>롯데 출하계근 전체 흐름 E2E (searchType=6)</small></h3>
+      <span class="badge b-done">searchType 6</span><span class="badge b-info">마트사구분 '6'</span><span class="badge b-info">박스순번 이어가기 (1~9999)</span><span class="badge b-info">중량 소수점 2자리</span><span class="badge b-wait">LAST_BOX_ORDER NULL (오류22-9)</span>
+    </div>
+    <div class="pbody">
+
+      <h3 class="sub">사전 조건</h3>
+      <table>
+        <tr><th>#</th><th>항목</th><th>조건</th></tr>
+        <tr><td class="c">1</td><td>Tomcat 서버</td><td>로컬 Tomcat 실행 중 (포트 4040), search_shipment_lotte.jsp 반영 확인</td></tr>
+        <tr><td class="c">2</td><td>DB</td><td>MSSQL <code>weberp_dev</code> 접속 가능</td></tr>
+        <tr><td class="c">3</td><td>앱 BASE_URL</td><td><code>http://192.168.0.28:4040/inno</code> (로컬)</td></tr>
+        <tr><td class="c">4</td><td>테스트 데이터</td><td>ERP에서 롯데(마트사구분='6', 타입구분='W') 출고 데이터 입력 완료</td></tr>
+        <tr><td class="c">5</td><td>PDA 기기</td><td>동일 네트워크(Wi-Fi) 연결</td></tr>
+        <tr><td class="c">6</td><td>TEST_MODE</td><td><code>false</code></td></tr>
+        <tr><td class="c">7</td><td>BIXOLON 프린터</td><td>Bluetooth 페어링 완료 (라벨 인쇄 시나리오 전제)</td></tr>
+        <tr><td class="c">8</td><td>searchType</td><td><code>6</code> (롯데) 고정</td></tr>
+      </table>
+
+      <h3 class="sub">호출 흐름</h3>
+      <pre class="flowbox">[MainActivity] 롯데 출하대상받기 버튼 (searchType=6)
+    ↓
+① search_shipment_lotte.jsp (출하대상 조회, 26개 컬럼 0~25)
+     - WHERE H.마트사구분 = '6'
+     - AND COALESCE(M1.타입구분, M2.타입구분) = 'W'
+     - AND D.출고수량 > 0
+     - (+창고 선택 시 창고코드 조건 추가)
+     - LEFT JOIN SM_수주상세 SD (행 팽창 WARN)
+     - Index 24: '' AS WH_AREA (빈값 고정)
+     - Index 25: TOP 1 서브쿼리 → LAST_BOX_ORDER (최근 박스순번, 최초 NULL 가능)
+    ↓ 자동
+② search_barcode_info.jsp (바코드 정보 조회, 정량 공용, 25개 컬럼)
+     - WHERE SBI.ppCode = '...' (TB_SHIPMENT의 PACKER_PRODUCT_CODE 기준)
+    ↓ 자동
+③ search_goods_wet.jsp (계근 내역 조회)
+     - WHERE 출고상세SEQ IN (TB_SHIPMENT GI_D_ID 목록)
+    ↓
+[출하대상 목록 표시] → lotte_TryCount 계산
+     - lotte_TryCount = LAST_BOX_ORDER + 1 (최초 NULL → try-catch, 오류22-9)
+     - 기존 계근 PACKING_QTY 합산 후 다음 박스순번 확정
+    ↓
+④ 바코드 스캔 / 수기 중량입력 (+소비기한 창)
+     - 계근 성공 시: DBHandler.insertqueryGoodsWetLotte() (로컬DB 저장, 박스순번 기록)
+     - lotte_TryCount++ (1~9999 순환, 9999 초과 시 1로 회귀)
+    ↓
+⑤ 라벨 인쇄 — setPrintingLotte()
+     - 롯데 전용 양식 (중량 소수점 2자리, EMARTLOGIS_CODE 업체코드 사용)
+    ↓
+⑥ 계근전송 — insert_goods_wet.jsp (구로직, 1건씩)
+     - SM_출고계근 INSERT (NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ)
+     - 전송 성공: "s" 수신 / 실패: "f" 수신</pre>
+
+      <!-- 시나리오 1 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 1</span> 정상 E2E (출하대상 조회 → 계근 → 라벨 인쇄 → 전송)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 창고 선택 (Spinner에서 서버 창고 목록 표시 확인)
+3. 날짜 선택 (롯데 출고 데이터가 있는 날짜)
+4. 롯데 출하대상받기 버튼 클릭 (searchType=6)
+5. 로딩 다이얼로그 3단계 확인 (출하대상 → 바코드정보 → 계근정보)
+6. 출하대상 목록에서 계근할 상품 선택
+7. 바코드 스캔 (정상 바코드)
+8. 계근 중량 확인
+9. 라벨 출력 확인 (setPrintingLotte 호출)
+10. 전송 버튼 클릭 → insert_goods_wet.jsp 호출 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① search_shipment_lotte.jsp 호출</td><td>Tomcat 로그에 <code>=========search_shipment_lotte============</code> 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>① WHERE 조건</td><td><code>H.마트사구분 = '6'</code> AND <code>COALESCE(M1.타입구분, M2.타입구분) = 'W'</code> AND <code>D.출고수량 > 0</code> 포함</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>① 응답 데이터</td><td><code>receiveData</code>에 26개 컬럼 ("::" 구분, ";;" 행 종료)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>① Index 24 (WH_AREA)</td><td>빈값 <code>''</code> 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>① Index 25 (LAST_BOX_ORDER)</td><td>기존 계근 있으면 숫자, 없으면 NULL(<code>""</code> 변환)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>① TB_SHIPMENT INSERT</td><td><code>insertqueryShipment</code> 로그 출력, LAST_BOX_ORDER 저장 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>② search_barcode_info.jsp 호출</td><td><code>Barcode Code List : WHERE SBI.PPCODE = '...'</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>② TB_BARCODE_INFO INSERT</td><td><code>insertqueryBarcodeInfo</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>③ search_goods_wet.jsp 호출</td><td><code>Wet GI_D_ID List</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>③ 응답 데이터</td><td>초회 조회 시 0건 (미계근 상태)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">11</td><td>lotte_TryCount 계산</td><td>LAST_BOX_ORDER+1 + 기존 PACKING_QTY 합산 = 다음 박스순번</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">12</td><td>바코드 스캔</td><td>매칭 성공, 계근 중량 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">13</td><td>로컬DB 저장</td><td><code>insertqueryGoodsWetLotte</code> 로그, BOX_ORDER=lotte_TryCount 저장</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">14</td><td>lotte_TryCount 증가</td><td>계근 후 lotte_TryCount++ 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">15</td><td>라벨 인쇄</td><td>setPrintingLotte() 호출, BIXOLON 프린터 정상 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">16</td><td>라벨 내용 - 중량</td><td>소수점 2자리까지 표시 (롯데 전용 처리)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">17</td><td>라벨 내용 - 업체코드</td><td>EMARTLOGIS_CODE 값 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">18</td><td>계근전송</td><td>insert_goods_wet.jsp 호출, "s" 응답 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">19</td><td>SM_출고계근 INSERT</td><td>MSSQL DB에 행 추가 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">20</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" "pDlgBarcodeSearch" "pDlgGoodsWetSearch" "DBHandler" "BixolonShipmentActivity" | tail -50</pre>
+      </div>
+
+      <!-- 시나리오 2 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 2</span> 박스순번 이어가기 (LAST_BOX_ORDER+1) 검증</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. SM_출고계근에 해당 출고상세SEQ 기존 계근 데이터 있는 상태 확인
+   (예: 이전 세션에서 박스순번 5까지 계근한 데이터)
+2. 앱 실행 → 로그인
+3. 롯데 출하대상받기 클릭 (동일 날짜)
+4. ① 응답 데이터의 LAST_BOX_ORDER 값 확인 (예: '5')
+5. 출하대상 목록 로드 후 lotte_TryCount 값 확인 로그
+6. 바코드 스캔 1회 → 박스순번 확인
+7. 바코드 스캔 2회 → 박스순번 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>LAST_BOX_ORDER 수신</td><td>Index 25 = 기존 최고 박스순번 (예: '5')</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>lotte_TryCount 초기값</td><td>LAST_BOX_ORDER(5)+1=6, 기존 PACKING_QTY 합산 후 확정</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>Tomcat 로그</td><td><code>LAST_BOX_ORDER : 5</code> 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>앱 로그</td><td><code>lotte_TryCount =</code> 다음 박스순번 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>1번째 스캔 BOX_ORDER</td><td>LAST_BOX_ORDER+1 기반 번호 (예: 6번)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>2번째 스캔 BOX_ORDER</td><td>직전 BOX_ORDER+1 (예: 7번)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>로컬DB BOX_ORDER 저장</td><td>TB_GOODS_WET에 BOX_ORDER 값 순차 저장 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>라벨 박스순번</td><td>setPrintingLotte()에 lotteBoxOrder 값 정상 전달</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" "DBHandler" | grep -E "LAST_BOX_ORDER|lotte_TryCount"</pre>
+      </div>
+
+      <!-- 시나리오 3 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 3</span> 최초 출하 — LAST_BOX_ORDER NULL 안전성 (오류22-9)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. SM_출고계근에 해당 출고상세SEQ 데이터가 전혀 없는 상태 확인
+   (최초 출하, 박스순번 이력 없음)
+2. 앱 실행 → 로그인
+3. 롯데 출하대상받기 클릭
+4. ① 응답 데이터의 LAST_BOX_ORDER 확인 (NULL → "" 변환 예상)
+5. 출하대상 목록 로드 확인
+6. 바코드 스캔 시도 → 박스순번 1번으로 시작하는지 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>LAST_BOX_ORDER 수신</td><td>Index 25 = NULL → Common.nullCheck → <code>""</code> 변환</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>Integer.parseInt 예외</td><td>try-catch 블록이 NumberFormatException 포착 (앱 크래시 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>lotte_TryCount 폴백</td><td>예외 후 lotte_TryCount = 1 (또는 초기값 0+1=1) 로 설정됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>앱 로그</td><td><code>LAST_BOX_ORDER : </code> (빈값) 및 예외 로그 출력, 앱 계속 동작</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>출하대상 목록 표시</td><td>정상 표시 (NULL 처리 후 계속 진행)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>첫 번째 스캔 BOX_ORDER</td><td>1번부터 시작</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>앱 비정상 종료</td><td>없음 (원본 동일 동작 확인)</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">참고</h4>
+        <div class="note warn">
+          · 오류22-9: 원본(ShipmentActivity.java)과 동일 패턴 → 수정 제외 대상<br>
+          · try-catch 블록: <code>BixolonShipmentActivity.java:2254</code> 범위 내 처리
+        </div>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" | grep -E "LAST_BOX_ORDER|NumberFormat|lotte_TryCount"</pre>
+      </div>
+
+      <!-- 시나리오 4 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 4</span> 출하대상 행 팽창(중복) 검증</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. DB에서 SM_수주상세 테이블의 해당 마트사SEQ에 대한 행 수 확인
+   (동일 마트사SEQ에 복수 행이 있는지 확인)
+2. 앱 실행 → 롯데 출하대상받기 클릭
+3. 출하대상 목록 건수를 ERP 발주 건수와 비교
+4. 중복 행 발생 여부 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>SM_수주상세 LEFT JOIN 행 수</td><td><code>SELECT COUNT(*) FROM SM_수주상세 WHERE 마트사SEQ = ?</code> → ERP 기대값과 비교</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>출하대상 목록 건수</td><td>ERP 출고 건수와 동일 (행 팽창 없음 = 정상)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>행 팽창 발생 시</td><td>동일 GI_D_ID가 복수 행으로 표시됨 → 오류 문서 작성 필요</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>STORE_IN_DATE 값</td><td>납기일자 정상 표시 (datetime 타입이면 오류22-1 해소 필요)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">검증 쿼리 (MSSQL weberp_dev)</h4>
+        <pre class="cmd">-- 행 팽창 확인: 동일 마트사SEQ 기준
+SELECT D.SEQ, COUNT(*) AS row_cnt
+FROM SM_출고상세 D
+INNER JOIN SM_출고머리 H ON H.회사코드 = D.회사코드
+    AND H.출고사업장 = D.출고사업장
+    AND H.출고일자 = D.출고일자
+    AND H.출고일련번호 = D.출고일련번호
+JOIN SM_마트사발주롯데마트 LE ON D.마트사SEQ = LE.SEQ
+LEFT JOIN SM_수주상세 SD ON SD.마트사SEQ = LE.SEQ
+WHERE H.마트사구분 = '6'
+  AND D.출고일자 = '20260623'   -- 테스트 날짜로 변경
+GROUP BY D.SEQ
+HAVING COUNT(*) > 1;</pre>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" | grep -E "receiveData|insertqueryShipment"</pre>
+      </div>
+
+      <!-- 시나리오 5 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 5</span> 바코드 스캔 계근 (정상 + 완료 판정)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1 완료 후 출하대상 목록 표시 상태
+2. 계근할 상품 선택 (GI_REQ_PKG = N박스)
+3. 바코드 스캔 1회 → 계근수량 1/N 확인
+4. 바코드 스캔 N회 반복 → 계근수량 N/N
+5. 계근 완료 다이얼로그 표시 확인
+6. 남은 상품 없으면 전체 완료 다이얼로그 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>바코드 매칭</td><td>TB_BARCODE_INFO 기준 매칭 성공, 중량 추출</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>계근수량 증가</td><td>스캔 1회마다 PACKING_QTY +1</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>BOX_ORDER 순차 증가</td><td>lotte_TryCount 값이 각 계근마다 +1</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>로컬DB 저장</td><td><code>insertqueryGoodsWetLotte</code> 로그, BOX_ORDER 컬럼 저장 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>계근 완료 판정</td><td>PACKING_QTY >= GI_REQ_PKG 시 완료 다이얼로그 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>전체 완료 다이얼로그</td><td>모든 상품 완료 시 <code>show_wetFinishDialog()</code> 호출</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" "DBHandler" | grep -E "insertqueryGoodsWetLotte|lotte_TryCount|PACKING_QTY"</pre>
+      </div>
+
+      <!-- 시나리오 6 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 6</span> 수기 중량입력 + 소비기한 창</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 출하대상 목록에서 상품 선택
+2. 수기입력 버튼 또는 수기입력 화면 진입
+3. 중량 직접 입력
+4. 소비기한 입력 창 표시 확인 (이마트와 유사)
+5. 소비기한 입력 후 계근 완료
+6. 라벨 인쇄 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>수기입력 화면 전환</td><td>중량 입력 필드 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>소비기한 창 표시</td><td>중량 입력 후 소비기한(making_date) 입력 창 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>소비기한 입력</td><td>날짜 형식 입력 (YYYYMMDD) 정상 처리</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>계근 처리</td><td>중량 + 소비기한 기반 계근 데이터 생성</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>로컬DB 저장</td><td><code>insertqueryGoodsWetLotte</code> 로그, MAKINGDATE 저장 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>라벨 인쇄</td><td><code>setPrintingLotte(weight, si, false, making_date, lotteBoxOrder, ...)</code> 호출</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>라벨 내용 - 소비기한</td><td>입력한 소비기한 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" | grep -E "setPrintingLotte|making_date|lotteBoxOrder"</pre>
+      </div>
+
+      <!-- 시나리오 7 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 7</span> 롯데 라벨 인쇄 + 재출력</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 5 또는 6의 계근 완료 후 라벨 인쇄 실행
+2. 라벨 내용 검증 (롯데 전용 양식)
+3. 계근 목록에서 기존 계근 항목 선택
+4. 재출력(MESSAGE_REPRINT) 실행
+5. 재출력 라벨 내용 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>setPrintingLotte 호출</td><td><code>reprint=false</code> 파라미터 전달</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>라벨 양식</td><td>롯데 전용 양식 (이마트/홈플 양식과 다름)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>라벨 내용 - 상품명</td><td>EMARTITEM (롯데 상품명) 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>라벨 내용 - 중량</td><td>소수점 2자리까지 (롯데 전용, 이마트는 소수점 1자리 절사)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>라벨 내용 - 업체코드</td><td>EMARTLOGIS_CODE 값 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>라벨 내용 - 박스순번</td><td>box_order 값 바코드 시퀀스에 반영</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>재출력 호출</td><td>MESSAGE_REPRINT → <code>setPrintingLotte(weight, si, true, making_date, box_order, ...)</code></td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>재출력 라벨</td><td>reprint=true, 동일 box_order 사용하여 동일 박스 재인쇄</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" "LabelPrintHelper" | grep -E "setPrintingLotte|reprint|box_order"</pre>
+      </div>
+
+      <!-- 시나리오 8 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 8</span> 계근전송 성공 (insert_goods_wet.jsp)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 로컬DB에 계근 데이터 있는 상태 (시나리오 5 완료 후)
+2. 전송 버튼 클릭
+3. insert_goods_wet.jsp 호출 확인
+4. 응답 "s" 수신 확인
+5. DB SM_출고계근 테이블에 INSERT 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>insert_goods_wet.jsp 호출</td><td>Tomcat 로그 <code>=========insert_goods_wet start=============</code> 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>전송 파라미터 - GI_D_ID</td><td>splitData[0] = 출고상세SEQ 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>전송 파라미터 - GI_L_ID</td><td>splitData[14] = 출고LOTSEQ (롯데: "" 고정) → 정상 처리</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>전송 파라미터 - 중량</td><td>splitData[1] = 계근중량 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>전송 파라미터 - 회사코드</td><td>splitData[10] = Common.COMPANY_CODE 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>JSP 응답</td><td>"s" 수신 → 전송 성공 처리</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>SM_출고계근 INSERT</td><td>MSSQL weberp_dev SM_출고계근 테이블 행 추가 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>계근순번(박스순번)</td><td>계근ID 자동 채번(NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ) 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">검증 쿼리 (MSSQL weberp_dev)</h4>
+        <pre class="cmd">-- 전송된 계근 데이터 확인
+SELECT TOP 5 *
+FROM SM_출고계근
+WHERE 출고상세SEQ = ?   -- 테스트에 사용한 GI_D_ID
+ORDER BY 계근ID DESC;</pre>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "BixolonShipmentActivity" | grep -E "insert_goods_wet|전송|SAVE"</pre>
+      </div>
+
+      <!-- 시나리오 9 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 9</span> 박스순번 9999 경계 순환 검증</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. DB SM_출고계근에서 해당 출고상세SEQ의 박스순번을 9998 또는 9999로 수동 설정
+   (UPDATE SM_출고계근 SET 박스순번 = 9998 WHERE ...)
+2. 앱 실행 → 롯데 출하대상받기 클릭
+3. LAST_BOX_ORDER = '9998' 수신 확인
+4. lotte_TryCount 초기값 확인 (9999)
+5. 바코드 스캔 → BOX_ORDER 9999 확인
+6. 바코드 스캔 → BOX_ORDER 1 (순환 회귀) 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>LAST_BOX_ORDER 수신</td><td>Index 25 = '9998'</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>lotte_TryCount 초기값</td><td>9999 (9998+1)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>9999 초과 조건</td><td>lotte_TryCount(9999) > LOTTE_BOX_ORDER_MAX(9999) = false → 순환 없음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>스캔 후 lotte_TryCount++</td><td>9999 + 1 = 10000 > 9999 → lotte_TryCount = 1 (순환 회귀)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>두 번째 스캔 BOX_ORDER</td><td>1 (순환 후 1번대 재시작)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 10 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 10</span> 데이터 없는 날짜</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행 → 로그인
+2. 롯데 출고 데이터가 없는 날짜 선택
+3. 롯데 출하대상받기 클릭</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>① 응답 데이터</td><td><code>receiveData</code> 빈값 (0건)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>② 바코드 조회</td><td><code>WHERE 1=0</code> 또는 TB_SHIPMENT 비어있음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>③ 계근 조회</td><td>0건</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>출하대상 목록</td><td>빈 목록 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>lotte_TryCount</td><td>계산 생략 (목록 비어있음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" | grep -E "receiveData|WHERE 1=0"</pre>
+      </div>
+
+      <!-- 시나리오 11 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 11</span> 서버 미연결</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. Tomcat 서버 중지
+2. 앱 실행 → 로그인
+3. 롯데 출하대상받기 클릭</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>서버 연결 실패</td><td>에러 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>에러 메시지</td><td>사용자에게 연결 실패 알림 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 12 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 12</span> 재조회 동기화 (기존 데이터 있는 상태)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1 완료 후 (TB_SHIPMENT에 데이터 있는 상태)
+2. 다시 롯데 출하대상받기 클릭
+3. 서버 데이터와 로컬 동기화 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>기존 데이터 삭제 후 재삽입</td><td><code>deletequeryShipment</code> 로그 후 <code>insertqueryShipment</code> 로그</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>서버 없는 건 삭제</td><td>PDA에만 있고 서버에 없는 GI_D_ID 삭제</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>서버 추가 건 삽입</td><td>서버에 새로 추가된 GI_D_ID 삽입</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>lotte_TryCount 재계산</td><td>재조회 후 LAST_BOX_ORDER+1 기반으로 재계산</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>기존 계근 이어가기</td><td>재조회 후 기존 PACKING_QTY 합산하여 다음 박스순번 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <h4 class="lbl">로그 확인 명령어</h4>
+        <pre class="cmd">adb logcat -d -s "ProgressDlgShipSearch" "DBHandler" | grep -E "delete|insert|lotte_TryCount"</pre>
+      </div>
+
+      <h3 class="sub">테스트 결과 요약</h3>
+      <table class="chk">
+        <tr><th>시나리오</th><th>결과</th><th>비고</th></tr>
+        <tr><td>1. 정상 E2E (조회 → 계근 → 라벨 → 전송)</td><td class="ck"><input type="checkbox"></td><td>26개 컬럼, 전체 흐름 확인</td></tr>
+        <tr><td>2. 박스순번 이어가기 (LAST_BOX_ORDER+1)</td><td class="ck"><input type="checkbox"></td><td>8종 중 롯데 전용 핵심 기능</td></tr>
+        <tr><td>3. 최초 출하 LAST_BOX_ORDER NULL 안전성</td><td class="ck"><input type="checkbox"></td><td>오류22-9, 원본 동일, 크래시 없음</td></tr>
+        <tr><td>4. 출하대상 행 팽창(중복) 검증</td><td class="ck"><input type="checkbox"></td><td>SM_수주상세 LEFT JOIN WARN</td></tr>
+        <tr><td>5. 바코드 스캔 계근 + 완료 판정</td><td class="ck"><input type="checkbox"></td><td>BOX_ORDER 순차 증가 확인</td></tr>
+        <tr><td>6. 수기 중량입력 + 소비기한 창</td><td class="ck"><input type="checkbox"></td><td>making_date 입력 흐름</td></tr>
+        <tr><td>7. 롯데 라벨 인쇄 + 재출력</td><td class="ck"><input type="checkbox"></td><td>setPrintingLotte, 중량 소수점 2자리</td></tr>
+        <tr><td>8. 계근전송 성공 (insert_goods_wet.jsp)</td><td class="ck"><input type="checkbox"></td><td>SM_출고계근 INSERT 확인</td></tr>
+        <tr><td>9. 박스순번 9999 경계 순환</td><td class="ck"><input type="checkbox"></td><td>LOTTE_BOX_ORDER_MAX = 9999</td></tr>
+        <tr><td>10. 데이터 없는 날짜</td><td class="ck"><input type="checkbox"></td><td>빈 목록 안전 처리</td></tr>
+        <tr><td>11. 서버 미연결</td><td class="ck"><input type="checkbox"></td><td>에러 알림, 크래시 없음</td></tr>
+        <tr><td>12. 재조회 동기화</td><td class="ck"><input type="checkbox"></td><td>박스순번 연속성 유지</td></tr>
+      </table>
+      <div class="note"><b>테스트 일자</b>: ____________________ &nbsp;·&nbsp; <b>테스트 결과</b>: ____________________</div>
+
+    </div>
+  </div>
+
+</section>
+
+<footer>
+  PDA-INNO · app/doc/테스트/00_4마트사_출하계근_E2E테스트.html · 원본: 테스트/03_이마트 · 04_도매 · 05_홈플러스 · 06_롯데 · 갱신일 2026-06-23
+</footer>
+
+</div>
+<script>
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.p).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
