@@ -398,10 +398,12 @@
 
         </TableRow>
 
+        <!-- 생산(라벨) searchType "7" : 개발 미진행 - UI 미노출 (소스 보존, visibility=gone) -->
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="200">
+            android:layout_weight="200"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
