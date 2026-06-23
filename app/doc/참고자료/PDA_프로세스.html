@@ -586,7 +586,7 @@
     <div class="pbody">
       <div class="infobar">
         <div class="it hl"><b>마트사구분</b><span>'7'</span></div>
-        <div class="it"><b>식별 필터</b><span class="sm">타입구분 'B' + M8/M9</span></div>
+        <div class="it"><b>식별 필터</b><span class="sm">타입구분 'B'</span></div>
         <div class="it"><b>출하대상 컬럼</b><span>31개 (0~30)</span></div>
         <div class="it"><b>창고코드 조건</b><span class="sm">없음</span></div>
         <div class="it"><b>계근전송</b><span class="sm">신로직 (배치)</span></div>
@@ -605,7 +605,7 @@
           <div class="bd"><span class="kw">WHERE</span> H.마트사구분 = <span class="vl">'7'</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.출고수량 &gt; 0<br>
 <span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.타입구분, M2.타입구분) = <span class="vl">'B'</span>  <span class="cm">← 개발44: 'J' 제외</span><br>
-<span class="kw">&nbsp;&nbsp;AND</span> COALESCE(M1.바코드타입, M2.바코드타입) <span class="kw">IN</span> (<span class="vl">'M8'</span>,<span class="vl">'M9'</span>)  <span class="cm">← 개발43: M9 추가</span><br>
+<span class="cm">-- AND COALESCE(M1.바코드타입, M2.바코드타입) IN ('M8','M9')  ※ [2026-06-23] 조회조건 제외(주석)</span><br>
 <span class="kw">&nbsp;&nbsp;AND</span> D.회사코드 = <span class="vl">?</span> <span class="kw">AND</span> D.출고일자 = <span class="vl">?</span>  <span class="cm">← 앱: 선택 날짜 (창고코드 조건 없음)</span><br>
 <span class="cm">-- ORDER BY GI_D_ID ASC</span><br><br>
 <span class="cm">-- [JOIN ON 추가 필터]</span><br>
@@ -615,9 +615,10 @@
         <div class="ibox">
           <div class="hd">특이사항 · 검증 결과</div>
           <ul>
-            <li class="info">이마트와 마트사구분('7') 공유, <b>타입구분 'B' + 바코드타입 M8/M9</b>로 구분</li>
+            <li class="info">이마트와 마트사구분('7') 공유, <b>타입구분 'B'</b>로 구분 (바코드타입 M8/M9 조회조건은 2026-06-23 제외)</li>
             <li class="info">비정량 특성상 동일 바코드 반복 허용 (중복확인 제외)</li>
-            <li class="ok">인덱스 0~30 · 타입구분 'B'(개발44) · M9(개발43) 반영 확인 (검증 PASS)</li>
+            <li class="ok">인덱스 0~30 · 타입구분 'B'(개발44) 반영 확인 (검증 PASS)</li>
+            <li class="warn">바코드타입 M8/M9 조회조건 제외 (2026-06-23, JSP 주석 처리) — 타입구분 'B'만으로 조회</li>
             <li class="warn">오류21: EMARTLOGIS_CODE 빈값 시 라벨 substring 예외 — <b>ERP 물류코드 데이터 입력으로 해결</b> 결정(코드 미수정), 신규 품목 등록 시 물류코드 필수</li>
           </ul>
         </div>
@@ -776,7 +777,7 @@
     <tr><td><b>1 생산</b></td><td class="c">-</td><td class="c">Oracle VIEW</td><td class="c">32</td><td class="c">-</td><td class="c">정량 공용</td><td class="c">신로직</td><td class="c">-</td><td class="c"><span class="badge b-wait">대기</span></td></tr>
     <tr><td><b>2 홈플 정량</b></td><td class="c">'4'</td><td class="c">타입구분 'W'</td><td class="c">24</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">구로직</td><td class="c">✕</td><td class="c"><span class="badge b-done">PASS</span> <span class="badge b-wait">WARN</span></td></tr>
     <tr><td><b>3 도매</b></td><td class="c">''</td><td class="c">원료육여부 '1'</td><td class="c">24</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">신로직</td><td class="c">✕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
-    <tr><td><b>4 비정량</b></td><td class="c">'7'</td><td class="c">'B' + M8/M9</td><td class="c">31</td><td class="c">없음</td><td class="c">비정량 전용</td><td class="c">신로직</td><td class="c">⭕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td><b>4 비정량</b></td><td class="c">'7'</td><td class="c">'B'</td><td class="c">31</td><td class="c">없음</td><td class="c">비정량 전용</td><td class="c">신로직</td><td class="c">⭕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>5 홈플 비정량</b></td><td class="c">'4'</td><td class="c">바코드타입 'H5'</td><td class="c">29</td><td class="c">없음</td><td class="c"><span class="badge b-fail">미전환</span></td><td class="c">신로직</td><td class="c">✕</td><td class="c"><span class="badge b-fail">이슈</span></td></tr>
     <tr><td><b>6 롯데</b></td><td class="c">'6'</td><td class="c">타입구분 'W'</td><td class="c">26</td><td class="c">선택</td><td class="c">정량 공용</td><td class="c">구로직</td><td class="c">✕</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>7 생산라벨</b></td><td class="c">-</td><td class="c">VW_PDA_WID_PRO_4LABEL</td><td class="c">32</td><td class="c">-</td><td class="c">미사용</td><td class="c">-</td><td class="c">-</td><td class="c"><span class="badge b-gray">개발 미진행</span></td></tr>
@@ -835,7 +836,7 @@
     <tr><td><b>1 생산</b></td><td>Oracle <span class="mono">VW_PDA_WID_PRO_LIST</span> 잔재 — 출하대상 JSP 1본 미전환 (ERP VIEW 답변 대기)</td><td class="c"><span class="badge b-wait">미전환</span></td></tr>
     <tr><td><b>2 홈플러스정량</b></td><td>인덱스 0~23 일치(검증 PASS) · <b>SM_수주상세 LEFT JOIN 행 팽창 WARN</b> (마트사SEQ 비유니크, 5·6 동일 패턴)</td><td class="c"><span class="badge b-done">PASS</span> <span class="badge b-wait">WARN</span></td></tr>
     <tr><td><b>3 도매</b></td><td>인덱스 0~23 · WHERE 실컬럼명(원료육여부='1') · 로컬DB 전수 일치</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
-    <tr><td><b>4 비정량(이마트)</b></td><td>인덱스 0~30 · 타입구분'B'(개발44)·M9(개발43) 반영 · GI_L_ID(Index30) 수신</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
+    <tr><td><b>4 비정량(이마트)</b></td><td>인덱스 0~30 · 타입구분'B'(개발44) 반영 · 바코드타입 M8/M9 조회조건 제외(2026-06-23) · GI_L_ID(Index30) 수신</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>5 홈플러스비정량</b></td><td>출하대상 인덱스 0~28 전수 일치 / 바코드정보 <span class="mono">B_ITEM</span> 잔재 미전환 · SM_수주상세 행 팽창 WARN</td><td class="c"><span class="badge b-done">출하 PASS</span> <span class="badge b-fail">바코드 미전환</span></td></tr>
     <tr><td><b>6 롯데</b></td><td>인덱스 0~25 · LAST_BOX_ORDER TOP 1 서브쿼리 구조 · 로컬DB 전수 일치 · SM_수주상세 행 팽창 WARN</td><td class="c"><span class="badge b-done">PASS</span></td></tr>
     <tr><td><b>7 생산(라벨)</b></td><td>생산라벨 화면 <b>개발 미진행</b> 결정 — 앱 미노출 · <span class="mono">search_production_4label.jsp</span> 구조 분석만 완료(2026-05-06)</td><td class="c"><span class="badge b-gray">개발 미진행</span></td></tr>
