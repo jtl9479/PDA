@@ -193,6 +193,9 @@
     
     <div class="pbody">
 
+      <div class="note" style="border-color:var(--green); background:var(--green-bg);">
+        <b>✅ 체크 표기 안내 (2026-06-24, 코드 정적 검증)</b> — 체크된 항목은 <b>소스/JSP 정적 분석으로 확인 완료</b>한 것입니다(WHERE 조건·컬럼 수·splitData/Index 매핑·JSP 분기·로직 존재·M8/M9 제거·ITEM_CODE 치환 등). 빈 항목은 <b>실기기·서버·DB·프린터 런타임 확인이 필요</b>합니다(실제 JSP 호출·INSERT·응답 수신·라벨 출력·바코드 스캔·앱 비정상 종료 등). 총 <b>37개 항목</b> 정적 확인 완료.
+      </div>
 
       <h3 class="sub">사전 조건</h3>
       <table>
@@ -250,23 +253,23 @@
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
           <tr><td class="num">1</td><td>① search_shipment.jsp 호출</td><td>서버 로그 "=========search_shipment============" 출력</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>① WHERE절 조건</td><td>마트사구분='7', 출고수량&gt;0, 타입구분='W', 회사코드, 출고일자, 창고코드 포함</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>① 응답 데이터 컬럼 수</td><td><code>receiveData</code> "::" 기준 31개 컬럼 (Index 0~30)</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>① GI_L_ID (Index 30)</td><td>LOT SEQ 정상 수신 (이마트·비정량만 LOT 사용)</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">5</td><td>① BL_NO (Index 8)</td><td>COALESCE(NULLIF(V.BLNO,''), V.이력번호) 폴백 값</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>① WHERE절 조건</td><td>마트사구분='7', 출고수량&gt;0, 타입구분='W', 회사코드, 출고일자, 창고코드 포함</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">3</td><td>① 응답 데이터 컬럼 수</td><td><code>receiveData</code> "::" 기준 31개 컬럼 (Index 0~30)</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">4</td><td>① GI_L_ID (Index 30)</td><td>LOT SEQ 정상 수신 (이마트·비정량만 LOT 사용)</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">5</td><td>① BL_NO (Index 8)</td><td>COALESCE(NULLIF(V.BLNO,''), V.이력번호) 폴백 값</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">6</td><td>① TB_SHIPMENT INSERT</td><td><code>insertqueryShipment</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">7</td><td>② search_barcode_info.jsp 호출</td><td><code>=========search_barcode_info start==========</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">8</td><td>② WHERE절</td><td><code>SBI.PPCODE = '...'</code> (TB_SHIPMENT의 PACKER_PRODUCT_CODE 기반)</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">9</td><td>② 응답 데이터</td><td>25개 컬럼 (";;" 행 구분)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>② 응답 데이터</td><td>25개 컬럼 (";;" 행 구분)</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">10</td><td>② TB_BARCODE_INFO INSERT</td><td><code>insertqueryBarcodeInfo</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">11</td><td>③ search_goods_wet.jsp 호출</td><td><code>=========search_goods_wet start=============</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">12</td><td>③ 응답 데이터</td><td>초회 조회 시 0건 (SM_출고계근 미계근 상태)</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">13</td><td>바코드 스캔</td><td>이마트 바코드 스캔 → 상품정보·중량 자동 추출 정상</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">14</td><td>중량 Round 처리</td><td>이마트 계근 중량 반올림(round) 적용 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">14</td><td>중량 Round 처리</td><td>이마트 계근 중량 반올림(round) 적용 확인</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">15</td><td>라벨 자동 인쇄</td><td>계근 완료 시 BIXOLON 프린터 이마트 양식 자동 출력</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">16</td><td>⑥ insert_goods_wet.jsp 호출</td><td>"=========insert_goods_wet start=============" 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">17</td><td>⑥ 전송 데이터 splitData[0]</td><td>GI_D_ID (출고상세SEQ) 정상</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">18</td><td>⑥ 전송 데이터 splitData[14]</td><td>GI_L_ID (출고LOTSEQ) 정상 (Index 14)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">17</td><td>⑥ 전송 데이터 splitData[0]</td><td>GI_D_ID (출고상세SEQ) 정상</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">18</td><td>⑥ 전송 데이터 splitData[14]</td><td>GI_L_ID (출고LOTSEQ) 정상 (Index 14)</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">19</td><td>⑥ SM_출고계근 INSERT</td><td>DB에 계근 레코드 정상 저장 확인</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">20</td><td>⑥ 응답</td><td>전송 성공 시 <code>"s"</code> 수신</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">21</td><td>계근완료 상태</td><td>해당 상품 계근완료 표시로 변경</td><td class="ck"><input type="checkbox"></td></tr>
@@ -318,7 +321,7 @@
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
           <tr><td class="num">1</td><td>수기 모드 선택</td><td>작업모드 "수기" 변경 후 수동 입력 필드 활성화</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">2</td><td>중량 수동 입력</td><td>키패드로 중량값 직접 입력 가능</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>중량 Round 처리</td><td>수기 입력 중량도 이마트 Round 처리 적용 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>중량 Round 처리</td><td>수기 입력 중량도 이마트 Round 처리 적용 확인</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">4</td><td>계근 처리</td><td>TB_GOODS_WET 로컬 INSERT 정상</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">5</td><td>라벨 출력</td><td>BIXOLON 이마트 양식 라벨 출력</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">6</td><td>계근 전송</td><td>insert_goods_wet.jsp → SM_출고계근 INSERT 정상</td><td class="ck"><input type="checkbox"></td></tr>
@@ -343,7 +346,7 @@
         <h4 class="lbl">확인 항목</h4>
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>ExpiryEnterActivity 자동 호출</td><td><b>수기 중량입력 확인 시</b>(수입육센터/KILKOY 미트센터 상품) 입력 화면 자동 전환 — 바코드 스캔 시 아님 (BixolonShipmentActivity:677·697)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">1</td><td>ExpiryEnterActivity 자동 호출</td><td><b>수기 중량입력 확인 시</b>(수입육센터/KILKOY 미트센터 상품) 입력 화면 자동 전환 — 바코드 스캔 시 아님 (BixolonShipmentActivity:677·697)</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">2</td><td>소비기한 입력 UI</td><td>날짜 입력 필드 표시 정상</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">3</td><td>날짜 입력 형식</td><td>허용 형식 입력 가능, 비허용 형식 방어 처리</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">4</td><td>확인 후 BixolonShipmentActivity 복귀</td><td>입력값 전달하여 계근 화면으로 정상 복귀</td><td class="ck"><input type="checkbox"></td></tr>
@@ -372,9 +375,9 @@
           <tr><td class="num">1</td><td>바코드 내 원본 중량</td><td>바코드에서 추출된 소수점 포함 중량값 로그 확인</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">2</td><td>Round 적용 중량 표시</td><td>화면에 반올림 처리된 중량값 표시</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">3</td><td>수기 입력 Round 적용</td><td>수기 입력 소수점 중량도 반올림 처리</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>전송 중량값</td><td>insert_goods_wet.jsp splitData[1] = 반올림 중량</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>전송 중량값</td><td>insert_goods_wet.jsp splitData[1] = 반올림 중량</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">5</td><td>SM_출고계근 저장값</td><td>DB 계근중량 컬럼에 반올림된 값 저장 확인</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">6</td><td>비정량(searchType=4)과 차이</td><td>비정량은 Round 미적용, 이마트만 적용 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>비정량(searchType=4)과 차이</td><td>비정량은 Round 미적용, 이마트만 적용 확인</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">7</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
         </table>
         <h4 class="lbl">로그 확인 명령어</h4>
@@ -420,11 +423,11 @@
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
           <tr><td class="num">1</td><td>insert_goods_wet.jsp 1건씩 호출</td><td>계근 건수만큼 순차 POST 요청 확인</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>전송 파라미터 splitData[0]</td><td>GI_D_ID (출고상세SEQ) 정상</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>전송 파라미터 splitData[1]</td><td>계근 중량 (round 처리값) 정상</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>전송 파라미터 splitData[2]</td><td>계근중량단위 정상</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">5</td><td>전송 파라미터 splitData[14]</td><td>GI_L_ID (출고LOTSEQ) 정상 (구로직 index 14)</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">6</td><td>전송 파라미터 splitData[10]</td><td>회사코드 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>전송 파라미터 splitData[0]</td><td>GI_D_ID (출고상세SEQ) 정상</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">3</td><td>전송 파라미터 splitData[1]</td><td>계근 중량 (round 처리값) 정상</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">4</td><td>전송 파라미터 splitData[2]</td><td>계근중량단위 정상</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">5</td><td>전송 파라미터 splitData[14]</td><td>GI_L_ID (출고LOTSEQ) 정상 (구로직 index 14)</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">6</td><td>전송 파라미터 splitData[10]</td><td>회사코드 정상</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">7</td><td>SM_출고계근 INSERT</td><td>NEXT VALUE FOR SM_DLIVY_WEIGH_SEQ 채번 정상</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">8</td><td>서버 응답 "s"</td><td>전송 성공 응답 확인</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">9</td><td>서버 응답 "f" 시</td><td>실패 응답 수신 시 오류 처리(롤백) 확인</td><td class="ck"><input type="checkbox"></td></tr>
@@ -504,8 +507,8 @@
         <h4 class="lbl">확인 항목</h4>
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>창고 선택 시 WHERE 조건</td><td><code>AND D.창고코드 = '...'</code> 조건 쿼리 로그 포함</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>창고 미선택 시 WHERE 조건</td><td>창고코드 조건 없이 전체 조회</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">1</td><td>창고 선택 시 WHERE 조건</td><td><code>AND D.창고코드 = '...'</code> 조건 쿼리 로그 포함</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">2</td><td>창고 미선택 시 WHERE 조건</td><td>창고코드 조건 없이 전체 조회</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">3</td><td>창고별 데이터 필터링</td><td>선택 창고에 해당하는 출고 데이터만 조회</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">4</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
         </table>
@@ -615,9 +618,9 @@
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
           <tr><td class="num">1</td><td>① search_production_nonfixed.jsp 호출</td><td>서버 로그 <code>===search_production_nonfixed========</code> 출력</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>① WHERE절 조건</td><td>마트사구분='7', 출고수량&gt;0, <code>COALESCE(M1.타입구분,M2.타입구분)='B'</code>, 회사코드, 출고일자 포함 (창고코드 조건 없음)</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>① 응답 데이터 컬럼 수</td><td>"::" 기준 31개 컬럼 (Index 0~30)</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>① GI_L_ID (Index 30)</td><td>SM_출고LOT L.SEQ → GI_L_ID 정상 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>① WHERE절 조건</td><td>마트사구분='7', 출고수량&gt;0, <code>COALESCE(M1.타입구분,M2.타입구분)='B'</code>, 회사코드, 출고일자 포함 (창고코드 조건 없음)</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">3</td><td>① 응답 데이터 컬럼 수</td><td>"::" 기준 31개 컬럼 (Index 0~30)</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">4</td><td>① GI_L_ID (Index 30)</td><td>SM_출고LOT L.SEQ → GI_L_ID 정상 수신</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">5</td><td>② search_barcode_info_nonfixed.jsp 호출</td><td><code>=========search_barcode_info_nonfixed start==========</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">6</td><td>③ search_goods_wet.jsp 호출</td><td>계근 내역 조회 로그 출력 (초회 0건)</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">7</td><td>바코드 스캔 / 중량</td><td>스캔 → 상품정보·중량 자동 추출 (Round 미적용)</td><td class="ck"><input type="checkbox"></td></tr>
@@ -643,10 +646,10 @@
         <h4 class="lbl">확인 항목</h4>
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>WHERE 타입구분 조건</td><td>쿼리 로그에 <code>COALESCE(M1.타입구분, M2.타입구분) = 'B'</code> 포함</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>M8/M9 IN 조건 미적용</td><td>쿼리 로그에 <code>바코드타입 IN ('M8','M9')</code> 조건 <b>없음</b> (주석 처리)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">1</td><td>WHERE 타입구분 조건</td><td>쿼리 로그에 <code>COALESCE(M1.타입구분, M2.타입구분) = 'B'</code> 포함</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">2</td><td>M8/M9 IN 조건 미적용</td><td>쿼리 로그에 <code>바코드타입 IN ('M8','M9')</code> 조건 <b>없음</b> (주석 처리)</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">3</td><td>M8/M9 외 품목 조회</td><td>바코드타입이 M8/M9가 아닌 타입구분 'B' 품목도 결과에 포함</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>BARCODE_TYPE (Index 18)</td><td>응답의 BARCODE_TYPE 컬럼에 다양한 바코드타입 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>BARCODE_TYPE (Index 18)</td><td>응답의 BARCODE_TYPE 컬럼에 다양한 바코드타입 수신</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">5</td><td>기존 M8/M9 품목 유지</td><td>M8/M9 품목도 누락 없이 조회</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
         </table>
@@ -668,10 +671,10 @@
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
           <tr><td class="num">1</td><td>첫 스캔</td><td>계근수량 1 정상 증가</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>동일 바코드 재스캔</td><td>"이미 스캔한 바코드입니다" Toast <b>없음</b> (중복확인 제외)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>동일 바코드 재스캔</td><td>"이미 스캔한 바코드입니다" Toast <b>없음</b> (중복확인 제외)</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">3</td><td>계근수량 누적</td><td>동일 바코드 반복 스캔 시 수량 2, 3 정상 누적</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">4</td><td>각 스캔 중량 반영</td><td>스캔마다 계근 중량 합계 정상 반영</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">5</td><td>정량(0)과 차이</td><td>정량은 중복 차단, 비정량은 반복 허용 확인</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>정량(0)과 차이</td><td>정량은 중복 차단, 비정량은 반복 허용 확인</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
         </table>
         <h4 class="lbl">로그 확인 명령어</h4>
@@ -691,10 +694,10 @@
         <h4 class="lbl">확인 항목</h4>
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>호출 JSP</td><td><b>search_barcode_info_nonfixed.jsp</b> 호출 (정량용 search_barcode_info.jsp 아님)</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>FROM 절</td><td><code>FROM CO_품목코드 SBI</code> 기준 조회</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>ITEM_CODE 치환</td><td>WHERE절 <code>SBI.ITEM_CODE</code> → <code>SBI.품목코드</code> 치환 적용</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>응답 컬럼 수</td><td>24개 컬럼 (";;" 행 구분)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">1</td><td>호출 JSP</td><td><b>search_barcode_info_nonfixed.jsp</b> 호출 (정량용 search_barcode_info.jsp 아님)</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">2</td><td>FROM 절</td><td><code>FROM CO_품목코드 SBI</code> 기준 조회</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">3</td><td>ITEM_CODE 치환</td><td>WHERE절 <code>SBI.ITEM_CODE</code> → <code>SBI.품목코드</code> 치환 적용</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">4</td><td>응답 컬럼 수</td><td>24개 컬럼 (";;" 행 구분)</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">5</td><td>TB_BARCODE_INFO INSERT</td><td><code>insertqueryBarcodeInfo</code> 로그 출력</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
         </table>
@@ -716,7 +719,7 @@
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
           <tr><td class="num">1</td><td>수기 모드 선택</td><td>작업모드 "수기" 변경 후 수동 입력 필드 활성화</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">2</td><td>중량 수동 입력</td><td>키패드로 중량값 직접 입력 가능</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>Round 미적용</td><td>입력한 소수점 중량 그대로 반영 (이마트 정량과 달리 반올림 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>Round 미적용</td><td>입력한 소수점 중량 그대로 반영 (이마트 정량과 달리 반올림 없음)</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">4</td><td>계근 처리</td><td>TB_GOODS_WET 로컬 INSERT 정상</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">5</td><td>라벨 출력</td><td>BIXOLON M8/M9 양식 라벨 출력</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">6</td><td>계근 전송</td><td>insert_goods_wet_new.jsp("##" 배치) → SM_출고계근 INSERT 정상</td><td class="ck"><input type="checkbox"></td></tr>
@@ -762,9 +765,9 @@
         <h4 class="lbl">확인 항목</h4>
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>insert_goods_wet_new.jsp 호출</td><td>구로직 insert_goods_wet.jsp 아닌 <b>신로직</b> 호출</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>배치 전송 ("##")</td><td>복수 계근 건을 "##" 구분자로 묶어 1회 POST</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>건별 필드 ("::")</td><td>각 배치 항목 내부는 "::" 필드 구분</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">1</td><td>insert_goods_wet_new.jsp 호출</td><td>구로직 insert_goods_wet.jsp 아닌 <b>신로직</b> 호출</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">2</td><td>배치 전송 ("##")</td><td>복수 계근 건을 "##" 구분자로 묶어 1회 POST</td><td class="ck"><input type="checkbox" checked></td></tr>
+          <tr><td class="num">3</td><td>건별 필드 ("::")</td><td>각 배치 항목 내부는 "::" 필드 구분</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">4</td><td>SM_출고계근 INSERT</td><td>배치 건수만큼 계근 레코드 정상 저장</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">5</td><td>서버 응답</td><td>전송 성공 응답 수신</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">6</td><td>전송 후 화면</td><td>계근완료 상태 갱신</td><td class="ck"><input type="checkbox"></td></tr>
@@ -785,9 +788,9 @@
         <h4 class="lbl">확인 항목</h4>
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>① GI_L_ID 수신 (Index 30)</td><td>SM_출고LOT L.SEQ → GI_L_ID 정상 수신</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">1</td><td>① GI_L_ID 수신 (Index 30)</td><td>SM_출고LOT L.SEQ → GI_L_ID 정상 수신</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">2</td><td>TB_SHIPMENT 보존</td><td>로컬 저장 시 GI_L_ID 값 유지</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>⑥ 전송 GI_L_ID</td><td>insert_goods_wet_new.jsp 배치 페이로드에 GI_L_ID(출고LOTSEQ) 포함</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>⑥ 전송 GI_L_ID</td><td>insert_goods_wet_new.jsp 배치 페이로드에 GI_L_ID(출고LOTSEQ) 포함</td><td class="ck"><input type="checkbox" checked></td></tr>
           <tr><td class="num">4</td><td>SM_출고계근 저장</td><td>DB 출고LOTSEQ 컬럼에 GI_L_ID 정상 저장</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
         </table>
