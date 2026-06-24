@@ -334,15 +334,16 @@
         <h3><span class="sn">시나리오 4</span> 수입육 소비기한 수기입력 (ExpiryEnterActivity)</h3>
         <h4 class="lbl">절차</h4>
         <pre class="proc">1. 출하대상받기 완료 후 BixolonShipmentActivity 진입
-2. 수입육 등 소비기한 필요 상품 바코드 스캔
-3. ExpiryEnterActivity 자동 호출 확인
-4. 소비기한(유통기한) 날짜 수기 입력
-5. 확인 후 계근 처리 확인
-6. 입력한 소비기한이 라벨에 반영되는지 확인</pre>
+2. 소비기한 대상 상품 선택 — 수입육센터(TRD/WET/ET) 납품 또는 KILKOY 미트센터(패커코드 30228·스토어 9231) 상품
+3. 작업모드 "수기"로 중량 직접 입력 후 확인  (★바코드 스캔이 아니라 "수기 중량입력 확인" 시 호출됨)
+4. ExpiryEnterActivity 소비기한 입력창 자동 호출 확인
+5. 소비기한(유통기한) 날짜 입력 → 확인 후 계근 화면 복귀
+6. 입력한 소비기한이 계근데이터/라벨에 반영되는지 확인
+※ 바코드 스캔 경로에서는 입력창이 뜨지 않으며, 미트센터/트레이더스 상품에 소비기한 정보가 없으면 "소비기한정보 필수" Toast로 계근이 차단됨</pre>
         <h4 class="lbl">확인 항목</h4>
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>ExpiryEnterActivity 자동 호출</td><td>소비기한 필요 상품 스캔 시 입력 화면 자동 전환</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">1</td><td>ExpiryEnterActivity 자동 호출</td><td><b>수기 중량입력 확인 시</b>(수입육센터/KILKOY 미트센터 상품) 입력 화면 자동 전환 — 바코드 스캔 시 아님 (BixolonShipmentActivity:677·697)</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">2</td><td>소비기한 입력 UI</td><td>날짜 입력 필드 표시 정상</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">3</td><td>날짜 입력 형식</td><td>허용 형식 입력 가능, 비허용 형식 방어 처리</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">4</td><td>확인 후 BixolonShipmentActivity 복귀</td><td>입력값 전달하여 계근 화면으로 정상 복귀</td><td class="ck"><input type="checkbox"></td></tr>
