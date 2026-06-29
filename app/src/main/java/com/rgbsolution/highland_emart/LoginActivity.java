@@ -123,10 +123,14 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
 
-            // 조회 실패 시 기본값
+            // 조회 0건: 안내 다이얼로그 표시, Spinner는 빈 상태 유지
             if (Common.warehouseNames.isEmpty()) {
-                Common.warehouseNames.add("삼일냉장");
-                Common.warehouseCodes.add("1");
+                new AlertDialog.Builder(LoginActivity.this)
+                    .setTitle("창고 목록 없음")
+                    .setMessage("등록된 PDA 사용 창고가 없습니다.\nERP 창고관리(C0114)에서 PDA여부를 설정하세요.")
+                    .setPositiveButton("확인", null)
+                    .show();
+                return;  // Spinner 구성 생략 — selectWarehouse/Code는 "" 상태 유지
             }
 
             // Spinner 구성
@@ -157,6 +161,13 @@ public class LoginActivity extends AppCompatActivity {
         switch (v.getId()) {
             case R.id.btnLogin:
 
+                // 창고 목록 비어있음 검증 (0건 조회 시 로그인 차단)
+                if (Common.warehouseNames.isEmpty()) {
+                    Toast.makeText(LoginActivity.this,
+                        "등록된 PDA 사용 창고가 없습니다.\nERP 창고관리(C0114)에서 PDA여부를 설정하세요.",
+                        Toast.LENGTH_LONG).show();
+                    break;
+                }
                 if (("").equals(editID.getText().toString())) {
                     editID.setError("아이디를 입력하세요.");
                     break;
