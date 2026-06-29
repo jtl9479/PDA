@@ -59,9 +59,25 @@
       "Bash(git checkout:*)",
       "Bash(ipconfig)",
       "Skill(keybindings-help)",
-      "Skill(claude-api)"
+      "Skill(claude-api)",
+      "PowerShell(git checkout *)",
+      "PowerShell(git *)",
+      "mcp__notion"
     ],
     "deny": [],
     "ask": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/notion_doc_sync.py\""
+          }
+        ]
+      }
+    ]
   }
 }

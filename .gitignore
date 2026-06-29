@@ -16,3 +16,6 @@
 *.tmp
 node_modules/
 *.apk
+# Notion 동기화 로컬 상태/로그
+.claude/notion_sync_state.json
+.claude/notion_sync.log

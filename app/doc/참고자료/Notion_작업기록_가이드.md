@@ -116,6 +116,46 @@
 
 ---
 
+## 8. Notion 파일 첨부 (업로드 API)
+
+Notion MCP에는 파일 업로드 도구가 없어, 로컬 파일을 페이지에 첨부하려면 **Notion File Upload API**를 사용한다. (PDA·WEBERP 등 전 프로젝트 공통 방식)
+
+### 8.1 사전 준비 (1회)
+
+- Notion 인테그레이션 생성(https://www.notion.so/my-integrations) → **Internal Integration Secret(토큰)** 발급.
+- 첨부 대상 페이지(또는 상위 폴더)를 인테그레이션과 **연결**(`···` → 연결). 상위(회사)에 연결하면 하위 전부 접근 가능.
+- ⚠️ 토큰은 비밀값 → 메모리/파일/커밋에 저장하지 않는다. 사용자가 매번 제공하며, 작업 후 재발급/삭제 권장.
+
+### 8.2 업로드 절차 (curl 3단계)
+
+```
+# ① 업로드 슬롯 생성 → upload_id
+POST https://api.notion.com/v1/file_uploads
+  Header: Authorization: Bearer <TOKEN>, Notion-Version: 2022-06-28
+  Body:   {"filename":"<파일명>","content_type":"<MIME>"}
+
+# ② 파일 전송 (단일 업로드 ≤20MB)
+POST https://api.notion.com/v1/file_uploads/<upload_id>/send
+  Header: Authorization, Notion-Version
+  Form:   file=@<로컬경로>;type=<MIME>     → status: uploaded
+
+# ③ 페이지에 첨부 블록 추가
+PATCH https://api.notion.com/v1/blocks/<page_id>/children
+  Body:   {"children":[{"type":"file","file":{"type":"file_upload","file_upload":{"id":"<upload_id>"}}}]}
+```
+
+- 20MB 초과 시 multi-part 업로드 필요.
+- 접근 확인: `GET /v1/pages/<page_id>` 가 200이면 연결 정상(404면 연결 필요).
+- ⚠️ **한글(비ASCII) 파일명 주의**: Windows에서 curl로 보내면 한글 바이트가 손상되어 파일명이 `03___.html`처럼 깨진다. **한글 파일명이 포함되면 curl 대신 Python(urllib, UTF-8 인코딩)으로 업로드**한다. 이미 깨졌으면 `PATCH /v1/blocks/<block_id>` 로 `{"file":{"name":"<원본명>"}}` 를 Python(UTF-8)으로 재설정해 복구. (영문/숫자 파일명만이면 curl 무방)
+
+### 8.3 문서 작성 시 파일 첨부 규칙
+
+- **문서 작성 작업**은 작업 기록 행 등록에 더해, 해당 행 페이지(`<page_id>`)에 **작성한 문서 파일을 첨부**한다.
+- 토큰이 없으면 사용자에게 요청하고, 받기 전까지는 행만 등록한 뒤 토큰 확보 시 첨부한다.
+- 토큰은 저장하지 않으므로 첨부 작업마다 사용자가 제공한다.
+
+---
+
 ## 관련 문서
 
 - 메모리: `feedback_notion_worklog` — 동일 규칙의 메모리 요약본
