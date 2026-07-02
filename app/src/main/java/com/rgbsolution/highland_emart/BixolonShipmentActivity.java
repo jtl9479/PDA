@@ -382,6 +382,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
     /** setBarcodeMsg 마지막 처리 시각 (중복 호출 방지용) */
     private long lastBarcodeProcessedTime = 0;
+    /** setBarcodeMsg 마지막 처리 바코드 값 (같은 바코드 여부 판별용) */
+    private String lastProcessedBarcode = "";
     /** 중복 처리 방지 간격 (ms) - 같은 바코드 처리 후 1초 이내 재처리 차단 */
     private static final long BARCODE_PROCESS_DEBOUNCE_MS = 1000;
 
@@ -1139,12 +1141,14 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             if (dialog_flag)
                 return;
 
-            // 중복 호출 방지: 동일 바코드가 1초 이내 재처리되면 무시
+            // 중복 호출 방지: 동일 바코드가 1초 이내 재처리되면 무시 (다른 바코드는 통과)
             long now = System.currentTimeMillis();
-            if ((now - lastBarcodeProcessedTime) < BARCODE_PROCESS_DEBOUNCE_MS) {
+            if (msg != null && msg.equals(lastProcessedBarcode)
+                    && (now - lastBarcodeProcessedTime) < BARCODE_PROCESS_DEBOUNCE_MS) {
                 Log.d(TAG, "setBarcodeMsg 중복 호출 무시 (디바운싱)");
                 return;
             }
+            lastProcessedBarcode = msg;
             lastBarcodeProcessedTime = now;
 
             Log.e(TAG, "========================setBarcodeMsg 시작======================");
@@ -1204,6 +1208,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                 if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
                                     show_wetFinishDialog();
                                 }
+                                lastBarcodeProcessedTime = 0;   // 의도된 재귀 호출은 디바운스 우회
                                 setBarcodeMsg(msg);
                             }
                         } else if (!work_ppcode.equals(find_ppcode)) {                                   // 작업 중이고, 다른 상품을 스캔했을 경우
@@ -2379,6 +2384,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      */
     class ProgressDlgShipSelectBL extends AsyncTask<Integer, String, Integer> {
         private Context mContext;
+
+
         private String center_name;
         private String bl_no;
 
@@ -2389,8 +2396,10 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
 
         @Override
+
         protected void onPreExecute() {
             pDialog = new ProgressDialog(mContext);
+
             pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             pDialog.setTitle("출하대상 불러오는중...");
             pDialog.setMessage("잠시만 기다려 주세요..");
