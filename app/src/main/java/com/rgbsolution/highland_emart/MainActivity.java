@@ -155,6 +155,12 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
+        // 계근내역 삭제 - 전체 계근내역 삭제 다이얼로그 (프린터설정 7회 클릭 숨김 기능과 동일 동작)
+        if (id == R.id.action_delete_goodswet) {
+            showDeleteGoodsWetDialog();
+            return true;
+        }
+
         // 날짜 설정 메뉴 - DatePickerDialog 표시
         if (id == R.id.action_daysettings) {
             new DatePickerDialog(MainActivity.this,date,calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
@@ -162,6 +168,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 전체 계근내역 삭제 다이얼로그 표시
+     * <p>
+     * 프린터설정(SettingActivity) 이미지 7회 클릭 숨김 기능과 동일한 동작.
+     * 확인 시 로컬 DB의 전체 계근내역(TB_GOODS_WET)을 삭제한다.
+     * </p>
+     */
+    private void showDeleteGoodsWetDialog() {
+        new AlertDialog.Builder(MainActivity.this, R.style.AppCompatDialogStyle)
+                .setIcon(R.drawable.highland)
+                .setTitle(getResources().getString(R.string.app_name))
+                .setMessage("전체계근내역을 삭제 하시겠습니까?")
+                .setCancelable(false)
+                .setPositiveButton("삭제", (dialog, which) -> {
+                    DBHandler.deletequeryAllGoodsWet(getApplicationContext());
+                    Toast.makeText(getApplicationContext(), "전체계근내역이 삭제 되었습니다.", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton(getString(R.string.exit_no), null)
+                .show();
     }
 
     /**
