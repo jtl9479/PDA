@@ -122,7 +122,8 @@ LEFT JOIN 월품목별재고화일_LOT별_VIEW V
 오류패턴_분석.md 공통 체크 13번 항목("LEFT JOIN 대상 테이블에 1:N 관계 발생 가능성 확인") 참조.
 
 ## 상태
-- [ ] 미수정
+- [x] 수정 완료 (커밋 dce6722 "54_search_shipment_V뷰_년월조건_추가" — 이마트 search_shipment.jsp에 `AND V.년월 = LEFT(D.출고일자, 6)` 조건 추가)
+  - 참고: 동일 패턴이 홈플러스 search_shipment_homeplus.jsp에는 미반영 → 오류 32번으로 별도 문서화
 
 ## 관련 문서
 - `app/doc/오류/15_GI_D_ID_LOT별_미분리_계근수량_중복표시.md` — 동류 오류 (재고LOT뷰 중복 → 계근수량 부풀림)
