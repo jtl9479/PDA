@@ -11,7 +11,8 @@ public class Common {
     // 베이스 URL (서버 변경 시 여기만 수정)
     // public static final String BASE_URL = "http://175.120.155.125:4040/inno";  // 운영서버
     //public static final String BASE_URL = "http://49.50.173.44:4040/inno";  // 개발서버
-    public static final String BASE_URL = "http://192.168.0.28:4040/inno";      // 로컬
+    //public static final String BASE_URL = "http://192.168.0.28:4040/inno";      // 로컬
+    public static final String BASE_URL = "http://183.101.157.205:4040/inno";    // 로컬(외부/포트포워딩)
 
 
     // URL 변수
@@ -26,8 +27,10 @@ public class Common {
     public static final String URL_SEARCH_BARCODE_INFO = BASE_URL + "/search_barcode_info.jsp";
     public static final String URL_SEARCH_BARCODE_INFO_NONFIXED = BASE_URL + "/search_barcode_info_nonfixed.jsp";
     public static final String URL_SEARCH_GOODS_WET = BASE_URL + "/search_goods_wet.jsp";
+    public static final String URL_SEARCH_GOODS_WET_PRODUCTION = BASE_URL + "/search_goods_wet_production.jsp";
     public static final String URL_INSERT_GOODS_WET = BASE_URL + "/insert_goods_wet.jsp";
     public static final String URL_INSERT_GOODS_WET_NEW = BASE_URL + "/insert_goods_wet_new.jsp";
+    public static final String URL_INSERT_GOODS_WET_PRODUCTION = BASE_URL + "/insert_goods_wet_production.jsp";
     public static final String URL_INSERT_GOODS_WET_HOMEPLUS = BASE_URL + "/insert_goods_wet_homeplus.jsp";
     public static final String URL_INSERT_BARCODE_INFO = BASE_URL + "/insert_barcode_info.jsp";
     public static final String URL_UPDATE_BARCODE_INFO = BASE_URL + "/update_barcode_info.jsp";

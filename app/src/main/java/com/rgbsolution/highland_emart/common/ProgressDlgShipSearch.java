@@ -67,6 +67,16 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
         mContext = context;
     }
 
+    //onPreExecute() -> doInBackground() -> onPostExecute()
+    /*
+    execute()
+       ↓
+    onPreExecute()     :74   "대상 조회중 입니다." 다이얼로그 표시   [UI 스레드]
+       ↓
+    doInBackground()   :94   JSP 호출 → 파싱 → TB_SHIPMENT 저장    [워커 스레드]
+       ↓
+    onPostExecute()          다이얼로그 닫기 + 결과 표시            [UI 스레드]
+     */
     /**
      * 백그라운드 작업 시작 전 실행 (UI 스레드)
      * - 로딩 다이얼로그 표시
@@ -86,7 +96,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
      * 백그라운드 작업 실행 (백그라운드 스레드)
      * - 서버에서 출하대상 데이터 다운로드
      * - 응답 데이터 파싱 및 DB 저장
-     *
+     * execute() 호출시 자동 실행
      * @param params 사용하지 않음
      * @return 0 (성공)
      */
@@ -122,6 +132,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
                 // 서버 API 호출 (DB: inno)
                 receiveData = HttpHelper.getInstance().sendDataDb(data, "inno", "search_shipment", Common.URL_SEARCH_SHIPMENT);
                 Log.d(TAG, "============== 출하리스트 조회조건 : " + data + "================");
+
 
             // ----- searchType "1": 생산 계근 (이노이천) -----
             }else if(Common.searchType.equals("1")){
@@ -270,6 +281,14 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
                         si.setSTORE_CODE(temp[28].toString());       // 점포코드
                         si.setEMART_PLANT_CODE(temp[29].toString()); // 이마트공장코드
                         si.setGI_L_ID(temp[30].toString());          // 출고LOTSEQ
+
+                    // 홈플러스(2): 추가 1개 필드 (GI_L_ID)
+                    } else if(Common.searchType.equals("2")) {
+                        si.setGI_L_ID(temp[24].toString());          // 출고LOTSEQ
+
+                    // 생산(1): 추가 1개 필드 (GI_L_ID = 생산작업지시SEQ)
+                    } else if(Common.searchType.equals("1")) {
+                        si.setGI_L_ID(temp[24].toString());          // 생산작업지시SEQ
 
                     // 홈플러스 비정량(5): 추가 5개 필드
                     } else if(Common.searchType.equals("5")) {

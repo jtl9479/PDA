@@ -73,7 +73,12 @@ public class ProgressDlgGoodsWetSearch extends AsyncTask<Integer, String, Intege
             Log.i(TAG, "Wet GI_D_ID List : " + data);
 
             // 디비접속 설정
-            receiveData = HttpHelper.getInstance().sendDataDb(data, "inno", "search_goods_wet", Common.URL_SEARCH_GOODS_WET);
+            // 생산(1), 생산라벨(7) : 계근 이력이 PD_생산계근에 적재되므로 전용 JSP 사용
+            if(Common.searchType.equals("1") || Common.searchType.equals("7")) {
+                receiveData = HttpHelper.getInstance().sendDataDb(data, "inno", "search_goods_wet", Common.URL_SEARCH_GOODS_WET_PRODUCTION);
+            } else {
+                receiveData = HttpHelper.getInstance().sendDataDb(data, "inno", "search_goods_wet", Common.URL_SEARCH_GOODS_WET);
+            }
 
             //결과값의 앞, 뒤에 공백 제거
             receiveData = receiveData.replace("\r\n", "");
