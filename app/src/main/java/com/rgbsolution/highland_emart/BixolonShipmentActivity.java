@@ -468,7 +468,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             }
         });
 
-
         sp_center_name = (Spinner) findViewById(sp_center);
 
         Common.list_center_info = DBHandler.selectqueryCenterList(this);
@@ -510,6 +509,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             Toast.makeText(this, R.string.toast_bt_na, Toast.LENGTH_LONG).show();
             finish();
             return;
+
+
         }
         Log.i(TAG, "***********************onCreate 끝 " );
 
@@ -529,6 +530,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
     @Override
     protected void onStart() {
+
         super.onStart();
         Log.i(TAG, TAG + " onStart");
         // 출하대상 불러오기 끝, Print 연결 시작
@@ -556,6 +558,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
             // Otherwise, setup the chat session
+
         } else {
             if (Common.printer_setting && !Common.searchType.equals(SEARCH_TYPE_PRODUCTION)) {  //메인화면 프린터설정에서 ON으로 하면 아래 로직을 탄다, 이노이천에서 생산 계근일떄는 물어보지 않도록 변경
                 if (mBixolonPrinter == null) {
@@ -1137,17 +1140,25 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * @param msg 스캔된 바코드 문자열
      */
     public void setBarcodeMsg(final String msg) {
+        // 생산(searchType=1) : 전용 메서드로 분리 (개발60)
+        if (Common.searchType.equals(SEARCH_TYPE_PRODUCTION)) {
+            setBarcodeMsgProduction(msg);
+            return;
+        }
+
         try {
             if (dialog_flag)
                 return;
 
             // 중복 호출 방지: 동일 바코드가 1초 이내 재처리되면 무시 (다른 바코드는 통과)
             long now = System.currentTimeMillis();
+
             if (msg != null && msg.equals(lastProcessedBarcode)
                     && (now - lastBarcodeProcessedTime) < BARCODE_PROCESS_DEBOUNCE_MS) {
                 Log.d(TAG, "setBarcodeMsg 중복 호출 무시 (디바운싱)");
                 return;
             }
+
             lastProcessedBarcode = msg;
             lastBarcodeProcessedTime = now;
 
@@ -1158,6 +1169,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 Log.e(TAG, "========================상품스캔======================" + work_flag);
                 try {
                     String find_ppcodetemp = "";
+
                     if (work_flag == 1) {
                         Log.e(TAG, "========================상품바코드스캔1======================");
                         find_ppcodetemp = find_PackerProduct(msg);
@@ -1169,6 +1181,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     }
                     Log.e(TAG, "========================바코드 정보가져옴======================");
                     final String find_ppcode = find_ppcodetemp;
+
                     if (find_ppcode.equals("null")) {
                         Toast.makeText(getApplicationContext(), "패커상품이 존재하지않거나,\n바코드가 정확하지 않습니다.", Toast.LENGTH_SHORT).show();
                         vibrator.vibrate(1000);
@@ -1208,6 +1221,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                 if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
                                     show_wetFinishDialog();
                                 }
+
                                 lastBarcodeProcessedTime = 0;   // 의도된 재귀 호출은 디바운스 우회
                                 setBarcodeMsg(msg);
                             }
@@ -1216,6 +1230,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             Log.i(TAG, "작업 중 다른 상품 스캔 !");
                             vibrator.vibrate(500);
                             dialog_flag = true;
+
                             new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
                                     .setIcon(R.drawable.highland)
                                     .setTitle(R.string.shipment_wet_other)
@@ -1529,6 +1544,296 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
+    /**
+     * 생산(searchType=1) 전용 바코드 처리 (개발60)
+     * <p>
+     * setBarcodeMsg()에서 생산만 분리한 메서드. 생산이 타지 않는 분기를 제외해
+     * 유지보수를 쉽게 하고, 다른 searchType 수정 시 영향을 받지 않도록 한다.
+     * </p>
+     *
+     * <h3>제외된 분기 (생산 미해당)</h3>
+     * <ul>
+     *   <li>비정량(4,5) 중복검사 우회 2곳</li>
+     *   <li>킬코이 미트센터 소비기한 검증 (PACKER_CODE / STORE_CODE 미사용)</li>
+     *   <li>CENTERNAME TRD/E/T/WET 소비기한 검증 ('하이랜드푸드' 고정)</li>
+     *   <li>ITEM_TYPE W / HW (생산 VIEW 미출력)</li>
+     *   <li>ITEM_TYPE B (홈플러스 비정량 전용)</li>
+     *   <li>이마트 LB 환산 자릿수 분기 (searchType==0 전용)</li>
+     * </ul>
+     *
+     * <h3>처리 흐름</h3>
+     * <ol>
+     *   <li>디바운스 (동일 바코드 1초)</li>
+     *   <li>1차 패커상품 스캔 → 대상 확정</li>
+     *   <li>2차 BL 스캔 → 중복검사</li>
+     *   <li>중량 추출 (ITEM_TYPE S / J)</li>
+     *   <li>wet_data_insert()</li>
+     * </ol>
+     *
+     * @param msg 스캔된 바코드 문자열
+     * @see #setBarcodeMsg(String)
+     */
+    public void setBarcodeMsgProduction(final String msg) {
+        try {
+            if (dialog_flag)
+                return;
+
+            // 중복 호출 방지: 동일 바코드가 1초 이내 재처리되면 무시 (다른 바코드는 통과)
+            long now = System.currentTimeMillis();
+
+            if (msg != null && msg.equals(lastProcessedBarcode)
+                    && (now - lastBarcodeProcessedTime) < BARCODE_PROCESS_DEBOUNCE_MS) {
+                Log.d(TAG, "setBarcodeMsgProduction 중복 호출 무시 (디바운싱)");
+                return;
+            }
+
+            lastProcessedBarcode = msg;
+            lastBarcodeProcessedTime = now;
+
+            Log.e(TAG, "========================setBarcodeMsgProduction 시작======================");
+
+            edit_barcode.setText(msg);
+            if (scan_flag) { // 패커상품 스캔
+                Log.e(TAG, "========================상품스캔======================" + work_flag);
+                try {
+                    String find_ppcodetemp = "";
+
+                    if (work_flag == 1) {
+                        Log.e(TAG, "========================상품바코드스캔1======================");
+                        find_ppcodetemp = find_PackerProduct(msg);
+                        Log.e(TAG, "========================상품바코드스캔1 ppcode ======================" + find_ppcodetemp);
+                    }else {
+                        Log.e(TAG, "========================상품코드스캔2======================");
+                        find_ppcodetemp = find_PackerProductBarcodeGoods(msg);
+                        Log.e(TAG, "========================상품코드스캔2 ppcode ======================" + find_ppcodetemp);
+                    }
+                    Log.e(TAG, "========================바코드 정보가져옴======================");
+                    final String find_ppcode = find_ppcodetemp;
+
+                    if (find_ppcode.equals("null")) {
+                        Toast.makeText(getApplicationContext(), "패커상품이 존재하지않거나,\n바코드가 정확하지 않습니다.", Toast.LENGTH_SHORT).show();
+                        vibrator.vibrate(1000);
+                        work_item_fullbarcode = "";
+                        work_item_barcodegoods = "";
+                    } else {
+                        if (work_ppcode.equals("")) {
+                            // 최초 스캔일 경우
+                            Log.e(TAG, "========================최초 스캔11======================");
+                            Log.e(TAG, "========================find_ppcode test!!======================"+find_ppcode);
+                            work_ppcode = find_ppcode;
+                            work_item_fullbarcode = msg;
+                            new ProgressDlgShipSelect(this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
+                        } else if (!work_ppcode.equals("") && work_ppcode.equals(find_ppcode)) {         // 작업 중이고, 같은 상품을 스캔했을 경우
+                            work_item_fullbarcode = msg;
+                            Log.e("바코드", "" + work_item_fullbarcode);
+                            boolean dup = DBHandler.duplicatequeryGoodsWet_check(getApplicationContext(), work_item_fullbarcode);
+
+                            if (dup) {
+                                Log.e(TAG, "=====================오류지점1=========================");
+                                Toast.makeText(getApplicationContext(), "이미 스캔한 바코드입니다.\n다른 바코드를 스캔하세요.", Toast.LENGTH_SHORT).show();
+                                vibrator.vibrate(1000);
+                                work_item_fullbarcode = "";
+                                work_item_barcodegoods = "";
+                                return;
+                            } else{
+                                Log.e(TAG, "=====================상품스캔일반=========================");
+                                set_scanFlag(false);        // BL스캔 시작
+                                work_ppcode = find_ppcode;
+                                work_item_fullbarcode = msg;
+
+                                if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
+                                    show_wetFinishDialog();
+                                }
+
+                                lastBarcodeProcessedTime = 0;   // 의도된 재귀 호출은 디바운스 우회
+                                setBarcodeMsgProduction(msg);
+                            }
+                        } else if (!work_ppcode.equals(find_ppcode)) {                                   // 작업 중이고, 다른 상품을 스캔했을 경우
+                            Log.e(TAG, "=====================작업중다른상품스캔=========================");
+                            Log.i(TAG, "작업 중 다른 상품 스캔 !");
+                            vibrator.vibrate(500);
+                            dialog_flag = true;
+
+                            new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+                                    .setIcon(R.drawable.highland)
+                                    .setTitle(R.string.shipment_wet_other)
+                                    .setMessage(R.string.shipment_wet_other_msg)
+                                    .setCancelable(false)
+                                    .setPositiveButton(R.string.shipment_wet_yes, (dialog, which) -> {
+                                        dialog_flag = false;
+                                        work_ppcode = find_ppcode;
+                                        work_item_fullbarcode = msg;
+                                        new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
+                                    })
+                                    .setNegativeButton(R.string.shipment_wet_no, (dialog, which) -> {
+                                        dialog_flag = false;
+                                    })
+                                    .show();
+                        }
+                    }
+                } catch (Exception ex) {
+                    Log.e(TAG, "setBarcodeMsgProduction's 패커상품 스캔 Exception -> " + ex.getMessage().toString());
+                }
+            } else {//BL스캔
+                Log.e(TAG, "========================BL스캔======================" + sp_bl_no.getItemAtPosition(sp_bl_no.getSelectedItemPosition()).toString());
+
+                work_item_fullbarcode = msg;
+
+                try {
+                    if (true) {
+                        String temp_bl_no = sp_bl_no.getItemAtPosition(sp_bl_no.getSelectedItemPosition()).toString();
+                        for (int i = 0; i < arSM.size(); i++) {
+                            if (temp_bl_no.equals(arSM.get(i).getBL_NO()) && !arSM.get(i).getGI_REQ_PKG().equals(String.valueOf(arSM.get(i).getPACKING_QTY()))) {
+                                // BL번호 같은 상품 검색 완료
+                                current_work_position = i;
+
+                                Log.e(TAG, "========================current_work_position======================" + i);
+
+                                work_bl_no = temp_bl_no;
+
+                                Log.e(TAG, "========================work_bl_no======================" + work_bl_no);
+
+                                break;
+                            } else {
+                                work_bl_no = "";
+                                current_work_position = -1;
+                            }
+                        }
+
+                        expiryDayTrans = ""; //일단 스캔할 때 마다 초기화
+
+                        Log.e(TAG, "========================TEST TEST======================" + arSM.get(current_work_position).getCENTERNAME()); //센터 선택하고 스캔할떄 여기 탐
+
+                        if (current_work_position == -1) {
+                            Toast.makeText(getApplicationContext(), "해당하는 BL상품이 없습니다.\nBL번호를 확인해주세요.", Toast.LENGTH_SHORT).show();
+                            vibrator.vibrate(300);
+                            return;
+                        } else {
+                            sp_point_name.setSelection(current_work_position);
+                        }
+
+                        sList.setSelection(current_work_position);      // 현재 계근지점으로 위치 변경
+
+                        if (arSM.get(current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.get(current_work_position).getPACKING_QTY()))) {
+                            if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
+                                show_wetFinishDialog();
+                            }
+                            return;
+                        }
+
+                        Log.e(TAG, "=====================work_item_fullbarcode=========================" + work_item_fullbarcode);
+                        Log.e(TAG, "=====================arSM.get(current_work_position).getGI_D_ID()=========================" + arSM.get(current_work_position).getGI_D_ID());
+                        Log.e(TAG, "=====================arSM.get(current_work_position).getPACKER_PRODUCT_CODE()=========================" + arSM.get(current_work_position).getPACKER_PRODUCT_CODE());
+
+                        boolean dup = DBHandler.duplicatequeryGoodsWet(getApplicationContext(), work_item_fullbarcode,
+                                arSM.get(current_work_position).getGI_D_ID(), arSM.get(current_work_position).getPACKER_PRODUCT_CODE(), arSM.get(current_work_position).getGI_L_ID());
+
+                        // 개발60 Step3 : 비정량(4,5) 중복검사 우회 분기 삭제 (생산 미해당)
+
+                        Log.e(TAG, "=====================체크1=========================" + arSM.get(current_work_position).getPACKER_CODE());
+                        Log.e(TAG, "=====================체크2=========================" + arSM.get(current_work_position).getSTORE_CODE());
+                        Log.e(TAG, "=====================체크3=========================" + work_item_bi_info.getSHELF_LIFE());
+
+                        if (dup) {
+                            Log.e(TAG, "=====================오류지점2=========================");
+                            Toast.makeText(getApplicationContext(), "이미 스캔한 바코드입니다.\n다른 바코드를 스캔하세요.", Toast.LENGTH_SHORT).show();
+                            vibrator.vibrate(1000);
+                            work_item_fullbarcode = "";
+                            work_item_barcodegoods = "";
+                            return;
+                        }
+
+                        Goodswets_Info gi = new Goodswets_Info();
+                        Log.i(TAG, "## 패커상품코드 & BL번호 확인 완료. 계근 시작 ##");
+                        Log.i(TAG, "현재 계근할 FULL 바코드                     : " + work_item_fullbarcode);
+                        Log.i(TAG, "현재 계근할 바코드의 BarcodeGodos            : " + work_item_barcodegoods);
+                        /*
+                         * 계근 필드값
+                         */
+                        String item_weight = "";            // 상품 최초 중량 절사값(XXXX)
+                        Double item_weight_double = 0.0;    // 상품 Double 중량값
+                        String item_weight_str = "";        // 상품 String 중량값
+
+                        double item_pow = 0;              // 상품 zeroPoint에 대한 pow
+
+                        String item_making_date = "";       // 상품 제조일
+                        String item_box_serial = "";        // 상품 박스시리얼
+                        /*
+                         *      중량(LB체크) / 제조일 / 박스번호 Find
+                         */
+                        Log.d(TAG, "******************current_work_position:" + arSM.get(current_work_position).getITEM_TYPE());
+
+                        if (arSM.get(current_work_position).getITEM_TYPE().equals(ITEM_TYPE_S)) {
+                            String weight_from = work_item_bi_info.getWEIGHT_FROM();
+                            String weight_to = work_item_bi_info.getWEIGHT_TO();
+
+                            Log.d(TAG, "weightfrom,to:" + weight_from + ":" + weight_to + ":");
+                            if (weight_from.equals("0") || weight_to.equals("0")) {
+                                showAlertDialog("weight", 0);
+                                alert_flag = true;
+                            }
+
+                            // 이마트 ITEM_TYPE W (바코드 계근)
+                            item_weight = work_item_fullbarcode.substring(
+                                    Integer.parseInt(work_item_bi_info.getWEIGHT_FROM()) - 1, Integer.parseInt(work_item_bi_info.getWEIGHT_TO()));
+                            Log.i(TAG, "Type S | 절사한 중량값 : " + item_weight);
+
+                            item_pow = Math.pow(10, Integer.parseInt(work_item_bi_info.getZEROPOINT()));
+                            item_weight_double = Double.parseDouble(item_weight) / item_pow;
+
+                            if ("LB".equals(work_item_bi_info.getBASEUNIT())) {
+                                Log.i(TAG, "LB로 들어옴, 환산");
+                                Log.i(TAG, "LB 원 중량 : " + item_weight_double);
+                                // LB(파운드)라면 KG으로 환산 LB * 0.453592 = KG
+                                double temp_weight_double = item_weight_double * 0.453592;
+
+                                // 개발60 Step4 : 이마트 LB 자릿수 분기 제거 (생산은 항상 소수점 2자리)
+                                item_weight_double = Math.floor(temp_weight_double * 100) / 100; //lb 변환 후 소수점 두자리까지 처리하도록 변경
+                                item_weight_str = String.valueOf(item_weight_double);
+                                Log.i(TAG, "LB->KG | 환산 중량 Double값 : " + item_weight_double);
+                                Log.i(TAG, "LB->KG | 환산 중량 String값 : " + item_weight_str);
+                            }
+
+                            String temp_weight = String.format("%.2f", item_weight_double);
+                            item_weight_double = Double.parseDouble(temp_weight);
+                            item_weight_str = String.valueOf(item_weight_double);
+                            Log.i(TAG, "Type S | ZeroPoint 적용 중량 Double값 : " + item_weight_double);
+                            Log.i(TAG, "Type S | ZeroPoint 적용 중량 String값 : " + item_weight_str);
+
+                            if (work_item_bi_info.getMAKINGDATE_FROM() != "" && work_item_bi_info.getMAKINGDATE_TO() != "") {
+                                item_making_date = work_item_fullbarcode.substring(
+                                        Integer.parseInt(work_item_bi_info.getMAKINGDATE_FROM()) - 1, Integer.parseInt(work_item_bi_info.getMAKINGDATE_TO()));
+                                Log.i(TAG, "Type S | 절사한 제조일 : " + item_making_date);
+                            }
+
+                            if (work_item_bi_info.getBOXSERIAL_FROM() != "" && work_item_bi_info.getBOXSERIAL_TO() != "") {
+                                item_box_serial = work_item_fullbarcode.substring(
+                                        Integer.parseInt(work_item_bi_info.getBOXSERIAL_FROM()) - 1, Integer.parseInt(work_item_bi_info.getBOXSERIAL_TO()));
+                                Log.i(TAG, "Type S | 절사한 박스시리얼 : " + item_box_serial);
+                            }
+                        } else if (arSM.get(current_work_position).getITEM_TYPE().equals(ITEM_TYPE_J)) {
+                            item_weight = arSM.get(current_work_position).getPACKWEIGHT();
+                            Log.i(TAG, "Type J | 지정된 중량값 : " + item_weight);
+                            item_weight_double = Double.parseDouble(item_weight);
+                            item_weight_str = String.valueOf(item_weight_double);
+                            Log.i(TAG, "Type J | ZeroPoint 적용 중량 Double값 : " + item_weight_double);
+                            Log.i(TAG, "Type J | ZeroPoint 적용 중량 String값 : " + item_weight_str);
+                        }
+
+                    wet_data_insert(item_weight_str, item_weight_double, item_making_date, item_box_serial);
+                    } else {
+                        Toast.makeText(getApplicationContext(), "BL번호가 일치하지않습니다.\n확인 후 다시 스캔해주세요.", Toast.LENGTH_SHORT).show();
+                        vibrator.vibrate(1000);
+                    }
+                } catch (Exception ex) {
+                    Log.e(TAG, "setBarcodeMsgProduction's BL 스캔 Exception -> " + ex.getMessage().toString());
+                }
+            }
+        } catch (Exception ex) {
+            Log.e(TAG, "setBarcodeMsgProduction Exception -> " + ex.getMessage().toString());
+        }
+    }
+
     // ========================================================================================
     // 핵심 비즈니스 로직 메서드
     // ========================================================================================
@@ -1577,6 +1882,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      */
     public void wet_data_insert(String weight_str, double weight_double, String making_date, String box_serial) {
         Log.e(TAG, "=========================계근입력 시작=========================" + weight_double);
+
         if (arSM.get(current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.get(current_work_position).getPACKING_QTY()))) {
             if ((arSM.size() - 1) == current_work_position) {
                 show_wetFinishDialog();
@@ -1647,7 +1953,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         if(Common.searchType.equals(SEARCH_TYPE_EMART)) {
             arSM.get(current_work_position).setGI_QTY(Math.round((arSM.get(current_work_position).getGI_QTY() + weight_double) * 10.0) / 10.0);    // 계근중량
         }else{
-
             double v1 = arSM.get(current_work_position).getGI_QTY();
             double v2 = weight_double;
 
@@ -1691,6 +1996,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         for (int i = 0; i < arSM.size(); i++) {
             arSM.get(i).setWORK_FLAG(0);
         }
+
         arSM.get(current_work_position).setWORK_FLAG(1);
         sListAdapter.notifyDataSetChanged();
         sList.setSelection(current_work_position);
@@ -1810,6 +2116,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                 Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
                 Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
+
                 if (type && req.length() >= Integer.parseInt(bg_to)) {              // PACKER_PRODUCT_CODE로 찾을 경우
                     temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
                 } else {                // false : BL로 찾을 경우
@@ -2749,7 +3056,10 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             result = HttpHelper.getInstance().sendData(packet, "goodswet_insert", Common.URL_INSERT_GOODS_WET);
                         }else if(Common.searchType.equals(SEARCH_TYPE_HOMEPLUS)){
                             result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                        }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION) || Common.searchType.equals(SEARCH_TYPE_NONFIXED)|| Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)|| Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)){
+                        }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION) || Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)){   // 생산(1), 생산라벨(7) : PD_생산계근 적재
+                            Log.i(TAG, "===================send packet 확인==================" + packet);
+                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_PRODUCTION);
+                        }else if(Common.searchType.equals(SEARCH_TYPE_NONFIXED)|| Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)){
                             Log.i(TAG, "===================send packet 확인==================" + packet);
                             result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_NEW);
                         }else if(Common.searchType.equals(SEARCH_TYPE_WHOLESALE)){
