@@ -164,7 +164,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private static final String SEARCH_TYPE_NONFIXED = "4";          // 도매 비정량
     private static final String SEARCH_TYPE_HOMEPLUS_NONFIXED = "5"; // 홈플러스 비정량
     private static final String SEARCH_TYPE_LOTTE = "6";             // 롯데 출하
-    private static final String SEARCH_TYPE_PRODUCTION_LABEL = "7";  // 생산 라벨
+    /** @deprecated 미사용 (생산 라벨 PDA 출력 프로세스 미정의 - 2026-08-04 제외 결정, search_production_4label.jsp 삭제됨) */
+    private static final String SEARCH_TYPE_PRODUCTION_LABEL = "7";  // 생산 라벨 - 미사용
 
     // 업체 정보 상수
     private static final String COMPANY_CODE = "610933";                    // 회사 코드

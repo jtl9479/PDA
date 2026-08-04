@@ -181,6 +181,7 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
                 Log.d(TAG, "============== 출하리스트 조회조건 롯데 들어옴 : " + data + "================");
 
             // ----- searchType "7": 생산 계근 (라벨 출력용) -----
+            // ※ 미사용 (생산 라벨 PDA 출력 프로세스 미정의 - 2026-08-04 제외 결정, search_production_4label.jsp 삭제됨)
             }else if(Common.searchType.equals("7")){
                 receiveData = HttpHelper.getInstance().sendDataDb(data, "Inno", "search_shipment", Common.URL_SEARCH_PRODUCTION_4LABEL);
                 Log.d(TAG, "============== 생산대상리스트(라벨) 조회 : " + data + "================");

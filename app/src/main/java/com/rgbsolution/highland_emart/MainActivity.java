@@ -58,7 +58,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String SEARCH_TYPE_NONFIXED = "4";          // 비정량 출하
     private static final String SEARCH_TYPE_HOMEPLUS_NONFIXED = "5"; // 홈플러스 비정량
     private static final String SEARCH_TYPE_LOTTE = "6";             // 롯데
-    private static final String SEARCH_TYPE_PRODUCTION_LABEL = "7";  // 생산(라벨)
+    /** @deprecated 미사용 (생산 라벨 PDA 출력 프로세스 미정의 - 2026-08-04 제외 결정, search_production_4label.jsp 삭제됨) */
+    private static final String SEARCH_TYPE_PRODUCTION_LABEL = "7";  // 생산(라벨) - 미사용
 
     // 진동 서비스 - 에러 발생 시 사용자 피드백용
     private Vibrator vibrator;
@@ -100,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
 
         // 진동 서비스 초기화 - 에러 시 사용자 피드백용
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
     }
 
     /**
@@ -270,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
                 downloadShipmentList(SEARCH_TYPE_PRODUCTION, "생산대상받기");
                 break;
 
-            // ==================== 홈플러스하이퍼 출하대상받기 (searchType: 2) ====================
+            // ==================== 홈플러스하이 퍼 출하대상받기 (searchType: 2) ====================
             case R.id.btnDownloadHomeplus:
                 downloadShipmentList(SEARCH_TYPE_HOMEPLUS, "홈플러스출하대상받기");
                 break;
@@ -296,6 +296,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             // ==================== 생산대상받기(라벨) (searchType: 7) ====================
+            // ※ 미사용 (생산 라벨 PDA 출력 프로세스 미정의 - 2026-08-04 제외 결정, search_production_4label.jsp 삭제됨)
             case R.id.btnproductionlist4print:
                 downloadShipmentList(SEARCH_TYPE_PRODUCTION_LABEL, "생산대상받기(라벨)");
                 break;
@@ -340,6 +341,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             // ==================== 생산(라벨) 계근입력시작 (searchType: 7) ====================
+            // ※ 미사용 (생산 라벨 PDA 출력 프로세스 미정의 - 2026-08-04 제외 결정, search_production_4label.jsp 삭제됨)
             case R.id.btnProdWet4print:
                 Log.i(TAG, TAG + "=====================생산입력시작(라벨)======================" + Common.selectDay);
                 startWeighing(SEARCH_TYPE_PRODUCTION_LABEL, "생산 계근을 위해 생산 리스트(라벨)를 받아주세요.", "생산대상 리스트(라벨)가 없습니다.\n리스트를 받아주세요.");
@@ -484,7 +486,7 @@ public class MainActivity extends AppCompatActivity {
         DBHandler.deletequeryBarcodeInfo(getApplicationContext());
         DBHandler.deletequeryGoodsWet(getApplicationContext());
 
-        // 7. 서버에서 출하/생산 대상 리스트 다운로드 (비동기)
+        // 7. 서버에서 출하/생산 대상 리스트 다운로드 (비동기)  MainActivity 인스턴스
         new ProgressDlgShipSearch(this).execute();
     }
 

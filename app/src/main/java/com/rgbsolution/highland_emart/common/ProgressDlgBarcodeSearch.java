@@ -83,6 +83,7 @@ public class ProgressDlgBarcodeSearch extends AsyncTask<Integer, String, Integer
                 receiveData = HttpHelper.getInstance().sendDataDb(data, "inno", "search_barcode_info", Common.URL_SEARCH_BARCODE_INFO_NONFIXED);
             }else if(Common.searchType.equals("5")) {
                 receiveData = HttpHelper.getInstance().sendDataDb(data, "inno", "search_barcode_info", Common.URL_SEARCH_HOMEPLUS_NONFIXED2);
+            // ※ 미사용 (생산 라벨 PDA 출력 프로세스 미정의 - 2026-08-04 제외 결정, search_production_4label.jsp 삭제됨)
             }else if(Common.searchType.equals("7")){
                 receiveData = HttpHelper.getInstance().sendDataDb(data, "inno", "search_barcode_info", Common.URL_SEARCH_BARCODE_INFO);
             }

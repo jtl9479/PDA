@@ -23,6 +23,7 @@ public class Common {
     public static final String URL_SEARCH_SHIPMENT_WHOLESALE = BASE_URL + "/search_shipment_wholesale.jsp";
     public static final String URL_SEARCH_SHIPMENT_LOTTE = BASE_URL + "/search_shipment_lotte.jsp";
     public static final String URL_SEARCH_PRODUCTION = BASE_URL + "/search_production.jsp";
+    /** @deprecated 미사용 (생산 라벨 PDA 출력 프로세스 미정의 - 2026-08-04 제외 결정, search_production_4label.jsp 삭제됨) */
     public static final String URL_SEARCH_PRODUCTION_4LABEL = BASE_URL + "/search_production_4label.jsp";
     public static final String URL_SEARCH_BARCODE_INFO = BASE_URL + "/search_barcode_info.jsp";
     public static final String URL_SEARCH_BARCODE_INFO_NONFIXED = BASE_URL + "/search_barcode_info_nonfixed.jsp";
