@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 생산 계근 기능 테스트 시나리오</title>
+<style>
+  :root {
+    --blue: #2563eb; --blue-bg: #eff6ff;
+    --green: #16a34a; --green-bg: #f0fdf4;
+    --orange: #ea580c; --orange-bg: #fff7ed;
+    --red: #dc2626; --red-bg: #fef2f2;
+    --purple: #7c3aed; --purple-bg: #f5f3ff;
+    --gray: #64748b; --gray-bg: #f8fafc;
+    --border: #e2e8f0; --text: #1e293b; --navy: #1e3a8a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Malgun Gothic", "맑은 고딕", "Segoe UI", sans-serif;
+    color: var(--text); background: #f1f5f9; line-height: 1.55; padding: 24px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  header.page {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff;
+    border-radius: 14px; padding: 28px 32px; margin-bottom: 24px;
+  }
+  header.page h1 { font-size: 26px; margin-bottom: 6px; }
+  header.page p { opacity: .92; font-size: 14px; }
+  header.page .meta { margin-top: 10px; font-size: 12.5px; opacity: .8; }
+
+  section.card {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 24px 28px; margin-bottom: 22px;
+  }
+  section.card > h2 {
+    font-size: 19px; margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--blue); color: var(--navy);
+  }
+  section.card > h2 .num {
+    display: inline-block; background: var(--blue); color: #fff; border-radius: 8px;
+    font-size: 13px; padding: 2px 9px; margin-right: 8px; vertical-align: 2px;
+  }
+  h3.sub { font-size: 15px; margin: 18px 0 10px; color: #334155; }
+
+  .badge { display: inline-block; font-size: 11.5px; font-weight: 700; border-radius: 99px; padding: 2px 10px; vertical-align: middle; }
+  .b-done { background: var(--green-bg); color: var(--green); border: 1px solid #bbf7d0; }
+  .b-wait { background: var(--orange-bg); color: var(--orange); border: 1px solid #fed7aa; }
+  .b-fail { background: var(--red-bg); color: var(--red); border: 1px solid #fecaca; }
+  .b-info { background: var(--blue-bg); color: var(--blue); border: 1px solid #bfdbfe; }
+  .b-gray { background: var(--gray-bg); color: var(--gray); border: 1px solid var(--border); }
+
+  .flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0; margin: 12px 0; }
+  .fbox {
+    flex: 1 1 0; min-width: 150px; border-radius: 10px; padding: 12px 14px;
+    border: 1.5px solid; text-align: center; position: relative;
+  }
+  .fbox .t { font-weight: 700; font-size: 13.5px; margin-bottom: 4px; }
+  .fbox .d { font-size: 11.5px; color: #475569; }
+  .fbox .code { font-family: Consolas, monospace; font-size: 11px; color: var(--purple); display: block; margin-top: 4px; word-break: break-all; }
+  .fb-blue   { border-color: #93c5fd; background: var(--blue-bg); }
+  .fb-green  { border-color: #86efac; background: var(--green-bg); }
+  .fb-orange { border-color: #fdba74; background: var(--orange-bg); }
+  .fb-purple { border-color: #c4b5fd; background: var(--purple-bg); }
+  .fb-gray   { border-color: #cbd5e1; background: var(--gray-bg); }
+  .fb-red    { border-color: #fca5a5; background: var(--red-bg); }
+  .arrow-r {
+    flex: 0 0 34px; display: flex; align-items: center; justify-content: center;
+    color: var(--gray); font-size: 19px; font-weight: 700;
+  }
+  .arrow-d { text-align: center; color: var(--gray); font-size: 19px; font-weight: 700; margin: 4px 0; }
+
+  .lane { display: flex; gap: 14px; flex-wrap: wrap; }
+  .lane .zone { flex: 1 1 280px; border: 1.5px dashed #94a3b8; border-radius: 12px; padding: 14px; }
+  .lane .zone h4 { font-size: 13.5px; color: #475569; margin-bottom: 10px; text-align: center; }
+  .zone .item { border-radius: 8px; border: 1.5px solid; padding: 9px 11px; margin-bottom: 8px; font-size: 12.5px; }
+  .zone .item b { display: block; font-size: 13px; }
+  .zone .item span { color: #475569; font-size: 11.5px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { background: var(--navy); color: #fff; padding: 8px 10px; font-size: 12.5px; text-align: center; }
+  td { border: 1px solid var(--border); padding: 7px 10px; vertical-align: middle; }
+  tr:nth-child(even) td { background: #fafbfd; }
+  td.c { text-align: center; }
+  code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 12px; color: var(--purple); background: var(--purple-bg); padding: 1px 5px; border-radius: 4px; }
+
+  .note { border-left: 4px solid var(--blue); background: var(--blue-bg); border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 12.5px; margin: 12px 0; }
+  .note.warn { border-color: var(--orange); background: var(--orange-bg); }
+  .note.danger { border-color: var(--red); background: var(--red-bg); }
+
+  /* 코드/흐름 블록 */
+  pre.flowbox {
+    background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 14px 16px;
+    font-family: Consolas, "Courier New", monospace; font-size: 12.5px; line-height: 1.65;
+    overflow-x: auto; margin: 12px 0; white-space: pre;
+  }
+  pre.proc {
+    background: var(--gray-bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px; font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 8px 0 12px; white-space: pre;
+  }
+  pre.cmd {
+    background: #1e293b; color: #cbd5e1; border-radius: 7px; padding: 9px 14px;
+    font-family: Consolas, "Courier New", monospace; font-size: 11.5px; line-height: 1.55;
+    overflow-x: auto; margin: 8px 0 14px; white-space: pre;
+  }
+
+  /* 시나리오 카드 */
+  .scn {
+    border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+    margin: 16px 0; background: #fff;
+  }
+  .scn > h3 {
+    font-size: 15px; color: var(--navy); margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--blue-bg); display: flex; align-items: center; gap: 8px;
+  }
+  .scn > h3 .sn {
+    background: var(--blue); color: #fff; border-radius: 7px; font-size: 12px;
+    padding: 2px 10px; flex: none; font-weight: 800;
+  }
+  .scn h4.lbl { font-size: 12.5px; color: var(--gray); font-weight: 700; margin: 12px 0 6px; letter-spacing: .02em; }
+  .scn .bg { border-left: 4px solid var(--orange); background: var(--orange-bg); border-radius: 0 8px 8px 0; padding: 8px 12px; font-size: 12px; margin: 6px 0 10px; }
+
+  /* 체크박스 칸 */
+  table.chk td.ck { text-align: center; width: 44px; }
+  table.chk td.ck input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; accent-color: var(--blue); }
+  table.chk td.num { text-align: center; width: 36px; color: var(--gray); font-weight: 700; }
+
+  /* ════════════════ 마트사별 탭 ════════════════ */
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tab {
+    border: 1.5px solid var(--border); border-bottom: none; background: var(--gray-bg);
+    border-radius: 10px 10px 0 0; padding: 8px 14px; cursor: pointer; font-size: 13px;
+    font-weight: 700; color: #475569; user-select: none; display: flex; align-items: center; gap: 7px;
+  }
+  .tab .tno {
+    background: #94a3b8; color: #fff; border-radius: 6px; font-size: 11.5px;
+    width: 21px; height: 21px; display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .tab.active .tno { background: #fff; color: var(--navy); }
+  .tab .dot { width: 8px; height: 8px; border-radius: 99px; flex: none; }
+  .dot.g { background: var(--green); } .dot.o { background: var(--orange); } .dot.r { background: var(--red); }
+
+  .panel {
+    display: none; border: 1.5px solid var(--navy); border-radius: 0 12px 12px 12px;
+    background: #fff; overflow: hidden;
+  }
+  .panel.active { display: block; }
+
+  /* 패널 헤더 스트립 */
+  .phead {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    padding: 16px 22px; background: linear-gradient(135deg, #1e3a8a, #2d4eb8); color: #fff;
+  }
+  .phead.st-wait { background: linear-gradient(135deg, #9a3412, #ea580c); }
+  .phead.st-off { background: linear-gradient(135deg, #475569, #94a3b8); }
+  .phead .big {
+    background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.5);
+    font-weight: 800; border-radius: 10px; padding: 4px 14px; font-size: 19px;
+  }
+  .phead h3 { font-size: 18px; flex: 1 1 auto; min-width: 140px; }
+  .phead h3 small { display: block; font-size: 11.5px; font-weight: 400; opacity: .85; margin-top: 2px; }
+  .phead .badge { border: none; }
+
+  .pbody { padding: 18px 22px 20px; }
+
+  footer { text-align: center; color: var(--gray); font-size: 12px; padding: 18px 0 8px; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    section.card { break-inside: avoid; }
+    .panel { display: block !important; margin-bottom: 14px; border-radius: 12px; }
+    .scn { break-inside: avoid; }
+    .tabs { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <h1>📋 생산 계근 기능 테스트 시나리오</h1>
+  <p>작업자 화면·동작 기준 기능 테스트 · 대상: <b>생산 계근(searchType 1)</b> · 흐름: 날짜 선택 → 생산계근대상받기 → 계근입력 → 스캔/수기 → 전송 <b>(라벨 없음)</b></p>
+  <div class="meta">갱신일: 2026-08-05 · 기준: 개발/59, 개발/60, 소스분석/57·58, column/11 · 체크박스는 인쇄·클릭 가능</div>
+</header>
+
+<section class="card">
+  <div class="panel active" id="p1" style="display:block">
+    <div class="phead">
+      <div class="big">1</div>
+      <h3>생산 계근<small>생산작업지시 → 계근대상받기 → 계근 → 전송 전체 흐름 (searchType=1)</small></h3>
+      <span class="badge b-done">searchType 1</span><span class="badge b-info">라벨 출력 없음</span><span class="badge b-gray">중량 변환 없음</span>
+    </div>
+
+    <div class="pbody">
+
+      <h3 class="sub">이마트 출하계근과의 차이</h3>
+      <table>
+        <tr><th>항목</th><th>이마트 출하(0)</th><th>생산 계근(1)</th></tr>
+        <tr><td>대상 데이터</td><td>출고 전표(마트사 발주)</td><td><b>생산작업지시 자재</b> (ERP P0101에서 등록)</td></tr>
+        <tr><td>대상 품목</td><td>마트 납품 상품</td><td><b>대분류 2(상품) = 생산 투입 원료만</b></td></tr>
+        <tr><td>센터명</td><td>실제 거래처 상호</td><td><b>"하이랜드푸드" 고정</b> (스피너 항목 1개)</td></tr>
+        <tr><td>프린터 연결</td><td>필요 (Bluetooth 페어링)</td><td><b>불필요 — 연결 요구 자체가 없음</b></td></tr>
+        <tr><td>라벨 출력</td><td>계근 시 자동 출력</td><td><b>없음 (인쇄 스위치 OFF 고정·조작 불가)</b></td></tr>
+        <tr><td>수기 중량</td><td>소수점 첫째자리 버림</td><td><b>입력값 그대로</b></td></tr>
+        <tr><td>소비기한 입력창</td><td>수입육·미트센터 시 표시</td><td><b>표시되지 않음</b></td></tr>
+        <tr><td>지점명 표시</td><td>점포명</td><td>거래처 상호 (미입력 시 <b>공백</b> — 정상)</td></tr>
+      </table>
+
+      <h3 class="sub">사전 조건</h3>
+      <table>
+        <tr><th>#</th><th>항목</th><th>조건</th></tr>
+        <tr><td class="c">1</td><td>서버 가동</td><td>출하 관리 서버 실행 중</td></tr>
+        <tr><td class="c">2</td><td>DB</td><td>업무 DB 접속 가능</td></tr>
+        <tr><td class="c">3</td><td>서버 연결 설정</td><td>앱의 서버 연결 설정 확인 (정상 주소로 연결)</td></tr>
+        <tr><td class="c">4</td><td>생산작업지시</td><td>ERP 생산작업지시(P0101) 등록 완료 — 자재 1건 이상</td></tr>
+        <tr><td class="c">5</td><td>품목 마스터</td><td>대상 자재의 <b>바코드 정보 등록</b> (상품바코드·바코드상품코드시작/끝·중량시작/끝·소수점)</td></tr>
+        <tr><td class="c">6</td><td>박스중량</td><td>품목코드에 <b>박스중량 필수 등록</b> (요청 박스수 계산에 사용)</td></tr>
+        <tr><td class="c">7</td><td>PDA 기기</td><td>동일 네트워크(Wi-Fi) 연결 (Honeywell EDA51)</td></tr>
+        <tr><td class="c">8</td><td>프린터</td><td><b>불필요</b> — 생산 계근은 라벨을 출력하지 않음</td></tr>
+      </table>
+
+      <div class="note warn"><b>사전 조건 5·6 미충족 시</b> 계근이 시작되지 않습니다. 바코드 정보가 없으면 스캔해도 <span class="mono">"바코드 정보(조회결과)가 없습니다"</span> 또는 <span class="mono">"패커상품이 존재하지않거나, 바코드가 정확하지 않습니다"</span> 안내가 표시됩니다. 이는 앱 오류가 아니라 <b>ERP 품목 마스터 미등록</b>입니다.</div>
+
+      <h3 class="sub">기능 흐름</h3>
+      <pre class="flowbox">[ERP] 생산작업지시 등록 (P0101) → 투입 자재 목록 생성
+    ↓
+[로그인 후] 날짜 선택 → 생산계근대상받기 버튼 클릭
+    ↓ (자동) 로딩 진행 후 생산 계근 목록 구성
+[생산계근입력시작] 계근 화면 진입 → 센터("하이랜드푸드")/BL/지점 선택
+    ↓ 프린터 연결 요구 없음 · 인쇄 스위치 OFF 고정
+[계근 입력] 바코드 스캔 또는 수기 중량입력
+    ↓ 라벨 출력 단계 없음
+[계근 전송] 전송 버튼 → 전송 완료 → 계근완료 표시
+    ↓
+[재조회] 생산계근대상받기 재실행 시 계근 완료 건은 목록에서 제외</pre>
+
+      <div class="note"><b>계근 대상 산정</b> — 요청 박스수는 <b>실소요량 ÷ 박스중량(올림)</b>으로 계산됩니다. 예) 실소요량 16.55kg, 박스중량 18.0kg → 요청 <b>1</b>박스</div>
+
+      <h2 style="font-size:17px; color:var(--navy); margin:22px 0 14px; padding:8px 14px; background:var(--blue-bg); border-radius:8px; border-left:5px solid var(--blue);">■ 생산 계근 (searchType 1)</h2>
+
+      <!-- 시나리오 1 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 1</span> 정상 흐름 (생산계근대상받기 → 바코드 스캔 계근 → 전송)</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 앱 실행
+2. 로그인 (ID/PW 입력)
+3. 날짜 선택 (생산작업지시가 등록된 날짜)
+4. 생산계근대상받기 버튼 클릭
+5. 로딩 진행 후 생산 계근 목록이 구성되는지 확인
+6. 생산계근입력시작 버튼 클릭 → 계근 화면 진입
+7. 프린터 연결 요구(블루투스 켜기·프린터 선택)가 없는지 확인
+8. 인쇄 스위치가 OFF 상태로 고정되어 조작되지 않는지 확인
+9. 센터 스피너에 "하이랜드푸드" 1개만 표시되는지 확인
+10. 첫 번째 자재 바코드 스캔
+11. 화면에 상품명·PP코드·계근 중량이 표시되는지 확인
+12. 라벨이 출력되지 않는지 확인
+13. 계근 전송 버튼 클릭
+14. 전송 완료 후 계근완료 표시로 변경되는지 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>생산계근대상받기 버튼 클릭</td><td>로딩 후 생산 계근 목록이 화면에 구성됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>대상 품목 범위</td><td>생산 투입 원료(상품)만 조회됨 — 원자재·부자재·반제품은 제외</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>요청 박스수 표시</td><td>정수로 표시됨 (소수점 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>계근입력시작</td><td>계근 화면으로 정상 진입</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>프린터 연결 요구 없음</td><td>블루투스 켜기·프린터 선택 화면이 나타나지 않음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>인쇄 스위치 고정</td><td>OFF 상태이며 터치해도 변경되지 않음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>센터 스피너</td><td>"하이랜드푸드" 1개만 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>바코드 스캔</td><td>스캔 시 상품명·PP코드·중량이 화면에 자동 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>라벨 미출력</td><td>계근해도 라벨이 출력되지 않음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>계근 전송</td><td>전송 버튼 클릭 시 전송 완료 안내가 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">11</td><td>계근완료 표시</td><td>전송 후 해당 자재가 계근완료 상태로 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">12</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 2 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 2</span> 바코드 스캔 계근 상세 확인</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1의 대상받기 완료 후 상태에서 진행
+2. 생산계근입력시작 클릭 → 계근 화면 진입
+3. 첫 번째 자재 바코드 스캔
+4. 화면의 중량 값 및 상품정보 표시 확인
+5. 동일 바코드 재스캔
+6. 두 번째 박스 바코드 스캔
+7. 요청 박스수만큼 계근 완료 후 상태 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>첫 번째 바코드 스캔</td><td>상품정보·중량이 화면에 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>계근 수량 표시</td><td>스캔 후 계근수량 1/N 정상 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>동일 바코드 재스캔</td><td>"이미 스캔한 바코드입니다" 경고 표시 + 진동 (중복 차단)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>두 번째 바코드 스캔</td><td>계근수량 2/N 정상 증가</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>센터 합계 표시</td><td>요청/완료 수량·중량 합계가 실시간 갱신됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>전체 완료 감지</td><td>요청 박스수 도달 시 완료 안내 다이얼로그 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>지점명 표시</td><td>거래처 상호 표시 (미입력 시 공백 — 정상 동작)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 3 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 3</span> 계근 방식 확인 (정량 / 비정량)</h3>
+        <div class="bg">품목 마스터의 <b>비정량 여부</b> 설정에 따라 계근 중량 처리가 달라집니다. 두 경우를 모두 확인합니다.</div>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">[A] 비정량 미체크 품목 (정량)
+1. ERP 품목코드관리에서 대상 자재의 "비정량 여부" 미체크 확인
+2. 생산계근대상받기 → 계근입력시작
+3. 바코드 스캔
+4. 화면에 표시되는 계근 중량 확인 → 품목의 박스중량 값과 동일한지 확인
+5. 박스를 여러 개 계근했을 때 모든 박스 중량이 동일한지 확인
+
+[B] 비정량 체크 품목
+6. ERP 품목코드관리에서 대상 자재의 "비정량 여부" 체크
+7. 생산계근대상받기 재실행 → 계근입력시작
+8. 바코드 스캔
+9. 화면에 표시되는 계근 중량이 바코드의 실제 중량과 일치하는지 확인
+10. 박스마다 중량이 다르게 기록되는지 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>[A] 정량 - 계근 중량</td><td>품목의 <b>박스중량 고정값</b>으로 기록됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>[A] 정량 - 박스별 중량</td><td>모든 박스가 <b>동일한 중량</b>으로 기록됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>[A] 정량 - 제조일자/박스시리얼</td><td>기록되지 않음 (빈값)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>[B] 비정량 - 계근 중량</td><td>바코드의 <b>실제 중량</b>이 기록됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>[B] 비정량 - 박스별 중량</td><td>박스마다 <b>다른 중량</b>으로 기록됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>[B] 비정량 - 제조일자</td><td>바코드에서 추출되어 기록됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>[B] 비정량 - 소수점</td><td>소수점 둘째자리까지 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+        <div class="note warn">업무 확인 필요 — 생산 투입 원료는 박스마다 무게가 다른 것이 일반적입니다. 현재 대상 품목이 모두 <b>비정량 미체크</b> 상태라면, 박스마다 동일한 고정 중량으로 기록됩니다. 실제 운영 방식과 맞는지 확인이 필요합니다.</div>
+      </div>
+
+      <!-- 시나리오 4 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 4</span> 수기 중량입력 계근</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 대상받기 완료 후 계근 화면 진입
+2. 작업모드 스피너 → "수기"로 변경
+3. 지점 선택 후 중량 수동 입력 (예: 12.34)
+4. 입력 버튼 클릭
+5. 화면에 표시되는 중량 확인
+6. 계근 전송 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>수기 모드 선택</td><td>작업모드 "수기" 변경 후 수동 입력 필드 활성화</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>중량 수동 입력</td><td>키패드로 중량값 직접 입력 가능</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>중량 변환 없음</td><td>입력값이 <b>그대로</b> 표시됨 (이마트와 달리 버림 처리 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>중량 미입력 시</td><td>"중량을 입력하세요." 안내 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>지점 미선택 시</td><td>"작업 중인 지점이 없습니다." 안내 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>소비기한 입력창</td><td><b>표시되지 않음</b> (생산은 대상 아님)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>계근 처리</td><td>입력 확인 시 계근 처리되고 수량/중량이 반영됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>라벨 미출력</td><td>수기 계근에도 라벨이 출력되지 않음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>계근 전송</td><td>전송 버튼 클릭 시 전송 완료 안내가 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 5 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 5</span> 계근 완료 건 재조회 제외 확인</h3>
+        <div class="bg">계근·전송이 완료된 자재는 다시 대상받기를 해도 목록에 나타나지 않아야 합니다.</div>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 시나리오 1로 특정 자재의 계근·전송 완료
+2. 메인 화면으로 복귀
+3. 동일 날짜로 생산계근대상받기 재실행
+4. 계근 완료한 자재가 목록에 있는지 확인
+5. 미계근 자재만 남아 있는지 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>재조회 실행</td><td>대상받기가 정상 완료됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>완료 건 제외</td><td>계근·전송 완료한 자재가 <b>목록에서 빠짐</b></td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>미계근 건 유지</td><td>아직 계근하지 않은 자재는 그대로 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>전체 완료 시</td><td>모든 자재 계근 완료 시 빈 목록 안내 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 6 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 6</span> 계근 이력 복원 확인</h3>
+        <div class="bg">앱을 재설치하거나 다른 기기로 작업할 때, 서버에 저장된 계근 이력이 복원되어야 합니다.</div>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 특정 자재를 계근 완료 (전송하지 않은 상태 또는 전송 완료 상태)
+2. 앱 설정에서 앱 데이터 삭제 (또는 다른 PDA 기기 사용)
+3. 앱 재실행 → 로그인 → 동일 날짜 선택
+4. 생산계근대상받기 실행
+5. 계근입력시작 → 이전 계근 내역이 반영되어 있는지 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>대상받기 정상 완료</td><td>오류 없이 목록 구성됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>계근 이력 복원</td><td>서버에 저장된 계근 내역이 화면에 반영됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>계근 수량 일치</td><td>복원된 계근수량이 전송한 수량과 일치함</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>다른 마트 데이터 미혼입</td><td>이마트·홈플러스 등 다른 계근 내역이 섞이지 않음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 7 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 7</span> 계근 상세 조회 및 삭제</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 계근 완료 후 목록에서 해당 항목 선택
+2. 계근 상세 팝업 확인
+3. 출력 버튼 상태 확인
+4. 미전송 계근 건 삭제 시도
+5. 전송 완료 건 삭제 시도</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>계근 상세 팝업</td><td>계근한 박스별 중량·바코드 목록이 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>출력 버튼</td><td><b>비활성 상태</b> (생산은 라벨 미출력)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>미전송 건 삭제</td><td>삭제 가능하며 계근수량이 감소함</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>전송 완료 건 삭제</td><td>"전송이 완료된 상품은 삭제할 수 없습니다." 안내 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 8 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 8</span> 복수 자재 계근 전송</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 자재가 2건 이상인 생산작업지시 날짜 선택
+2. 생산계근대상받기 → 계근입력시작
+3. 첫 번째 자재 계근
+4. 지점 스피너에서 두 번째 자재로 전환
+5. 두 번째 자재 계근
+6. 전송 버튼 클릭 (한 번에 전송)
+7. 전송 결과 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>자재 전환</td><td>스피너로 다른 자재 선택 시 화면 정보가 갱신됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>다른 상품 스캔</td><td>작업 중 다른 자재 스캔 시 전환 확인 다이얼로그 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>복수 건 전송</td><td>여러 자재의 계근 데이터가 한 번에 전송됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>전송 결과</td><td>전송 완료 안내 표시, 모든 건이 계근완료로 변경</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 9 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 9</span> 예외 상황 — 데이터 없음 / 미등록 품목</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 생산작업지시가 없는 날짜 선택 → 생산계근대상받기
+2. 목록 상태 확인
+3. 대상받기 없이 생산계근입력시작 클릭
+4. 바코드 정보가 등록되지 않은 자재의 바코드 스캔
+5. 등록되지 않은 임의의 바코드 스캔</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>데이터 없는 날짜</td><td>빈 목록 안내 표시, 앱 정상 동작</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>대상받기 없이 계근입력시작</td><td>"생산대상 리스트가 없습니다. 리스트를 받아주세요." 안내</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>바코드 정보 미등록 자재</td><td>안내 표시 후 앱 정상 동작 (비정상 종료 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>등록되지 않은 바코드</td><td>"패커상품이 존재하지않거나, 바코드가 정확하지 않습니다" 안내 + 진동</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 10 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 10</span> 예외 상황 — 서버 미연결</h3>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. Wi-Fi 해제 또는 서버 중지 상태로 설정
+2. 생산계근대상받기 클릭
+3. 안내 메시지 및 앱 상태 확인
+4. 계근 후 전송 시도
+5. 네트워크 복구 후 재시도</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>대상받기 실패</td><td>오류 안내 표시, 앱은 정상 동작</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>전송 실패</td><td>전송 실패 안내 표시</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>계근 데이터 보존</td><td>전송 실패해도 기기의 계근 데이터가 유지됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>복구 후 재전송</td><td>네트워크 복구 후 재전송 시 정상 처리됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <!-- 시나리오 11 -->
+      <div class="scn">
+        <h3><span class="sn">시나리오 11</span> 회귀 확인 — 다른 계근 기능 영향 없음</h3>
+        <div class="bg">생산 계근 기능 추가로 기존 마트 계근에 영향이 없는지 확인합니다.</div>
+        <h4 class="lbl">절차</h4>
+        <pre class="proc">1. 이마트 출하대상받기 → 계근 → 라벨 출력 → 전송
+2. 이마트 비정량 동일 흐름
+3. 도매 동일 흐름
+4. 각 기능의 라벨 출력·전송 정상 여부 확인</pre>
+        <h4 class="lbl">확인 항목</h4>
+        <table class="chk">
+          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+          <tr><td class="num">1</td><td>이마트 출하계근</td><td>대상받기·계근·라벨 출력·전송 모두 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">2</td><td>이마트 비정량</td><td>대상받기·계근·라벨 출력·전송 모두 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">3</td><td>도매 계근</td><td>대상받기·계근·전송 모두 정상</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">4</td><td>계근 이력 복원</td><td>각 기능의 계근 이력이 정상 복원됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">5</td><td>계근 데이터 분리</td><td>생산 계근 데이터가 마트 계근 데이터와 섞이지 않음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+        </table>
+      </div>
+
+      <h3 class="sub">테스트 결과 요약 (생산 계근 searchType 1)</h3>
+      <table class="chk">
+        <tr><th>시나리오</th><th>결과</th><th>비고</th></tr>
+        <tr><td>1. 정상 흐름</td><td class="ck"><input type="checkbox"></td><td>대상받기 → 스캔 → 전송 (라벨 없음)</td></tr>
+        <tr><td>2. 바코드 스캔 계근 상세</td><td class="ck"><input type="checkbox"></td><td>중복 차단·수량 누적·완료 감지</td></tr>
+        <tr><td>3. 계근 방식 확인 (정량/비정량)</td><td class="ck"><input type="checkbox"></td><td>비정량 여부에 따른 중량 처리</td></tr>
+        <tr><td>4. 수기 중량입력 계근</td><td class="ck"><input type="checkbox"></td><td>중량 변환 없음·소비기한 창 없음</td></tr>
+        <tr><td>5. 계근 완료 건 재조회 제외</td><td class="ck"><input type="checkbox"></td><td>완료 건 목록에서 제외</td></tr>
+        <tr><td>6. 계근 이력 복원</td><td class="ck"><input type="checkbox"></td><td>앱 재설치·기기 교체 대응</td></tr>
+        <tr><td>7. 계근 상세 조회 및 삭제</td><td class="ck"><input type="checkbox"></td><td>출력 버튼 비활성 확인</td></tr>
+        <tr><td>8. 복수 자재 계근 전송</td><td class="ck"><input type="checkbox"></td><td>한 번에 묶어 전송</td></tr>
+        <tr><td>9. 데이터 없음 / 미등록 품목</td><td class="ck"><input type="checkbox"></td><td>안내 표시·앱 정상</td></tr>
+        <tr><td>10. 서버 미연결</td><td class="ck"><input type="checkbox"></td><td>오류 안내·데이터 보존</td></tr>
+        <tr><td>11. 회귀 확인</td><td class="ck"><input type="checkbox"></td><td>이마트·비정량·도매 영향 없음</td></tr>
+      </table>
+      <div class="note warn"><b>테스트 일자</b>: ____________________ &nbsp;·&nbsp; <b>테스트 결과</b>: ____________________ &nbsp;·&nbsp; <b>담당자</b>: ____________________</div>
+
+      <h3 class="sub">알려진 제약 사항</h3>
+      <table>
+        <tr><th>#</th><th>항목</th><th>내용</th></tr>
+        <tr><td class="c">1</td><td>바코드 정보 미등록</td><td>생산 대상 품목 대부분이 ERP 품목 마스터에 바코드 정보(상품바코드·구간 위치)가 등록되어 있지 않아 계근이 불가합니다. <b>ERP 등록이 선행되어야 합니다.</b></td></tr>
+        <tr><td class="c">2</td><td>비정량 여부 미설정</td><td>대상 품목이 모두 정량으로 설정되어 있어 박스마다 동일한 고정 중량으로 기록됩니다. 실제 운영 방식 확인이 필요합니다.</td></tr>
+        <tr><td class="c">3</td><td>지점명 공백</td><td>생산작업지시에 거래처가 입력되지 않으면 목록·스피너의 지점명이 공백으로 표시됩니다. 기능 영향은 없습니다.</td></tr>
+        <tr><td class="c">4</td><td>생산 라벨</td><td>생산 라벨 출력 기능(searchType 7)은 프로세스 미정의로 개발 대상에서 제외되었습니다.</td></tr>
+      </table>
+
+      <h3 class="sub">관련 문서</h3>
+      <table>
+        <tr><th>구분</th><th>문서</th></tr>
+        <tr><td>개발 가이드</td><td>app/doc/개발/59_생산_계근대상받기_JSP_MSSQL전환.md</td></tr>
+        <tr><td>개발 가이드</td><td>app/doc/개발/60_setBarcodeMsg_생산1_전용메서드_분리.md</td></tr>
+        <tr><td>컬럼 매핑</td><td>app/doc/column/11_생산_계근대상_컬럼매핑_Oracle_MSSQL.md</td></tr>
+        <tr><td>소스 분석</td><td>app/doc/소스분석/57_생산_계근대상받기_JSP_컬럼_사용분석.md</td></tr>
+        <tr><td>소스 분석</td><td>app/doc/소스분석/58_setBarcodeMsg_생산1_경로분석.md</td></tr>
+      </table>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  PDA-INNO · app/doc/테스트/09_생산_계근_전체테스트 · 갱신일 2026-08-05
+</footer>
+
+</div>
+</body>
+</html>
