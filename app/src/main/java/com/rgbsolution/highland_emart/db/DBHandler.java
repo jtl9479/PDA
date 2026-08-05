@@ -96,7 +96,11 @@ public class DBHandler {
             }
 
             // 선택 날짜 지정
-            qry_condition = qry_condition + " AND GI_REQ_DATE = '" + Common.selectDay + "'";
+            // 개발62 : 생산(1)은 선택일자 이후 지시를 모두 대상으로 하므로 날짜 조건을 걸지 않는다.
+            //          (서버 search_production.jsp 에서 H.지시일자 >= 선택일자로 이미 필터됨)
+            if (!Common.searchType.equals("1")) {
+                qry_condition = qry_condition + " AND GI_REQ_DATE = '" + Common.selectDay + "'";
+            }
 
             sqlStr = "SELECT "
                     + DBInfo.SHIPMENT_ID + ", "
