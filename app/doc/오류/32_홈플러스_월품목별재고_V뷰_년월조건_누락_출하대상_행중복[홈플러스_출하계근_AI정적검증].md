@@ -121,9 +121,13 @@ SM_출고LOT 1행 × V 2행 = 2행이 된다. 홈플러스도 동일 VIEW·동�
 > 엣지케이스: 출고월에 해당 LOT의 재고화일 행이 없는 경우 LEFT JOIN NULL 반환 → BL_NO·이력번호·PACKWEIGHT NULL/빈값 가능 (이마트 25번과 동일 주의사항).
 
 ## 상태
-- [ ] 미수정
+- [x] 수정 완료 (2026-07-23)
+  - `search_shipment_homeplus.jsp`의 `월품목별재고화일_LOT별_VIEW V` LEFT JOIN에 `AND V.년월 = LEFT(D.출고일자, 6)` 추가 (이마트 `search_shipment.jsp:106`, 커밋 dce6722와 표현 100% 동일).
+  - LEFT JOIN 유지 → 중복 없던 정상 LOT은 결과 불변, 다중 재고월 LOT만 출고월 1건으로 정상화.
+  - 검증: code-verifier 통과(SELECT 컬럼 24개·index 0~23 불변), original-comparator 통과(비허용 차이 없음). 출고월 재고행 미존재 시 LEFT JOIN NULL 엣지케이스는 이마트와 동일한 기승인 리스크(개발문서 58 5.4절).
 
 ## 관련 문서
+- `app/doc/개발/58_홈플러스_search_shipment_homeplus_이마트패턴_포팅[32_33_34].md` — 4.1/Step 1(V뷰 년월조건)로 수정.
 - `app/doc/오류/25_출하대상_조회_행중복_월품목별재고화일LOT별VIEW_년월조건누락.md` — 이마트 동일 원인, 이미 수정 완료(커밋 dce6722)
 - `app/doc/오류/22_잠재오류_18건_목록.md` — 해당 없음 (본 문서는 25번 패턴의 홈플러스 미반영 케이스)
 - `app/doc/참고자료/오류패턴_분석.md` — **패턴 C: 컬럼명/구조 변경** (공통 체크 13번: 년월로 행이 나뉘는 VIEW LEFT JOIN 시 년월 조건 확인, searchType=2 추가 체크 6번)

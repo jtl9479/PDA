@@ -179,29 +179,29 @@
 
 <header class="page">
   <h1>📋 생산 계근 기능 테스트 시나리오</h1>
-  <p>작업자 화면·동작 기준 기능 테스트 · 대상: <b>생산 계근(searchType 1)</b> · 흐름: 날짜 선택 → 생산계근대상받기 → 계근입력 → 스캔/수기 → 전송 <b>(라벨 없음)</b></p>
-  <div class="meta">갱신일: 2026-08-05 · 기준: 개발/59, 개발/60, 소스분석/57·58, column/11 · 체크박스는 인쇄·클릭 가능</div>
+  <p>작업자 화면·동작 기준 기능 테스트 · 대상: <b>생산 계근</b> · 흐름: 날짜 선택 → 생산계근대상받기 → 계근입력 → 스캔/수기 → 전송 <b>(라벨 없음)</b></p>
+  <div class="meta">체크박스는 인쇄·클릭 가능</div>
 </header>
 
 <section class="card">
   <div class="panel active" id="p1" style="display:block">
     <div class="phead">
       <div class="big">1</div>
-      <h3>생산 계근<small>생산작업지시 → 계근대상받기 → 계근 → 전송 전체 흐름 (searchType=1)</small></h3>
-      <span class="badge b-done">searchType 1</span><span class="badge b-info">라벨 출력 없음</span><span class="badge b-gray">중량 변환 없음</span>
+      <h3>생산 계근<small>생산작업지시 → 계근대상받기 → 계근 → 전송 전체 흐름</small></h3>
+      <span class="badge b-done">생산</span><span class="badge b-info">라벨 출력 없음</span><span class="badge b-gray">중량 변환 없음</span>
     </div>
 
     <div class="pbody">
 
-      <h3 class="sub">이마트 출하계근과의 차이</h3>
+      <h3 class="sub">이마트 출고계근과의 차이</h3>
       <table>
-        <tr><th>항목</th><th>이마트 출하(0)</th><th>생산 계근(1)</th></tr>
-        <tr><td>대상 데이터</td><td>출고 전표(마트사 발주)</td><td><b>생산작업지시 자재</b> (ERP P0101에서 등록)</td></tr>
+        <tr><th>항목</th><th>이마트 출고</th><th>생산 계근</th></tr>
+        <tr><td>대상 데이터</td><td>출고 (ERP S0201에서 등록)</td><td><b>생산작업지시 자재</b> (ERP P0101에서 등록)</td></tr>
         <tr><td>대상 품목</td><td>마트 납품 상품</td><td><b>대분류 2(상품) = 생산 투입 원료만</b></td></tr>
         <tr><td>센터명</td><td>실제 거래처 상호</td><td><b>"하이랜드푸드" 고정</b> (스피너 항목 1개)</td></tr>
         <tr><td>프린터 연결</td><td>필요 (Bluetooth 페어링)</td><td><b>불필요 — 연결 요구 자체가 없음</b></td></tr>
         <tr><td>라벨 출력</td><td>계근 시 자동 출력</td><td><b>없음 (인쇄 스위치 OFF 고정·조작 불가)</b></td></tr>
-        <tr><td>수기 중량</td><td>소수점 첫째자리 버림</td><td><b>입력값 그대로</b></td></tr>
+        <tr><td>수기 중량</td><td>품목코드관리에서 설정</td><td><b>입력값 그대로</b></td></tr>
         <tr><td>소비기한 입력창</td><td>수입육·미트센터 시 표시</td><td><b>표시되지 않음</b></td></tr>
         <tr><td>지점명 표시</td><td>점포명</td><td>거래처 상호 (미입력 시 <b>공백</b> — 정상)</td></tr>
       </table>
@@ -209,7 +209,7 @@
       <h3 class="sub">사전 조건</h3>
       <table>
         <tr><th>#</th><th>항목</th><th>조건</th></tr>
-        <tr><td class="c">1</td><td>서버 가동</td><td>출하 관리 서버 실행 중</td></tr>
+        <tr><td class="c">1</td><td>서버 가동</td><td>출고 관리 서버 실행 중</td></tr>
         <tr><td class="c">2</td><td>DB</td><td>업무 DB 접속 가능</td></tr>
         <tr><td class="c">3</td><td>서버 연결 설정</td><td>앱의 서버 연결 설정 확인 (정상 주소로 연결)</td></tr>
         <tr><td class="c">4</td><td>생산작업지시</td><td>ERP 생산작업지시(P0101) 등록 완료 — 자재 1건 이상</td></tr>
@@ -236,7 +236,7 @@
 
       <div class="note"><b>계근 대상 산정</b> — 요청 박스수는 <b>실소요량 ÷ 박스중량(올림)</b>으로 계산됩니다. 예) 실소요량 16.55kg, 박스중량 18.0kg → 요청 <b>1</b>박스</div>
 
-      <h2 style="font-size:17px; color:var(--navy); margin:22px 0 14px; padding:8px 14px; background:var(--blue-bg); border-radius:8px; border-left:5px solid var(--blue);">■ 생산 계근 (searchType 1)</h2>
+      <h2 style="font-size:17px; color:var(--navy); margin:22px 0 14px; padding:8px 14px; background:var(--blue-bg); border-radius:8px; border-left:5px solid var(--blue);">■ 생산 계근</h2>
 
       <!-- 시나리오 1 -->
       <div class="scn">
@@ -250,12 +250,12 @@
 6. 생산계근입력시작 버튼 클릭 → 계근 화면 진입
 7. 프린터 연결 요구(블루투스 켜기·프린터 선택)가 없는지 확인
 8. 인쇄 스위치가 OFF 상태로 고정되어 조작되지 않는지 확인
-9. 센터 스피너에 "하이랜드푸드" 1개만 표시되는지 확인
-10. 첫 번째 자재 바코드 스캔
-11. 화면에 상품명·PP코드·계근 중량이 표시되는지 확인
-12. 라벨이 출력되지 않는지 확인
-13. 계근 전송 버튼 클릭
-14. 전송 완료 후 계근완료 표시로 변경되는지 확인</pre>
+9. 첫 번째 자재 바코드 스캔
+10. 화면에 상품명·PP코드·계근 중량이 표시되는지 확인
+11. 라벨이 출력되지 않는지 확인
+12. 계근 전송 버튼 클릭
+13. 전송 완료 후 계근완료 표시로 변경되는지 확인
+14. ERP P0210(PDA생산계근현황) 화면에서 전송한 계근 내역이 조회되는지 확인</pre>
         <h4 class="lbl">확인 항목</h4>
         <table class="chk">
           <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
@@ -265,11 +265,11 @@
           <tr><td class="num">4</td><td>계근입력시작</td><td>계근 화면으로 정상 진입</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">5</td><td>프린터 연결 요구 없음</td><td>블루투스 켜기·프린터 선택 화면이 나타나지 않음</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">6</td><td>인쇄 스위치 고정</td><td>OFF 상태이며 터치해도 변경되지 않음</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">7</td><td>센터 스피너</td><td>"하이랜드푸드" 1개만 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">8</td><td>바코드 스캔</td><td>스캔 시 상품명·PP코드·중량이 화면에 자동 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">9</td><td>라벨 미출력</td><td>계근해도 라벨이 출력되지 않음</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">10</td><td>계근 전송</td><td>전송 버튼 클릭 시 전송 완료 안내가 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">11</td><td>계근완료 표시</td><td>전송 후 해당 자재가 계근완료 상태로 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">7</td><td>바코드 스캔</td><td>스캔 시 상품명·PP코드·중량이 화면에 자동 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">8</td><td>라벨 미출력</td><td>계근해도 라벨이 출력되지 않음</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">9</td><td>계근 전송</td><td>전송 버튼 클릭 시 전송 완료 안내가 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">10</td><td>계근완료 표시</td><td>전송 후 해당 자재가 계근완료 상태로 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+          <tr><td class="num">11</td><td>ERP 반영 확인</td><td>ERP P0210(PDA생산계근현황)에서 전송한 계근 내역(계근바코드·계근순번·계근중량)이 조회됨</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">12</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
         </table>
       </div>
@@ -329,7 +329,6 @@
           <tr><td class="num">7</td><td>[B] 비정량 - 소수점</td><td>소수점 둘째자리까지 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
           <tr><td class="num">8</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
         </table>
-        <div class="note warn">업무 확인 필요 — 생산 투입 원료는 박스마다 무게가 다른 것이 일반적입니다. 현재 대상 품목이 모두 <b>비정량 미체크</b> 상태라면, 박스마다 동일한 고정 중량으로 기록됩니다. 실제 운영 방식과 맞는지 확인이 필요합니다.</div>
       </div>
 
       <!-- 시나리오 4 -->
@@ -358,193 +357,14 @@
         </table>
       </div>
 
-      <!-- 시나리오 5 -->
-      <div class="scn">
-        <h3><span class="sn">시나리오 5</span> 계근 완료 건 재조회 제외 확인</h3>
-        <div class="bg">계근·전송이 완료된 자재는 다시 대상받기를 해도 목록에 나타나지 않아야 합니다.</div>
-        <h4 class="lbl">절차</h4>
-        <pre class="proc">1. 시나리오 1로 특정 자재의 계근·전송 완료
-2. 메인 화면으로 복귀
-3. 동일 날짜로 생산계근대상받기 재실행
-4. 계근 완료한 자재가 목록에 있는지 확인
-5. 미계근 자재만 남아 있는지 확인</pre>
-        <h4 class="lbl">확인 항목</h4>
-        <table class="chk">
-          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>재조회 실행</td><td>대상받기가 정상 완료됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>완료 건 제외</td><td>계근·전송 완료한 자재가 <b>목록에서 빠짐</b></td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>미계근 건 유지</td><td>아직 계근하지 않은 자재는 그대로 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>전체 완료 시</td><td>모든 자재 계근 완료 시 빈 목록 안내 표시</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
-        </table>
-      </div>
 
-      <!-- 시나리오 6 -->
-      <div class="scn">
-        <h3><span class="sn">시나리오 6</span> 계근 이력 복원 확인</h3>
-        <div class="bg">앱을 재설치하거나 다른 기기로 작업할 때, 서버에 저장된 계근 이력이 복원되어야 합니다.</div>
-        <h4 class="lbl">절차</h4>
-        <pre class="proc">1. 특정 자재를 계근 완료 (전송하지 않은 상태 또는 전송 완료 상태)
-2. 앱 설정에서 앱 데이터 삭제 (또는 다른 PDA 기기 사용)
-3. 앱 재실행 → 로그인 → 동일 날짜 선택
-4. 생산계근대상받기 실행
-5. 계근입력시작 → 이전 계근 내역이 반영되어 있는지 확인</pre>
-        <h4 class="lbl">확인 항목</h4>
-        <table class="chk">
-          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>대상받기 정상 완료</td><td>오류 없이 목록 구성됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>계근 이력 복원</td><td>서버에 저장된 계근 내역이 화면에 반영됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>계근 수량 일치</td><td>복원된 계근수량이 전송한 수량과 일치함</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>다른 마트 데이터 미혼입</td><td>이마트·홈플러스 등 다른 계근 내역이 섞이지 않음</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
-        </table>
-      </div>
-
-      <!-- 시나리오 7 -->
-      <div class="scn">
-        <h3><span class="sn">시나리오 7</span> 계근 상세 조회 및 삭제</h3>
-        <h4 class="lbl">절차</h4>
-        <pre class="proc">1. 계근 완료 후 목록에서 해당 항목 선택
-2. 계근 상세 팝업 확인
-3. 출력 버튼 상태 확인
-4. 미전송 계근 건 삭제 시도
-5. 전송 완료 건 삭제 시도</pre>
-        <h4 class="lbl">확인 항목</h4>
-        <table class="chk">
-          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>계근 상세 팝업</td><td>계근한 박스별 중량·바코드 목록이 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>출력 버튼</td><td><b>비활성 상태</b> (생산은 라벨 미출력)</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>미전송 건 삭제</td><td>삭제 가능하며 계근수량이 감소함</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>전송 완료 건 삭제</td><td>"전송이 완료된 상품은 삭제할 수 없습니다." 안내 표시</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
-        </table>
-      </div>
-
-      <!-- 시나리오 8 -->
-      <div class="scn">
-        <h3><span class="sn">시나리오 8</span> 복수 자재 계근 전송</h3>
-        <h4 class="lbl">절차</h4>
-        <pre class="proc">1. 자재가 2건 이상인 생산작업지시 날짜 선택
-2. 생산계근대상받기 → 계근입력시작
-3. 첫 번째 자재 계근
-4. 지점 스피너에서 두 번째 자재로 전환
-5. 두 번째 자재 계근
-6. 전송 버튼 클릭 (한 번에 전송)
-7. 전송 결과 확인</pre>
-        <h4 class="lbl">확인 항목</h4>
-        <table class="chk">
-          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>자재 전환</td><td>스피너로 다른 자재 선택 시 화면 정보가 갱신됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>다른 상품 스캔</td><td>작업 중 다른 자재 스캔 시 전환 확인 다이얼로그 표시</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>복수 건 전송</td><td>여러 자재의 계근 데이터가 한 번에 전송됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>전송 결과</td><td>전송 완료 안내 표시, 모든 건이 계근완료로 변경</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
-        </table>
-      </div>
-
-      <!-- 시나리오 9 -->
-      <div class="scn">
-        <h3><span class="sn">시나리오 9</span> 예외 상황 — 데이터 없음 / 미등록 품목</h3>
-        <h4 class="lbl">절차</h4>
-        <pre class="proc">1. 생산작업지시가 없는 날짜 선택 → 생산계근대상받기
-2. 목록 상태 확인
-3. 대상받기 없이 생산계근입력시작 클릭
-4. 바코드 정보가 등록되지 않은 자재의 바코드 스캔
-5. 등록되지 않은 임의의 바코드 스캔</pre>
-        <h4 class="lbl">확인 항목</h4>
-        <table class="chk">
-          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>데이터 없는 날짜</td><td>빈 목록 안내 표시, 앱 정상 동작</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>대상받기 없이 계근입력시작</td><td>"생산대상 리스트가 없습니다. 리스트를 받아주세요." 안내</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>바코드 정보 미등록 자재</td><td>안내 표시 후 앱 정상 동작 (비정상 종료 없음)</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>등록되지 않은 바코드</td><td>"패커상품이 존재하지않거나, 바코드가 정확하지 않습니다" 안내 + 진동</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
-        </table>
-      </div>
-
-      <!-- 시나리오 10 -->
-      <div class="scn">
-        <h3><span class="sn">시나리오 10</span> 예외 상황 — 서버 미연결</h3>
-        <h4 class="lbl">절차</h4>
-        <pre class="proc">1. Wi-Fi 해제 또는 서버 중지 상태로 설정
-2. 생산계근대상받기 클릭
-3. 안내 메시지 및 앱 상태 확인
-4. 계근 후 전송 시도
-5. 네트워크 복구 후 재시도</pre>
-        <h4 class="lbl">확인 항목</h4>
-        <table class="chk">
-          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>대상받기 실패</td><td>오류 안내 표시, 앱은 정상 동작</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>전송 실패</td><td>전송 실패 안내 표시</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>계근 데이터 보존</td><td>전송 실패해도 기기의 계근 데이터가 유지됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>복구 후 재전송</td><td>네트워크 복구 후 재전송 시 정상 처리됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
-        </table>
-      </div>
-
-      <!-- 시나리오 11 -->
-      <div class="scn">
-        <h3><span class="sn">시나리오 11</span> 회귀 확인 — 다른 계근 기능 영향 없음</h3>
-        <div class="bg">생산 계근 기능 추가로 기존 마트 계근에 영향이 없는지 확인합니다.</div>
-        <h4 class="lbl">절차</h4>
-        <pre class="proc">1. 이마트 출하대상받기 → 계근 → 라벨 출력 → 전송
-2. 이마트 비정량 동일 흐름
-3. 도매 동일 흐름
-4. 각 기능의 라벨 출력·전송 정상 여부 확인</pre>
-        <h4 class="lbl">확인 항목</h4>
-        <table class="chk">
-          <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
-          <tr><td class="num">1</td><td>이마트 출하계근</td><td>대상받기·계근·라벨 출력·전송 모두 정상</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">2</td><td>이마트 비정량</td><td>대상받기·계근·라벨 출력·전송 모두 정상</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">3</td><td>도매 계근</td><td>대상받기·계근·전송 모두 정상</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">4</td><td>계근 이력 복원</td><td>각 기능의 계근 이력이 정상 복원됨</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">5</td><td>계근 데이터 분리</td><td>생산 계근 데이터가 마트 계근 데이터와 섞이지 않음</td><td class="ck"><input type="checkbox"></td></tr>
-          <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
-        </table>
-      </div>
-
-      <h3 class="sub">테스트 결과 요약 (생산 계근 searchType 1)</h3>
-      <table class="chk">
-        <tr><th>시나리오</th><th>결과</th><th>비고</th></tr>
-        <tr><td>1. 정상 흐름</td><td class="ck"><input type="checkbox"></td><td>대상받기 → 스캔 → 전송 (라벨 없음)</td></tr>
-        <tr><td>2. 바코드 스캔 계근 상세</td><td class="ck"><input type="checkbox"></td><td>중복 차단·수량 누적·완료 감지</td></tr>
-        <tr><td>3. 계근 방식 확인 (정량/비정량)</td><td class="ck"><input type="checkbox"></td><td>비정량 여부에 따른 중량 처리</td></tr>
-        <tr><td>4. 수기 중량입력 계근</td><td class="ck"><input type="checkbox"></td><td>중량 변환 없음·소비기한 창 없음</td></tr>
-        <tr><td>5. 계근 완료 건 재조회 제외</td><td class="ck"><input type="checkbox"></td><td>완료 건 목록에서 제외</td></tr>
-        <tr><td>6. 계근 이력 복원</td><td class="ck"><input type="checkbox"></td><td>앱 재설치·기기 교체 대응</td></tr>
-        <tr><td>7. 계근 상세 조회 및 삭제</td><td class="ck"><input type="checkbox"></td><td>출력 버튼 비활성 확인</td></tr>
-        <tr><td>8. 복수 자재 계근 전송</td><td class="ck"><input type="checkbox"></td><td>한 번에 묶어 전송</td></tr>
-        <tr><td>9. 데이터 없음 / 미등록 품목</td><td class="ck"><input type="checkbox"></td><td>안내 표시·앱 정상</td></tr>
-        <tr><td>10. 서버 미연결</td><td class="ck"><input type="checkbox"></td><td>오류 안내·데이터 보존</td></tr>
-        <tr><td>11. 회귀 확인</td><td class="ck"><input type="checkbox"></td><td>이마트·비정량·도매 영향 없음</td></tr>
-      </table>
-      <div class="note warn"><b>테스트 일자</b>: ____________________ &nbsp;·&nbsp; <b>테스트 결과</b>: ____________________ &nbsp;·&nbsp; <b>담당자</b>: ____________________</div>
-
-      <h3 class="sub">알려진 제약 사항</h3>
-      <table>
-        <tr><th>#</th><th>항목</th><th>내용</th></tr>
-        <tr><td class="c">1</td><td>바코드 정보 미등록</td><td>생산 대상 품목 대부분이 ERP 품목 마스터에 바코드 정보(상품바코드·구간 위치)가 등록되어 있지 않아 계근이 불가합니다. <b>ERP 등록이 선행되어야 합니다.</b></td></tr>
-        <tr><td class="c">2</td><td>비정량 여부 미설정</td><td>대상 품목이 모두 정량으로 설정되어 있어 박스마다 동일한 고정 중량으로 기록됩니다. 실제 운영 방식 확인이 필요합니다.</td></tr>
-        <tr><td class="c">3</td><td>지점명 공백</td><td>생산작업지시에 거래처가 입력되지 않으면 목록·스피너의 지점명이 공백으로 표시됩니다. 기능 영향은 없습니다.</td></tr>
-        <tr><td class="c">4</td><td>생산 라벨</td><td>생산 라벨 출력 기능(searchType 7)은 프로세스 미정의로 개발 대상에서 제외되었습니다.</td></tr>
-      </table>
-
-      <h3 class="sub">관련 문서</h3>
-      <table>
-        <tr><th>구분</th><th>문서</th></tr>
-        <tr><td>개발 가이드</td><td>app/doc/개발/59_생산_계근대상받기_JSP_MSSQL전환.md</td></tr>
-        <tr><td>개발 가이드</td><td>app/doc/개발/60_setBarcodeMsg_생산1_전용메서드_분리.md</td></tr>
-        <tr><td>컬럼 매핑</td><td>app/doc/column/11_생산_계근대상_컬럼매핑_Oracle_MSSQL.md</td></tr>
-        <tr><td>소스 분석</td><td>app/doc/소스분석/57_생산_계근대상받기_JSP_컬럼_사용분석.md</td></tr>
-        <tr><td>소스 분석</td><td>app/doc/소스분석/58_setBarcodeMsg_생산1_경로분석.md</td></tr>
-      </table>
 
     </div>
   </div>
 </section>
 
 <footer>
-  PDA-INNO · app/doc/테스트/09_생산_계근_전체테스트 · 갱신일 2026-08-05
+  PDA-INNO · app/doc/테스트/09_생산_계근_전체테스트
 </footer>
 
 </div>

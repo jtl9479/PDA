@@ -114,10 +114,16 @@ String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 "
 > LabelPrintHelper.java의 substring NULL 방어 여부(오류패턴_분석.md 패턴 F 관련, 22_잠재오류_18건_목록.md 오류 7 "STORE_IN_DATE substring NULL 방어 없음")는 별도 확인 필요.
 
 ## 상태
-- [ ] 미수정
+- [x] 수정 완료 (2026-07-23)
+  - **채택안**: 문서 제안이던 `CONVERT(VARCHAR(8), SD.납기일자, 112)` 대신, STORE_IN_DATE 출처를 `SD.납기일자`(datetime) → **`H.출고일자`(VARCHAR(8) YYYYMMDD)** 로 변경. 원본 타입이 이미 8자리 문자열이라 **CONVERT 자체가 불필요**한 구조로 전환되어 datetime 오인쇄 문제가 성립하지 않음.
+  - 이마트 `search_shipment.jsp:59`도 `H.출고일자`를 CONVERT 없이 사용 → 형식·기준 동일. 오류 33(SD JOIN 제거)과 동일 수정으로 동반 해소.
+  - 참고: substring NULL 방어(22번 오류 7)는 여전히 별도 확인 대상.
+  - 근거·결정: 개발문서 58 개정이력(2026-07-23), STORE_IN_DATE 매핑 통일 결정. code-verifier 통과.
 
 ## 관련 문서
-- `app/doc/오류/22_잠재오류_18건_목록.md` — 오류 1(STORE_IN_DATE datetime 형식 변환 누락)에 이미 목록화(미수정), 오류 7(STORE_IN_DATE substring NULL 방어 없음, 원본 동일)과 연쇄 확인 필요
+- `app/doc/개발/58_홈플러스_search_shipment_homeplus_이마트패턴_포팅[32_33_34].md` — 개정이력에 실제 채택안(H.출고일자) 명시.
+- `app/doc/오류/33_홈플러스_SM_수주상세_LEFT_JOIN_다중행_팽창_출하건_중복[홈플러스_출하계근_AI정적검증].md` — 동일 수정으로 동반 해소.
+- `app/doc/오류/22_잠재오류_18건_목록.md` — 오류 1(STORE_IN_DATE datetime 형식 변환 누락)에 이미 목록화, 오류 7(STORE_IN_DATE substring NULL 방어 없음, 원본 동일)과 연쇄 확인 필요
 - `app/doc/참고자료/오류패턴_분석.md` — **패턴 A: DB 타입 불일치** (22번: STORE_IN_DATE datetime 형식 변환 누락, 공통 체크 11번, searchType=2 추가 체크 5번)
 - 검증 출처: 홈플러스 AI 정적검증(code-verifier), 원본 비교(original-comparator)는 비허용 차이 없음으로 통과
 - JSP: `D:\PDA\apache-tomcat-8.5.29\apache-tomcat-8.5.29\webapps\ROOT\inno\search_shipment_homeplus.jsp`

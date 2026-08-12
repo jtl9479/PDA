@@ -108,10 +108,15 @@
 > 어떤 SM_수주상세 행을 대표로 선택할지(ORDER BY 기준)는 ERP 담당자 확인 후 결정 필요. 임의로 최신순(SEQ DESC)을 가정하지 말고 업무 요건 확인 필요.
 
 ## 상태
-- [ ] 미수정
+- [x] 수정 완료 (2026-07-23)
+  - **채택안**: 문서 제안이던 OUTER APPLY(TOP 1) 전환 대신, `search_shipment_homeplus.jsp:99~100`의 `LEFT JOIN SM_수주상세 SD`를 **완전 제거**하여 1:N 팽창을 원천 차단.
+  - STORE_IN_DATE는 `SD.납기일자` → `H.출고일자`로 대체(이마트 기준 일관, 오류 34와 동반 해소). 위 "ORDER BY 대표행 기준 ERP 확인 필요" 쟁점은 SD 자체를 제거하므로 소멸.
+  - 근거·결정: 개발문서 58 개정이력(2026-07-23), STORE_IN_DATE 매핑 통일 결정. code-verifier 통과(컬럼 24개 불변).
 
 ## 관련 문서
-- `app/doc/오류/22_잠재오류_18건_목록.md` — 오류 2(SM_수주상세 LEFT JOIN 다중 행 팽창)에 이미 목록화(미수정). 본 문서는 홈플러스 개별 상세 문서.
+- `app/doc/개발/58_홈플러스_search_shipment_homeplus_이마트패턴_포팅[32_33_34].md` — 개정이력에 실제 채택안(H.출고일자 + SD JOIN 제거) 명시.
+- `app/doc/오류/34_홈플러스_STORE_IN_DATE_datetime_CONVERT_미적용_라벨_날짜_오인쇄[홈플러스_출하계근_AI정적검증].md` — 동일 수정으로 동반 해소.
+- `app/doc/오류/22_잠재오류_18건_목록.md` — 오류 2(SM_수주상세 LEFT JOIN 다중 행 팽창)에 이미 목록화. 본 문서는 홈플러스 개별 상세 문서.
 - `app/doc/참고자료/오류패턴_분석.md` — **패턴 C: 컬럼명/구조 변경** (공통 체크 14번: SM_수주상세 LEFT JOIN 1:N 관계 확인, searchType=2 추가 체크 6번)
 - 검증 출처: 홈플러스 AI 정적검증(code-verifier), 원본 비교(original-comparator)는 비허용 차이 없음으로 통과 — 단, 이 JOIN 자체가 이마트에는 없는 구조이므로 원본 비교 대상에서 제외됨
 - JSP: `D:\PDA\apache-tomcat-8.5.29\apache-tomcat-8.5.29\webapps\ROOT\inno\search_shipment_homeplus.jsp`

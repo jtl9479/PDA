@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 이마트 비정량 출하계근 전체 테스트 시나리오</title>
+<style>
+  :root {
+    --blue: #2563eb; --blue-bg: #eff6ff;
+    --green: #16a34a; --green-bg: #f0fdf4;
+    --orange: #ea580c; --orange-bg: #fff7ed;
+    --red: #dc2626; --red-bg: #fef2f2;
+    --purple: #7c3aed; --purple-bg: #f5f3ff;
+    --gray: #64748b; --gray-bg: #f8fafc;
+    --border: #e2e8f0; --text: #1e293b; --navy: #1e3a8a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Malgun Gothic", "맑은 고딕", "Segoe UI", sans-serif;
+    color: var(--text); background: #f1f5f9; line-height: 1.55; padding: 24px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  header.page {
+    background: linear-gradient(135deg, #9a3412, #ea580c); color: #fff;
+    border-radius: 14px; padding: 28px 32px; margin-bottom: 24px;
+  }
+  header.page h1 { font-size: 26px; margin-bottom: 6px; }
+  header.page p { opacity: .92; font-size: 14px; }
+  header.page .meta { margin-top: 10px; font-size: 12.5px; opacity: .8; }
+
+  section.card {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 24px 28px; margin-bottom: 22px;
+  }
+  section.card > h2 {
+    font-size: 19px; margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--orange); color: var(--navy);
+  }
+  section.card > h2 .num {
+    display: inline-block; background: var(--orange); color: #fff; border-radius: 8px;
+    font-size: 13px; padding: 2px 9px; margin-right: 8px; vertical-align: 2px;
+  }
+  h3.sub { font-size: 15px; margin: 18px 0 10px; color: #334155; }
+
+  .badge { display: inline-block; font-size: 11.5px; font-weight: 700; border-radius: 99px; padding: 2px 10px; vertical-align: middle; }
+  .b-done { background: var(--green-bg); color: var(--green); border: 1px solid #bbf7d0; }
+  .b-wait { background: var(--orange-bg); color: var(--orange); border: 1px solid #fed7aa; }
+  .b-fail { background: var(--red-bg); color: var(--red); border: 1px solid #fecaca; }
+  .b-info { background: var(--blue-bg); color: var(--blue); border: 1px solid #bfdbfe; }
+  .b-gray { background: var(--gray-bg); color: var(--gray); border: 1px solid var(--border); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th { background: var(--navy); color: #fff; padding: 8px 10px; font-size: 12.5px; text-align: center; }
+  td { border: 1px solid var(--border); padding: 7px 10px; vertical-align: middle; }
+  tr:nth-child(even) td { background: #fafbfd; }
+  td.c { text-align: center; }
+  code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 12px; color: var(--purple); background: var(--purple-bg); padding: 1px 5px; border-radius: 4px; }
+
+  .note { border-left: 4px solid var(--blue); background: var(--blue-bg); border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 12.5px; margin: 12px 0; }
+  .note.warn { border-color: var(--orange); background: var(--orange-bg); }
+  .note.danger { border-color: var(--red); background: var(--red-bg); }
+
+  pre.flowbox {
+    background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 14px 16px;
+    font-family: Consolas, "Courier New", monospace; font-size: 12.5px; line-height: 1.65;
+    overflow-x: auto; margin: 12px 0; white-space: pre;
+  }
+  pre.proc {
+    background: var(--gray-bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px; font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 8px 0 12px; white-space: pre;
+  }
+
+  .scn {
+    border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+    margin: 16px 0; background: #fff;
+  }
+  .scn > h3 {
+    font-size: 15px; color: var(--navy); margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--orange-bg); display: flex; align-items: center; gap: 8px;
+  }
+  .scn > h3 .sn {
+    background: var(--orange); color: #fff; border-radius: 7px; font-size: 12px;
+    padding: 2px 10px; flex: none; font-weight: 800;
+  }
+  .scn h4.lbl { font-size: 12.5px; color: var(--gray); font-weight: 700; margin: 12px 0 6px; letter-spacing: .02em; }
+  .scn .bg { border-left: 4px solid var(--orange); background: var(--orange-bg); border-radius: 0 8px 8px 0; padding: 8px 12px; font-size: 12px; margin: 6px 0 10px; }
+  .scn .bg.danger { border-left-color: var(--red); background: var(--red-bg); }
+
+  table.chk td.ck { text-align: center; width: 44px; }
+  table.chk td.ck input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; accent-color: var(--orange); }
+  table.chk td.num { text-align: center; width: 36px; color: var(--gray); font-weight: 700; }
+
+  .phead {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    padding: 16px 22px; background: linear-gradient(135deg, #9a3412, #ea580c); color: #fff;
+    border-radius: 10px; margin-bottom: 16px;
+  }
+  .phead .big {
+    background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.5);
+    font-weight: 800; border-radius: 10px; padding: 4px 14px; font-size: 19px;
+  }
+  .phead h3 { font-size: 18px; flex: 1 1 auto; min-width: 140px; }
+  .phead h3 small { display: block; font-size: 11.5px; font-weight: 400; opacity: .85; margin-top: 2px; }
+  .phead .badge { border: none; }
+
+  footer { text-align: center; color: var(--gray); font-size: 12px; padding: 18px 0 8px; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    section.card { break-inside: avoid; }
+    .scn { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <h1>📋 이마트 비정량 출하계근 전체 테스트 시나리오</h1>
+  <p>작업자 화면·동작 기준 기능 테스트 · 대상: <b>이마트 비정량(searchType 4)</b> · 흐름: 날짜 선택 → 비정량출하대상받기 → 계근입력 → 스캔/수기 → 라벨 → 전송</p>
+  <div class="meta">작성일: 2026-07-27 · 기준: 03_이마트 출하계근 전체테스트(비정량 섹션) 확장 · 체크박스는 인쇄·클릭 가능</div>
+</header>
+
+<section class="card">
+
+  <div class="phead">
+    <div class="big">4</div>
+    <h3>이마트 비정량 출하계근<small>비정량 출하 → 계근 → 라벨 → 전송 전체 흐름 (searchType=4)</small></h3>
+    <span class="badge b-info">searchType 4</span><span class="badge b-info">중량 그대로 표시</span><span class="badge b-info">동일 바코드 반복 허용</span><span class="badge b-info">배치 전송(##)</span>
+  </div>
+
+  <h2>대상 기능</h2>
+  <p style="font-size:13px; margin-bottom:8px;">이마트 비정량 출하계근 (searchType=4) — 비정량 출하대상 조회 → 계근입력(바코드 스캔/수기) → 라벨 출력 → 계근 전송 전체 흐름</p>
+
+  <h3 class="sub">관련 문서</h3>
+  <table>
+    <tr><th>구분</th><th>경로</th></tr>
+    <tr><td>기준 템플릿(정량+비정량 통합)</td><td><code>app/doc/테스트/03_이마트_출하계근_전체테스트.html</code></td></tr>
+    <tr><td>EDA51 실기기 정량 테스트 데이터(7장: 비정량 조회조건만 확인, 0건)</td><td><code>app/doc/테스트데이터/01_이마트_출하계근_EDA51실기기_테스트데이터.md</code></td></tr>
+    <tr><td>본 테스트 데이터 문서</td><td><code>app/doc/테스트데이터/02_이마트비정량_출하계근_테스트데이터.md</code></td></tr>
+    <tr><td>오류 문서 (EMARTLOGIS_CODE 빈 문자열 라벨 크래시)</td><td><code>app/doc/오류/21_비정량_이마트_EMARTLOGIS_CODE_빈문자열_라벨출력_예외.md</code></td></tr>
+    <tr><td>문의사항 (M8 pBarcode2 미출력 의도)</td><td><code>app/doc/문의사항/03_M8_비정량_이마트_pBarcode2_생성_미출력_의도.md</code></td></tr>
+    <tr><td>오류패턴 분석 (searchType=4,5 체크리스트)</td><td><code>app/doc/참고자료/오류패턴_분석.md</code> §searchType=4,5</td></tr>
+    <tr><td>JSP - 출하대상 조회</td><td><code>webapps/ROOT/inno/search_production_nonfixed.jsp</code></td></tr>
+    <tr><td>JSP - 바코드정보 조회</td><td><code>webapps/ROOT/inno/search_barcode_info_nonfixed.jsp</code></td></tr>
+    <tr><td>JSP - 계근 전송</td><td><code>webapps/ROOT/inno/insert_goods_wet_new.jsp</code></td></tr>
+    <tr><td>파싱 클래스</td><td><code>ProgressDlgShipSearch.java</code>, <code>ProgressDlgBarcodeSearch.java</code></td></tr>
+    <tr><td>계근/라벨 로직</td><td><code>BixolonShipmentActivity.java</code>, <code>print/LabelPrintHelper.java</code></td></tr>
+  </table>
+
+  <h3 class="sub">사전 조건</h3>
+  <table>
+    <tr><th>#</th><th>항목</th><th>조건</th></tr>
+    <tr><td class="c">1</td><td>Tomcat/서버</td><td>weberp_dev 서버 가동 중 (<code>http://183.101.157.205:4040/inno</code>)</td></tr>
+    <tr><td class="c">2</td><td>DB</td><td>MSSQL weberp_dev 접속 가능</td></tr>
+    <tr><td class="c">3</td><td>앱</td><td>PDA 앱 로그인 완료, 회사코드 20</td></tr>
+    <tr><td class="c">4</td><td>테스트 데이터</td><td>이마트 비정량 출고 데이터 준비 완료 (출고수량&gt;0, 다양한 바코드타입 품목 1건 이상 포함 권장 — M8/M9 외 M0/M1 등)</td></tr>
+    <tr><td class="c">5</td><td>물류코드(EMARTLOGIS_CODE)</td><td>정상 케이스용 물류코드 입력 품목 1건 + 빈값(오류21 재현용) 품목 1건 준비</td></tr>
+    <tr><td class="c">6</td><td>PDA 기기</td><td>동일 네트워크(Wi-Fi) 연결 (Honeywell EDA51)</td></tr>
+    <tr><td class="c">7</td><td>프린터</td><td>BIXOLON 프린터 Bluetooth/Socket 페어링 완료</td></tr>
+    <tr><td class="c">8</td><td>창고 조건</td><td>비정량은 창고코드 조건이 없으므로 창고 선택과 무관하게 조회됨</td></tr>
+  </table>
+
+  <h3 class="sub">기능 흐름</h3>
+  <pre class="flowbox">[로그인 후] 날짜 선택 → 비정량출하대상받기(MainActivity.btnproductionNonfixedlist) 클릭
+    ↓ ProgressDlgShipSearch (searchType=4) → search_production_nonfixed.jsp 호출 (창고 조건 없음)
+    ↓ (자동 연계) ProgressDlgBarcodeSearch (searchType=4) → search_barcode_info_nonfixed.jsp (SBI.ITEM_CODE 매칭, WHERE SBI.ITEM_CODE=... AND SBI.회사코드=...)
+[비정량 계근입력시작] BixolonShipmentActivity 진입 (btnProdNonfixedWet) → 센터/BL번호/지점 선택
+    ↓
+[계근 입력] 비정량 바코드 스캔(동일 바코드 반복 허용) 또는 수기 중량입력 (중량 그대로, 반올림 없음)
+    ↓
+[라벨 인쇄] LabelPrintHelper.setPrinting() BARCODE_TYPE 분기 (M0/M1/M3/M4/M8/M9/E0~E3/P0)
+    ↓
+[계근 전송] 전송 버튼 → F(미전송) 건을 "##"로 묶어 1회 배치 전송 → insert_goods_wet_new.jsp → 계근완료 표시</pre>
+
+  <h3 class="sub">호출 URL 매핑 (Common.java 실제 상수 기준)</h3>
+  <table>
+    <tr><th>단계</th><th>Common.java 상수</th><th>JSP</th><th>DB 파라미터</th><th>근거</th></tr>
+    <tr><td>출하대상 조회</td><td><code>URL_SEARCH_PRODUCTION_NONFIXED</code></td><td>search_production_nonfixed.jsp</td><td>"inno" (sendDataDb)</td><td>ProgressDlgShipSearch.java:151~154</td></tr>
+    <tr><td>바코드정보 조회</td><td><code>URL_SEARCH_BARCODE_INFO_NONFIXED</code></td><td>search_barcode_info_nonfixed.jsp</td><td>"inno" (sendDataDb)</td><td>ProgressDlgBarcodeSearch.java:82~83</td></tr>
+    <tr><td>계근 전송</td><td><code>URL_INSERT_GOODS_WET_NEW</code></td><td>insert_goods_wet_new.jsp</td><td>"inno" (sendDataDb, 배치 "##")</td><td>BixolonShipmentActivity.java:2752~2754</td></tr>
+  </table>
+  <div class="note warn"><b>주의</b>: 요청 프롬프트에서 후보로 제시된 <code>insert_goods_wet_ono.jsp</code>는 실제 코드에 존재하지 않는다. searchType=4(비정량)는 <code>SEARCH_TYPE_PRODUCTION</code>(생산)·<code>SEARCH_TYPE_HOMEPLUS_NONFIXED</code>(홈플러스비정량)·<code>SEARCH_TYPE_PRODUCTION_LABEL</code>(생산라벨)과 동일하게 <b>URL_INSERT_GOODS_WET_NEW</b>(insert_goods_wet_new.jsp)로 배치 전송된다. (이마트 정량 0은 URL_INSERT_GOODS_WET·건별 전송으로 별도 경로)</div>
+
+  <div class="note warn"><b>정량(0)과의 차이</b>: 비정량은 <b>중량이 반올림 없이 그대로 표시</b>됨(BixolonShipmentActivity.java:1633~1638, EMART만 <code>Math.floor(weight*10)/10.0</code> 적용) · 동일 바코드를 <b>반복 스캔하면 수량이 누적</b>됨(1191, 1313행: 정량은 중복 차단, NONFIXED/HOMEPLUS_NONFIXED는 제외) · 계근 전송은 <b>F(미전송) 건을 "##"로 묶어 1회 배치 전송</b>(2706~2762행, 정량은 건별 순차 전송) · <b>창고 조건 없이</b> 조회됨(ProgressDlgShipSearch.java:151, 창고코드 WHERE절 미추가).</div>
+
+  <div class="note danger"><b>⚠️ 2026-06-23 조회 조건 변경 확인 (03 문서와 동일 이슈)</b>: <code>search_production_nonfixed.jsp:128~129</code> — 기존 <code>AND COALESCE(M1.바코드타입, M2.바코드타입) IN ('M8', 'M9')</code> 조건이 주석 처리되어 <b>제거</b>됨. 이제 비정량 품목이면 바코드타입(M0/M1/M3/M4/M8/M9/E0~E3/P0 등)과 무관하게 모두 조회된다. → 아래 시나리오 2, 7에서 이 변경이 EMARTLOGIS_CODE 크래시 리스크에 미치는 영향을 함께 확인한다.</div>
+
+  <!-- 시나리오 1 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 1</span> 정상 흐름 (출하대상받기 → 바코드 스캔 계근 → 라벨 → 전송)</h3>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. 앱 실행 → 로그인
+2. 비정량 출고 데이터가 있는 날짜 선택
+3. "비정량출하대상받기" 버튼 클릭 (btnproductionNonfixedlist)
+4. 로딩 진행 후 출하 목록이 구성되는지 확인 (search_production_nonfixed.jsp → search_barcode_info_nonfixed.jsp 순차 호출)
+5. 바코드정보 없는 상품 안내 다이얼로그 확인 후 닫기
+6. "비정량 계근입력시작" 버튼 클릭 (btnProdNonfixedWet) → 계근 화면 진입
+7. 센터 / BL번호 / 지점 선택 후 첫 상품 비정량 바코드 스캔
+8. 화면에 상품정보·중량이 그대로(반올림 없이) 표시되는지 확인
+9. BARCODE_TYPE에 맞는 라벨이 자동 출력되는지 확인
+10. 계근 전송 버튼 클릭
+11. 전송 완료 후 계근완료 표시로 변경되는지 확인</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>비정량출하대상받기 클릭</td><td>로딩 후 비정량 출하 목록이 화면에 구성됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>바코드정보 없는 상품 안내</td><td>해당 상품이 있으면 안내 다이얼로그 표시</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>비정량 계근입력시작</td><td>계근 화면으로 정상 진입, 센터/BL/지점 선택 가능</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">4</td><td>바코드 스캔 / 중량</td><td>스캔 시 상품정보·중량이 표시됨 (반올림 없이 그대로)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">5</td><td>라벨 자동 출력</td><td>BARCODE_TYPE에 맞는 양식 라벨이 자동 출력됨 (상품명/중량/바코드 육안 확인)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">6</td><td>계근 전송</td><td>전송 버튼 클릭 시 전송 완료 안내가 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">7</td><td>계근완료 표시</td><td>전송 후 해당 상품이 계근완료 상태로 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">8</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 2 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 2</span> 비정량 품목 전체 조회 확인 (바코드타입 제한 제거 반영)</h3>
+    <div class="bg">2026-06-23 변경: <code>search_production_nonfixed.jsp:128~129</code>의 <code>IN ('M8','M9')</code> 조건이 제거되어, 바코드타입과 무관하게 비정량 품목이 모두 조회된다.</div>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. 비정량 품목이면서 바코드타입이 M8/M9가 아닌 품목(M0/M1 등) 1건 이상 준비
+2. 해당 날짜로 비정량출하대상받기 클릭
+3. 조회 결과 목록에 M8/M9 외 바코드타입 품목이 포함되는지 확인
+4. 기존 M8/M9 품목도 함께 조회되는지 확인</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>M8/M9 외 품목 조회</td><td>바코드타입이 M8/M9가 아닌 비정량 품목도 목록에 포함됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>기존 M8/M9 품목 유지</td><td>M8/M9 품목도 누락 없이 함께 조회됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>스캔/계근 정상</td><td>조회된 품목 스캔 시 상품정보·중량이 정상 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">4</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 3 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 3</span> 동일 바코드 반복 스캔 허용 (수량 누적)</h3>
+    <div class="bg">BixolonShipmentActivity.java:1191, 1313행 — <code>searchType.equals(SEARCH_TYPE_NONFIXED) || equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)</code>인 경우 동일 바코드 중복확인 로직에서 제외됨.</div>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. 비정량 출하대상받기 완료 후 계근 화면 진입
+2. 첫 번째 상품 비정량 바코드 스캔
+3. 동일 바코드 재스캔
+4. 동일 바코드 3회차 스캔
+5. 계근수량 누적 확인</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>첫 스캔</td><td>계근수량 1 정상 증가</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>동일 바코드 재스캔</td><td>"이미 스캔한 바코드입니다" 경고 <b>없음</b> (반복 허용)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>계근수량 누적</td><td>동일 바코드 반복 스캔 시 수량이 2, 3으로 정상 누적됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">4</td><td>각 스캔 중량 반영</td><td>스캔마다 계근 중량 합계가 정상 반영됨 (반올림 없음)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">5</td><td>정량과 차이</td><td>정량은 중복 차단, 비정량은 반복 허용됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">6</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 4 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 4</span> 비정량 바코드정보 조회 확인 (ITEM_CODE 매칭)</h3>
+    <div class="bg">search_barcode_info_nonfixed.jsp는 정량(SBI.PPCODE 매칭)과 달리 <code>SBI.품목코드(ITEM_CODE)</code>로 CO_품목코드를 조회한다 (ProgressDlgBarcodeSearch.java:43~64). SHELF_LIFE 컬럼이 없어 소비기한 파싱을 하지 않는다(135~137행).</div>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. 비정량 출하대상받기 → 자동으로 바코드정보 조회까지 진행
+2. 계근 화면에서 비정량 상품 바코드 스캔
+3. 상품정보(상품명 등)와 중량이 정상 표시되는지 확인
+4. 수입육센터/미트센터 소비기한 입력창이 뜨지 않는지 확인 (비정량은 소비기한 입력 분기 미포함)</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>바코드 매칭</td><td>비정량 바코드 스캔 시 해당 상품으로 매칭됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>상품정보 표시</td><td>상품명 등 상품정보가 화면에 정상 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>중량 표시</td><td>중량이 그대로 화면에 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">4</td><td>소비기한 입력창 미노출</td><td>비정량은 수기입력 시에도 소비기한 입력창이 뜨지 않음 (EMART/LOTTE만 해당)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 5 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 5</span> 수기 중량입력 계근 (중량 그대로 표시, 반올림 없음)</h3>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. 비정량 출하대상받기 완료 후 계근 화면 진입
+2. 작업모드 스피너 → "수기"로 변경
+3. 상품 선택 후 중량 수동 입력 (소수점 포함, 예: 12.345)
+4. 입력 완료 후 계근 처리 확인 → 화면에 12.345가 그대로 반영되는지 확인 (정량은 12.3으로 절사)
+5. 라벨 출력 / 계근 전송 확인</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>수기 모드 선택</td><td>작업모드 "수기" 변경 후 수동 입력 필드 활성화</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>중량 수동 입력</td><td>키패드로 중량값 직접 입력 가능</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>중량 그대로 표시</td><td>입력한 소수점 중량이 반올림/절사 없이 그대로 표시됨 (BixolonShipmentActivity.java:1637~1638, 정량과 차이)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">4</td><td>계근 처리</td><td>입력 확인 시 계근 처리되고 수량/중량이 반영됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">5</td><td>라벨 출력</td><td>BARCODE_TYPE 양식 라벨이 출력됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">6</td><td>계근 전송</td><td>전송 버튼 클릭 시 전송 완료 안내가 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">7</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 6 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 6</span> M8/M9 라벨 인쇄 확인 (pBarcode2/EMARTLOGIS_CODE 미사용)</h3>
+    <div class="bg">문의사항03 반영 결과, 현재 LabelPrintHelper.java의 <code>case "M8"</code>(663~676행)·<code>case "M9"</code>(648~661행)은 <b>si.getEMARTLOGIS_CODE()를 전혀 사용하지 않는다</b> — pBarcode(EMARTITEM_CODE 기반)만 생성·인쇄한다. (M0/M1/M3/M4/E0/P0 case는 여전히 EMARTLOGIS_CODE.substring(0,6)을 사용함 → 시나리오 7 참조)</div>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. BARCODE_TYPE=M8인 비정량 품목 계근 → 라벨 출력 확인
+2. BARCODE_TYPE=M9인 비정량 품목 계근 → 라벨 출력 확인
+3. 라벨에 상품명/중량/바코드(EMARTITEM_CODE 기반)가 정상 인쇄되는지 육안 확인
+4. logcat에서 "M8" / "M9 (비정량 이마트)" 로그와 EMARTLOGIS_CODE 관련 예외 로그 유무 확인</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>M8 라벨 출력</td><td>EMARTITEM_CODE 기반 바코드만으로 라벨이 정상 출력됨 (EMARTLOGIS_CODE 무관)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>M9 라벨 출력</td><td>동일하게 EMARTITEM_CODE 기반으로 정상 출력됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>상품명/중량/바코드</td><td>라벨에 정상 인쇄됨 (육안 확인)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">4</td><td>EMARTLOGIS_CODE 예외 없음</td><td>물류코드가 빈값이어도 M8/M9는 크래시 없음 (EMARTLOGIS_CODE 미참조)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 7 -->
+  <div class="scn">
+    <h3><span class="sn" style="background:var(--red)">시나리오 7 (엣지케이스)</span> EMARTLOGIS_CODE 빈값 라벨 출력 예외 리스크 — 오류21 재검증</h3>
+    <div class="bg danger">
+      ⚠️ <b>오류21 원인 코드는 M0/M1/M3/M4/E0/P0 case에는 여전히 존재</b>한다 (LabelPrintHelper.java:518~519, 534~535, 551~552, 567~568, 584~585, 644~645 — <code>si.getEMARTLOGIS_CODE().substring(0, 6)</code>, null/빈값 방어 없음).<br>
+      JSP도 미수정 상태 확인됨: <code>search_production_nonfixed.jsp:60</code> — <code>COALESCE(M1.물류코드, M2.물류코드) AS EMARTLOGIS_CODE</code> (NULLIF/ISNULL 방어 미적용, 빈 문자열 그대로 통과).<br>
+      2026-06-23 바코드타입 제한(M8/M9 only) 제거로 인해, 이전에는 M8/M9만 나오던 비정량 대상에 <b>M0/M1/M3/M4 등 다른 바코드타입도 포함될 수 있게 되어</b>, 해당 품목의 EMARTLOGIS_CODE가 빈 문자열이면 <code>StringIndexOutOfBoundsException(length=0; index=6)</code> 크래시 위험이 <b>새로 발생</b>할 수 있다.
+    </div>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. ERP CO_매출처품목코드매핑에서 물류코드가 빈 문자열('')인 비정량 품목을 준비
+2. 해당 품목의 바코드타입이 M0 또는 M1이 되도록 CO_매출처품목코드매핑.바코드타입 확인 (M8/M9가 아닌 케이스)
+3. 비정량출하대상받기로 해당 품목 조회
+4. 해당 품목 바코드 스캔 또는 수기 계근 완료
+5. 라벨 출력 단계에서 앱 동작 확인 (정상 출력 vs 예외 발생)
+6. logcat에서 StringIndexOutOfBoundsException 발생 여부 확인
+--- 대조군 ---
+7. 동일 조건에서 물류코드가 정상 입력된(빈값 아님) 품목으로 재시도 → 정상 출력 확인</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>정상 물류코드 케이스</td><td>물류코드 정상 입력 시 M0/M1 라벨이 정상 출력됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>빈값 물류코드 + M0/M1 케이스</td><td>(리스크) EMARTLOGIS_CODE=""이면 substring(0,6)에서 StringIndexOutOfBoundsException 발생 가능 — 발생 시 라벨 미출력, 앱 자체는 크래시 없이 예외만 로그 처리되는지 확인(BixolonShipmentActivity 기존 try/catch 범위 확인)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>M8/M9 빈값 케이스 (대조)</td><td>M8/M9는 EMARTLOGIS_CODE 미참조이므로 빈값이어도 예외 없음 (시나리오 6과 일치)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">4</td><td>재현 시 처리</td><td>예외 재현되면 코드 수정하지 말고 <code>app/doc/오류/</code>에 신규 오류 문서(오류21 갱신 또는 신규 오류번호) 작성 후 개발 프로세스로 연계</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음 (예외가 발생해도 앱 전체가 죽지 않고 해당 라벨 출력만 실패해야 함)</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 8 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 8</span> 복수 건 배치 전송 (insert_goods_wet_new.jsp, "##" 구분자)</h3>
+    <div class="bg">정량(0)은 건별 순차 전송(URL_INSERT_GOODS_WET)이지만, 비정량(4)은 SAVE_TYPE=F 건 전체를 "##"로 묶어 <b>1회 배치 전송</b>한다 (BixolonShipmentActivity.java:2706~2762, URL_INSERT_GOODS_WET_NEW). insert_goods_wet_new.jsp는 <code>data.split("##")</code> 후 각 레코드를 "::"로 분리해 순차 INSERT한다.</div>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. 비정량 바코드 스캔으로 복수 건(2건 이상) 계근 완료
+2. 계근 전송 버튼 클릭 (1회 클릭)
+3. 전송 진행 후 완료 안내 확인
+4. 모든 건이 계근완료로 변경되는지 확인
+5. (선택) 서버 SM_출고계근 테이블에서 전송된 건수만큼 INSERT되었는지 확인</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>복수 건 배치 전송</td><td>여러 건 계근 후 전송 버튼 한 번으로 모두 전송됨 ("##" 배치)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>전송 완료 안내</td><td>전송 성공 안내가 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>전송 후 화면</td><td>전송한 건들이 모두 계근완료 상태로 갱신됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">4</td><td>GI_L_ID 매핑</td><td>splitData[14](GI_L_ID)가 출고LOTSEQ로 정상 저장됨 (insert_goods_wet_new.jsp:82)</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">5</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 9 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 9</span> 계근 데이터 전송·반영 확인</h3>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. 비정량 출하대상받기 → 상품 스캔하여 계근
+2. 계근 전송 실행
+3. 전송 후 계근완료 상태 반영 확인
+4. 재조회 시 계근 결과가 유지되는지 확인</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>계근 전송</td><td>전송 버튼 클릭 시 전송 완료 안내가 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>계근완료 반영</td><td>전송 후 해당 상품이 계근완료 상태로 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>재조회 시 유지</td><td>다시 받기 후에도 계근 결과가 유지됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">4</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 10 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 10</span> 데이터 없는 날짜</h3>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. 앱 실행 → 로그인
+2. 비정량 출고 데이터가 없는 날짜 선택
+3. "비정량출하대상받기" 버튼 클릭</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>빈 목록 표시</td><td>출하 목록이 빈 상태로 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>사용자 안내</td><td>"데이터가 없습니다" 또는 빈 목록 안내가 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>앱 비정상 종료</td><td>없음 (30번 오류: 빈 응답 split ArrayIndexOutOfBoundsException 재발 여부 함께 확인)</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 11 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 11</span> 서버 미연결</h3>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. 서버 중지 (또는 네트워크 차단)
+2. 앱 실행 → 로그인
+3. "비정량출하대상받기" 버튼 클릭</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>연결 실패 안내</td><td>연결 실패 알림 다이얼로그 또는 안내가 표시됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>화면 유지</td><td>오류 후에도 화면이 유지되고 재시도 가능</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>앱 비정상 종료</td><td>없음 (앱이 죽지 않음)</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <!-- 시나리오 12 -->
+  <div class="scn">
+    <h3><span class="sn">시나리오 12</span> 재조회 동기화 (기존 데이터 있는 상태)</h3>
+    <h4 class="lbl">절차</h4>
+    <pre class="proc">1. 시나리오 1 완료 후 (출하 목록이 있는 상태)
+2. 동일 날짜로 비정량출하대상받기 다시 클릭
+3. 서버 데이터 변경 여부 확인 (추가/삭제 건 반영)</pre>
+    <h4 class="lbl">확인 항목</h4>
+    <table class="chk">
+      <tr><th>#</th><th>확인 항목</th><th>예상 결과</th><th>확인</th></tr>
+      <tr><td class="num">1</td><td>재조회 시 목록 갱신</td><td>다시 받기 시 최신 서버 데이터로 목록이 갱신됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">2</td><td>추가/삭제 반영</td><td>서버에 추가된 건은 표시, 삭제된 건은 빠짐</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">3</td><td>기존 계근 데이터 유지</td><td>이미 계근한 항목의 계근 상태가 유지됨</td><td class="ck"><input type="checkbox"></td></tr>
+      <tr><td class="num">4</td><td>앱 비정상 종료</td><td>없음</td><td class="ck"><input type="checkbox"></td></tr>
+    </table>
+  </div>
+
+  <h3 class="sub">테스트 결과 요약</h3>
+  <table class="chk">
+    <tr><th>시나리오</th><th>결과</th><th>비고</th></tr>
+    <tr><td>1. 정상 흐름</td><td class="ck"><input type="checkbox"></td><td>출하대상받기 → 스캔 → 라벨 → 전송</td></tr>
+    <tr><td>2. 비정량 품목 전체 조회 확인</td><td class="ck"><input type="checkbox"></td><td>바코드타입 제한 제거(2026-06-23) 반영</td></tr>
+    <tr><td>3. 동일 바코드 반복 스캔 허용</td><td class="ck"><input type="checkbox"></td><td>수량 누적</td></tr>
+    <tr><td>4. 비정량 바코드정보 조회 확인</td><td class="ck"><input type="checkbox"></td><td>ITEM_CODE 매칭, SHELF_LIFE 없음</td></tr>
+    <tr><td>5. 수기 중량입력 계근</td><td class="ck"><input type="checkbox"></td><td>중량 그대로 표시</td></tr>
+    <tr><td>6. M8/M9 라벨 인쇄 확인</td><td class="ck"><input type="checkbox"></td><td>pBarcode2/EMARTLOGIS_CODE 미사용</td></tr>
+    <tr><td>7. EMARTLOGIS_CODE 빈값 라벨 예외 리스크 (오류21)</td><td class="ck"><input type="checkbox"></td><td>M0/M1/M3/M4/E0/P0 케이스 재검증, 실패 시 오류/ 문서화</td></tr>
+    <tr><td>8. 복수 건 배치 전송</td><td class="ck"><input type="checkbox"></td><td>"##" 배치, insert_goods_wet_new.jsp</td></tr>
+    <tr><td>9. 계근 데이터 전송·반영 확인</td><td class="ck"><input type="checkbox"></td><td>계근완료 반영·유지</td></tr>
+    <tr><td>10. 데이터 없는 날짜</td><td class="ck"><input type="checkbox"></td><td>빈 목록 안내, 30번 오류 재발 확인</td></tr>
+    <tr><td>11. 서버 미연결</td><td class="ck"><input type="checkbox"></td><td>오류 안내, 앱 정상</td></tr>
+    <tr><td>12. 재조회 동기화</td><td class="ck"><input type="checkbox"></td><td>최신 데이터 반영</td></tr>
+  </table>
+  <div class="note warn"><b>테스트 일자</b>: ____________________ &nbsp;·&nbsp; <b>테스트 결과</b>: ____________________</div>
+  <div class="note danger"><b>실패 시 처리</b>: 시나리오 7(EMARTLOGIS_CODE 빈값 예외) 등에서 앱 크래시·비정상 동작이 재현되면 코드를 직접 수정하지 말고 <code>app/doc/오류/</code>에 오류 문서를 작성한 뒤 개발 프로세스(오류/ → 개발/ → 테스트/)로 진행한다.</div>
+
+</section>
+
+<footer>
+  PDA-INNO · app/doc/테스트/08_이마트비정량 출하계근 전체 테스트 · 작성일 2026-07-27
+</footer>
+
+</div>
+</body>
+</html>
