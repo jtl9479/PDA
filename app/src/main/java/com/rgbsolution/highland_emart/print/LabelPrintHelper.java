@@ -86,7 +86,7 @@ public class LabelPrintHelper {
     private static final String CENTER_NAME_WET = "WET";
     private static final String CENTER_NAME_ET = "E/T";
 
-    // 휴먼울림체 폰트
+    // Korail 폰트
     private static Typeface customFont = null;
 
     // ========================================================================================
@@ -224,13 +224,13 @@ public class LabelPrintHelper {
     }
 
     /**
-     * 커스텀 폰트(휴먼울림체) 로드
+     * 커스텀 폰트(Korail) 로드
      */
     public static void loadCustomFont(Context context) {
         if (customFont == null) {
             try {
-                customFont = Typeface.createFromAsset(context.getAssets(), "hywulm.ttf");
-                Log.d("LabelPrintHelper", "휴먼울림체 폰트 로드 성공");
+                customFont = Typeface.createFromAsset(context.getAssets(), "Korail.ttf");
+                Log.d("LabelPrintHelper", "코레일 폰트 로드 성공");
             } catch (Exception e) {
                 Log.e("LabelPrintHelper", "폰트 로드 실패, 기본 폰트 사용: " + e.getMessage());
                 customFont = Typeface.DEFAULT_BOLD;
