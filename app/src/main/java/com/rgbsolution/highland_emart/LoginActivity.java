@@ -106,13 +106,13 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String receiveData) {
-            receiveData = receiveData.replace("\r\n", "").replace("\n", "");
+            String normalized = (receiveData == null) ? "" : receiveData.replace("\r\n", "").replace("\n", "");
 
             Common.warehouseNames.clear();
             Common.warehouseCodes.clear();
 
-            if (receiveData != null && !receiveData.isEmpty()) {
-                String[] rows = receiveData.split(";;");
+            if (!normalized.isEmpty()) {
+                String[] rows = normalized.split(";;");
                 for (String row : rows) {
                     if (row.isEmpty()) continue;
                     String[] cols = row.split("::", -1);
@@ -123,13 +123,24 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
 
-            // 조회 0건: 안내 다이얼로그 표시, Spinner는 빈 상태 유지
+            // 조회 0건: 원인(연결 실패 vs 실제 0건)에 따라 안내 문구 분리, Spinner는 빈 상태 유지
             if (Common.warehouseNames.isEmpty()) {
-                new AlertDialog.Builder(LoginActivity.this)
-                    .setTitle("창고 목록 없음")
-                    .setMessage("등록된 PDA 사용 창고가 없습니다.\nERP 창고관리(C0114)에서 PDA여부를 설정하세요.")
-                    .setPositiveButton("확인", null)
-                    .show();
+                if (normalized.trim().isEmpty()) {
+                    // 정상 응답이나 실제 창고 데이터 0건 — 기존 문구 유지
+                    new AlertDialog.Builder(LoginActivity.this)
+                        .setTitle("창고 목록 없음")
+                        .setMessage("등록된 PDA 사용 창고가 없습니다.\nERP 창고관리(C0114)에서 PDA여부를 설정하세요.")
+                        .setPositiveButton("확인", null)
+                        .show();
+                } else {
+                    // 응답은 왔으나 비어있지 않음 = 통신/서버/DB 연결 오류 메시지가 담겨 있음
+                    Log.e(TAG, "창고 목록 조회 오류 응답: " + normalized);
+                    new AlertDialog.Builder(LoginActivity.this)
+                        .setTitle("창고 목록 조회 실패")
+                        .setMessage("서버에 연결할 수 없습니다.\n서버 상태와 네트워크를 확인 후 다시 시도하세요.")
+                        .setPositiveButton("확인", null)
+                        .show();
+                }
                 return;  // Spinner 구성 생략 — selectWarehouse/Code는 "" 상태 유지
             }
 
