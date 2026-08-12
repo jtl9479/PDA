@@ -152,6 +152,15 @@
   - 행 속성: 일정명(제목), 기간(날짜, 생성 시 `date:기간:start` 키), 구분(개발/문서/테스트/회의/기타), 완료(체크박스), 메모.
 - 사용자가 해당 작업을 실제로 수행하면 → 그 일정 항목의 **완료 체크박스를 체크**(`완료` = `__YES__`)하고, 작업 기록 DB에도 기록한다.
 
+## Notion 개발 파이프라인 (하네스)
+- 상태머신: Notion `회사 > PDA > 개발` DB(데이터소스 `collection://acaceae4-52ef-491d-bb81-f7564535d6fb`)의 `단계`(요청→개발문서→개발중→테스트→완료).
+- 흐름: ① 사용자가 개발 DB 행 본문에 요구 작성(단계=요청) → ② 개발문서 초안+검증 → ③ 개발 → ④ 코드검증 → ⑤ 테스트문서+테스트 → ⑥ git commit(단계=완료).
+- **가드레일**: "원본 100% 동일" 위반은 검증 게이트에서 차단·반려. 코드 수정·commit은 **사람 승인 게이트**(자동 워크플로우에 넣지 않음).
+- Workflow 스크립트(`.claude/workflows/`):
+  - `notion-dev-pipeline` — 요구분석→개발문서초안(dev-guide)→문서검증(doc-consistency+적대적). 호출: `Workflow({name:'notion-dev-pipeline', args:{rowId:'<개발DB행id>'}})`
+  - `notion-code-verify` — 변경 diff에 code-verifier+original-comparator 적대적 검증(읽기전용). 호출: `Workflow({name:'notion-code-verify', args:{base:'<선택: git ref>'}})`
+- 문서 산출물(개발문서/테스트문서)은 로컬 app/doc/ 원본 → hook이 Notion 작업기록에 자동 미러. 개발 DB 행의 `개발문서`/`테스트문서` URL로 연결한다.
+
 ## 커밋 메세지 작성
 1. 문서 기반으로 step 별 개발 진행사항 커밋의 경우
     문서명 : step명
