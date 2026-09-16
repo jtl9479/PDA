@@ -226,12 +226,13 @@ if (Common.searchType.equals(SEARCH_TYPE_NONFIXED)
 |:-:|------|------|:-:|
 | 1 | **ShipmentType.java** | 인터페이스. 메서드 6개 선언 | 1 |
 | 2 | **ShipmentTypeFactory.java** | searchType 6종 → 구현체 6종 | 1 |
-| 3 | **WholesaleType.java** (3) | 도매. 차이 3곳(#9·10·12) | 2 |
-| 4 | **LotteType.java** (6) | 롯데. 박스순번 카운터 보유 | 3 |
-| 5 | **HomeplusType.java** (2) | 홈플러스 정량 | 4 |
-| 6 | **HomeplusNonfixedType.java** (5) | 홈플러스 비정량 | 5 |
-| 7 | **EmartNonfixedType.java** (4) | 이마트 비정량 | 6 |
-| 8 | **EmartType.java** (0) | 이마트 정량. 가장 크고 위험 → 마지막 | 7 |
+| 3 | **ShipmentConst.java** | 타입 구현체 공용 상수(ITEM_TYPE, 킬코이·미트센터, 센터명, 디바운스, 롯데 박스순번 최대값). 값은 Activity와 동일 | 1 |
+| 4 | **WholesaleType.java** (3) | 도매. 차이 3곳(#9·10·12) | 2 |
+| 5 | **LotteType.java** (6) | 롯데. 박스순번 카운터 보유 | 3 |
+| 6 | **HomeplusType.java** (2) | 홈플러스 정량 | 4 |
+| 7 | **HomeplusNonfixedType.java** (5) | 홈플러스 비정량 | 5 |
+| 8 | **EmartNonfixedType.java** (4) | 이마트 비정량 | 6 |
+| 9 | **EmartType.java** (0) | 이마트 정량. 가장 크고 위험 → 마지막 | 7 |
 
 `common/` 하위 파일은 Step 12에서 diff 결과를 보고 결정한다. **지금 설계하지 않는다.**
 
@@ -692,21 +693,55 @@ setMessage(1078) → setBarcodeMsg(1143)
 | 5 | Activity 생성 | 446 앞 | 생산 제외 후 Factory 호출 (4.4) |
 
 **Part 2. 변환 계획**
-- 변환 방식: 신규 파일 8개 생성 + Activity 2줄 추가
+- 변환 방식: 신규 파일 9개 생성 + Activity 추가 16줄(수정·삭제 0줄)
 - 주의사항: 생산(1, 7)으로 진입 시 Factory가 호출되지 않아야 한다. `IllegalArgumentException`이 나면 조건이 틀린 것이다
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트
-- [ ] Part 6: 회귀테스트
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 — `gradlew assembleDebug` → `BUILD SUCCESSFUL` (2026-09-16, 9s)
+- [ ] Part 5: 단위테스트 — 실기기 확인 필요
+- [ ] Part 6: 회귀테스트 — 실기기 확인 필요
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: `shipment/type/` 패키지에 파일 9개 생성. Activity에 import 2줄 + 필드 1개 + `onCreate` 생성 블록 추가(총 추가 16줄, 수정·삭제 0줄)
+- **왜**: Step 2 이후 타입별 이관이 올라탈 골격 확보. 이 Step에서는 생성만 하고 호출하지 않으므로 동작이 바뀌지 않는다
+- **어떻게**: 아래 구성대로 생성하고, Activity는 기존 줄을 건드리지 않고 추가만 했다
+
+| 파일 | 내용 |
+|---|---|
+| `ShipmentType.java` | 인터페이스. 메서드 6개 선언 |
+| `ShipmentTypeFactory.java` | searchType 6종 → 구현체. 생산(1·7)이 오면 `IllegalArgumentException` |
+| `ShipmentConst.java` | 공용 상수. **값은 Activity와 동일**. 하드코딩 센터명(용인TRD 등)은 리터럴 유지 원칙에 따라 옮기지 않음 |
+| `EmartType`(0) · `HomeplusType`(2) · `WholesaleType`(3) · `EmartNonfixedType`(4) · `HomeplusNonfixedType`(5) · `LotteType`(6) | 골격. 각 클래스 Javadoc에 §1.3의 타입별 판정을 명시. 메서드는 `UnsupportedOperationException("Step N에서 이관 예정")` |
+
+**Activity 변경 (추가 16줄)**
+
+```java
+// import 2줄
+import com.rgbsolution.highland_emart.shipment.type.ShipmentType;
+import com.rgbsolution.highland_emart.shipment.type.ShipmentTypeFactory;
+
+// 필드 1개
+private ShipmentType shipmentType;
+
+// onCreate — 레이아웃 분기 직후
+if (!Common.searchType.equals(SEARCH_TYPE_PRODUCTION)
+        && !Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)) {
+    shipmentType = ShipmentTypeFactory.create(Common.searchType, this);
+}
+```
+
+**검증 결과**
+
+| 항목 | 결과 |
+|---|---|
+| Activity diff | 추가 16줄 / 삭제 0줄. 기존 줄 수정 없음 |
+| 빌드 | `BUILD SUCCESSFUL` (9s) |
+| Factory 도달 값 | `Common.searchType` 대입 지점 전수 확인 — `MainActivity` 호출부 8곳이 상수 `"0"`~`"7"`만 사용, 기본값 `"0"`. 따라서 Factory에는 0·2·3·4·5·6만 도달하며 예외 발생 값 없음 |
+| 생산 경로 | 생성 자체를 건너뛰므로 `shipmentType`은 null. `setBarcodeMsgProduction` 경로 그대로 |
+| 골격 오호출 방지 | 구현체 메서드는 전부 `UnsupportedOperationException`. Step 2 이후 배선 실수가 조용히 넘어가지 않고 즉시 드러난다 |
 
 ---
 
@@ -1236,7 +1271,7 @@ Step 14: 통합 테스트
 | Step | 작업 | 상태 |
 |------|------|------|
 | 0 | 호출처 없는 코드 정리 | ✅ 완료 (2026-09-16, 294줄 삭제 · 빌드 통과) |
-| 1 | 인터페이스 + Factory 골격 | ⏳ 대기 |
+| 1 | 인터페이스 + Factory 골격 | ✅ 완료 (2026-09-16, 파일 9개 · Activity 추가 16줄 · 빌드 통과) |
 | 2 | 바코드 스캔 — 도매(3) | ⏳ 대기 |
 | 3 | 바코드 스캔 — 롯데(6) | ⏳ 대기 |
 | 4 | 바코드 스캔 — 홈플러스(2) | ⏳ 대기 |
