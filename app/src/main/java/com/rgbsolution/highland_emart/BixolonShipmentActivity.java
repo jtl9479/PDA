@@ -47,6 +47,8 @@ import com.rgbsolution.highland_emart.print.LabelPrintHelper;
 // 원본: import com.woosim.printer.WoosimService;
 import com.rgbsolution.highland_emart.print.DeviceListActivity;
 import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
+import com.rgbsolution.highland_emart.shipment.type.ShipmentType;
+import com.rgbsolution.highland_emart.shipment.type.ShipmentTypeFactory;
 
 import java.util.ArrayList;
 
@@ -321,6 +323,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /** 선택 버튼 - 선택된 지점의 계근 상세정보 팝업 */
     private Button btn_select;
 
+    /**
+     * searchType별 계근 흐름 담당 객체 (개발66 Step 1)
+     * <p>생산(1, 7)은 생성하지 않으므로 null이다. 기존 setBarcodeMsgProduction 경로를 그대로 탄다.</p>
+     * <p>Step 1 시점에는 생성만 하고 호출하지 않는다 — 동작 변화 없음.</p>
+     */
+    private ShipmentType shipmentType;
+
     // ========================================================================================
     // 계근 작업 상태 관리 필드
     // ========================================================================================
@@ -415,6 +424,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             setContentView(R.layout.activity_shipment_wholesale);
         }else{
             setContentView(R.layout.activity_shipment);
+        }
+
+        // 개발66 Step 1: searchType별 타입 객체 생성 (생산 1·7 제외 - 기존 경로 유지)
+        // 이 시점에는 생성만 하며 아직 호출하지 않는다. Step 2부터 타입별로 위임을 붙인다.
+        if (!Common.searchType.equals(SEARCH_TYPE_PRODUCTION)
+                && !Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)) {
+            shipmentType = ShipmentTypeFactory.create(Common.searchType, this);
         }
 
         current_work_position = -1;
