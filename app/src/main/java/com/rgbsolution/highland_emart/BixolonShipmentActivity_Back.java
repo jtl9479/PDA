@@ -16,8 +16,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,18 +39,19 @@ import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Goodswets_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 import com.rgbsolution.highland_emart.print.BixolonSocketPrinter;
-import com.rgbsolution.highland_emart.print.LabelPrintHelper;
-// Woosim import 제거됨 - Bixolon SLCS 명령어로 대체
-// 원본: import com.woosim.printer.WoosimBarcode;
-// 원본: import com.woosim.printer.WoosimCmd;
-// 원본: import com.woosim.printer.WoosimImage;
-// 원본: import com.woosim.printer.WoosimService;
 import com.rgbsolution.highland_emart.print.DeviceListActivity;
+import com.rgbsolution.highland_emart.print.LabelPrintHelper;
 import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
 
 import java.util.ArrayList;
 
 import static com.rgbsolution.highland_emart.R.id.sp_center;
+
+// Woosim import 제거됨 - Bixolon SLCS 명령어로 대체
+// 원본: import com.woosim.printer.WoosimBarcode;
+// 원본: import com.woosim.printer.WoosimCmd;
+// 원본: import com.woosim.printer.WoosimImage;
+// 원본: import com.woosim.printer.WoosimService;
 
 /**
  * ShipmentActivity - 출하 계근 작업 화면
@@ -141,12 +142,12 @@ import static com.rgbsolution.highland_emart.R.id.sp_center;
  * @see LoginActivity 로그인 및 출하 유형 선택
  * @see MainActivity 메인 화면
  */
-public class BixolonShipmentActivity extends HoneywellScannerActivity {
+public class BixolonShipmentActivity_Back extends HoneywellScannerActivity {
 
     // ========================================================================================
     // 상수 정의
     // ========================================================================================
-    private final String TAG = "BixolonShipmentActivity";
+    private final String TAG = "BixolonShipmentActivity_Back";
 
     // searchType 상수 (Common.searchType과 비교용)
     private static final String SEARCH_TYPE_EMART = "0";             // 이마트 출하
@@ -249,7 +250,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private LabelPrintHelper.PrinterCallback printerCallback = new LabelPrintHelper.PrinterCallback() {
         @Override
         public void sendData(byte[] data) {
-            BixolonShipmentActivity.this.sendData(data);
+            BixolonShipmentActivity_Back.this.sendData(data);
         }
 
         @Override
@@ -464,7 +465,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         sp_center_name = (Spinner) findViewById(sp_center);
 
         Common.list_center_info = DBHandler.selectqueryCenterList(this);
-        ArrayAdapter<String> center_adapter = new ArrayAdapter<String>(BixolonShipmentActivity.this, android.R.layout.simple_spinner_item, Common.list_center_info);
+        ArrayAdapter<String> center_adapter = new ArrayAdapter<String>(BixolonShipmentActivity_Back.this, android.R.layout.simple_spinner_item, Common.list_center_info);
         center_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sp_center_name.setAdapter(center_adapter);
         sp_center_name.setOnItemSelectedListener(emartCenterSelectedListener);
@@ -555,14 +556,14 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         } else {
             if (Common.printer_setting && !Common.searchType.equals(SEARCH_TYPE_PRODUCTION)) {  //메인화면 프린터설정에서 ON으로 하면 아래 로직을 탄다, 이노이천에서 생산 계근일떄는 물어보지 않도록 변경
                 if (mBixolonPrinter == null) {
-                    mBixolonPrinter = new BixolonSocketPrinter(BixolonShipmentActivity.this, mBixolonHandler);
+                    mBixolonPrinter = new BixolonSocketPrinter(BixolonShipmentActivity_Back.this, mBixolonHandler);
                     // mWoosim 제거됨 - Bixolon SLCS 명령어로 대체
 
                     if (Common.printer_address.equals("")) {
-                        Intent i = new Intent(BixolonShipmentActivity.this, DeviceListActivity.class);
+                        Intent i = new Intent(BixolonShipmentActivity_Back.this, DeviceListActivity.class);
                         startActivityForResult(i, REQUEST_CONNECT_DEVICE);
                     } else {
-                        new ProgressDlgPrintConnect(BixolonShipmentActivity.this).execute();
+                        new ProgressDlgPrintConnect(BixolonShipmentActivity_Back.this).execute();
                     }
 
                 }
@@ -582,7 +583,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         Log.i(TAG, TAG + " onDestroy");
 
         if (mBixolonPrinter != null) {
-            new ProgressDlgDiscon(BixolonShipmentActivity.this).execute();
+            new ProgressDlgDiscon(BixolonShipmentActivity_Back.this).execute();
         }
 
         if (cDialog != null && cDialog.isShowing()) {
@@ -677,7 +678,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                           String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
                           String makingTo = work_item_bi_info.getMAKINGDATE_TO();
 
-                          Intent IntentA = new Intent(BixolonShipmentActivity.this, ExpiryEnterActivity.class);
+                          Intent IntentA = new Intent(BixolonShipmentActivity_Back.this, ExpiryEnterActivity.class);
 
                           String weightStrKey = "weightStrKey";
                           String weightDblKey = "weightDblKey";
@@ -697,7 +698,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
                             String makingTo = work_item_bi_info.getMAKINGDATE_TO();
 
-                            Intent IntentA = new Intent(BixolonShipmentActivity.this, ExpiryEnterActivity.class);
+                            Intent IntentA = new Intent(BixolonShipmentActivity_Back.this, ExpiryEnterActivity.class);
 
                             String weightStrKey = "weightStrKey";
                             String weightDblKey = "weightDblKey";
@@ -759,7 +760,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             Log.i(TAG, "Send 버튼 클릭");
 
             dialog_flag = true;
-            new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+            new AlertDialog.Builder(BixolonShipmentActivity_Back.this, R.style.AppCompatDialogStyle)
                     .setIcon(R.drawable.highland)
                     .setTitle(R.string.shipment_wet_send)
                     .setMessage(R.string.shipment_wet_send_msg)
@@ -767,7 +768,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     .setPositiveButton(R.string.shipment_wet_yes, (dialog, which) -> {
                         // 전송시작
                         dialog_flag = false;
-                        new ProgressDlgShipmentSend(BixolonShipmentActivity.this).execute();
+                        new ProgressDlgShipmentSend(BixolonShipmentActivity_Back.this).execute();
                     }).setNegativeButton(R.string.shipment_wet_no, (dialog, which) -> {
                 dialog_flag = false;
             }).show();
@@ -917,9 +918,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         break;
                     case MESSAGE_SEARCH:
                         if (mBixolonPrinter == null) {
-                            mBixolonPrinter = new BixolonSocketPrinter(BixolonShipmentActivity.this, mBixolonHandler);
+                            mBixolonPrinter = new BixolonSocketPrinter(BixolonShipmentActivity_Back.this, mBixolonHandler);
                             // mWoosim 제거됨 - Bixolon SLCS 명령어로 대체
-                            Intent i = new Intent(BixolonShipmentActivity.this, DeviceListActivity.class);
+                            Intent i = new Intent(BixolonShipmentActivity_Back.this, DeviceListActivity.class);
                             startActivityForResult(i, REQUEST_CONNECT_DEVICE);
                         }
                         break;
@@ -1026,7 +1027,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     Log.d(TAG, "Print complete");
                     break;
                 case BixolonSocketPrinter.MESSAGE_TOAST:
-                    Toast.makeText(BixolonShipmentActivity.this, (String)msg.obj, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(BixolonShipmentActivity_Back.this, (String)msg.obj, Toast.LENGTH_SHORT).show();
                     break;
             }
         }
@@ -1077,7 +1078,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 setBarcodeMsg(msg);
             } else if(work_flag == 0){
                 // BL코드로 계근 리스트 조회하기
-                new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), msg, scan_flag).execute();
+                new ProgressDlgShipSelect(BixolonShipmentActivity_Back.this, sp_center_name.getSelectedItem().toString(), msg, scan_flag).execute();
             } else if(work_flag == 2){
                 setBarcodeMsg(msg);
             }
@@ -1224,7 +1225,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             vibrator.vibrate(500);
                             dialog_flag = true;
 
-                            new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+                            new AlertDialog.Builder(BixolonShipmentActivity_Back.this, R.style.AppCompatDialogStyle)
                                     .setIcon(R.drawable.highland)
                                     .setTitle(R.string.shipment_wet_other)
                                     .setMessage(R.string.shipment_wet_other_msg)
@@ -1233,7 +1234,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                         dialog_flag = false;
                                         work_ppcode = find_ppcode;
                                         work_item_fullbarcode = msg;
-                                        new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
+                                        new ProgressDlgShipSelect(BixolonShipmentActivity_Back.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
                                     })
                                     .setNegativeButton(R.string.shipment_wet_no, (dialog, which) -> {
                                         dialog_flag = false;
@@ -1647,7 +1648,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             vibrator.vibrate(500);
                             dialog_flag = true;
 
-                            new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+                            new AlertDialog.Builder(BixolonShipmentActivity_Back.this, R.style.AppCompatDialogStyle)
                                     .setIcon(R.drawable.highland)
                                     .setTitle(R.string.shipment_wet_other)
                                     .setMessage(R.string.shipment_wet_other_msg)
@@ -1656,7 +1657,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                         dialog_flag = false;
                                         work_ppcode = find_ppcode;
                                         work_item_fullbarcode = msg;
-                                        new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
+                                        new ProgressDlgShipSelect(BixolonShipmentActivity_Back.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan_flag).execute();
                                     })
                                     .setNegativeButton(R.string.shipment_wet_no, (dialog, which) -> {
                                         dialog_flag = false;
@@ -2033,6 +2034,15 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         Log.i(TAG, "############ scan_flag init ###########");
     }
 
+    public void scanFlag_swap() {
+        if (scan_flag)
+            scan_flag = false;
+        else
+            scan_flag = true;
+        Log.i(TAG, "############ scan_flag Swap ###########");
+        Log.i(TAG, "####### scan_flag : " + scan_flag + " #######");
+    }
+
 
     public void set_scanFlag(boolean bool) {
         scan_flag = bool;
@@ -2072,6 +2082,18 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
             return "null";
         }
+    }
+
+    public boolean find_BL(String barcode) {
+        boolean result = false;
+        String BL_NO = barcode;
+        if (BL_NO.equals(arSM.get(current_work_position).getBL_NO())) {
+            result = true;
+        } else {
+            result = false;
+        }
+
+        return result;
     }
 
     private String find_work_info(String req, boolean type) {
@@ -2296,7 +2318,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         try {
             ArrayList<String> list_bl = new ArrayList<String>();
             list_bl.add(arSM.get(work_position).getBL_NO());
-            ArrayAdapter<String> bl_adapter = new ArrayAdapter<String>(BixolonShipmentActivity.this, android.R.layout.simple_spinner_item, list_bl);
+            ArrayAdapter<String> bl_adapter = new ArrayAdapter<String>(BixolonShipmentActivity_Back.this, android.R.layout.simple_spinner_item, list_bl);
             bl_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             sp_bl_no.setAdapter(bl_adapter);
 
@@ -2362,6 +2384,51 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         // V x,y,K,w,h,0,N,B,N,0,L,0,'text'
         // K: 한글, 0: 회전없음, N: 일반, B: 굵게, N: 이탤릭없음, 0: 자간, L: 왼쪽정렬, 0: 줄간격
         return "V" + x + "," + y + ",K," + width + "," + height + ",0,N,B,N,0,L,0,'" + text + "'\r\n";
+    }
+
+    /**
+     * SLCS CODE128 바코드 생성
+     *
+     * @param x      X 좌표
+     * @param y      Y 좌표
+     * @param height 바코드 높이
+     * @param data   바코드 데이터
+     * @return SLCS 바코드 명령어 문자열
+     */
+    private String slcsBarcode(int x, int y, int height, String data) {
+        // BD x,y,barcode_type,narrow,wide,height,rotation,HRI,quiet_zone,'data'
+        // CODE128, narrow=2, wide=4, HRI=0(없음), quiet_zone=0
+        return "BD" + x + "," + y + ",CODE128,2,4," + height + ",0,0,0,'" + data + "'\r\n";
+    }
+
+    /**
+     * SLCS 선 그리기
+     *
+     * @param x1    시작 X 좌표
+     * @param y1    시작 Y 좌표
+     * @param x2    끝 X 좌표
+     * @param y2    끝 Y 좌표
+     * @param width 선 두께
+     * @return SLCS 선 명령어 문자열
+     */
+    private String slcsLine(int x1, int y1, int x2, int y2, int width) {
+        // LS x1,y1,x2,y2,width
+        return "LS" + x1 + "," + y1 + "," + x2 + "," + y2 + "," + width + "\r\n";
+    }
+
+    /**
+     * SLCS 박스 그리기
+     *
+     * @param x         X 좌표
+     * @param y         Y 좌표
+     * @param width     박스 너비
+     * @param height    박스 높이
+     * @param thickness 선 두께
+     * @return SLCS 박스 명령어 문자열
+     */
+    private String slcsBox(int x, int y, int width, int height, int thickness) {
+        // LB x1,y1,x2,y2,thickness
+        return "LB" + x + "," + y + "," + (x + width) + "," + (y + height) + "," + thickness + "\r\n";
     }
 
     /**
@@ -2531,7 +2598,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         list_position.add(arSM.get(i).getCLIENTNAME() + " / " + arSM.get(i).getIMPORT_ID_NO());
                     }
 
-                    ArrayAdapter<String> position_adapter = new ArrayAdapter<String>(BixolonShipmentActivity.this, android.R.layout.simple_spinner_item, list_position);
+                    ArrayAdapter<String> position_adapter = new ArrayAdapter<String>(BixolonShipmentActivity_Back.this, android.R.layout.simple_spinner_item, list_position);
                     position_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     sp_point_name.setAdapter(position_adapter);
                     select_flag = true;
@@ -2604,6 +2671,193 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             } catch (Exception ex) {
                 Log.e(TAG, "======== ProgressDlgShipSelect onPostExecute Exception ========");
                 Log.e(TAG, ex.toString());
+            }
+        }
+    }
+
+    /**
+     * BL번호 기반 출하 대상 조회 AsyncTask
+     * <p>
+     * BL번호로 출하 대상 목록을 조회한다.
+     * ProgressDlgShipSelect와 유사하지만 BL번호 전용 조회에 사용.
+     * </p>
+     *
+     * @see ProgressDlgShipSelect
+     */
+    class ProgressDlgShipSelectBL extends AsyncTask<Integer, String, Integer> {
+        private Context mContext;
+
+
+        private String center_name;
+        private String bl_no;
+
+        public ProgressDlgShipSelectBL(Context context, String center_name, String bl_no) {
+            mContext = context;
+            this.center_name = center_name;
+            this.bl_no = bl_no;
+        }
+
+        @Override
+
+        protected void onPreExecute() {
+            pDialog = new ProgressDialog(mContext);
+
+            pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            pDialog.setTitle("출하대상 불러오는중...");
+            pDialog.setMessage("잠시만 기다려 주세요..");
+            pDialog.setCancelable(false);
+            pDialog.show();
+
+            current_work_position = -1;
+            centerTotalCount = 0;
+            centerTotalWeight = 0.0;
+            centerWorkCount = 0;
+            centerWorkWeight = 0.0;
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Integer doInBackground(Integer... params) {
+            try {
+                arSM = DBHandler.selectqueryShipment(mContext, this.center_name, this.bl_no, false);
+
+                for (int i = 0; i < arSM.size(); i++) {
+                    String[] row = new String[2];
+                    row = DBHandler.selectqueryListGoodsWetInfo(mContext, arSM.get(i).getGI_D_ID(), arSM.get(i).getPACKER_PRODUCT_CODE(), arSM.get(i).getCLIENT_CODE(), arSM.get(i).getGI_L_ID());
+                    arSM.get(i).setGI_QTY(Double.parseDouble(row[0]));      // 중량
+                    arSM.get(i).setPACKING_QTY(Integer.parseInt(row[1]));   // 수량
+                    arSM.get(i).setSAVE_CNT(Integer.parseInt(row[2]));      // 계근 상품 전송 개수
+                }
+
+                if (Common.D) {
+                    Log.d(TAG, "result's Count : " + arSM.size());
+                }
+            } catch (Exception e) {
+                if (Common.D) {
+                    Log.e(TAG, "e : " + e.toString());
+                }
+            }
+
+            return 0;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... progress) {
+            if (progress[0].equals("progress")) {
+                pDialog.setProgress(Integer.parseInt(progress[1]));
+                pDialog.setMessage(progress[2]);
+            } else if (progress[0].equals("max")) {
+                pDialog.setMax(Integer.parseInt(progress[1]));
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+            pDialog.dismiss();
+            sListAdapter = new ShipmentListAdapter(mContext, R.layout.list_shipment, arSM, mHandler);
+            sList.setAdapter(sListAdapter);
+            sListAdapter.notifyDataSetChanged();
+
+            if (arSM.size() > 0) {       // 목록 존재
+                edit_product_name.setText(arSM.get(0).getITEM_NAME().toString());
+                edit_product_code.setText(arSM.get(0).getPACKER_PRODUCT_CODE().toString());
+                ArrayList<String> list_position = new ArrayList<String>();
+                for (int i = 0; i < arSM.size(); i++) {
+                    list_position.add(arSM.get(i).getCLIENTNAME());
+                }
+
+                ArrayAdapter<String> position_adapter = new ArrayAdapter<String>(BixolonShipmentActivity_Back.this, android.R.layout.simple_spinner_item, list_position);
+                position_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                sp_point_name.setAdapter(position_adapter);
+                select_flag = true;
+                ArrayList<String> list_bl = new ArrayList<String>();
+
+                for (int i = 0; i < arSM.size(); i++) {
+                    centerTotalCount += Integer.parseInt(arSM.get(i).getGI_REQ_PKG());      // 센터 총 계근요청수량
+                    centerTotalWeight += Double.parseDouble(arSM.get(i).getGI_REQ_QTY());   // 센터 총 계근요청중량
+
+                    centerWorkCount += arSM.get(i).getPACKING_QTY();                        // 센터 총 계근수량
+                    centerWorkWeight += arSM.get(i).getGI_QTY();                            // 센터 총 계근중량
+
+                    int iCount = 0;
+                    for (int j = 0; j < list_bl.size(); j++) {
+                        if (list_bl.get(j).toString().equals(arSM.get(i).getBL_NO())) {
+                            iCount++;
+                            break;
+                        }
+                    }
+                    if (iCount == 0) {
+                        list_bl.add(arSM.get(i).getBL_NO());
+                    }
+                }
+                edit_center_tcount.setText(centerTotalCount + " / " + centerWorkCount);
+                edit_center_tweight.setText(Math.round(centerTotalWeight * 100) / 100.0 + " / " + centerWorkWeight);
+
+                ArrayAdapter<String> bl_adapter = new ArrayAdapter<String>(BixolonShipmentActivity_Back.this, android.R.layout.simple_spinner_item, list_bl);
+                bl_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                sp_bl_no.setAdapter(bl_adapter);
+
+                if (current_work_position == -1) {
+                    show_sendFinishDialog();
+                    return;
+                } else {
+                    sp_point_name.setSelection(current_work_position);
+                    for (int i = 0; i < sp_bl_no.getCount(); i++) {
+                        if (sp_bl_no.getItemAtPosition(i).toString().equals(arSM.get(current_work_position).getBL_NO())) {
+                            sp_bl_no.setSelection(i);
+                            break;
+                        }
+                    }
+                }
+
+                position_adapter.notifyDataSetChanged();
+                bl_adapter.notifyDataSetChanged();
+
+                if (!work_item_fullbarcode.equals("")) {
+                    boolean dup = DBHandler.duplicatequeryGoodsWet(getApplicationContext(), work_item_fullbarcode,
+                            arSM.get(current_work_position).getGI_D_ID(), arSM.get(current_work_position).getPACKER_PRODUCT_CODE(), arSM.get(current_work_position).getGI_L_ID());
+
+                    if (dup) {
+                        Log.e(TAG, "=====================오류지점3=========================");
+                        Toast.makeText(getApplicationContext(), "이미 스캔한 바코드입니다.\n다른 바코드를 스캔하세요.", Toast.LENGTH_SHORT).show();
+                        vibrator.vibrate(1000);
+                        //scanFlag_swap();
+                        set_scanFlag(true);
+                    }
+                }
+
+                sList.setSelection(current_work_position);      // 현재 계근지점으로 위치 변경
+                for (int i = 0; i < arSM.size(); i++) {
+                    arSM.get(i).setWORK_FLAG(0);
+                }
+
+                arSM.get(current_work_position).setWORK_FLAG(1);
+                sListAdapter.notifyDataSetChanged();
+                if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
+                    show_wetFinishDialog();
+                } else if (arSM.get(current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.get(current_work_position).getPACKING_QTY()))) {
+                    //scanFlag_swap();
+                    //show_wetNextDialog();
+                }
+            } else {            // 결과 없음
+                vibrator.vibrate(1000);
+                Log.e(TAG, "###############################################");
+                Log.e(TAG, "######### 출하대상 리스트 조회결과 없음 ###########");
+                Log.e(TAG, "###############################################");
+                Toast.makeText(getApplicationContext(), "조회결과가 없습니다.", Toast.LENGTH_SHORT).show();
+                //scanFlag_swap();
+                set_scanFlag(true);
+                edit_product_name.setText("");
+                edit_product_code.setText("");
+
+                centerTotalCount = 0;
+                centerTotalWeight = 0.0;
+                edit_center_tcount.setText("0 / 0");
+                edit_center_tweight.setText("0 / 0");
+                edit_wet_count.setText("0 / 0");
+                edit_wet_weight.setText("0 / 0");
+                work_item_fullbarcode = "";
+                //work_ppcode = "";
             }
         }
     }
@@ -2973,7 +3227,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                 editor.putString("printer_address", Common.printer_address);
                                 editor.putInt("printer_no", 10);                //	30 = PM30
                                 editor.commit();
-                                new ProgressDlgPrintConnect(BixolonShipmentActivity.this).execute();        // 선택된 모바일프린터 연결 시도
+                                new ProgressDlgPrintConnect(BixolonShipmentActivity_Back.this).execute();        // 선택된 모바일프린터 연결 시도
                             }
                         } catch (Exception e) {
                             if (Common.D) {
@@ -3131,16 +3385,16 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 edit_wet_count.setText("");
                 edit_wet_weight.setText("");
                 if (work_flag == 1) {
-                    new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true).execute();
+                    new ProgressDlgShipSelect(BixolonShipmentActivity_Back.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true).execute();
                     //setBarcodeMsg(msg);
                 } else if (work_flag == 0){
                     //Toast.makeText(getApplicationContext(), "수기로 중량을 입력해주세요.", Toast.LENGTH_SHORT).show();
                     //vibrator.vibrate(500);
                     Log.e(TAG, "수기일때 뒤로가기 = " + work_bl_no);
                     // BL코드로 계근 리스트 조회하기
-                    new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
+                    new ProgressDlgShipSelect(BixolonShipmentActivity_Back.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
                 } else if (work_flag == 2){
-                    new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
+                    new ProgressDlgShipSelect(BixolonShipmentActivity_Back.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
                 }
             });
 
@@ -3272,8 +3526,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 }
             });
 
-            list_gi_info = DBHandler.selectqueryGoodsWet(BixolonShipmentActivity.this, si.getGI_D_ID(), si.getPACKER_PRODUCT_CODE(), si.getCLIENT_CODE(), si.getGI_L_ID());
-            detailAdapter = new DetailAdapter(BixolonShipmentActivity.this, R.layout.list_detailshipment, list_gi_info, mHandler);
+            list_gi_info = DBHandler.selectqueryGoodsWet(BixolonShipmentActivity_Back.this, si.getGI_D_ID(), si.getPACKER_PRODUCT_CODE(), si.getCLIENT_CODE(), si.getGI_L_ID());
+            detailAdapter = new DetailAdapter(BixolonShipmentActivity_Back.this, R.layout.list_detailshipment, list_gi_info, mHandler);
 
             detail_list = (ListView) detail_layout.findViewById(R.id.detail_list);
             detail_list.setAdapter(detailAdapter);
@@ -3295,7 +3549,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         String buttonYes = "삭제";
         String buttonNo = "취소";
 
-        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+        new AlertDialog.Builder(BixolonShipmentActivity_Back.this, R.style.AppCompatDialogStyle)
                 .setIcon(R.drawable.highland)
                 .setTitle(alertTitle)
                 .setMessage(buttonMessage)
@@ -3355,7 +3609,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // 전송이 끝났음을 알리는 Dialog
     private void show_sendFinishDialog() {
         dialog_flag = true;
-        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+        new AlertDialog.Builder(BixolonShipmentActivity_Back.this, R.style.AppCompatDialogStyle)
                 .setIcon(R.drawable.highland)
                 .setTitle(R.string.shipment_wet_send_finish)
                 .setMessage(R.string.shipment_wet_send_finish_msg)
@@ -3377,10 +3631,43 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 }).show();
     }
 
+    // 다음 지점 계근을 묻는 Dialog
+    private void show_wetNextDialog() {
+        dialog_flag = true;
+        new AlertDialog.Builder(BixolonShipmentActivity_Back.this, R.style.AppCompatDialogStyle)
+                .setIcon(R.drawable.highland)
+                .setTitle(R.string.shipment_wet_finish)
+                .setMessage(R.string.shipment_wet_next_msg)
+                .setCancelable(false)
+                .setPositiveButton(R.string.shipment_wet_ok, (dialog, which) -> {
+                    // 다음 지점 선택
+                    if (work_flag == 1) {
+                        scanFlag_init();
+                    } else if (work_flag == 0){
+                        set_scanFlag(false);
+                    } else if (work_flag == 2){
+                        scanFlag_init();
+                    }
+                    select_flag = false;
+
+                    work_item_fullbarcode = "";
+                    edit_barcode.setText("");
+                    //edit_wet_count.setText("0 / 0");
+                    //edit_wet_weight.setText("0 / 0");
+                    btn_send.setEnabled(false);
+                    btn_send.setBackgroundResource(R.drawable.disable_round_button);
+                    dialog_flag = false;
+                    //for (int i = 0; i < arSM.size(); i++) {
+                    //    arSM.get(i).setWORK_FLAG(false);
+                    //}
+                    sListAdapter.notifyDataSetChanged();
+                }).show();
+    }
+
     // 계근이 끝났음을 알리는 Dialog
     private void show_wetFinishDialog() {
         dialog_flag = true;
-        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+        new AlertDialog.Builder(BixolonShipmentActivity_Back.this, R.style.AppCompatDialogStyle)
                 .setIcon(R.drawable.highland)
                 .setTitle(R.string.shipment_wet_finish)
                 .setMessage(R.string.shipment_wet_finish_msg)
@@ -3405,8 +3692,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // 에러가 났을 때, 알림창 표시 showAelrtDialog 추가
     public void showAlertDialog(String s,int i){
         try {
-            Inflater = (LayoutInflater) BixolonShipmentActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            final AlertDialog.Builder builder = new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle);
+            Inflater = (LayoutInflater) BixolonShipmentActivity_Back.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(BixolonShipmentActivity_Back.this, R.style.AppCompatDialogStyle);
             vibrator.vibrate(500);
             builder.setIcon(R.drawable.highland);
             builder.setTitle("스캔 오류");
