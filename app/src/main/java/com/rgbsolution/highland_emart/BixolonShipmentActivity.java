@@ -284,28 +284,28 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * 출하 대상 리스트 - VIEW에서 조회한 출하 대상 정보
      * @see Shipments_Info
      */
-    private ArrayList<Shipments_Info> arSM;
+    public ArrayList<Shipments_Info> arSM;   // 개발66 Step 2: 타입 파일 접근용 공개
 
     /** 작업 모드 선택 스피너 (바코드스캔/수기입력/상품코드) */
     private Spinner sp_work;
     /** 바코드/중량 입력 필드 - 스캔된 바코드 또는 수기 입력 중량 */
-    private EditText edit_barcode;
+    public EditText edit_barcode;   // 개발66 Step 2: 타입 파일 접근용 공개 (Step 13에서 재검토)
     /** 입력 버튼 - 바코드 입력 또는 중량 입력 확인 */
     private Button btn_input;
     /** 센터 선택 스피너 - 이마트 물류센터 선택 */
-    private Spinner sp_center_name;
+    public Spinner sp_center_name;  // 개발66 Step 2: 타입 파일 접근용 공개
     /** 상품명 표시 필드 - 현재 작업 중인 상품명 (ITEM_NAME) */
     private EditText edit_product_name;
     /** 상품코드 표시 필드 - 현재 작업 중인 패커상품코드 (PACKER_PRODUCT_CODE) */
     private EditText edit_product_code;
     /** BL번호 선택 스피너 - 동일 BL건 그룹핑 */
-    private Spinner sp_bl_no;
+    public Spinner sp_bl_no;        // 개발66 Step 2: 타입 파일 접근용 공개
     /** 센터 총 요청수량 - 선택된 센터의 전체 GI_REQ_PKG 합계 */
     private EditText edit_center_tcount;
     /** 센터 총 요청중량 - 선택된 센터의 전체 GI_REQ_QTY 합계 */
     private EditText edit_center_tweight;
     /** 지점 선택 스피너 - 출고 대상 지점 선택 (CLIENTNAME) */
-    private Spinner sp_point_name;
+    public Spinner sp_point_name;   // 개발66 Step 2: 타입 파일 접근용 공개
     /** 지점 계근 현황 - "요청수량 / 완료수량" 형태 (GI_REQ_PKG / PACKING_QTY) */
     private EditText edit_wet_count;
     /** 지점 계근 중량 - "요청중량 / 완료중량" 형태 (GI_REQ_QTY / GI_QTY) */
@@ -314,7 +314,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /** 출하 대상 리스트 어댑터 */
     private ShipmentListAdapter sListAdapter;
     /** 출하 대상 리스트뷰 - 센터별 출하 대상 목록 표시 */
-    private ListView sList;
+    public ListView sList;          // 개발66 Step 2: 타입 파일 접근용 공개
 
     /** 뒤로가기 버튼 */
     private Button btn_back;
@@ -335,9 +335,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // ========================================================================================
 
     /** 센터 총 요청수량 (GI_REQ_PKG 합계) */
-    private int centerTotalCount;
+    public int centerTotalCount;    // 개발66 Step 2: 타입 파일 접근용 공개
     /** 센터 완료수량 (PACKING_QTY 합계) */
-    private int centerWorkCount;
+    public int centerWorkCount;     // 개발66 Step 2: 타입 파일 접근용 공개
     /** 센터 총 요청중량 (GI_REQ_QTY 합계) */
     private double centerTotalWeight;
     /** 센터 완료중량 (GI_QTY 합계) */
@@ -348,7 +348,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * 현재 계근 작업 중인 리스트 위치
      * -1: 미선택, 0~n: arSM 리스트 인덱스
      */
-    private int current_work_position;
+    public int current_work_position;   // 개발66 Step 2: 타입 파일 접근용 공개
 
     /**
      * 작업 모드 플래그
@@ -356,13 +356,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * 0: 수기 입력 모드 (중량 직접 입력)
      * 2: 상품코드 입력 모드
      */
-    private int work_flag = 1;
+    public int work_flag = 1;       // 개발66 Step 2: 타입 파일 접근용 공개
     /**
      * 스캔 순서 플래그
      * true: 상품 바코드 스캔 차례
      * false: BL번호 바코드 스캔 차례
      */
-    private boolean scan_flag = true;
+    public boolean scan_flag = true;   // 개발66 Step 2: 타입 파일 접근용 공개
     /**
      * 선택 모드 플래그
      * true: 스캔 모드
@@ -371,10 +371,10 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private boolean select_flag = true;
 
     /** 진동 알림 */
-    private Vibrator vibrator;
+    public Vibrator vibrator;       // 개발66 Step 2: 타입 파일 접근용 공개
     AlertDialog alert;
     /** 다이얼로그 중복 표시 방지 플래그 */
-    boolean alert_flag = false;
+    public boolean alert_flag = false;   // 개발66 Step 2: 타입 파일 접근용 공개
     /** 제조일자 입력 플래그 (킬코이 미트센터용) */
     boolean makingdateInputFlag = false;
 
@@ -383,9 +383,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // ========================================================================================
 
     /** setBarcodeMsg 마지막 처리 시각 (중복 호출 방지용) */
-    private long lastBarcodeProcessedTime = 0;
+    public long lastBarcodeProcessedTime = 0;    // 개발66 Step 2: 타입 파일 접근용 공개
     /** setBarcodeMsg 마지막 처리 바코드 값 (같은 바코드 여부 판별용) */
-    private String lastProcessedBarcode = "";
+    public String lastProcessedBarcode = "";     // 개발66 Step 2: 타입 파일 접근용 공개
     /** 중복 처리 방지 간격 (ms) - 같은 바코드 처리 후 1초 이내 재처리 차단 */
     private static final long BARCODE_PROCESS_DEBOUNCE_MS = 1000;
 
@@ -1104,20 +1104,22 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // 바코드 처리 관련 필드 및 메서드
     // ========================================================================================
 
+    // 개발66 Step 2: 아래 7종은 타입 파일(shipment/type)이 접근하므로 public 으로 공개한다.
+    //                값·용도는 그대로이며 접근 범위만 넓혔다. Step 13에서 재검토한다.
     /** 현재 작업 중인 바코드 정보 (S_BARCODE_INFO 테이블 데이터) */
-    Barcodes_Info work_item_bi_info;
+    public Barcodes_Info work_item_bi_info;
     /** 현재 작업 중인 패커 상품 코드 */
-    String work_ppcode = "";
+    public String work_ppcode = "";
     /** 현재 작업 중인 BL 번호 */
-    String work_bl_no = "";
+    public String work_bl_no = "";
     /** 스캔된 전체 바코드 문자열 (중량, 제조일 추출용) */
-    String work_item_fullbarcode = "";
+    public String work_item_fullbarcode = "";
     /** 바코드 상품 코드 (BARCODEGOODS) */
-    String work_item_barcodegoods = "";
+    public String work_item_barcodegoods = "";
     /** 소비기한 전송용 변수 */
-    String expiryDayTrans = "";
+    public String expiryDayTrans = "";
     /** 다이얼로그 표시 중 플래그 (중복 처리 방지) */
-    boolean dialog_flag = false;
+    public boolean dialog_flag = false;
 
     /**
      * 바코드 메시지 처리 핵심 메서드
@@ -1152,6 +1154,12 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         // 생산(searchType=1) : 전용 메서드로 분리 (개발60)
         if (Common.searchType.equals(SEARCH_TYPE_PRODUCTION)) {
             setBarcodeMsgProduction(msg);
+            return;
+        }
+
+        // 개발66 Step 2: 이관 완료된 타입만 위임한다. 과도기 분기이며 Step 7에서 제거한다.
+        if (Common.searchType.equals(SEARCH_TYPE_WHOLESALE)) {
+            shipmentType.onBarcodeScanned(msg);
             return;
         }
 
@@ -2053,6 +2061,15 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     public void set_scanFlag(boolean bool) {
         scan_flag = bool;
         Log.i(TAG, "####### scan_flag : " + scan_flag + " #######");
+    }
+
+    /**
+     * 출하대상 조회 실행 래퍼 (개발66 Step 2)
+     * <p>{@code ProgressDlgShipSelect} 는 Activity 의 내부 클래스라 외부 패키지에서 생성할 수 없다.
+     * 타입 파일이 호출할 수 있도록 감싸기만 한 것이며, 인자와 실행 순서는 원본과 동일하다.</p>
+     */
+    public void startShipSelect(String centerName, String condition, boolean type) {
+        new ProgressDlgShipSelect(this, centerName, condition, type).execute();
     }
 
     public String find_PackerProduct(String barcode) {
@@ -3394,7 +3411,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     }
 
     // 계근이 끝났음을 알리는 Dialog
-    private void show_wetFinishDialog() {
+    // 개발66 Step 2: 타입 파일에서 호출하므로 public 으로 공개 (본문 변경 없음)
+    public void show_wetFinishDialog() {
         dialog_flag = true;
         new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
                 .setIcon(R.drawable.highland)
