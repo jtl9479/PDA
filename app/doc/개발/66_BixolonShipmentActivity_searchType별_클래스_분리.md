@@ -765,17 +765,56 @@ if (!Common.searchType.equals(SEARCH_TYPE_PRODUCTION)
 - 주의사항: `ITEM_TYPE` 4블록·킬코이(1285)·센터명(1293)은 **남긴다**(§1.4). Activity에는 과도기 분기(4.4)를 넣어 도매만 위임한다
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트
-- [ ] Part 6: 회귀테스트
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 — `gradlew assembleDebug` → `BUILD SUCCESSFUL` (2026-09-16, 4s)
+- [ ] Part 5: 단위테스트 — 실기기 확인 필요 (도매 스캔 → 계근 → 전송)
+- [ ] Part 6: 회귀테스트 — 실기기 확인 필요 (이마트·롯데·홈플러스 무영향 확인)
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: 원본 `setBarcodeMsg` 본문을 `WholesaleType.onBarcodeScanned` 로 기계적 복사. Activity는 접근 권한 공개 + 래퍼 1개 + 과도기 위임 분기 추가
+- **왜**: 도매는 타입별 차이가 3곳뿐(§1.3 #9·10·12)이라 복사 규칙과 검증 절차를 확정하기에 가장 안전한 첫 대상이다
+- **어떻게**: 원본 줄을 그대로 옮기고, 도매에서 항상 거짓인 `searchType` 조건 4곳만 접었다. 접은 자리마다 원본 라인 번호를 주석으로 남겼다
+
+**접은 조건 (전부 도매에서 거짓)**
+
+| 원본 라인 | 조건 | 처리 | 줄수 |
+|---|---|---|---:|
+| 1213 | `NONFIXED \|\| HOMEPLUS_NONFIXED` 중복확인 제외 | 블록 삭제 | 3 |
+| 1337 | 동일 | 블록 삭제 | 3 |
+| 1302 | `EMART` 트레이더스 소비기한 검증 | 내부 블록 삭제. **바깥 `else if`(1301) 골격은 유지** — searchType 게이트가 아니므로 1285 블록과의 배타 관계 보존 | 9 |
+| 1451 | `EMART` LB 환산 ZEROPOINT 자릿수 | `else` 경로만 유지 | 4 |
+| 1513 | 동일 | `else` 경로만 유지 | 4 |
+
+**치환 3곳**
+
+| 원본 | 변경 후 | 사유 |
+|---|---|---|
+| `new ProgressDlgShipSelect(this, …)` (1207) | `a.startShipSelect(…)` | inner 클래스라 외부 패키지에서 생성 불가 |
+| `new ProgressDlgShipSelect(BixolonShipmentActivity.this, …)` (1252) | `a.startShipSelect(…)` | 동일 |
+| `setBarcodeMsg(msg)` (1235) | `this.onBarcodeScanned(msg)` | 재귀는 Activity가 아니라 자기 자신 (§1.5) |
+
+**Activity 변경 (추가 41 / 삭제 23 — 전부 접근 권한·주석·래퍼)**
+
+| 항목 | 내용 |
+|---|---|
+| 접근 권한 공개 | 위젯 5종(`edit_barcode`, `sp_center_name`, `sp_bl_no`, `sp_point_name`, `sList`), 상태 10종(`arSM`, `current_work_position`, `centerTotalCount`, `centerWorkCount`, `work_flag`, `scan_flag`, `vibrator`, `alert_flag`, `lastProcessedBarcode`, `lastBarcodeProcessedTime`), `work_*` 7종 → `public`. **값·용도 변경 없음** |
+| 메서드 공개 | `show_wetFinishDialog` `private` → `public` (본문 변경 없음) |
+| 래퍼 추가 | `startShipSelect(centerName, condition, type)` — `new ProgressDlgShipSelect(this, …).execute()` 를 감싸기만 함 |
+| 과도기 분기 | `setBarcodeMsg` 에 도매만 위임. **Step 7에서 제거** |
+
+**검증 결과**
+
+| 항목 | 결과 |
+|---|---|
+| 빌드 | `BUILD SUCCESSFUL` (4s) |
+| 원본 대조 | 정규화(`a.`·`ShipmentConst.` 제거) 후 비교 — 원본 334줄 → 신규 317줄, **삭제 26 / 추가 9**, 산술 일치 |
+| 삭제 26줄 내역 | 접힌 블록 23줄(3+3+9+4+4) + 치환 3줄. **전부 예상한 것** |
+| 추가 9줄 내역 | 래퍼 호출 2 + 재귀 1 + 주석 6. **로직으로 추가된 줄 0** |
+| 유지 확인 | `ITEM_TYPE` W/HW·S·J·B 4블록, 킬코이·미트센터(1285), 센터명(1293), 중복검사 선조회, `if (true)`(1269) 모두 그대로 |
+| 타 타입 영향 | Activity diff에 로직 변경 0줄. 이마트·롯데·홈플러스·비정량은 기존 경로 유지 |
+| 생산 영향 | 생산 분기가 위임 분기보다 앞에 있어 그대로 유지 |
 
 ---
 
@@ -1272,7 +1311,7 @@ Step 14: 통합 테스트
 |------|------|------|
 | 0 | 호출처 없는 코드 정리 | ✅ 완료 (2026-09-16, 294줄 삭제 · 빌드 통과) |
 | 1 | 인터페이스 + Factory 골격 | ✅ 완료 (2026-09-16, 파일 9개 · Activity 추가 16줄 · 빌드 통과) |
-| 2 | 바코드 스캔 — 도매(3) | ⏳ 대기 |
+| 2 | 바코드 스캔 — 도매(3) | ✅ 완료 (2026-09-16, 원본 대조 통과 · 빌드 통과 · 실기기 테스트 대기) |
 | 3 | 바코드 스캔 — 롯데(6) | ⏳ 대기 |
 | 4 | 바코드 스캔 — 홈플러스(2) | ⏳ 대기 |
 | 5 | 바코드 스캔 — 홈플러스비정량(5) | ⏳ 대기 |
