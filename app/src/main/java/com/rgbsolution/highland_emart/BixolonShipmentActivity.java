@@ -1157,11 +1157,12 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             return;
         }
 
-        // 개발66 Step 2~5: 이관 완료된 타입만 위임한다. 과도기 분기이며 Step 7에서 제거한다.
+        // 개발66 Step 2~6: 이관 완료된 타입만 위임한다. 과도기 분기이며 Step 7에서 제거한다.
         if (Common.searchType.equals(SEARCH_TYPE_WHOLESALE)
                 || Common.searchType.equals(SEARCH_TYPE_LOTTE)
                 || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS)
-                || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)) {
+                || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)
+                || Common.searchType.equals(SEARCH_TYPE_NONFIXED)) {
             shipmentType.onBarcodeScanned(msg);
             return;
         }
