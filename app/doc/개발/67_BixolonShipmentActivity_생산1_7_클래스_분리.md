@@ -897,17 +897,52 @@ Javadoc 블록을 `send()` 바로 위로 되돌렸다. **코드 변경은 0줄**
 - 주의사항: 삭제 직후 `find_PackerProduct`·`find_PackerProductBarcodeGoods`·`find_work_info_barcodeGoods`(Activity 원본)가 호출처 0건이 된다. **이 Step에서는 삭제하지 않는다**(Step 9로 분리)
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 — **필수**: 생산(1) 전체 흐름(스캔→계근→전송) 실기기 확인
-- [ ] Part 6: 회귀테스트 — **필수**: 비생산 6종 전체 흐름 무영향 확인(위임 게이트 5곳이 처음으로 8종 전부에 대해 참이 되는 지점)
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 — `gradlew assembleDebug --rerun-tasks` (캐시 배제) → `BUILD SUCCESSFUL` (2026-09-17)
+- [ ] Part 5: 단위테스트 — **필수·미수행**: 생산(1) 전체 흐름(스캔→계근→전송) 실기기 확인
+- [ ] Part 6: 회귀테스트 — **필수·미수행**: 비생산 6종 전체 흐름 무영향 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: Step 1~7 에서 완성한 생산 2종을 실제로 연결했다. `onCreate` 무조건 생성 · `setBarcodeMsg` 무조건 위임 · `setBarcodeMsgProduction` 삭제
+- **왜**: 이 셋을 한 커밋으로 묶어야 중간 상태(스텁 호출)가 생기지 않는다
+- **어떻게**: 문서가 지정한 3가지만 바꿨다. **도달 불가가 된 else 본문과 `find_*` 3종은 삭제하지 않았다**(Step 9 로 분리)
+
+| # | 변경 | 결과 |
+|:-:|---|---|
+| 1 | `onCreate` 생산 제외 조건 삭제 | `shipmentType` 이 **항상 non-null**, 8종 전부 생성 |
+| 2 | `setBarcodeMsg` 생산 분기 삭제 | 8종 전부 위임 |
+| 3 | `setBarcodeMsgProduction` 삭제 | 약 290줄(Javadoc 포함) 제거 |
+
+**Activity 3,103 → 2,805줄** (−313 / +16)
+
+**검증 결과**
+
+| 항목 | 예상 | 실제 |
+|---|---|---|
+| 빌드 | — | `BUILD SUCCESSFUL` (`--rerun-tasks` 로 캐시 배제 재확인) |
+| Factory 8종 매핑 | 0~7 전부 | **전부 확인** (0=Emart · 1=Production · 2=Homeplus · 3=Wholesale · 4=EmartNonfixed · 5=HomeplusNonfixed · 6=Lotte · 7=ProductionLabel), `default: throw` 유지 |
+| 생산(1) 위임 경로 6종 | 전부 연결 | **전부 연결** (스캔 · 계근저장 · 수기 · 재출력 · 전송 · 조회후처리) |
+| `setBarcodeMsgProduction` 호출처 | 0건 | **0건** (활성 소스 기준. 백업 파일·로그 문자열 제외) |
+| `ProductionType.onBarcodeScanned` | 삭제된 원본과 동일 | **100% 동일** (치환 3종만) |
+| 비생산 6종 | 무영향 | **무영향** — 게이트는 개발66부터 이미 6종에 대해 항상 참이었고, 타입 파일 6종 diff 0줄 |
+| `find_work_info` | 도달 가능 유지 | **유지** (`ProgressDlgShipSelect.onPostExecute` 가 계속 호출) |
+| `find_PackerProduct` 계열 3종 | 호출처 0건 | **0건** — Step 9 정리 대상 |
+| `lotte_TryCount`(Activity) | 사실상 미사용 | **미사용** — 도달 불가 본문에서만 참조. 실제 동작은 `LotteType` 자체 필드 |
+
+**주석 정리** — 컷오버로 사실과 어긋난 서술을 두 차례에 걸쳐 고쳤다.
+
+| 차수 | 대상 | 내용 |
+|:-:|---|---|
+| 1차 | Activity 6곳 | 필드 Javadoc + 위임 게이트 5곳의 "`shipmentType` 이 null 이라 기존 본문을 탄다" → "항상 non-null, 아래 본문은 도달 불가(Step 9 정리 대상)" |
+| 2차 | 5개 파일 | 코드검증이 지적한 "Step 8 전까지는 ~하지 않는다" 잔존분 — `setBarcodeMsg` Javadoc · `ShipmentTypeFactory` · `ShipmentType` · `ProductionType` · `ProductionLabelType` |
+
+정리 후 `"Step 8 전까지"` 류 서술은 **잔존 0건**이다.
+
+> **이 Step 부터 실제 동작이 바뀐다.** Step 1~7 은 `onCreate` 가 생산을 걸러 런타임 영향이 0이었다.
+> 지금은 생산 계근이 `ProductionType` · `ProductionLabelType` 으로 동작한다.
+> **실기기 검증(Part 5 · 6)은 아직 한 번도 하지 않았다.** 되돌리려면 이 커밋을 revert 하면 Step 7 상태로 복귀한다.
 
 ---
 
@@ -1048,7 +1083,7 @@ Step 10: 통합 테스트
 | 5 | 상품 매칭 (2종) + find_work_info 잔류 확정 | ✅ 완료 (2026-09-17, 옵션 A · 추가 0줄 · 2종 사본 동일 · 공통 경로 무영향 · 빌드 통과) |
 | 6 | 전송 (2종) | ✅ 완료 (2026-09-17, 추가 0줄 · production JSP 단일 · 2종 동일 · Javadoc 정정 6파일 · 빌드 통과) |
 | 7 | 수기 입력 (2종) | ✅ 완료 (2026-09-17, 추가 0줄 · 726/727 개별 접기 · 킬코이·CENTERNAME 유지 · 스텁 0건 · 빌드 통과) |
-| 8 | 컷오버 — onCreate + setBarcodeMsg 전환 | ⏳ 대기 |
+| 8 | 컷오버 — onCreate + setBarcodeMsg 전환 | ✅ 완료 (2026-09-17, 8종 전부 연결 · 3,103→2,805줄 · 주석 11곳 정리 · 빌드 통과 · **실기기 미검증**) |
 | 9 | 위임 게이트 단순화 + 죽은 코드 정리 (선택) | ⏳ 대기 |
 | 10 | 통합 테스트 | ⏳ 대기 |
 
