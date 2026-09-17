@@ -432,17 +432,44 @@ setMessage → setBarcodeMsg → shipmentType.onBarcodeScanned(msg)
 - 주의사항: `onCreate`의 생산 제외 조건을 이 Step에서 **절대 건드리지 않는다.** 건드리면 스텁이 즉시 호출되어 런타임 크래시가 난다
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 — 해당 없음(호출되지 않음)
-- [ ] Part 6: 회귀테스트 — 생산(1) 로그인 → 기존 `setBarcodeMsgProduction` 경로 그대로 동작하는지 확인(스텁이 호출되지 않아야 함)
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 — `gradlew assembleDebug` → `BUILD SUCCESSFUL` (2026-09-17)
+- [x] Part 5: 단위테스트 — **해당 없음**(호출되지 않음). `onCreate` 미변경으로 실행 경로 변화 0건임을 코드검증에서 확인
+- [ ] Part 6: 회귀테스트 — 실기기 확인 필요 (생산(1) 로그인 → 기존 `setBarcodeMsgProduction` 경로 그대로 동작, 스텁 미호출)
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: `ProductionType`(1) · `ProductionLabelType`(7) 골격 2개를 만들고 Factory에 case 2개를 추가했다. `ShipmentType` · `ShipmentTypeFactory` 의 Javadoc 도 정정했다
+- **왜**: Step 2~7이 올라탈 골격 확보. 이 Step에서는 **아무도 호출하지 않는 상태**로 두어 런타임 영향을 0으로 만든다
+- **어떻게**: `onCreate` 의 생산 제외 조건을 **건드리지 않았다.** 그래서 searchType 1·7은 여전히 Factory를 타지 않고 `shipmentType` 이 null 이며, 새 case는 Step 8에서 처음 도달한다
+
+**산출물**
+
+| 파일 | 상태 | 내용 |
+|---|---|---|
+| `shipment/type/ProductionType.java` | 신규 | 스텁 7개 + 타입 판정 Javadoc (ITEM_TYPE S·J만 · 킬코이/센터명 판정 없음 · 라벨 없음 · 전송 production JSP) |
+| `shipment/type/ProductionLabelType.java` | 신규 | 스텁 7개 + 생산(1)과의 차이 Javadoc (W/HW·B 유지 · 킬코이/센터명 유지 · 라벨 `setPrinting_prod`) |
+| `shipment/type/ShipmentTypeFactory.java` | 수정 | `case "1"` · `case "7"` 추가, `default: throw` 유지, Javadoc 정정 |
+| `shipment/type/ShipmentType.java` | 수정 | 구현체 목록에 2종 추가, "생산은 구현체를 만들지 않는다" 서술 정정 |
+| `BixolonShipmentActivity.java` | **미변경** | 이 Step의 핵심. `onCreate` · `setBarcodeMsg` 모두 그대로 |
+
+**Javadoc 시점 처리** — `ShipmentType` · `Factory` 의 정정된 서술은 **Step 8 이후에야 완전히 사실**이 된다.
+두 파일 모두 "Step 8(컷오버) 전까지는 `onCreate` 가 두 타입을 걸러내므로 도달하지 않는다"는 단서를 함께 적어, Step 1~7 동안 주석과 코드가 어긋나지 않게 했다.
+
+**검증 결과**
+
+| 항목 | 예상 | 실제 |
+|---|---|---|
+| 빌드 | — | `BUILD SUCCESSFUL` |
+| 실행 경로 변화 | 0건 | **0건** (`onCreate` 439~442 미변경, `shipmentType` 여전히 null) |
+| Activity 변경 | 없음 | **없음** (`git status` 미포함) |
+| 스텁 시그니처 | 인터페이스 7개와 일치 | **일치** (이름·타입·순서·개수) |
+| 스텁의 Step 번호 배정 | §8과 일치 | **일치** (2·3·4·5·6·7) |
+| Javadoc 타입 판정 | 원본과 일치 | **일치** — `setBarcodeMsgProduction` 에 S·J만 존재(W/HW·B 없음), 백업 원본에는 4블록 전부 존재, 라벨 분기에 생산(1) 케이스 없음, 전송 URL 공용 확인 |
+
+> 코드검증에서 `Factory` Javadoc 의 "Common.searchType 을 읽는 유일한 지점(레이아웃 분기 제외)" 서술이 지적됐다.
+> Step 8 전까지는 `onCreate` 의 생산 제외 조건도 `searchType` 을 읽으므로, 그 예외를 괄호에 되살려 정정했다.
 
 ---
 
@@ -811,7 +838,7 @@ Step 10: 통합 테스트
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | 골격 준비 (스텁 2개 + Factory case) | ⏳ 대기 |
+| 1 | 골격 준비 (스텁 2개 + Factory case) | ✅ 완료 (2026-09-17, 신규 2 · Factory case 2 · Javadoc 정정 · 실행 경로 변화 0건 · 빌드 통과) |
 | 2 | 바코드 스캔 — 생산(1) ProductionType | ⏳ 대기 |
 | 3 | 바코드 스캔 — 생산라벨(7) ProductionLabelType | ⏳ 대기 |
 | 4 | 계근 저장 + 라벨 + 조회후처리 (2종) | ⏳ 대기 |
