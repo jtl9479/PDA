@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.rgbsolution.highland_emart.BixolonShipmentActivity;
 import com.rgbsolution.highland_emart.R;
 import com.rgbsolution.highland_emart.common.Common;
+import com.rgbsolution.highland_emart.common.HttpHelper;
 import com.rgbsolution.highland_emart.db.DBHandler;
 import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Goodswets_Info;
@@ -758,8 +759,93 @@ public class LotteType implements ShipmentType {
         Log.d(TAG, "======================== lotte_TryCount ========================="+ lotte_TryCount);
     }
 
+    /**
+     * 서버 전송 — 원본 ProgressDlgShipmentSend.doInBackground 의 <b>건별 루프</b>(원본 2938~3014) 이관 (개발66 Step 10)
+     *
+     * <p>목록 조회(원본 2919~2937)는 Activity 에 남아 있고, 이 메서드는 조회 결과를 받아 전송만 한다.
+     * 건별은 계근 1건마다 패킷을 만들어 {@code insert_goods_wet.jsp} 로 보내고 그때마다 로컬DB를 갱신한다.</p>
+     */
     @Override
-    public String send(Context context, ArrayList<Goodswets_Info> listSendInfo, ArrayList<Shipments_Info> arSM) {
-        throw new UnsupportedOperationException("개발66 Step 10에서 이관 예정");
+    public String send(Context mContext, ArrayList<Goodswets_Info> list_send_info, ArrayList<Shipments_Info> arSM) {
+        String result = "";
+        try {
+            int iCount = 0;
+            int jChk = 0;
+
+            for (int i = 0; i < list_send_info.size(); i++) { //SAVE_TYPE 과 상관 없이 계근 데이터 모두 루프
+                if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
+                    iCount++;
+                    String packet = "";
+                    packet += list_send_info.get(i).getGI_D_ID() + "::";
+                    packet += list_send_info.get(i).getWEIGHT() + "::";
+                    packet += list_send_info.get(i).getWEIGHT_UNIT() + "::";
+                    packet += list_send_info.get(i).getPACKER_PRODUCT_CODE() + "::";
+                    packet += list_send_info.get(i).getBARCODE() + "::";
+                    packet += list_send_info.get(i).getPACKER_CLIENT_CODE() + "::";
+                    packet += list_send_info.get(i).getMAKINGDATE() + "::";
+                    packet += list_send_info.get(i).getBOXSERIAL() + "::";
+                    packet += list_send_info.get(i).getBOX_CNT() + "::";
+                    packet += list_send_info.get(i).getREG_ID() + "::";
+                    packet += Common.selectCompanyCode + "::";
+                    packet += list_send_info.get(i).getBRAND_CODE() + "::";
+                    packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
+                    packet += list_send_info.get(i).getBOX_ORDER() + "::";
+                    packet += list_send_info.get(i).getGI_L_ID();
+
+
+                    if (Common.D) {
+                        Log.d(TAG, "Send Packet : '" + packet + "'");
+                    }
+
+                    Log.i(TAG, "=====================Common.searchType==================" + Common.searchType);
+
+                    // 원본 2966~2974 : 디비접속 설정 분기 — 롯데(6)는 원본 2968 의 else if 경로(홈플러스와 같은 호출)
+                    result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
+
+                    //결과값의 앞, 뒤에 공백 제거
+                    result = result.replace("\r\n", "");
+                    result = result.replace("\n", "");
+                    Log.d(TAG, "i number : " + i);
+                    Log.v(TAG, "전송결과 : " + result);
+                    //s : 성공, f : 실패
+                    if (result.equals("s")) {
+                        boolean bool = DBHandler.updatequeryGoodsWet(mContext, list_send_info.get(i).getGI_D_ID(), list_send_info.get(i).getBARCODE(), list_send_info.get(i).getBOX_CNT(), list_send_info.get(i).getGI_L_ID());
+                        Log.d(TAG, "boolean " + bool);
+                        if (bool) {          // 전송 & PDA SQLite update 성공
+                            // 원본 2986 : publishProgress("progress", ...) — onProgressUpdate 가 super 호출뿐인 no-op 이라 이관하지 않는다(동작 동일)
+
+                            for (int j = 0; j < arSM.size(); j++) {
+                                if (arSM.get(j).getGI_D_ID().equals(list_send_info.get(i).getGI_D_ID())
+                                        && arSM.get(j).getGI_L_ID().equals(list_send_info.get(i).getGI_L_ID())) {
+                                    arSM.get(j).setSAVE_CNT(arSM.get(j).getSAVE_CNT() + 1);
+
+                                    if (arSM.get(j).getSAVE_CNT() == Integer.parseInt(arSM.get(j).getGI_REQ_PKG())) {            // 전송 개수와 요청 개수 비교
+                                            Log.v(TAG, "출하대상 계근 완료");
+                                            arSM.get(j).setSAVE_TYPE("Y");          // 전부 전송했다면 전송여부 Y로 변경
+                                            DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
+
+                                            jChk++;
+
+                                            if (jChk == arSM.size()) {
+                                                Log.d(TAG, "arSM.size() when return: " + arSM.size());
+                                                Log.d(TAG, "jChk number when return: " + jChk);
+                                                return "ss";
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                    } else if (result.equals("f")) {
+                        return result;
+                    }
+                }
+            }
+
+            return result;
+        } catch (Exception ex) {
+            Log.e(TAG, "======== ProgressDlgShipmentSend doInBackgounrd Exception ========");
+            Log.e(TAG, ex.toString());
+            return null;
+        }
     }
 }

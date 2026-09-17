@@ -2308,6 +2308,12 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 list_send_info = DBHandler.selectquerySendGoodsWet(mContext, qry_where);        // 목록 조회 성공
                 publishProgress("max", Integer.toString(list_send_info.size()));
 
+                // 개발66 Step 10 : 비생산 6종은 타입 구현체로 위임한다.
+                // 생산(1)·생산라벨(7)은 shipmentType 이 null 이라 아래 기존 본문을 그대로 탄다.
+                if (shipmentType != null) {
+                    return shipmentType.send(mContext, list_send_info, arSM);
+                }
+
                 int iCount = 0;
                 int jChk = 0;
 

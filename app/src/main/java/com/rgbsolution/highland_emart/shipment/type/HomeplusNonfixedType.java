@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.rgbsolution.highland_emart.BixolonShipmentActivity;
 import com.rgbsolution.highland_emart.R;
 import com.rgbsolution.highland_emart.common.Common;
+import com.rgbsolution.highland_emart.common.HttpHelper;
 import com.rgbsolution.highland_emart.db.DBHandler;
 import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Goodswets_Info;
@@ -731,8 +732,119 @@ public class HomeplusNonfixedType implements ShipmentType {
         // 원본 2549 : 롯데 전용 블록이라 이 타입은 수행할 작업이 없다
     }
 
+    /**
+     * 서버 전송 — 원본 ProgressDlgShipmentSend.doInBackground 의 <b>일괄 누적</b>(원본 3015~3117) 이관 (개발66 Step 10)
+     *
+     * <p>목록 조회(원본 2919~2937)는 Activity 에 남아 있고, 이 메서드는 조회 결과를 받아 전송만 한다.
+     * 일괄은 전 건을 {@code ##} 로 이어붙여 {@code insert_goods_wet_new.jsp} 로 한 번에 보내고,
+     * 그 결과로 계근데이터 전체의 로컬DB를 갱신한다.</p>
+     *
+     * <p>원본 3057 · 3059(이마트 · 홈플러스 분기)은 이 두 타입이 건별 루프로 빠져 도달할 수 없다.
+     * 원본에서 지우지 않고 이 타입 파일에서 자연히 빠진 것이다(문서 Step 10 #3).</p>
+     */
     @Override
-    public String send(Context context, ArrayList<Goodswets_Info> listSendInfo, ArrayList<Shipments_Info> arSM) {
-        throw new UnsupportedOperationException("개발66 Step 10에서 이관 예정");
+    public String send(Context mContext, ArrayList<Goodswets_Info> list_send_info, ArrayList<Shipments_Info> arSM) {
+        String result = "";
+        try {
+            int iCount = 0;
+            int jChk = 0;
+
+            Log.i(TAG, "=====================여기 들어오는지 확인==================");
+            Log.i(TAG, "=====================사이즈 확인=================="+list_send_info.size());
+            String packet = "";
+            //전문 전송용 for문
+            for (int i = 0; i < list_send_info.size(); i++) {
+                if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
+                    iCount++;
+                    packet += list_send_info.get(i).getGI_D_ID() + "::";
+                    packet += list_send_info.get(i).getWEIGHT() + "::";
+                    packet += list_send_info.get(i).getWEIGHT_UNIT() + "::";
+                    packet += list_send_info.get(i).getPACKER_PRODUCT_CODE() + "::";
+                    packet += list_send_info.get(i).getBARCODE() + "::";
+                    packet += list_send_info.get(i).getPACKER_CLIENT_CODE() + "::";
+                    packet += list_send_info.get(i).getMAKINGDATE() + "::";
+                    packet += list_send_info.get(i).getBOXSERIAL() + "::";
+                    packet += list_send_info.get(i).getBOX_CNT() + "::";
+                    packet += list_send_info.get(i).getREG_ID() + "::";
+                    packet += Common.selectCompanyCode + "::";
+                    packet += list_send_info.get(i).getBRAND_CODE() + "::";
+                    packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
+                    packet += list_send_info.get(i).getBOX_ORDER() + "::" + list_send_info.get(i).getGI_L_ID() +"##";
+
+                    if (Common.D) {
+                        Log.d(TAG, "Send Packet : '" + packet + "'");
+                    }
+
+                    Log.i(TAG, "=====================여기 들어오는지 확인==================");
+
+                    Log.i(TAG, "=====================Common.searchType==================" + Common.searchType);
+                }// "F이면" 끝
+            }//for문 끝
+            //새 로직 여기다가 넣어야 될 듯
+            Log.i(TAG, "===================send packet 확인==================" + packet);
+            boolean sendOrNot = true;
+
+            if(packet ==""){
+                sendOrNot = false;
+            }
+
+            if(sendOrNot){
+                //전문전송..
+                    // 원본 3064~3065 : 비정량(4 · 5) 전송 — 이 타입 고정이라 조건문만 제거
+                    Log.i(TAG, "===================send packet 확인==================" + packet);
+                    result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_NEW);
+            }else{
+                result = "af"; //already finish
+            }
+
+            //결과값의 앞, 뒤에 공백 제거
+            result = result.replace("\r\n", "");
+            result = result.replace("\n", "");
+            //Log.d(TAG, "i number : " + i);
+            Log.v(TAG, "전송결과 : " + result); // s : success
+
+            //s : 성공, f : 실패
+            //list_send_info : PDA 계근데이터
+            //arSM : 출하대상
+            for (int i = 0; i < list_send_info.size(); i++) { //계근데이터 루프돌면서
+                if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
+                    if (result.equals("s")) {
+                        boolean bool = DBHandler.updatequeryGoodsWet(mContext, list_send_info.get(i).getGI_D_ID(), list_send_info.get(i).getBARCODE(), list_send_info.get(i).getBOX_CNT(), list_send_info.get(i).getGI_L_ID()); //PDA 계근테이블 SAVE TYPE Y로 업데이트
+                        Log.d(TAG, "boolean " + bool);
+                        if (bool) {          // 전송 & PDA SQLite update 성공
+                            // 원본 3090 : publishProgress("progress", ...) — onProgressUpdate 가 super 호출뿐인 no-op 이라 이관하지 않는다(동작 동일)
+                            for (int j = 0; j < arSM.size(); j++) { //출하대상루프(GI_D_ID별 1 ROW)
+                                if (arSM.get(j).getGI_D_ID().equals(list_send_info.get(i).getGI_D_ID())
+                                        && arSM.get(j).getGI_L_ID().equals(list_send_info.get(i).getGI_L_ID())) { //출하대상 루프의 GI_D_ID와 계근데이터의 GI_D_ID가 같으면
+                                    arSM.get(j).setSAVE_CNT(arSM.get(j).getSAVE_CNT() + 1); //출하대상 데이터에 SAVE_CNT(저장갯수) 데이터 저장
+
+                                    if (arSM.get(j).getSAVE_CNT() == Integer.parseInt(arSM.get(j).getGI_REQ_PKG())) {  // 전송 개수와 출하요청 개수가 같으면
+                                            Log.v(TAG, "출하대상 계근 완료");
+                                            arSM.get(j).setSAVE_TYPE("Y");          // 전부 전송했다면 전송여부 Y로 변경
+                                            DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
+
+                                            jChk++;
+
+                                            if (jChk == arSM.size()) {
+                                                Log.d(TAG, "arSM.size() when return: " + arSM.size());
+                                                Log.d(TAG, "jChk number when return: " + jChk);
+                                                return "ss";
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                    } else if (result.equals("f")) {
+                        return result;
+                    }//result "s이면" 끝
+                }
+            }
+
+            return result;
+        } catch (Exception ex) {
+            Log.e(TAG, "======== ProgressDlgShipmentSend doInBackgounrd Exception ========");
+            Log.e(TAG, ex.toString());
+            return null;
+        }
     }
 }
