@@ -9,6 +9,7 @@ import com.rgbsolution.highland_emart.BixolonShipmentActivity;
 import com.rgbsolution.highland_emart.db.DBHandler;
 import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.R;
+import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Goodswets_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 
@@ -56,7 +57,7 @@ public class ProductionType implements ShipmentType {
      *
      * <p>치환 3종 — {@code ProgressDlgShipSelect} 생성 2곳은 Activity 래퍼({@code startShipSelect})로,
      * 재귀 호출은 자기 자신으로, Activity 필드·메서드는 {@code a.} 접두어로 바꿨다.
-     * 상품 매칭 호출({@code a.find_PackerProduct} 계열)은 <b>Step 5</b> 에서 자기 타입 메서드로 바꾼다.</p>
+     * 상품 매칭 호출은 <b>Step 5</b> 에서 자기 타입 메서드({@code findPackerProduct})로 바꿨다.</p>
      */
     @Override
     public void onBarcodeScanned(final String msg) {
@@ -86,11 +87,11 @@ public class ProductionType implements ShipmentType {
 
                     if (a.work_flag == 1) {
                         Log.e(TAG, "========================상품바코드스캔1======================");
-                        find_ppcodetemp = a.find_PackerProduct(msg);
+                        find_ppcodetemp = this.findPackerProduct(msg, 1);   // 원본 : find_PackerProduct(msg)
                         Log.e(TAG, "========================상품바코드스캔1 ppcode ======================" + find_ppcodetemp);
                     }else {
                         Log.e(TAG, "========================상품코드스캔2======================");
-                        find_ppcodetemp = a.find_PackerProductBarcodeGoods(msg);
+                        find_ppcodetemp = this.findPackerProduct(msg, 2);   // 원본 : find_PackerProductBarcodeGoods(msg)
                         Log.e(TAG, "========================상품코드스캔2 ppcode ======================" + find_ppcodetemp);
                     }
                     Log.e(TAG, "========================바코드 정보가져옴======================");
@@ -432,9 +433,158 @@ public class ProductionType implements ShipmentType {
         }
     }
 
+    /**
+     * 상품 매칭 — 원본 find_PackerProduct · find_PackerProductBarcodeGoods 이관 (개발66 Step 9)
+     *
+     * <p>원본은 {@code work_flag} 로 두 메서드를 나눠 호출했다. 인자와 실행 순서는 원본과 같다.</p>
+     */
     @Override
     public String findPackerProduct(String barcode, int workFlag) {
-        throw new UnsupportedOperationException("개발67 Step 5에서 이관 예정");
+        if (workFlag == 1) {   // 원본 find_PackerProduct (work_flag 1 : 상품 바코드 스캔)
+            try {
+                String pp_code = "";
+                Log.e(TAG, "========================pp_code 가져오기 시작======================");
+                pp_code = find_work_info(barcode, true);
+                Log.e(TAG, "========================pp_code 가져오기 끝======================");
+                if (!a.edit_product_name.getText().equals("")) {
+                    return pp_code;
+                } else {
+                    return "null";
+                }
+            } catch (Exception ex) {
+                Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
+                return "null";
+            }
+        } else {              // 원본 find_PackerProductBarcodeGoods (work_flag 2 : 상품코드 스캔)
+            Log.e(TAG, "find_PackerProductBarcodeGoods");
+
+            try {
+                String pp_code = "";
+                pp_code = find_work_info_barcodeGoods(barcode, false);
+                if (!a.edit_product_name.getText().equals("")) {
+                    return pp_code;
+                } else {
+                    return "null";
+                    //scanFlag_swap();
+                }
+            } catch (Exception ex) {
+                Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
+                return "null";
+            }
+        }
+    }
+
+    /**
+     * 바코드정보 매칭 — 원본 find_work_info 이관 (개발66 Step 9)
+     *
+     * <p>구간 추출(원본 2121)은 길이 체크가 있는 쪽이며, {@code find_work_info_barcodeGoods}(원본 2184) 와
+     * 합치지 않는다. 항상 참인 {@code Editable} 비교(원본 2065 · 2081)도 원본 그대로 둔다.</p>
+     */
+    private String find_work_info(String req, boolean type) {
+        try {
+            String pp_code = "";
+            int count = 0;
+            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeInfo(a);
+            Log.e(TAG, "===================바코드 디비조회 완료=======================");
+            Log.e(TAG, "===================    req check !!   ======================="+req); //여기서 풀바코드를 던진다
+            for (Barcodes_Info bi : list_barcode_info) {
+                String bg = bi.getBARCODEGOODS();
+                String bg_from = bi.getBARCODEGOODS_FROM();
+                String bg_to = bi.getBARCODEGOODS_TO();
+                String temp_bg;
+
+                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
+                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
+
+                if (type && req.length() >= Integer.parseInt(bg_to)) {              // PACKER_PRODUCT_CODE로 찾을 경우
+                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
+                } else {                // false : BL로 찾을 경우
+                    temp_bg = req;
+                }
+
+                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
+                Log.i(TAG, "TEMP BARCODEGOODS eq : \t" + temp_bg.equals(bg));
+
+                if (temp_bg.equals(bg)) {                       // barcodegoods find success
+                    Log.i(TAG, "barcodegoods find success");
+                    a.work_item_bi_info = bi;
+                    a.edit_product_name.setText(bi.getITEM_NAME_KR());
+                    a.edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
+                    if(count == 0){
+                        pp_code = bi.getPACKER_PRODUCT_CODE();
+                    }else{
+                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
+                    }
+                    Log.i(TAG, "===================pp_code=================" + pp_code);
+                    a.work_item_barcodegoods = bg;
+                    count++;
+                } else {
+                    a.edit_product_name.setText("");
+                    a.edit_product_code.setText("");
+                    a.work_item_barcodegoods = "";
+                }
+
+                // 원본 2149 : searchType 4(이마트 비정량) 전부 매칭 — 생산 2종은 미해당으로 접었다
+            }
+
+            Log.i(TAG, "===================return pp_code test!!! =================" + pp_code);
+            return pp_code;
+        } catch (Exception ex) {
+            Log.e(TAG, "======== find_work_info Exception ========");
+            Log.e(TAG, ex.getMessage().toString());
+            return "null";
+        }
+    }
+
+    /**
+     * 상품코드 매칭 — 원본 find_work_info_barcodeGoods 이관 (개발66 Step 9)
+     */
+    private String find_work_info_barcodeGoods(String req, boolean type) {
+        Log.e(TAG, "find_work_info_barcodeGoods");
+        try {
+            String pp_code = "";
+            int count = 0;
+            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeGoodsInfo(a);
+            for (Barcodes_Info bi : list_barcode_info) {
+                String bg = bi.getBARCODEGOODS();
+                String bg_from = bi.getBARCODEGOODS_FROM();
+                String bg_to = bi.getBARCODEGOODS_TO();
+                String temp_bg;
+                if (type) {              // PACKER_PRODUCT_CODE로 찾을 경우
+                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
+                } else {                // false : BL로 찾을 경우
+                    temp_bg = req;
+                }
+                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
+                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
+                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
+
+                if (temp_bg.equals(bg)) {                       // barcodegoods find success
+                    //pp_name = bi.getITEM_NAME_KR();
+                    a.work_item_bi_info = bi;
+                    a.edit_product_name.setText(bi.getITEM_NAME_KR());
+                    a.edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
+                    if(count == 0){
+                        pp_code = bi.getPACKER_PRODUCT_CODE();
+                    }else{
+                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
+                    }
+                    Log.i(TAG, "===================pp_code=================" + pp_code);
+                    //a.work_ppcode = bi.getPACKER_PRODUCT_CODE();
+                    a.work_item_barcodegoods = bg;
+                    count++;
+                } else {
+                    a.edit_product_name.setText("");
+                    a.edit_product_code.setText("");
+                    a.work_item_barcodegoods = "";
+                }
+            }
+            return pp_code;
+        } catch (Exception ex) {
+            Log.e(TAG, "======== find_work_info_barcodeGoods Exception ========");
+            Log.e(TAG, ex.getMessage().toString());
+            return "null";
+        }
     }
 
     /**
