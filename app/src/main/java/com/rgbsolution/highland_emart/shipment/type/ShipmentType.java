@@ -48,6 +48,9 @@ public interface ShipmentType {
     /** 조회 후처리 — 원본 ProgressDlgShipSelect 내 타입별 분기 (개발66 Step 8) */
     void onShipmentLoaded(ArrayList<Shipments_Info> arSM);
 
+    /** 수기 입력 — 원본 inputBtnListener 의 work_flag 0 분기 (개발66 Step 11) */
+    void onManualInput();
+
     /** 서버 전송 — 원본 ProgressDlgShipmentSend.doInBackground (개발66 Step 10) */
     String send(Context context, ArrayList<Goodswets_Info> listSendInfo, ArrayList<Shipments_Info> arSM);
 }

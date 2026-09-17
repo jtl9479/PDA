@@ -654,6 +654,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     Toast.makeText(getApplicationContext(), "상품패커코드가 없습니다.", Toast.LENGTH_SHORT).show();
                     return;
                 } else {                                                // 필수값이 전부 입력되있을 때
+                    // 개발66 Step 11 : 비생산 6종은 타입 구현체로 위임한다.
+                    // 생산(1)·생산라벨(7)은 shipmentType 이 null 이라 아래 기존 본문을 그대로 탄다.
+                    if (shipmentType != null) {
+                        shipmentType.onManualInput();
+                        return;
+                    }
+
                     work_item_fullbarcode = "";
                     String weight_str = edit_barcode.getText().toString();    // 입력값 저장
 

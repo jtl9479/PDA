@@ -2,10 +2,12 @@ package com.rgbsolution.highland_emart.shipment.type;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.rgbsolution.highland_emart.BixolonShipmentActivity;
+import com.rgbsolution.highland_emart.ExpiryEnterActivity;
 import com.rgbsolution.highland_emart.R;
 import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.common.HttpHelper;
@@ -765,6 +767,87 @@ public class LotteType implements ShipmentType {
      * <p>목록 조회(원본 2919~2937)는 Activity 에 남아 있고, 이 메서드는 조회 결과를 받아 전송만 한다.
      * 건별은 계근 1건마다 패킷을 만들어 {@code insert_goods_wet.jsp} 로 보내고 그때마다 로컬DB를 갱신한다.</p>
      */
+    /**
+     * 수기 입력 — 원본 inputBtnListener 의 {@code work_flag == 0} 분기 이관 (개발66 Step 11)
+     *
+     * <p>입력값 검증(원본 647~655)은 Activity 에 남아 있고, 이 메서드는 검증을 통과한 뒤의 처리만 한다.</p>
+     *
+     * <p>킬코이 · 미트센터 분기(원본 691~710)와 바깥 {@code else if} 의 CENTERNAME 판정은
+     * searchType 게이트가 아니라 데이터 의존이므로 접지 않는다(문서 Step 11 #3).</p>
+     */
+    @Override
+    public void onManualInput() {
+        a.work_item_fullbarcode = "";
+        String weight_str = a.edit_barcode.getText().toString();    // 입력값 저장
+
+        Log.i(TAG, "=====================weight_str 1==================" + weight_str);
+
+        double weight_double = Double.parseDouble(weight_str);    // 소수점 1자리로 변환
+
+        Log.i(TAG, "=====================weight_double 1==================" + weight_double);
+
+        String temp_weight = "";
+
+        // 원본 675 : else 경로(그대로 입력). 이 타입은 EMART("0")가 아니다
+        temp_weight = Double.toString(weight_double); //생산일 경우 그대로 입력
+        Log.i(TAG, "=====================temp_weight production==================" + temp_weight);
+
+        Log.i(TAG, "=====================temp_weight out==================" + temp_weight);
+
+        weight_double = Double.parseDouble(temp_weight); //생산이든 출하든 똑같이 타야함
+
+        Log.i(TAG, "=====================weight_double 3==================" + weight_double);
+
+        weight_str = String.valueOf(weight_double);                                         // 반올림값 다시 저장
+
+        Log.i(TAG, "=====================패커코드 체크==================" + a.arSM.get(a.current_work_position).getPACKER_CODE());
+        Log.i(TAG, "=====================스토어코드 체크==================" + a.arSM.get(a.current_work_position).getSTORE_CODE());
+
+        if (a.arSM.get(a.current_work_position).getPACKER_CODE().equals(ShipmentConst.KILKOY_PACKER_CODE)
+                && a.arSM.get(a.current_work_position).getSTORE_CODE().equals(ShipmentConst.MEAT_CENTER_STORE_CODE)) {
+              String makingFrom = a.work_item_bi_info.getMAKINGDATE_FROM();
+              String makingTo = a.work_item_bi_info.getMAKINGDATE_TO();
+
+              Intent IntentA = new Intent(a, ExpiryEnterActivity.class);
+
+              String weightStrKey = "weightStrKey";
+              String weightDblKey = "weightDblKey";
+              String makingFromKey = "makingFromKey";
+              String makingToKey = "makingToKey";
+
+              IntentA.putExtra(weightStrKey,weight_str);
+              IntentA.putExtra(weightDblKey,weight_double);
+
+              IntentA.putExtra(makingFromKey,makingFrom);
+              IntentA.putExtra(makingToKey,makingTo);
+
+              a.startActivityForResult(IntentA,BixolonShipmentActivity.GET_DATA_REQUEST);
+
+        // 원본 711 : 바깥 else if 의 `|| searchType == LOTTE` 가 참이라 진입 조건이 항상 성립한다.
+        // 안쪽 712 와는 역할이 다르므로 따로 접는다(문서 Step 11 Part 2).
+        }else{
+            // 원본 712 : if (EMART || LOTTE) 소비기한 창 — 이 타입 고정이라 조건문만 제거
+            String makingFrom = a.work_item_bi_info.getMAKINGDATE_FROM();
+            String makingTo = a.work_item_bi_info.getMAKINGDATE_TO();
+
+            Intent IntentA = new Intent(a, ExpiryEnterActivity.class);
+
+            String weightStrKey = "weightStrKey";
+            String weightDblKey = "weightDblKey";
+            String makingFromKey = "makingFromKey";
+            String makingToKey = "makingToKey";
+
+            IntentA.putExtra(weightStrKey,weight_str);
+            IntentA.putExtra(weightDblKey,weight_double);
+
+            IntentA.putExtra(makingFromKey,makingFrom);
+            IntentA.putExtra(makingToKey,makingTo);
+
+            a.startActivityForResult(IntentA,BixolonShipmentActivity.GET_DATA_REQUEST);
+        // 원본 733~735 : 바깥 else 는 위 진입 조건이 항상 참이라 도달할 수 없다
+        }
+        a.edit_barcode.setText("");
+    }
     @Override
     public String send(Context mContext, ArrayList<Goodswets_Info> list_send_info, ArrayList<Shipments_Info> arSM) {
         String result = "";
