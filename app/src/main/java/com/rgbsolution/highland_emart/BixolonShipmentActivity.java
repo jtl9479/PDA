@@ -246,9 +246,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private int mPreviousBixolonState = BixolonSocketPrinter.STATE_NONE;
 
     /** 라벨 출력 헬퍼 */
-    private LabelPrintHelper labelPrintHelper = new LabelPrintHelper();
+    public LabelPrintHelper labelPrintHelper = new LabelPrintHelper();  // 개발66 Step 8: 타입 파일 접근용 공개
     /** 프린터 콜백 - LabelPrintHelper에서 프린터 데이터 전송 및 UI 업데이트 */
-    private LabelPrintHelper.PrinterCallback printerCallback = new LabelPrintHelper.PrinterCallback() {
+    public LabelPrintHelper.PrinterCallback printerCallback = new LabelPrintHelper.PrinterCallback() {  // 개발66 Step 8: 타입 파일 접근용 공개
         @Override
         public void sendData(byte[] data) {
             BixolonShipmentActivity.this.sendData(data);
@@ -301,18 +301,18 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /** BL번호 선택 스피너 - 동일 BL건 그룹핑 */
     public Spinner sp_bl_no;        // 개발66 Step 2: 타입 파일 접근용 공개
     /** 센터 총 요청수량 - 선택된 센터의 전체 GI_REQ_PKG 합계 */
-    private EditText edit_center_tcount;
+    public EditText edit_center_tcount;  // 개발66 Step 8: 타입 파일 접근용 공개
     /** 센터 총 요청중량 - 선택된 센터의 전체 GI_REQ_QTY 합계 */
-    private EditText edit_center_tweight;
+    public EditText edit_center_tweight;  // 개발66 Step 8: 타입 파일 접근용 공개
     /** 지점 선택 스피너 - 출고 대상 지점 선택 (CLIENTNAME) */
     public Spinner sp_point_name;   // 개발66 Step 2: 타입 파일 접근용 공개
     /** 지점 계근 현황 - "요청수량 / 완료수량" 형태 (GI_REQ_PKG / PACKING_QTY) */
-    private EditText edit_wet_count;
+    public EditText edit_wet_count;  // 개발66 Step 8: 타입 파일 접근용 공개
     /** 지점 계근 중량 - "요청중량 / 완료중량" 형태 (GI_REQ_QTY / GI_QTY) */
-    private EditText edit_wet_weight;
+    public EditText edit_wet_weight;  // 개발66 Step 8: 타입 파일 접근용 공개
 
     /** 출하 대상 리스트 어댑터 */
-    private ShipmentListAdapter sListAdapter;
+    public ShipmentListAdapter sListAdapter;  // 개발66 Step 8: 타입 파일 접근용 공개
     /** 출하 대상 리스트뷰 - 센터별 출하 대상 목록 표시 */
     public ListView sList;          // 개발66 Step 2: 타입 파일 접근용 공개
 
@@ -339,11 +339,11 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /** 센터 완료수량 (PACKING_QTY 합계) */
     public int centerWorkCount;     // 개발66 Step 2: 타입 파일 접근용 공개
     /** 센터 총 요청중량 (GI_REQ_QTY 합계) */
-    private double centerTotalWeight;
+    public double centerTotalWeight;  // 개발66 Step 8: 타입 파일 접근용 공개
     /** 센터 완료중량 (GI_QTY 합계) */
-    private double centerWorkWeight;
+    public double centerWorkWeight;  // 개발66 Step 8: 타입 파일 접근용 공개
     /** 리스트에서 선택된 위치 (상세보기용) */
-    private int select_position;
+    public int select_position;  // 개발66 Step 8: 타입 파일 접근용 공개
     /**
      * 현재 계근 작업 중인 리스트 위치
      * -1: 미선택, 0~n: arSM 리스트 인덱스
@@ -944,6 +944,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         String print_weight_str = msg.getData().getString("WEIGHT").toString();
                         String making_date = msg.getData().getString("MAKINGDATE").toString();
 
+                        // 개발66 Step 8 : 비생산 6종은 타입 구현체로 위임. 생산라벨(7)은 shipmentType 이 null 이라 기존 분기를 탄다
+                        if (shipmentType != null) {
+                            shipmentType.reprintLabel(print_weight_str, making_date,
+                                    msg.getData().getString("BOX_ORDER"), select_position);
+                            break;
+                        }
+
                         if (Common.searchType.equals(SEARCH_TYPE_HOMEPLUS) || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)) {
                             labelPrintHelper.setHomeplusPrinting(Double.parseDouble(print_weight_str), arSM.get(select_position), true, printerCallback);
                         } else if (Common.searchType.equals(SEARCH_TYPE_LOTTE)) {
@@ -1501,6 +1508,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * @param box_serial 박스 시리얼 번호 (바코드에서 추출, 없으면 빈 문자열)
      */
     public void wet_data_insert(String weight_str, double weight_double, String making_date, String box_serial) {
+        // 개발66 Step 8 : 비생산 6종은 타입 구현체로 위임한다.
+        // 생산(1)·생산라벨(7)은 onCreate에서 shipmentType을 만들지 않으므로 null 이고, 아래 기존 본문을 그대로 탄다.
+        if (shipmentType != null) {
+            shipmentType.onWeightConfirmed(weight_str, weight_double, making_date, box_serial);
+            return;
+        }
+
         Log.e(TAG, "=========================계근입력 시작=========================" + weight_double);
 
         if (arSM.get(current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.get(current_work_position).getPACKING_QTY()))) {
@@ -2108,23 +2122,10 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     Log.d(TAG, "result's Count : " + arSM.size());
                 }
 
-                // 롯데의 경우만 lotte_TryCount 사용, 초기화 후 현재 찍힌 수량 더해서 전역변수로 만들기.
-                if(Common.searchType.equals(SEARCH_TYPE_LOTTE)) {
-                    //lotte_TryCount = 1;
-
-                    Shipments_Info si = arSM.get(0);
-                    lotte_TryCount = Integer.parseInt(si.LAST_BOX_ORDER) + 1;
-                    if (lotte_TryCount > LOTTE_BOX_ORDER_MAX) {
-                        lotte_TryCount = 1;
-                    }
-                    Log.e(TAG, "***************************LAST_BOX_ORDER : " +si.getLAST_BOX_ORDER());
-                    for (int i = 0; i < arSM.size(); i++) {
-                        lotte_TryCount += arSM.get(i).getPACKING_QTY();
-                    }
-                    if (lotte_TryCount > LOTTE_BOX_ORDER_MAX) {
-                        lotte_TryCount = lotte_TryCount % LOTTE_BOX_ORDER_MAX; //찍힌 수량까지 더했을 때 9999 넘는 경우 1번대로 다시 회귀한 넘버링 적용 (9999로 나눈 나머지)
-                    }
-                    Log.d(TAG, "======================== lotte_TryCount ========================="+ lotte_TryCount);
+                // 개발66 Step 8 : 롯데 박스순번 초기화(lotte_TryCount)를 LotteType 으로 이관.
+                // 원본은 searchType 6 에서만 수행했고, 다른 타입 구현체는 이 메서드에서 하는 일이 없다.
+                if (shipmentType != null) {
+                    shipmentType.onShipmentLoaded(arSM);
                 }
 
             } catch (Exception e) {

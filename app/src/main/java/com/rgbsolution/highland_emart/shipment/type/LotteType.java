@@ -42,6 +42,9 @@ public class LotteType implements ShipmentType {
 
     private final BixolonShipmentActivity a;
 
+    /** 롯데 박스 순번 카운터 — 원본 BixolonShipmentActivity.lotte_TryCount 이관 (개발66 Step 8) */
+    private int lotte_TryCount = 0;
+
     public LotteType(BixolonShipmentActivity activity) {
         this.a = activity;
     }
@@ -441,9 +444,127 @@ public class LotteType implements ShipmentType {
         }
     }
 
+    /**
+     * 계근 저장 + 라벨 — 원본 BixolonShipmentActivity.wet_data_insert 본문 이관 (개발66 Step 8)
+     *
+     * <p>원본 대비 접은 조건 : INSERT(원본 1537~1553) · 중량 반올림 4곳(1559 · 1573 · 1591 · 1601) ·
+     * 계근 라벨(1624~1641) 을 이 타입 경로 하나로 고정했다. 그 외 로직은 원본 그대로다.</p>
+     */
     @Override
-    public void onWeightConfirmed(String weightStr, double weightDouble, String makingDate, String boxSerial) {
-        throw new UnsupportedOperationException("개발66 Step 8에서 이관 예정");
+    public void onWeightConfirmed(String weight_str, double weight_double, String making_date, String box_serial) {
+        Log.e(TAG, "=========================계근입력 시작=========================" + weight_double);
+
+        if (a.arSM.get(a.current_work_position).getGI_REQ_PKG().equals(String.valueOf(a.arSM.get(a.current_work_position).getPACKING_QTY()))) {
+            if ((a.arSM.size() - 1) == a.current_work_position) {
+                a.show_wetFinishDialog();
+            } else {
+                Toast.makeText(a.getApplicationContext(), "계근이 끝난 지점입니다.\n다음 지점을 작업해주세요.", Toast.LENGTH_SHORT).show();
+                a.vibrator.vibrate(300);
+            }
+            return;
+        }
+
+        Goodswets_Info gi = new Goodswets_Info();
+        gi.setGI_D_ID(a.arSM.get(a.current_work_position).getGI_D_ID());
+        gi.setGI_L_ID(a.arSM.get(a.current_work_position).getGI_L_ID());
+        gi.setWEIGHT(weight_str);
+        gi.setWEIGHT_UNIT(a.work_item_bi_info.getBASEUNIT());
+        gi.setPACKER_PRODUCT_CODE(a.arSM.get(a.current_work_position).getPACKER_PRODUCT_CODE());
+        gi.setBARCODE(a.work_item_fullbarcode);
+        gi.setPACKER_CLIENT_CODE(a.work_item_bi_info.getPACKER_CLIENT_CODE());
+        gi.setMAKINGDATE(making_date);
+        gi.setBOXSERIAL(box_serial);
+        gi.setBOX_CNT(String.valueOf((a.arSM.get(a.current_work_position).getPACKING_QTY() + 1)));
+        gi.setEMARTITEM_CODE(a.arSM.get(a.current_work_position).getEMARTITEM_CODE());
+        gi.setEMARTITEM(a.arSM.get(a.current_work_position).getEMARTITEM());
+        gi.setITEM_CODE(a.arSM.get(a.current_work_position).getITEM_CODE());
+        gi.setBRAND_CODE(a.arSM.get(a.current_work_position).getBRAND_CODE());
+        gi.setREG_ID(Common.REG_ID);
+        gi.setSAVE_TYPE("F");
+        gi.setDUPLICATE("F");
+
+        String lotteBoxOrder = ""; // 롯데 전용 박스 순번을 담을 변수
+
+        // 원본 1541 : searchType 6(롯데) INSERT 경로. 이 타입 고정이라 조건문만 제거
+        // 1. 현재 lotte_TryCount 값을 이 계근 건의 박스 순번으로 확정
+        lotteBoxOrder = String.valueOf(lotte_TryCount);
+        // 2. 확정된 번호를 사용하여 DB에 저장
+        DBHandler.insertqueryGoodsWetLotte(a, gi, lotte_TryCount);
+        // 3. DB 저장이 끝난 직후, 다음 계근을 위해 카운터 즉시 증가
+        lotte_TryCount++;
+        if (lotte_TryCount > ShipmentConst.LOTTE_BOX_ORDER_MAX) {
+            lotte_TryCount = 1;
+        }
+
+        Log.e(TAG, "=========================계근중량 변환전=========================" + weight_double);
+
+        String temp_weight = "";
+
+        // 원본 1563 : else 경로(그대로 입력). 이 타입은 EMART(0)가 아니다
+        temp_weight = Double.toString(weight_double); //생산일 경우 그대로 입력
+
+        weight_double = Double.parseDouble(temp_weight);
+
+        Log.e(TAG, "=========================계근중량 변환후=========================" + weight_double);
+
+        a.arSM.get(a.current_work_position).setPACKING_QTY(a.arSM.get(a.current_work_position).getPACKING_QTY() + 1);           // 계근수량
+
+        // 원본 1573 : 계근중량 합산 — else 3자리 경로
+        double v1 = a.arSM.get(a.current_work_position).getGI_QTY();
+        double v2 = weight_double;
+
+        double v3 = v1+v2;
+        double v4 = Math.round(v3*1000)/1000.0;
+
+        a.arSM.get(a.current_work_position).setGI_QTY(v4);    // 계근중량 변경 후
+        Log.e(TAG, "=========================chk prod 계근중량=========================" + v4);
+
+        a.centerWorkCount++;
+        a.centerWorkWeight += weight_double;
+
+        Log.e(TAG, "=========================센터중량 변환전=========================" + a.centerWorkWeight);
+
+        // 원본 1591 : 센터중량 반올림 — else 소수 3자리
+        a.centerWorkWeight = Math.round(a.centerWorkWeight*1000)/1000.0; //생산일 경우 소수점 넷째자리에서 반올림
+
+        Log.e(TAG, "=========================센터중량 변환후=========================" + a.centerWorkWeight);
+
+        a.edit_center_tcount.setText(a.centerTotalCount + " / " + a.centerWorkCount);
+
+        // 원본 1601 : 센터중량 표시 — else 경로
+        a.edit_center_tweight.setText(a.centerTotalWeight + " / " + a.centerWorkWeight);
+
+        a.edit_wet_count.setText(a.arSM.get(a.current_work_position).getGI_REQ_PKG() + " / " + a.arSM.get(a.current_work_position).getPACKING_QTY());
+        a.edit_wet_weight.setText(a.arSM.get(a.current_work_position).getGI_REQ_QTY() + " / " + a.arSM.get(a.current_work_position).getGI_QTY());
+
+        Log.d(TAG, "==================================================");
+        Log.d(TAG, "====================계근작업 종료===================");
+        Log.i(TAG, "a.centerWorkCount : " + a.centerWorkCount);
+        Log.i(TAG, "a.centerWorkWeight : " + a.centerWorkWeight);
+        Log.d(TAG, "==================================================");
+
+        for (int i = 0; i < a.arSM.size(); i++) {
+            a.arSM.get(i).setWORK_FLAG(0);
+        }
+
+        a.arSM.get(a.current_work_position).setWORK_FLAG(1);
+        a.sListAdapter.notifyDataSetChanged();
+        a.sList.setSelection(a.current_work_position);
+
+        if (Common.print_bool) {
+            // 원본 1625~1640 : 라벨 분기 — 이 타입 고정이라 searchType 조건만 제거
+            Log.d(TAG, "===========롯데 출력 시작 ================");
+            a.labelPrintHelper.setPrintingLotte(weight_double, a.arSM.get(a.current_work_position), false, making_date, lotteBoxOrder, Common.searchType, a.printerCallback);
+        }
+
+        a.set_scanFlag(true);
+
+        if (Integer.parseInt(a.arSM.get(a.current_work_position).getGI_REQ_PKG()) <= a.arSM.get(a.current_work_position).getPACKING_QTY()) {
+            // 요청수량과 계근수량이 같을 때 (계근이 끝났을 때)
+            if ((a.centerTotalCount > 0) && (a.centerTotalCount == a.centerWorkCount)) {       // 총 계근 완료
+                a.show_wetFinishDialog();
+            }
+        }
     }
 
     @Override
@@ -451,14 +572,40 @@ public class LotteType implements ShipmentType {
         throw new UnsupportedOperationException("개발66 Step 9에서 이관 예정");
     }
 
+    /**
+     * 재출력 라벨 — 원본 mHandler MESSAGE_REPRINT 분기 이관 (개발66 Step 8)
+     */
     @Override
-    public void reprintLabel(String weightStr, String makingDate, String boxOrder, int selectPosition) {
-        throw new UnsupportedOperationException("개발66 Step 8에서 이관 예정");
+    public void reprintLabel(String print_weight_str, String making_date, String box_order, int select_position) {
+        // 원본 949 : searchType 6 롯데 라벨 경로. 이 타입 고정이라 조건문만 제거
+        //Toast.makeText(a.getApplicationContext(), "롯데 재출력은 불가합니다.", Toast.LENGTH_SHORT).show();
+        // 롯데의 경우 바코드 시퀀스를 위해 BOX_ORDER 가져옴.
+
+        a.labelPrintHelper.setPrintingLotte(Double.parseDouble(print_weight_str), a.arSM.get(select_position), true, making_date, box_order, Common.searchType, a.printerCallback);
     }
 
+    /**
+     * 출하대상 조회 후처리 — 원본 ProgressDlgShipSelect 롯데 박스순번 초기화 이관 (개발66 Step 8)
+     *
+     * <p>원본 2112 의 {@code if (LOTTE)} 는 이 타입 고정이라 조건문만 제거했다.</p>
+     */
     @Override
     public void onShipmentLoaded(ArrayList<Shipments_Info> arSM) {
-        throw new UnsupportedOperationException("개발66 Step 8에서 이관 예정");
+        //lotte_TryCount = 1;
+
+        Shipments_Info si = arSM.get(0);
+        lotte_TryCount = Integer.parseInt(si.LAST_BOX_ORDER) + 1;
+        if (lotte_TryCount > ShipmentConst.LOTTE_BOX_ORDER_MAX) {
+            lotte_TryCount = 1;
+        }
+        Log.e(TAG, "***************************LAST_BOX_ORDER : " +si.getLAST_BOX_ORDER());
+        for (int i = 0; i < arSM.size(); i++) {
+            lotte_TryCount += arSM.get(i).getPACKING_QTY();
+        }
+        if (lotte_TryCount > ShipmentConst.LOTTE_BOX_ORDER_MAX) {
+            lotte_TryCount = lotte_TryCount % ShipmentConst.LOTTE_BOX_ORDER_MAX; //찍힌 수량까지 더했을 때 9999 넘는 경우 1번대로 다시 회귀한 넘버링 적용 (9999로 나눈 나머지)
+        }
+        Log.d(TAG, "======================== lotte_TryCount ========================="+ lotte_TryCount);
     }
 
     @Override

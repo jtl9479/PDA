@@ -447,9 +447,113 @@ public class EmartType implements ShipmentType {
         }
     }
 
+    /**
+     * 계근 저장 + 라벨 — 원본 BixolonShipmentActivity.wet_data_insert 본문 이관 (개발66 Step 8)
+     *
+     * <p>원본 대비 접은 조건 : INSERT(원본 1537~1553) · 중량 반올림 4곳(1559 · 1573 · 1591 · 1601) ·
+     * 계근 라벨(1624~1641) 을 이 타입 경로 하나로 고정했다. 그 외 로직은 원본 그대로다.</p>
+     */
     @Override
-    public void onWeightConfirmed(String weightStr, double weightDouble, String makingDate, String boxSerial) {
-        throw new UnsupportedOperationException("개발66 Step 8에서 이관 예정");
+    public void onWeightConfirmed(String weight_str, double weight_double, String making_date, String box_serial) {
+        Log.e(TAG, "=========================계근입력 시작=========================" + weight_double);
+
+        if (a.arSM.get(a.current_work_position).getGI_REQ_PKG().equals(String.valueOf(a.arSM.get(a.current_work_position).getPACKING_QTY()))) {
+            if ((a.arSM.size() - 1) == a.current_work_position) {
+                a.show_wetFinishDialog();
+            } else {
+                Toast.makeText(a.getApplicationContext(), "계근이 끝난 지점입니다.\n다음 지점을 작업해주세요.", Toast.LENGTH_SHORT).show();
+                a.vibrator.vibrate(300);
+            }
+            return;
+        }
+
+        Goodswets_Info gi = new Goodswets_Info();
+        gi.setGI_D_ID(a.arSM.get(a.current_work_position).getGI_D_ID());
+        gi.setGI_L_ID(a.arSM.get(a.current_work_position).getGI_L_ID());
+        gi.setWEIGHT(weight_str);
+        gi.setWEIGHT_UNIT(a.work_item_bi_info.getBASEUNIT());
+        gi.setPACKER_PRODUCT_CODE(a.arSM.get(a.current_work_position).getPACKER_PRODUCT_CODE());
+        gi.setBARCODE(a.work_item_fullbarcode);
+        gi.setPACKER_CLIENT_CODE(a.work_item_bi_info.getPACKER_CLIENT_CODE());
+        gi.setMAKINGDATE(making_date);
+        gi.setBOXSERIAL(box_serial);
+        gi.setBOX_CNT(String.valueOf((a.arSM.get(a.current_work_position).getPACKING_QTY() + 1)));
+        gi.setEMARTITEM_CODE(a.arSM.get(a.current_work_position).getEMARTITEM_CODE());
+        gi.setEMARTITEM(a.arSM.get(a.current_work_position).getEMARTITEM());
+        gi.setITEM_CODE(a.arSM.get(a.current_work_position).getITEM_CODE());
+        gi.setBRAND_CODE(a.arSM.get(a.current_work_position).getBRAND_CODE());
+        gi.setREG_ID(Common.REG_ID);
+        gi.setSAVE_TYPE("F");
+        gi.setDUPLICATE("F");
+
+
+        // 원본 1551 : 일반 INSERT(else 경로). 이 타입은 홈플러스·롯데 분기에 해당하지 않는다
+        DBHandler.insertqueryGoodsWet(a, gi);
+
+        Log.e(TAG, "=========================계근중량 변환전=========================" + weight_double);
+
+        String temp_weight = "";
+
+        // 원본 1559 : if (EMART) 중량 소수 1자리 절사
+        weight_double = Math.floor(weight_double * 10);
+        weight_double = weight_double / 10.0;
+        temp_weight = String.format("%.1f", weight_double);
+
+        weight_double = Double.parseDouble(temp_weight);
+
+        Log.e(TAG, "=========================계근중량 변환후=========================" + weight_double);
+
+        a.arSM.get(a.current_work_position).setPACKING_QTY(a.arSM.get(a.current_work_position).getPACKING_QTY() + 1);           // 계근수량
+
+        // 원본 1573 : 계근중량 합산 — EMART 1자리 경로
+        a.arSM.get(a.current_work_position).setGI_QTY(Math.round((a.arSM.get(a.current_work_position).getGI_QTY() + weight_double) * 10.0) / 10.0);    // 계근중량
+
+        a.centerWorkCount++;
+        a.centerWorkWeight += weight_double;
+
+        Log.e(TAG, "=========================센터중량 변환전=========================" + a.centerWorkWeight);
+
+        // 원본 1591 : 센터중량 반올림 — EMART 소수 2자리
+        a.centerWorkWeight = Math.round(a.centerWorkWeight * 100.0) / 100.0;
+
+        Log.e(TAG, "=========================센터중량 변환후=========================" + a.centerWorkWeight);
+
+        a.edit_center_tcount.setText(a.centerTotalCount + " / " + a.centerWorkCount);
+
+        // 원본 1601 : 센터중량 표시 — EMART 경로
+        a.edit_center_tweight.setText(Math.round(a.centerTotalWeight * 10) / 10.0 + " / " + a.centerWorkWeight);
+
+        a.edit_wet_count.setText(a.arSM.get(a.current_work_position).getGI_REQ_PKG() + " / " + a.arSM.get(a.current_work_position).getPACKING_QTY());
+        a.edit_wet_weight.setText(a.arSM.get(a.current_work_position).getGI_REQ_QTY() + " / " + a.arSM.get(a.current_work_position).getGI_QTY());
+
+        Log.d(TAG, "==================================================");
+        Log.d(TAG, "====================계근작업 종료===================");
+        Log.i(TAG, "a.centerWorkCount : " + a.centerWorkCount);
+        Log.i(TAG, "a.centerWorkWeight : " + a.centerWorkWeight);
+        Log.d(TAG, "==================================================");
+
+        for (int i = 0; i < a.arSM.size(); i++) {
+            a.arSM.get(i).setWORK_FLAG(0);
+        }
+
+        a.arSM.get(a.current_work_position).setWORK_FLAG(1);
+        a.sListAdapter.notifyDataSetChanged();
+        a.sList.setSelection(a.current_work_position);
+
+        if (Common.print_bool) {
+            // 원본 1625~1640 : 라벨 분기 — 이 타입 고정이라 searchType 조건만 제거
+            Log.d(TAG, "===========이마트 출력 시작 ================");
+            a.labelPrintHelper.setPrinting(weight_double, a.arSM.get(a.current_work_position), false, making_date, a.work_item_bi_info, a.arSM.get(a.current_work_position), Common.searchType, a.printerCallback);
+        }
+
+        a.set_scanFlag(true);
+
+        if (Integer.parseInt(a.arSM.get(a.current_work_position).getGI_REQ_PKG()) <= a.arSM.get(a.current_work_position).getPACKING_QTY()) {
+            // 요청수량과 계근수량이 같을 때 (계근이 끝났을 때)
+            if ((a.centerTotalCount > 0) && (a.centerTotalCount == a.centerWorkCount)) {       // 총 계근 완료
+                a.show_wetFinishDialog();
+            }
+        }
     }
 
     @Override
@@ -457,14 +561,23 @@ public class EmartType implements ShipmentType {
         throw new UnsupportedOperationException("개발66 Step 9에서 이관 예정");
     }
 
+    /**
+     * 재출력 라벨 — 원본 mHandler MESSAGE_REPRINT 분기 이관 (개발66 Step 8)
+     */
     @Override
-    public void reprintLabel(String weightStr, String makingDate, String boxOrder, int selectPosition) {
-        throw new UnsupportedOperationException("개발66 Step 8에서 이관 예정");
+    public void reprintLabel(String print_weight_str, String making_date, String box_order, int select_position) {
+        // 원본 957 : else 경로(이마트 수기 프린팅). 이 타입은 홈플러스·롯데·생산라벨 분기에 해당하지 않는다
+        a.labelPrintHelper.setPrinting(Double.parseDouble(print_weight_str), a.arSM.get(select_position), true, making_date, a.work_item_bi_info, a.arSM.get(a.current_work_position), Common.searchType, a.printerCallback);
     }
 
+    /**
+     * 출하대상 조회 후처리 — 이 타입은 원본에 해당 분기가 없다 (개발66 Step 8)
+     *
+     * <p>원본 2112 의 박스순번 초기화는 searchType 6(롯데) 전용이다.</p>
+     */
     @Override
     public void onShipmentLoaded(ArrayList<Shipments_Info> arSM) {
-        throw new UnsupportedOperationException("개발66 Step 8에서 이관 예정");
+        // 원본 2112 : 롯데 전용 블록이라 이 타입은 수행할 작업이 없다
     }
 
     @Override
