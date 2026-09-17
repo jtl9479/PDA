@@ -701,17 +701,40 @@ setMessage → setBarcodeMsg → shipmentType.onBarcodeScanned(msg)
 - 주의사항: 두 메서드(구간 추출 유무 차이)를 합치지 않는다(개발66 §1.3 #2 계승)
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 — Step 8 이후 실기기 확인 필요
-- [ ] Part 6: 회귀테스트 — `ProgressDlgShipSelect.onPostExecute`가 여전히 Activity의 `find_work_info`를 호출하는지 확인(8종 공통 경로 무영향)
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 — `gradlew assembleDebug` → `BUILD SUCCESSFUL` (2026-09-17)
+- [ ] Part 5: 단위테스트 — Step 8 이후 실기기 확인 필요 (생산 상품 스캔 · 상품코드 스캔)
+- [x] Part 6: 회귀테스트 — `ProgressDlgShipSelect.onPostExecute`(2177)가 여전히 Activity 의 `find_work_info` 를 호출함을 확인. 8종 공통 경로 무영향
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: `findPackerProduct` 래퍼 + `find_work_info` · `find_work_info_barcodeGoods` private 사본을 생산 2종에 각각 만들었다. `ProductionType.onBarcodeScanned` 의 호출처도 자기 메서드로 통일했다
+- **왜**: 상품 매칭 축을 타입 파일이 소유하게 한다. 생산 2종은 이 축에 차이가 없어 두 파일의 사본이 동일하다
+- **어떻게**: **옵션 A** 를 택했다 — Activity 의 `find_work_info` 는 그대로 두고 타입 파일에 사본을 둔다. 개발66 Step 9 가 `EmartNonfixedType` 에 쓴 방식과 같다
+
+**옵션 A 를 지킨 결과** (검증 확인)
+
+| 대상 | 상태 |
+|---|---|
+| Activity `find_work_info`(1742~1808) | **그대로 유지** — 삭제하지 않았다 |
+| Activity `find_work_info` 안의 searchType 4 전부 매칭 블록(1786~1798) | **유지** — 비정량(4)이 이 경로로도 동작한다 |
+| `ProgressDlgShipSelect.onPostExecute`(2177) | **Activity 메서드를 그대로 호출** — 8종 공통 경로라 타입 파일 사본과 무관 |
+
+**검증 결과**
+
+| 항목 | 예상 | 실제 |
+|---|---|---|
+| 빌드 | — | `BUILD SUCCESSFUL` |
+| `find_work_info` 사본 (2종) | 전부 매칭 13줄만 삭제 | **삭제 13줄 / 추가 0줄** |
+| `find_work_info_barcodeGoods` 사본 (2종) | 차이 없음 | **차이 0줄** (두 메서드 병합하지 않음 — 구간 추출 길이 체크 유무 유지) |
+| `findPackerProduct` 래퍼 | 원본 두 메서드 로직 누락 0 | **누락 0** (항상 참인 `Editable` 비교 포함) |
+| 생산 2종 상호 비교 | 3개 메서드 동일 | **완전 일치** |
+| 문자열 리터럴 오염 | 0건 | **0건** |
+| 개발66 6종 | 무영향 | **무영향** |
+| 런타임 영향 | 0건 | **0건** (Activity 미변경, Step 8 전까지 미호출) |
+
+**호출처 통일** — Step 3 에서 `ProductionLabelType` 만 `this.findPackerProduct` 를 쓰고 `ProductionType` 은 `a.find_PackerProduct` 를 쓰던 과도기 불일치를 이 Step 에서 해소했다. stale 해진 주석·Javadoc 참조 3곳도 함께 정리했다.
 
 ---
 
@@ -946,7 +969,7 @@ Step 10: 통합 테스트
 | 2 | 바코드 스캔 — 생산(1) ProductionType | ✅ 완료 (2026-09-17, 접은 조건 0 · 원본 대조 차이 0줄 · 로그 문자열 정정 · 빌드 통과) |
 | 3 | 바코드 스캔 — 생산라벨(7) ProductionLabelType | ✅ 완료 (2026-09-17, 원본 복원 · 접은 조건 5곳 · W/HW·B 및 킬코이·센터명 유지 · 빌드 통과) |
 | 4 | 계근 저장 + 라벨 + 조회후처리 (2종) | ✅ 완료 (2026-09-17, 추가 0줄 · 라벨만 차이 · 생산(1) 라벨 없음 확인 · 빌드 통과) |
-| 5 | 상품 매칭 (2종) + find_work_info 잔류 확정 | ⏳ 대기 |
+| 5 | 상품 매칭 (2종) + find_work_info 잔류 확정 | ✅ 완료 (2026-09-17, 옵션 A · 추가 0줄 · 2종 사본 동일 · 공통 경로 무영향 · 빌드 통과) |
 | 6 | 전송 (2종) | ⏳ 대기 |
 | 7 | 수기 입력 (2종) | ⏳ 대기 |
 | 8 | 컷오버 — onCreate + setBarcodeMsg 전환 | ⏳ 대기 |
