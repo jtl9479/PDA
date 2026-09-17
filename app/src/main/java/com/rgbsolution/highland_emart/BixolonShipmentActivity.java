@@ -335,8 +335,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * searchType별 계근 흐름 담당 객체 (개발66 Step 1 · 개발67 Step 8)
      * <p>개발67 Step 8 컷오버 이후 <b>8종 전부</b>(0·1·2·3·4·5·6·7)가 구현체를 갖는다.
      * onCreate에서 무조건 생성하므로 <b>null이 되지 않는다.</b></p>
-     * <p>그래서 아래 위임 게이트들의 {@code if (shipmentType != null)} 조건은 항상 참이고,
-     * 그 else 본문은 도달하지 않는 코드가 됐다. 정리는 개발67 Step 9에서 한다.</p>
+     * <p>개발67 Step 9에서 위임 게이트의 {@code != null} 가드와 도달 불가가 된 본문을 걷어냈다.
+     * 이제 각 진입점은 조건 없이 이 객체로 위임한다.</p>
      */
     private ShipmentType shipmentType;
 
@@ -661,93 +661,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     Toast.makeText(getApplicationContext(), "상품패커코드가 없습니다.", Toast.LENGTH_SHORT).show();
                     return;
                 } else {                                                // 필수값이 전부 입력되있을 때
-                    // 개발66 Step 11 : 타입 구현체로 위임한다.
-                    // 개발67 Step 8 컷오버 이후 shipmentType 은 항상 non-null 이라 아래 본문은 도달하지 않는다(Step 9 정리 대상).
-                    if (shipmentType != null) {
-                        shipmentType.onManualInput();
-                        return;
-                    }
-
-                    work_item_fullbarcode = "";
-                    String weight_str = edit_barcode.getText().toString();    // 입력값 저장
-
-                    Log.i(TAG, "=====================weight_str 1==================" + weight_str);
-
-                    double weight_double = Double.parseDouble(weight_str);    // 소수점 1자리로 변환
-
-                    Log.i(TAG, "=====================weight_double 1==================" + weight_double);
-
-                    String temp_weight = "";
-
-                    if (Common.searchType.equals(SEARCH_TYPE_EMART)) { //이마트 출하대상일경우
-                        weight_double = Math.floor(weight_double * 10);
-                        Log.i(TAG, "=====================weight_double 1-1==================" + weight_double);
-                        weight_double = weight_double / 10.0;
-                        Log.i(TAG, "=====================weight_double 1-2==================" + weight_double);
-                        Log.i(TAG, "=====================weight_double 2==================" + weight_double);
-                        temp_weight = String.format("%.1f", weight_double); //출하일 경우 소숫점 첫째 자리까지 반올림, 위 단계에서 Math.floor로 소숫점 둘째 자리부터 날려서 의미는 없는 코드이나 일단 남겨놓음
-                    } else { //이노 생산계근 or 홈플러스 추가계근일경우
-                        temp_weight = Double.toString(weight_double); //생산일 경우 그대로 입력
-                        Log.i(TAG, "=====================temp_weight production==================" + temp_weight);
-                    }
-
-                    Log.i(TAG, "=====================temp_weight out==================" + temp_weight);
-
-                    weight_double = Double.parseDouble(temp_weight); //생산이든 출하든 똑같이 타야함
-
-                    Log.i(TAG, "=====================weight_double 3==================" + weight_double);
-
-                    weight_str = String.valueOf(weight_double);                                         // 반올림값 다시 저장
-
-                    Log.i(TAG, "=====================패커코드 체크==================" + arSM.get(current_work_position).getPACKER_CODE());
-                    Log.i(TAG, "=====================스토어코드 체크==================" + arSM.get(current_work_position).getSTORE_CODE());
-
-                    if (arSM.get(current_work_position).getPACKER_CODE().equals(KILKOY_PACKER_CODE)
-                            && arSM.get(current_work_position).getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE)) {
-                          String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
-                          String makingTo = work_item_bi_info.getMAKINGDATE_TO();
-
-                          Intent IntentA = new Intent(BixolonShipmentActivity.this, ExpiryEnterActivity.class);
-
-                          String weightStrKey = "weightStrKey";
-                          String weightDblKey = "weightDblKey";
-                          String makingFromKey = "makingFromKey";
-                          String makingToKey = "makingToKey";
-
-                          IntentA.putExtra(weightStrKey,weight_str);
-                          IntentA.putExtra(weightDblKey,weight_double);
-
-                          IntentA.putExtra(makingFromKey,makingFrom);
-                          IntentA.putExtra(makingToKey,makingTo);
-
-                          startActivityForResult(IntentA,GET_DATA_REQUEST);
-
-                    }else if(arSM.get(current_work_position).getCENTERNAME().contains(CENTER_NAME_TRD) || arSM.get(current_work_position).getCENTERNAME().contains(CENTER_NAME_WET) || arSM.get(current_work_position).getCENTERNAME().contains(CENTER_NAME_ET) || Common.searchType.equals(SEARCH_TYPE_LOTTE)){
-                        if(Common.searchType.equals(SEARCH_TYPE_EMART) || Common.searchType.equals(SEARCH_TYPE_LOTTE)){ //수입육 계근, 롯데계근일 때 수기입력시 소비기한 창 띄움
-                            String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
-                            String makingTo = work_item_bi_info.getMAKINGDATE_TO();
-
-                            Intent IntentA = new Intent(BixolonShipmentActivity.this, ExpiryEnterActivity.class);
-
-                            String weightStrKey = "weightStrKey";
-                            String weightDblKey = "weightDblKey";
-                            String makingFromKey = "makingFromKey";
-                            String makingToKey = "makingToKey";
-
-                            IntentA.putExtra(weightStrKey,weight_str);
-                            IntentA.putExtra(weightDblKey,weight_double);
-
-                            IntentA.putExtra(makingFromKey,makingFrom);
-                            IntentA.putExtra(makingToKey,makingTo);
-
-                            startActivityForResult(IntentA,GET_DATA_REQUEST);
-                        }else{
-                            wet_data_insert(weight_str, weight_double, "", "");
-                        }
-                    }else{
-                        wet_data_insert(weight_str, weight_double, "", "");
-                    }
-                    edit_barcode.setText("");
+                    // 개발66 Step 11 · 개발67 Step 8~9 : 8종 전부 타입 구현체가 담당한다. 검증 통과 후 조건 없이 위임
+                    shipmentType.onManualInput();
                 }
             } else if(work_flag == 2) {            // 상품코드
                 setBarcodeMsg(edit_barcode.getText().toString());
@@ -958,27 +873,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         String print_weight_str = msg.getData().getString("WEIGHT").toString();
                         String making_date = msg.getData().getString("MAKINGDATE").toString();
 
-                        // 개발66 Step 8 : 타입 구현체로 위임. 개발67 Step 8 이후 항상 위임되며 아래 분기는 도달하지 않는다(Step 9 정리 대상)
-                        if (shipmentType != null) {
-                            shipmentType.reprintLabel(print_weight_str, making_date,
-                                    msg.getData().getString("BOX_ORDER"), select_position);
-                            break;
-                        }
-
-                        if (Common.searchType.equals(SEARCH_TYPE_HOMEPLUS) || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)) {
-                            labelPrintHelper.setHomeplusPrinting(Double.parseDouble(print_weight_str), arSM.get(select_position), true, printerCallback);
-                        } else if (Common.searchType.equals(SEARCH_TYPE_LOTTE)) {
-                            //Toast.makeText(getApplicationContext(), "롯데 재출력은 불가합니다.", Toast.LENGTH_SHORT).show();
-                            // 롯데의 경우 바코드 시퀀스를 위해 BOX_ORDER 가져옴.
-                            String box_order = msg.getData().getString("BOX_ORDER").toString();
-
-                            labelPrintHelper.setPrintingLotte(Double.parseDouble(print_weight_str), arSM.get(select_position), true, making_date, box_order, Common.searchType, printerCallback);
-                        } else if (Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)) {
-                            labelPrintHelper.setPrinting_prod(Double.parseDouble(print_weight_str), arSM.get(select_position), true, printerCallback);
-                        }else{ //이마트수기프린팅
-                            labelPrintHelper.setPrinting(Double.parseDouble(print_weight_str), arSM.get(select_position), true, making_date, work_item_bi_info, arSM.get(current_work_position), Common.searchType, printerCallback);
-                        }
-
+                        // 개발66 Step 8 · 개발67 Step 8~9 : 8종 전부 타입 구현체가 담당한다
+                        shipmentType.reprintLabel(print_weight_str, making_date,
+                                msg.getData().getString("BOX_ORDER"), select_position);
                         break;
                     // WoosimService.MESSAGE_PRINTER 제거됨 - Bixolon은 별도 Handler 사용
                 }
@@ -1153,8 +1050,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * <ol>
      *   <li>scan_flag=true (상품 바코드 스캔):
      *     <ul>
-     *       <li>work_flag=1: find_PackerProduct()로 바코드에서 패커상품코드 추출</li>
-     *       <li>work_flag=2: find_PackerProductBarcodeGoods()로 상품코드로 검색</li>
+     *       <li>work_flag=1: 타입 구현체의 findPackerProduct(barcode, 1)로 바코드에서 패커상품코드 추출</li>
+     *       <li>work_flag=2: 타입 구현체의 findPackerProduct(barcode, 2)로 상품코드로 검색</li>
      *       <li>중복 스캔 체크 (홈플러스 비정량은 중복 허용)</li>
      *       <li>출하 대상 조회 (ProgressDlgShipSelect 실행)</li>
      *     </ul>
@@ -1226,160 +1123,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * @param box_serial 박스 시리얼 번호 (바코드에서 추출, 없으면 빈 문자열)
      */
     public void wet_data_insert(String weight_str, double weight_double, String making_date, String box_serial) {
-        // 개발66 Step 8 : 타입 구현체로 위임한다.
-        // 개발67 Step 8 컷오버 이후 shipmentType 은 항상 non-null 이라 아래 본문은 도달하지 않는다(Step 9 정리 대상).
-        if (shipmentType != null) {
-            shipmentType.onWeightConfirmed(weight_str, weight_double, making_date, box_serial);
-            return;
-        }
-
-        Log.e(TAG, "=========================계근입력 시작=========================" + weight_double);
-
-        if (arSM.get(current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.get(current_work_position).getPACKING_QTY()))) {
-            if ((arSM.size() - 1) == current_work_position) {
-                show_wetFinishDialog();
-            } else {
-                Toast.makeText(getApplicationContext(), "계근이 끝난 지점입니다.\n다음 지점을 작업해주세요.", Toast.LENGTH_SHORT).show();
-                vibrator.vibrate(300);
-            }
-            return;
-        }
-
-        Goodswets_Info gi = new Goodswets_Info();
-        gi.setGI_D_ID(arSM.get(current_work_position).getGI_D_ID());
-        gi.setGI_L_ID(arSM.get(current_work_position).getGI_L_ID());
-        gi.setWEIGHT(weight_str);
-        gi.setWEIGHT_UNIT(work_item_bi_info.getBASEUNIT());
-        gi.setPACKER_PRODUCT_CODE(arSM.get(current_work_position).getPACKER_PRODUCT_CODE());
-        gi.setBARCODE(work_item_fullbarcode);
-        gi.setPACKER_CLIENT_CODE(work_item_bi_info.getPACKER_CLIENT_CODE());
-        gi.setMAKINGDATE(making_date);
-        gi.setBOXSERIAL(box_serial);
-        gi.setBOX_CNT(String.valueOf((arSM.get(current_work_position).getPACKING_QTY() + 1)));
-        gi.setEMARTITEM_CODE(arSM.get(current_work_position).getEMARTITEM_CODE());
-        gi.setEMARTITEM(arSM.get(current_work_position).getEMARTITEM());
-        gi.setITEM_CODE(arSM.get(current_work_position).getITEM_CODE());
-        gi.setBRAND_CODE(arSM.get(current_work_position).getBRAND_CODE());
-        gi.setREG_ID(Common.REG_ID);
-        gi.setSAVE_TYPE("F");
-        gi.setDUPLICATE("F");
-
-        String lotteBoxOrder = ""; // 롯데 전용 박스 순번을 담을 변수
-
-        if(Common.searchType.equals(SEARCH_TYPE_HOMEPLUS)) { //홈플러스
-            int maxBoxOrder = DBHandler.selectMaxBoxOrder(this);
-            Log.e(TAG, "=======================MAX BOX ORDER ###=========================" + maxBoxOrder);
-            DBHandler.insertqueryGoodsWetHomeplus(this, gi, maxBoxOrder);
-        } else if (Common.searchType.equals(SEARCH_TYPE_LOTTE)) { //롯데
-            // 1. 현재 lotte_TryCount 값을 이 계근 건의 박스 순번으로 확정
-            lotteBoxOrder = String.valueOf(lotte_TryCount);
-            // 2. 확정된 번호를 사용하여 DB에 저장
-            DBHandler.insertqueryGoodsWetLotte(this, gi, lotte_TryCount);
-            // 3. DB 저장이 끝난 직후, 다음 계근을 위해 카운터 즉시 증가
-            lotte_TryCount++;
-            if (lotte_TryCount > LOTTE_BOX_ORDER_MAX) {
-                lotte_TryCount = 1;
-            }
-        } else { //
-            DBHandler.insertqueryGoodsWet(this, gi);
-        }
-
-        Log.e(TAG, "=========================계근중량 변환전=========================" + weight_double);
-
-        String temp_weight = "";
-
-        if(Common.searchType.equals(SEARCH_TYPE_EMART)) { //이마트
-            weight_double = Math.floor(weight_double * 10);
-            weight_double = weight_double / 10.0;
-            temp_weight = String.format("%.1f", weight_double);
-        }else{ //생산 혹은 홈플러스
-            temp_weight = Double.toString(weight_double); //생산일 경우 그대로 입력
-        }
-
-        weight_double = Double.parseDouble(temp_weight);
-
-        Log.e(TAG, "=========================계근중량 변환후=========================" + weight_double);
-
-        arSM.get(current_work_position).setPACKING_QTY(arSM.get(current_work_position).getPACKING_QTY() + 1);           // 계근수량
-
-        if(Common.searchType.equals(SEARCH_TYPE_EMART)) {
-            arSM.get(current_work_position).setGI_QTY(Math.round((arSM.get(current_work_position).getGI_QTY() + weight_double) * 10.0) / 10.0);    // 계근중량
-        }else{
-            double v1 = arSM.get(current_work_position).getGI_QTY();
-            double v2 = weight_double;
-
-            double v3 = v1+v2;
-            double v4 = Math.round(v3*1000)/1000.0;
-
-            arSM.get(current_work_position).setGI_QTY(v4);    // 계근중량 변경 후
-            Log.e(TAG, "=========================chk prod 계근중량=========================" + v4);
-        }
-
-        centerWorkCount++;
-        centerWorkWeight += weight_double;
-
-        Log.e(TAG, "=========================센터중량 변환전=========================" + centerWorkWeight);
-
-        if(Common.searchType.equals(SEARCH_TYPE_EMART)) { //출하일 경우에만 round 처리
-            centerWorkWeight = Math.round(centerWorkWeight * 100.0) / 100.0;
-        }else{ //생산일 경우
-            centerWorkWeight = Math.round(centerWorkWeight*1000)/1000.0; //생산일 경우 소수점 넷째자리에서 반올림
-        }
-
-        Log.e(TAG, "=========================센터중량 변환후=========================" + centerWorkWeight);
-
-        edit_center_tcount.setText(centerTotalCount + " / " + centerWorkCount);
-
-        if(Common.searchType.equals(SEARCH_TYPE_EMART)) { //출하일때
-            edit_center_tweight.setText(Math.round(centerTotalWeight * 10) / 10.0 + " / " + centerWorkWeight);
-        }else{ //생산일때
-            edit_center_tweight.setText(centerTotalWeight + " / " + centerWorkWeight);
-        }
-
-        edit_wet_count.setText(arSM.get(current_work_position).getGI_REQ_PKG() + " / " + arSM.get(current_work_position).getPACKING_QTY());
-        edit_wet_weight.setText(arSM.get(current_work_position).getGI_REQ_QTY() + " / " + arSM.get(current_work_position).getGI_QTY());
-
-        Log.d(TAG, "==================================================");
-        Log.d(TAG, "====================계근작업 종료===================");
-        Log.i(TAG, "centerWorkCount : " + centerWorkCount);
-        Log.i(TAG, "centerWorkWeight : " + centerWorkWeight);
-        Log.d(TAG, "==================================================");
-
-        for (int i = 0; i < arSM.size(); i++) {
-            arSM.get(i).setWORK_FLAG(0);
-        }
-
-        arSM.get(current_work_position).setWORK_FLAG(1);
-        sListAdapter.notifyDataSetChanged();
-        sList.setSelection(current_work_position);
-
-        if (Common.print_bool) {
-            if (Common.searchType.equals(SEARCH_TYPE_HOMEPLUS) || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)) {
-                Log.d(TAG, "===========홈플 출력 시작 ================");
-                labelPrintHelper.setHomeplusPrinting(weight_double, arSM.get(current_work_position), false, printerCallback);
-            }else if(Common.searchType.equals(SEARCH_TYPE_EMART)){
-                Log.d(TAG, "===========이마트 출력 시작 ================");
-                labelPrintHelper.setPrinting(weight_double, arSM.get(current_work_position), false, making_date, work_item_bi_info, arSM.get(current_work_position), Common.searchType, printerCallback);
-            }else if(Common.searchType.equals(SEARCH_TYPE_NONFIXED)){
-                Log.d(TAG, "===========이마트(비정량) 출력 시작 ================");
-                labelPrintHelper.setPrinting(weight_double, arSM.get(current_work_position), false, making_date, work_item_bi_info, arSM.get(current_work_position), Common.searchType, printerCallback);
-            }else if(Common.searchType.equals(SEARCH_TYPE_LOTTE)){
-                Log.d(TAG, "===========롯데 출력 시작 ================");
-                labelPrintHelper.setPrintingLotte(weight_double, arSM.get(current_work_position), false, making_date, lotteBoxOrder, Common.searchType, printerCallback);
-            }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)){
-                Log.d(TAG, "===========생산 출력 시작 ================");
-                labelPrintHelper.setPrinting_prod(weight_double, arSM.get(current_work_position), false, printerCallback);
-            }
-        }
-
-        set_scanFlag(true);
-
-        if (Integer.parseInt(arSM.get(current_work_position).getGI_REQ_PKG()) <= arSM.get(current_work_position).getPACKING_QTY()) {
-            // 요청수량과 계근수량이 같을 때 (계근이 끝났을 때)
-            if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
-                show_wetFinishDialog();
-            }
-        }
+        // 개발66 Step 8 · 개발67 Step 8~9 : 8종 전부 타입 구현체가 담당한다.
+        // 호출처 : setBarcodeMsg 계열(타입 파일) · onActivityResult(수기 팝업 결과) · inputBtnListener
+        shipmentType.onWeightConfirmed(weight_str, weight_double, making_date, box_serial);
     }
 
     public void scanFlag_init() {
@@ -1405,41 +1151,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      */
     public void startShipSelect(String centerName, String condition, boolean type) {
         new ProgressDlgShipSelect(this, centerName, condition, type).execute();
-    }
-
-    public String find_PackerProduct(String barcode) {
-        try {
-            String pp_code = "";
-            Log.e(TAG, "========================pp_code 가져오기 시작======================");
-            pp_code = find_work_info(barcode, true);
-            Log.e(TAG, "========================pp_code 가져오기 끝======================");
-            if (!edit_product_name.getText().equals("")) {
-                return pp_code;
-            } else {
-                return "null";
-            }
-        } catch (Exception ex) {
-            Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
-            return "null";
-        }
-    }
-
-    public String find_PackerProductBarcodeGoods(String barcode) {
-        Log.e(TAG, "find_PackerProductBarcodeGoods");
-
-        try {
-            String pp_code = "";
-            pp_code = find_work_info_barcodeGoods(barcode, false);
-            if (!edit_product_name.getText().equals("")) {
-                return pp_code;
-            } else {
-                return "null";
-                //scanFlag_swap();
-            }
-        } catch (Exception ex) {
-            Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
-            return "null";
-        }
     }
 
     private String find_work_info(String req, boolean type) {
@@ -1505,54 +1216,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             return pp_code;
         } catch (Exception ex) {
             Log.e(TAG, "======== find_work_info Exception ========");
-            Log.e(TAG, ex.getMessage().toString());
-            return "null";
-        }
-    }
-
-    private String find_work_info_barcodeGoods(String req, boolean type) {
-        Log.e(TAG, "find_work_info_barcodeGoods");
-        try {
-            String pp_code = "";
-            int count = 0;
-            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeGoodsInfo(this);
-            for (Barcodes_Info bi : list_barcode_info) {
-                String bg = bi.getBARCODEGOODS();
-                String bg_from = bi.getBARCODEGOODS_FROM();
-                String bg_to = bi.getBARCODEGOODS_TO();
-                String temp_bg;
-                if (type) {              // PACKER_PRODUCT_CODE로 찾을 경우
-                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
-                } else {                // false : BL로 찾을 경우
-                    temp_bg = req;
-                }
-                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
-                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
-                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
-
-                if (temp_bg.equals(bg)) {                       // barcodegoods find success
-                    //pp_name = bi.getITEM_NAME_KR();
-                    work_item_bi_info = bi;
-                    edit_product_name.setText(bi.getITEM_NAME_KR());
-                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
-                    if(count == 0){
-                        pp_code = bi.getPACKER_PRODUCT_CODE();
-                    }else{
-                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
-                    }
-                    Log.i(TAG, "===================pp_code=================" + pp_code);
-                    //work_ppcode = bi.getPACKER_PRODUCT_CODE();
-                    work_item_barcodegoods = bg;
-                    count++;
-                } else {
-                    edit_product_name.setText("");
-                    edit_product_code.setText("");
-                    work_item_barcodegoods = "";
-                }
-            }
-            return pp_code;
-        } catch (Exception ex) {
-            Log.e(TAG, "======== find_work_info_barcodeGoods Exception ========");
             Log.e(TAG, ex.getMessage().toString());
             return "null";
         }
@@ -1842,9 +1505,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                 // 개발66 Step 8 : 롯데 박스순번 초기화(lotte_TryCount)를 LotteType 으로 이관.
                 // 원본은 searchType 6 에서만 수행했고, 다른 타입 구현체는 이 메서드에서 하는 일이 없다.
-                if (shipmentType != null) {
-                    shipmentType.onShipmentLoaded(arSM);
-                }
+                shipmentType.onShipmentLoaded(arSM);
 
             } catch (Exception e) {
                 if (Common.D) {
@@ -2026,197 +1687,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 list_send_info = DBHandler.selectquerySendGoodsWet(mContext, qry_where);        // 목록 조회 성공
                 publishProgress("max", Integer.toString(list_send_info.size()));
 
-                // 개발66 Step 10 : 타입 구현체로 위임한다.
-                // 개발67 Step 8 컷오버 이후 shipmentType 은 항상 non-null 이라 아래 본문은 도달하지 않는다(Step 9 정리 대상).
-                if (shipmentType != null) {
-                    return shipmentType.send(mContext, list_send_info, arSM);
-                }
-
-                int iCount = 0;
-                int jChk = 0;
-
-                if(Common.searchType.equals(SEARCH_TYPE_EMART) || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS) || Common.searchType.equals(SEARCH_TYPE_LOTTE)){ //이마트 혹은 홈플러스, 롯데 출고일때..구로직
-                    for (int i = 0; i < list_send_info.size(); i++) { //SAVE_TYPE 과 상관 없이 계근 데이터 모두 루프
-                        if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
-                            iCount++;
-                            String packet = "";
-                            packet += list_send_info.get(i).getGI_D_ID() + "::";
-                            packet += list_send_info.get(i).getWEIGHT() + "::";
-                            packet += list_send_info.get(i).getWEIGHT_UNIT() + "::";
-                            packet += list_send_info.get(i).getPACKER_PRODUCT_CODE() + "::";
-                            packet += list_send_info.get(i).getBARCODE() + "::";
-                            packet += list_send_info.get(i).getPACKER_CLIENT_CODE() + "::";
-                            packet += list_send_info.get(i).getMAKINGDATE() + "::";
-                            packet += list_send_info.get(i).getBOXSERIAL() + "::";
-                            packet += list_send_info.get(i).getBOX_CNT() + "::";
-                            packet += list_send_info.get(i).getREG_ID() + "::";
-                            packet += Common.selectCompanyCode + "::";
-                            packet += list_send_info.get(i).getBRAND_CODE() + "::";
-                            packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
-                            packet += list_send_info.get(i).getBOX_ORDER() + "::";
-                            packet += list_send_info.get(i).getGI_L_ID();
-
-
-                            if (Common.D) {
-                                Log.d(TAG, "Send Packet : '" + packet + "'");
-                            }
-
-                            Log.i(TAG, "=====================Common.searchType==================" + Common.searchType);
-
-                            // 디비접속 설정
-                            if(Common.searchType.equals(SEARCH_TYPE_EMART)||Common.searchType.equals(SEARCH_TYPE_WHOLESALE)) {
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                            }else if(Common.searchType.equals(SEARCH_TYPE_HOMEPLUS)||Common.searchType.equals(SEARCH_TYPE_LOTTE)){   // 홈플러스, 롯데 같이 태우기
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                            }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION)){
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                            }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)){
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                            }
-
-                            //결과값의 앞, 뒤에 공백 제거
-                            result = result.replace("\r\n", "");
-                            result = result.replace("\n", "");
-                            Log.d(TAG, "i number : " + i);
-                            Log.v(TAG, "전송결과 : " + result);
-                            //s : 성공, f : 실패
-                            if (result.equals("s")) {
-                                boolean bool = DBHandler.updatequeryGoodsWet(mContext, list_send_info.get(i).getGI_D_ID(), list_send_info.get(i).getBARCODE(), list_send_info.get(i).getBOX_CNT(), list_send_info.get(i).getGI_L_ID());
-                                Log.d(TAG, "boolean " + bool);
-                                if (bool) {          // 전송 & PDA SQLite update 성공
-                                    publishProgress("progress", Integer.toString(iCount), Integer.toString(iCount) + "번 데이터 전송성공..");
-
-                                    for (int j = 0; j < arSM.size(); j++) {
-                                        if (arSM.get(j).getGI_D_ID().equals(list_send_info.get(i).getGI_D_ID())
-                                                && arSM.get(j).getGI_L_ID().equals(list_send_info.get(i).getGI_L_ID())) {
-                                            arSM.get(j).setSAVE_CNT(arSM.get(j).getSAVE_CNT() + 1);
-
-                                            if (arSM.get(j).getSAVE_CNT() == Integer.parseInt(arSM.get(j).getGI_REQ_PKG())) {            // 전송 개수와 요청 개수 비교
-                                                    Log.v(TAG, "출하대상 계근 완료");
-                                                    arSM.get(j).setSAVE_TYPE("Y");          // 전부 전송했다면 전송여부 Y로 변경
-                                                    DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
-
-                                                    jChk++;
-
-                                                    if (jChk == arSM.size()) {
-                                                        Log.d(TAG, "arSM.size() when return: " + arSM.size());
-                                                        Log.d(TAG, "jChk number when return: " + jChk);
-                                                        return "ss";
-                                                    }
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if (result.equals("f")) {
-                                return result;
-                            }
-                        }
-                    }
-                }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION) || Common.searchType.equals(SEARCH_TYPE_WHOLESALE) || Common.searchType.equals(SEARCH_TYPE_NONFIXED) || Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED) || Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)){//생산계근 혹은 도매계근일때
-                    Log.i(TAG, "=====================여기 들어오는지 확인==================");
-                    Log.i(TAG, "=====================사이즈 확인=================="+list_send_info.size());
-                    String packet = "";
-                    //전문 전송용 for문
-                    for (int i = 0; i < list_send_info.size(); i++) {
-                        if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
-                            iCount++;
-                            packet += list_send_info.get(i).getGI_D_ID() + "::";
-                            packet += list_send_info.get(i).getWEIGHT() + "::";
-                            packet += list_send_info.get(i).getWEIGHT_UNIT() + "::";
-                            packet += list_send_info.get(i).getPACKER_PRODUCT_CODE() + "::";
-                            packet += list_send_info.get(i).getBARCODE() + "::";
-                            packet += list_send_info.get(i).getPACKER_CLIENT_CODE() + "::";
-                            packet += list_send_info.get(i).getMAKINGDATE() + "::";
-                            packet += list_send_info.get(i).getBOXSERIAL() + "::";
-                            packet += list_send_info.get(i).getBOX_CNT() + "::";
-                            packet += list_send_info.get(i).getREG_ID() + "::";
-                            packet += Common.selectCompanyCode + "::";
-                            packet += list_send_info.get(i).getBRAND_CODE() + "::";
-                            packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
-                            packet += list_send_info.get(i).getBOX_ORDER() + "::" + list_send_info.get(i).getGI_L_ID() +"##";
-
-                            if (Common.D) {
-                                Log.d(TAG, "Send Packet : '" + packet + "'");
-                            }
-
-                            Log.i(TAG, "=====================여기 들어오는지 확인==================");
-
-                            Log.i(TAG, "=====================Common.searchType==================" + Common.searchType);
-                        }// "F이면" 끝
-                    }//for문 끝
-                    //새 로직 여기다가 넣어야 될 듯
-                    Log.i(TAG, "===================send packet 확인==================" + packet);
-                    boolean sendOrNot = true;
-
-                    if(packet ==""){
-                        sendOrNot = false;
-                    }
-
-                    if(sendOrNot){
-                        //전문전송..
-                        if(Common.searchType.equals(SEARCH_TYPE_EMART)) {   // 출하대상 리스트, 스토어 코드 넣은 이유는 앱을 종료로 안 닫고 앱정리로 닫은 후 생산리스트를 다운받지 않은 상태에서 계근입력후 전송하면 하이랜드 스키마로 데이터가 입력될 수 있음
-                            result = HttpHelper.getInstance().sendData(packet, "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                        }else if(Common.searchType.equals(SEARCH_TYPE_HOMEPLUS)){
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                        }else if(Common.searchType.equals(SEARCH_TYPE_PRODUCTION) || Common.searchType.equals(SEARCH_TYPE_PRODUCTION_LABEL)){   // 생산(1), 생산라벨(7) : PD_생산계근 적재
-                            Log.i(TAG, "===================send packet 확인==================" + packet);
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_PRODUCTION);
-                        }else if(Common.searchType.equals(SEARCH_TYPE_NONFIXED)|| Common.searchType.equals(SEARCH_TYPE_HOMEPLUS_NONFIXED)){
-                            Log.i(TAG, "===================send packet 확인==================" + packet);
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_NEW);
-                        }else if(Common.searchType.equals(SEARCH_TYPE_WHOLESALE)){
-                            Log.i(TAG, "==================여기로 들어옴==================");
-                            Log.i(TAG, "===================send packet 확인==================" + packet);
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_NEW);
-                        }
-                    }else{
-                        result = "af"; //already finish
-                    }
-
-                    //결과값의 앞, 뒤에 공백 제거
-                    result = result.replace("\r\n", "");
-                    result = result.replace("\n", "");
-                    //Log.d(TAG, "i number : " + i);
-                    Log.v(TAG, "전송결과 : " + result); // s : success
-
-                    //s : 성공, f : 실패
-                    //list_send_info : PDA 계근데이터
-                    //arSM : 출하대상
-                    for (int i = 0; i < list_send_info.size(); i++) { //계근데이터 루프돌면서
-                        if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
-                            if (result.equals("s")) {
-                                boolean bool = DBHandler.updatequeryGoodsWet(mContext, list_send_info.get(i).getGI_D_ID(), list_send_info.get(i).getBARCODE(), list_send_info.get(i).getBOX_CNT(), list_send_info.get(i).getGI_L_ID()); //PDA 계근테이블 SAVE TYPE Y로 업데이트
-                                Log.d(TAG, "boolean " + bool);
-                                if (bool) {          // 전송 & PDA SQLite update 성공
-                                    publishProgress("progress", Integer.toString(iCount), Integer.toString(iCount) + "번 데이터 전송성공..");
-                                    for (int j = 0; j < arSM.size(); j++) { //출하대상루프(GI_D_ID별 1 ROW)
-                                        if (arSM.get(j).getGI_D_ID().equals(list_send_info.get(i).getGI_D_ID())
-                                                && arSM.get(j).getGI_L_ID().equals(list_send_info.get(i).getGI_L_ID())) { //출하대상 루프의 GI_D_ID와 계근데이터의 GI_D_ID가 같으면
-                                            arSM.get(j).setSAVE_CNT(arSM.get(j).getSAVE_CNT() + 1); //출하대상 데이터에 SAVE_CNT(저장갯수) 데이터 저장
-
-                                            if (arSM.get(j).getSAVE_CNT() == Integer.parseInt(arSM.get(j).getGI_REQ_PKG())) {  // 전송 개수와 출하요청 개수가 같으면
-                                                    Log.v(TAG, "출하대상 계근 완료");
-                                                    arSM.get(j).setSAVE_TYPE("Y");          // 전부 전송했다면 전송여부 Y로 변경
-                                                    DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
-
-                                                    jChk++;
-
-                                                    if (jChk == arSM.size()) {
-                                                        Log.d(TAG, "arSM.size() when return: " + arSM.size());
-                                                        Log.d(TAG, "jChk number when return: " + jChk);
-                                                        return "ss";
-                                                    }
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if (result.equals("f")) {
-                                return result;
-                            }//result "s이면" 끝
-                        }
-                    }
-                }
-                return result;
+                // 개발66 Step 10 · 개발67 Step 8~9 : 목록 조회까지는 여기서 하고, 전송은 타입 구현체가 담당한다
+                return shipmentType.send(mContext, list_send_info, arSM);
             } catch (Exception ex) {
                 Log.e(TAG, "======== ProgressDlgShipmentSend doInBackgounrd Exception ========");
                 Log.e(TAG, ex.toString());
