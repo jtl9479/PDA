@@ -38,8 +38,8 @@ import java.util.ArrayList;
  * <p><b>생산라벨(7)과 같은 본문이 아니다.</b> 7은 개발60의 정리를 거치지 않은 공용
  * {@code setBarcodeMsg} 원본을 쓰므로 W/HW · B 블록과 킬코이 판정이 살아 있다(개발67 §4.5).</p>
  *
- * <p>Step 1은 골격만 만든다. 각 메서드는 해당 Step에서 원본을 그대로 옮겨 채운다.
- * <b>Step 8(컷오버) 전까지 이 클래스는 생성되지 않는다</b> — {@code onCreate} 가 생산을 제외하기 때문이다.</p>
+ * <p>Step 2~7 에서 원본을 그대로 옮겨 7개 메서드를 채웠고, <b>Step 8 컷오버로 실제 연결됐다.</b>
+ * 원본 {@code setBarcodeMsgProduction} 은 Activity 에서 삭제됐다.</p>
  */
 public class ProductionType implements ShipmentType {
 

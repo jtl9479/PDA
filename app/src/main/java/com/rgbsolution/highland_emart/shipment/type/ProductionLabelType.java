@@ -45,8 +45,7 @@ import java.util.ArrayList;
  * {@code visibility="gone"} 이고 {@code search_production_4label.jsp} 도 삭제됐다(2026-08-04 제외 결정).
  * 그럼에도 원본 동작을 보존하기 위해 파일로 남긴다(2026-09-17 사용자 결정).</p>
  *
- * <p>Step 1은 골격만 만든다. 각 메서드는 해당 Step에서 원본을 그대로 옮겨 채운다.
- * <b>Step 8(컷오버) 전까지 이 클래스는 생성되지 않는다.</b></p>
+ * <p>Step 3~7 에서 원본을 그대로 옮겨 7개 메서드를 채웠고, <b>Step 8 컷오버로 실제 연결됐다.</b></p>
  */
 public class ProductionLabelType implements ShipmentType {
 

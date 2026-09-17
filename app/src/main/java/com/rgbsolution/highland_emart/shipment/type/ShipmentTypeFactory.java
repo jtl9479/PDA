@@ -6,10 +6,10 @@ import com.rgbsolution.highland_emart.BixolonShipmentActivity;
  * searchType 문자열 → 담당 구현체 생성 (개발66)
  *
  * <p>이 프로젝트에서 <b>Common.searchType을 읽는 유일한 지점</b>이 된다
- * (Activity onCreate의 레이아웃 분기와, Step 8 전까지 남아 있는 생산 제외 조건은 제외).</p>
+ * (Activity onCreate의 레이아웃 분기 제외).</p>
  *
- * <p>개발67에서 생산(1)·생산라벨(7)도 이 메서드가 처리한다. 다만 <b>Step 8(컷오버) 전까지는</b>
- * {@code onCreate} 가 두 타입을 걸러내므로 case "1"·"7" 에 도달하지 않는다.</p>
+ * <p>개발67 Step 8 컷오버 이후 <b>8종 전부</b>(0~7)를 이 메서드가 처리한다.
+ * {@code onCreate} 는 조건 없이 이 메서드를 호출하므로 {@code shipmentType} 이 null 이 되지 않는다.</p>
  *
  * <p>알 수 없는 값이 들어오면 즉시 실패시켜, 조용히 아무것도 안 하는 상황을 막는다.</p>
  */
