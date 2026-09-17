@@ -73,12 +73,20 @@ import static com.rgbsolution.highland_emart.R.id.sp_center;
  * <h2>출하 유형 (Common.searchType)</h2>
  * <ul>
  *   <li>"0" : 이마트 출하 - 바코드 타입별 라벨 인쇄 (M0, M1, M3, M4, M8, M9, E0-E3, P0 등)</li>
- *   <li>"1" : 생산 투입 - 프린터 비활성화, 생산 공정용</li>
+ *   <li>"1" : 생산 계근(이노이천) - 프린터 비활성화, 생산 공정용</li>
+ *   <li>"2" : 홈플러스 출하</li>
  *   <li>"3" : 도매 출하 - activity_shipment_wholesale 레이아웃 사용</li>
- *   <li>"4" : 홈플러스 출하</li>
- *   <li>"5" : 롯데 출하</li>
- *   <li>"6" : 원앤원 출하</li>
+ *   <li>"4" : 비정량 출하 - 라벨·전송은 이마트 계열 (상수 주석의 "도매 비정량"은 실제와 다르다)</li>
+ *   <li>"5" : 홈플러스 비정량 출하</li>
+ *   <li>"6" : 롯데 출하</li>
+ *   <li>"7" : 생산 라벨 - 미사용 (2026-08-04 제외 결정, 화면에서도 숨김 처리)</li>
  * </ul>
+ *
+ * <h2>searchType별 흐름 위치 (개발66)</h2>
+ * 비생산 6종(0 · 2 · 3 · 4 · 5 · 6)의 계근 흐름은
+ * {@link com.rgbsolution.highland_emart.shipment.type.ShipmentType} 구현체가 담당한다.
+ * 이 Activity 는 화면·상태·생산(1) 경로를 유지하고 {@code shipmentType} 으로 위임한다.
+ * 생산(1)·생산라벨(7)은 {@code shipmentType} 이 {@code null} 이라 이 클래스의 기존 본문을 그대로 탄다.
  *
  * <h2>계근 방식 (ITEM_TYPE)</h2>
  * <ul>
@@ -289,7 +297,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /** 작업 모드 선택 스피너 (바코드스캔/수기입력/상품코드) */
     private Spinner sp_work;
     /** 바코드/중량 입력 필드 - 스캔된 바코드 또는 수기 입력 중량 */
-    public EditText edit_barcode;   // 개발66 Step 2: 타입 파일 접근용 공개 (Step 13에서 재검토)
+    public EditText edit_barcode;   // 개발66 Step 2: 타입 파일 접근용 공개 (Step 13 재검토 — 6종 전부 사용 중이라 유지)
     /** 입력 버튼 - 바코드 입력 또는 중량 입력 확인 */
     private Button btn_input;
     /** 센터 선택 스피너 - 이마트 물류센터 선택 */
@@ -343,7 +351,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /** 센터 완료중량 (GI_QTY 합계) */
     public double centerWorkWeight;  // 개발66 Step 8: 타입 파일 접근용 공개
     /** 리스트에서 선택된 위치 (상세보기용) */
-    public int select_position;  // 개발66 Step 8: 타입 파일 접근용 공개
+    private int select_position;
     /**
      * 현재 계근 작업 중인 리스트 위치
      * -1: 미선택, 0~n: arSM 리스트 인덱스
