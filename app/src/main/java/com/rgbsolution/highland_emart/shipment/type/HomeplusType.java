@@ -536,8 +536,8 @@ public class HomeplusType implements ShipmentType {
 
         Log.d(TAG, "==================================================");
         Log.d(TAG, "====================계근작업 종료===================");
-        Log.i(TAG, "a.centerWorkCount : " + a.centerWorkCount);
-        Log.i(TAG, "a.centerWorkWeight : " + a.centerWorkWeight);
+        Log.i(TAG, "centerWorkCount : " + a.centerWorkCount);
+        Log.i(TAG, "centerWorkWeight : " + a.centerWorkWeight);
         Log.d(TAG, "==================================================");
 
         for (int i = 0; i < a.arSM.size(); i++) {
