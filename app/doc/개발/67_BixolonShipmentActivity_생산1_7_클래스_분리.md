@@ -756,17 +756,54 @@ setMessage → setBarcodeMsg → shipmentType.onBarcodeScanned(msg)
 - 주의사항: 전송은 되돌릴 수 없다. 소량 데이터로 먼저 확인
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 — Step 8 이후, 소량 데이터로 전송 확인
-- [ ] Part 6: 회귀테스트 — 비생산 6종 전송 무영향
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 — `gradlew assembleDebug` → `BUILD SUCCESSFUL` (2026-09-17)
+- [ ] Part 5: 단위테스트 — Step 8 이후, **소량 데이터로 먼저** 전송 확인 (되돌릴 수 없다)
+- [ ] Part 6: 회귀테스트 — Step 8 이후 비생산 6종 전송 무영향 확인
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: 일괄 누적 전송 본문을 생산 2종의 `send(...)` 로 이관. URL 은 `URL_INSERT_GOODS_WET_PRODUCTION`
+- **왜**: 전송 축을 타입 파일이 소유하게 한다. 생산 2종은 전송에 차이가 없어 두 파일의 `send` 가 동일하다
+- **어떻게**: 검증된 `WholesaleType.send()` 를 기준으로 **URL 분기만** 생산 경로(원본 2458~2460)로 바꿨다. 조회 이후만 담당하고 `publishProgress` 는 이관하지 않는다(개발66 Step 10 판정 계승)
+
+**검증 결과**
+
+| 항목 | 예상 | 실제 |
+|---|---|---|
+| 빌드 | — | `BUILD SUCCESSFUL` |
+| 원본 대조 (2종) | 추가 0줄 | **추가 0줄**, 삭제 14줄(분기 골격 + `publishProgress`) |
+| 전송 URL | production JSP 단일 | **`URL_INSERT_GOODS_WET_PRODUCTION` 1곳**, `_NEW`·건별 `sendData(` 0건 |
+| 패킷 조립 | 원본 동일 | **동일** (필드 순서 · `::` · `selectCompanyCode` 위치 · 끝 `BOX_ORDER::GI_L_ID##`) |
+| `packet == ""` → `"af"` | 유지 | **유지** |
+| 후처리 · 반환 지점 | 원본 동일 | **동일** |
+| Activity 2412 5중 조건 | 미변경 | **미변경** (Activity diff 0줄) |
+| 생산 2종 `send` 상호 비교 | 동일 | **완전 일치** |
+| 문자열 리터럴 오염 | 0건 | **0건** |
+
+**발견·정정 — 개발66 Step 11 이 밀어낸 `send()` Javadoc** (6개 파일)
+
+`WholesaleType.send()` 를 복사하려다 빌드가 깨지면서 드러났다.
+개발66 Step 11 이 `onManualInput` 을 `send` 의 `@Override` **앞**에 삽입하는 바람에,
+Step 10 이 붙였던 `send()` Javadoc 이 `onManualInput` 위에 고아로 남아 있었다.
+
+```
+/** 서버 전송 — … */      ← 어느 메서드에도 붙지 않는다
+/** 수기 입력 — … */
+@Override
+public void onManualInput() { … }
+…
+@Override
+public String send(…)        ← Javadoc 없음
+```
+
+Java 는 메서드 바로 위 Javadoc 만 인식하므로 "서버 전송" 설명이 무효화된 상태였다.
+6개 파일(`EmartType` · `EmartNonfixedType` · `HomeplusType` · `HomeplusNonfixedType` · `WholesaleType` · `LotteType`) 전부
+Javadoc 블록을 `send()` 바로 위로 되돌렸다. **코드 변경은 0줄**이며, 전수 스캔 결과 같은 종류의 밀림은 더 없다.
+
+> **원인** — 메서드를 삽입할 때 `@Override` 를 앵커로 삼으면 그 위의 Javadoc 과 메서드 사이를 파고든다.
+> 앞으로 메서드를 끼워 넣을 때는 **Javadoc 블록 시작(`/**`)을 앵커로** 잡는다.
 
 ---
 
@@ -970,7 +1007,7 @@ Step 10: 통합 테스트
 | 3 | 바코드 스캔 — 생산라벨(7) ProductionLabelType | ✅ 완료 (2026-09-17, 원본 복원 · 접은 조건 5곳 · W/HW·B 및 킬코이·센터명 유지 · 빌드 통과) |
 | 4 | 계근 저장 + 라벨 + 조회후처리 (2종) | ✅ 완료 (2026-09-17, 추가 0줄 · 라벨만 차이 · 생산(1) 라벨 없음 확인 · 빌드 통과) |
 | 5 | 상품 매칭 (2종) + find_work_info 잔류 확정 | ✅ 완료 (2026-09-17, 옵션 A · 추가 0줄 · 2종 사본 동일 · 공통 경로 무영향 · 빌드 통과) |
-| 6 | 전송 (2종) | ⏳ 대기 |
+| 6 | 전송 (2종) | ✅ 완료 (2026-09-17, 추가 0줄 · production JSP 단일 · 2종 동일 · Javadoc 정정 6파일 · 빌드 통과) |
 | 7 | 수기 입력 (2종) | ⏳ 대기 |
 | 8 | 컷오버 — onCreate + setBarcodeMsg 전환 | ⏳ 대기 |
 | 9 | 위임 게이트 단순화 + 죽은 코드 정리 (선택) | ⏳ 대기 |
