@@ -492,17 +492,57 @@ setMessage → setBarcodeMsg → shipmentType.onBarcodeScanned(msg)
 - 주의사항: `ITEM_TYPE` S·J 2블록만 있어야 한다. W/HW·B가 섞여 들어가면 개발60의 결과를 되돌리는 것이므로 즉시 되돌린다
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 — 해당 없음(Step 8 전까지 미호출)
-- [ ] Part 6: 회귀테스트 — 원본 `setBarcodeMsgProduction`과 diff 시 치환 4곳 외 변경 0줄인지 확인
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 — `gradlew assembleDebug` → `BUILD SUCCESSFUL` (2026-09-17)
+- [x] Part 5: 단위테스트 — **해당 없음**(Step 8 전까지 미호출). `onCreate` 미변경 확인
+- [x] Part 6: 회귀테스트 — 원본과 diff **차이 0줄**(211줄 ↔ 211줄), 문자열 리터럴 79개도 전부 일치
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: 원본 `setBarcodeMsgProduction`(1218~1477) 258줄을 `ProductionType.onBarcodeScanned` 로 이관
+- **왜**: 생산(1)의 바코드 스캔 흐름을 타입 파일이 소유하게 한다. 개발60이 만든 전용 본문이라 그대로 옮기면 된다
+- **어떻게**: **접은 조건 0곳.** 치환만 했다. Activity 본문은 **삭제하지 않았다** — Step 8 컷오버 전까지 생산이 그 본문으로 동작해야 한다
+
+**치환 내역**
+
+| # | 치환 | 곳 |
+|:-:|---|:-:|
+| 1 | Activity 필드·메서드 → `a.` 접두어 | 다수 |
+| 2 | `new ProgressDlgShipSelect(...).execute()` → `a.startShipSelect(...)` | 2 |
+| 3 | 재귀 호출 → `this.onBarcodeScanned(msg)` | 1 |
+| 4 | `BARCODE_PROCESS_DEBOUNCE_MS` · `ITEM_TYPE_S` · `ITEM_TYPE_J` → `ShipmentConst.*` | 3 |
+| 5 | `new AlertDialog.Builder(BixolonShipmentActivity.this, …)` → `(a, …)` | 1 |
+
+> 상품 매칭 호출(`a.find_PackerProduct` 계열)은 **Step 5**에서 자기 타입 메서드로 바꾼다(§4.4). 이번 Step에서는 Activity 메서드를 그대로 호출한다.
+
+**검증 결과**
+
+| 항목 | 예상 | 실제 |
+|---|---|---|
+| 빌드 | — | `BUILD SUCCESSFUL` |
+| 원본 대조 (정규화 후) | 차이 0줄 | **0줄** (211 ↔ 211) |
+| `ITEM_TYPE` 블록 | S · J 2개만 | **2개만** (W/HW · B 없음) |
+| 킬코이 · 센터명 판정 | 없음(로그만) | **없음** — 원본도 로그 출력용뿐 |
+| 디바운스 · 재귀 우회 | 원본 동일 | **동일** (`lastBarcodeProcessedTime = 0` 후 재귀) |
+| 재귀 무한루프 | 없음 | **없음** (`set_scanFlag(false)` 후 재진입 → BL스캔 경로) |
+| 런타임 영향 | 0건 | **0건** (Activity 미변경, `shipmentType` 여전히 null) |
+
+**발견·정정 — 로그 문자열에 `a.` 접두어가 섞여 들어갔다** (코드검증 지적)
+
+기계 치환이 Log 메시지의 **표시용 문자열 리터럴 안**까지 적용돼 logcat 문구가 원본과 달라졌다.
+자체 대조 스크립트는 정규화 단계에서 `a.` 를 제거해 이 차이를 가렸다.
+
+| 대상 | 위치 | 곳수 |
+|---|---|:-:|
+| `ProductionType` (이번 Step) | `current_work_position` · `work_bl_no` · `work_item_fullbarcode` · `arSM…` 로그 | 8 |
+| **개발66 타입 파일 6종** (이미 커밋됨) | `onWeightConfirmed` 의 `centerWorkCount` · `centerWorkWeight` 로그 | 12 |
+
+문자열 리터럴 내부만 원복했다(코드의 `a.` 는 그대로). 수정 후 `ProductionType` 문자열 79개 전부 원본과 일치,
+개발66 6종도 `onWeightConfirmed` 문자열이 전부 원본 `wet_data_insert` 에 존재함을 확인했다.
+
+> **동작에는 영향이 없다**(출력 텍스트만 달랐다). 다만 이 문서 Step 5 가 `pp_code` 결과를 **logcat 으로 원본과 대조**하라고 지시하듯 로그는 실기기 테스트의 판정 기준이므로 원본과 같아야 한다.
+> **재발 방지** — 이후 Step 의 대조 스크립트는 문자열 리터럴을 따로 떼어 비교한다.
 
 ---
 
@@ -839,7 +879,7 @@ Step 10: 통합 테스트
 | Step | 작업 | 상태 |
 |------|------|------|
 | 1 | 골격 준비 (스텁 2개 + Factory case) | ✅ 완료 (2026-09-17, 신규 2 · Factory case 2 · Javadoc 정정 · 실행 경로 변화 0건 · 빌드 통과) |
-| 2 | 바코드 스캔 — 생산(1) ProductionType | ⏳ 대기 |
+| 2 | 바코드 스캔 — 생산(1) ProductionType | ✅ 완료 (2026-09-17, 접은 조건 0 · 원본 대조 차이 0줄 · 로그 문자열 정정 · 빌드 통과) |
 | 3 | 바코드 스캔 — 생산라벨(7) ProductionLabelType | ⏳ 대기 |
 | 4 | 계근 저장 + 라벨 + 조회후처리 (2종) | ⏳ 대기 |
 | 5 | 상품 매칭 (2종) + find_work_info 잔류 확정 | ⏳ 대기 |
