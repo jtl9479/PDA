@@ -21,10 +21,13 @@ import java.util.ArrayList;
  *   <li>{@link EmartNonfixedType}    (4) 이마트 비정량</li>
  *   <li>{@link HomeplusNonfixedType} (5) 홈플러스 비정량</li>
  *   <li>{@link LotteType}            (6) 롯데 출하</li>
+ *   <li>{@link ProductionType}       (1) 생산 계근 — 개발67</li>
+ *   <li>{@link ProductionLabelType}  (7) 생산 라벨(미사용) — 개발67</li>
  * </ul>
  *
- * <p>생산(1, 7)은 구현체를 만들지 않는다. BixolonShipmentActivity의
- * setBarcodeMsgProduction 경로를 그대로 사용한다.</p>
+ * <p>개발66까지는 생산(1, 7)을 구현체로 만들지 않고 Activity의 setBarcodeMsgProduction 경로를
+ * 그대로 썼다. 개발67에서 두 타입도 구현체로 옮겨 <b>8종 전부</b>가 이 인터페이스를 구현한다.
+ * <b>Step 8(컷오버) 전까지는</b> {@code onCreate} 가 생산을 제외하므로 두 구현체가 생성되지 않는다.</p>
  *
  * <p>존재 이유는 컴파일 시점 누락 검증이다. 타입을 추가하면서 분기를 빠뜨리면
  * "구현하지 않았습니다" 에러로 빌드가 막힌다.</p>
