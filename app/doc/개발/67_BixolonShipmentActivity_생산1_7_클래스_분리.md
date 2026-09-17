@@ -964,17 +964,75 @@ Javadoc 블록을 `send()` 바로 위로 되돌렸다. **코드 변경은 0줄**
 - 주의사항: 가드를 제거하면 `shipmentType`이 이론상 `null`일 수 있는 경로(예: `Factory.create`가 예외를 던지는 미지의 searchType)에서 NPE 대신 `IllegalArgumentException`이 `onCreate`에서 먼저 발생하는 것으로 대체된다는 점을 확인한다
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인 — **사용자 승인 대기**
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트
-- [ ] Part 6: 회귀테스트 — 8종 전체 회귀
+- [x] Part 1: 분석 완료 확인 — **사용자 승인 완료(2026-09-17)**
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 — `gradlew assembleDebug --rerun-tasks` (캐시 배제) → `BUILD SUCCESSFUL` (2026-09-17)
+- [ ] Part 5: 단위테스트 — Step 10 통합 테스트로 확인
+- [ ] Part 6: 회귀테스트 — **8종 전체** 실기기 확인 필요
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: 위임 게이트 5곳의 `!= null` 가드를 없애고, 그 뒤 도달 불가가 된 본문과 호출처 0건이 된 메서드 3개를 삭제
+- **왜**: Step 8 컷오버로 `shipmentType` 이 항상 non-null 이 됐다. 가드와 else 본문은 더 이상 실행될 수 없다
+- **어떻게**: 게이트를 하나씩 풀고 매번 빌드했다. `find_work_info` 는 `ProgressDlgShipSelect.onPostExecute` 가 쓰므로 **남겼다**
+
+**삭제 내역** — Activity **2,805 → 2,280줄** (−525)
+
+| 대상 | 줄수 |
+|---|---:|
+| `ProgressDlgShipmentSend` 도달 불가 본문(일괄 전송 분기) | 186 |
+| `wet_data_insert` 도달 불가 본문 | 148 |
+| `inputBtnListener` 수기 본문 | 81 |
+| `find_work_info_barcodeGoods` | 48 |
+| `find_PackerProductBarcodeGoods` | 18 |
+| `find_PackerProduct` | 17 |
+| `MESSAGE_REPRINT` 도달 불가 분기 | 15 |
+| 위임 게이트 가드 5곳 | — |
+
+**남긴 것 (의도)**
+
+| 대상 | 이유 |
+|---|---|
+| `find_work_info`(+ 호출) | `ProgressDlgShipSelect.onPostExecute` 가 타입과 무관하게 호출한다 |
+| `inputBtnListener` 입력값 검증 3종 | 중량 미입력 · 지점 미선택 · 패커코드 없음 — Activity 담당 |
+| `ProgressDlgShipmentSend` 머리부 | `qry_where` 구성 · `selectquerySendGoodsWet` · `publishProgress("max")` |
+| `MESSAGE_REPRINT` 머리부 | `print_weight_str` · `making_date` 추출 |
+
+**검증 결과**
+
+| 항목 | 예상 | 실제 |
+|---|---|---|
+| 빌드 | — | `BUILD SUCCESSFUL` (`--rerun-tasks`) |
+| 도달 불가 판정 | 4곳 전부 실행 불가였는지 | **확인** — 위임이 무조건 실행되고 그 뒤로 흐르지 않는다 |
+| 머리부 보존 | 전송 · 재출력 | **보존** |
+| 입력값 검증 3종 | 유지 | **유지** |
+| `find_work_info` | 삭제 안 함 | **유지**, 호출도 그대로 |
+| 삭제 3종 호출처 | 0건 | **0건** (전수 재확인) |
+| `wet_data_insert` 호출부 | 정상 | **정상** (`onActivityResult` · `inputBtnListener`, 시그니처 불변) |
+| 타입 파일 8개 | 무변경 | **무변경** |
+| 8종 진입점 → 구현체 | 온전 | **온전** |
+
+**`shipmentType` null 가능성 재확인** (Part 2 주의사항)
+
+가드를 없앴으니 null 이면 NPE 가 난다. 그러나 `onCreate`(441)가 `Factory.create` 를 try/catch 없이 호출하므로,
+미지의 searchType 이면 **`IllegalArgumentException` 이 `onCreate` 에서 먼저 터진다.**
+위임 진입점들은 전부 사용자 조작·비동기 콜백 이후라 `onCreate` 완주 전에는 도달할 수 없다. 문서 주장이 검증됐다.
+
+**작업 중 되돌린 일** — 첫 시도에서 `} else {` 줄의 중괄호 계산이 상쇄돼(`}` 1 · `{` 1) 블록 끝을 자기 자신으로 잡는 바람에 구조가 깨졌다.
+빌드가 `'else' without 'if'` 로 실패해 즉시 revert 하고, **여는 중괄호 이후만** 세도록 고쳐 재적용했다.
+
+**주석 정리** — Step 8 시점에 달아둔 "아래 본문은 도달하지 않는다(Step 9 정리 대상)" 4곳은 그 본문이 사라져 사실과 어긋나게 됐다. 현재 상태로 고쳤다(잔존 0건). 필드 Javadoc · `setBarcodeMsg` Javadoc 2곳도 함께 정정했다.
+
+**미조치 — 죽은 상수·필드** (승인 필요)
+
+Step 9 로 Activity 내 마지막 참조가 사라진 것들이다. `ShipmentConst` 에 같은 값이 있어 타입 파일은 그쪽을 쓴다. 기능·컴파일 영향은 없다.
+
+| 대상 | 비고 |
+|---|---|
+| `KILKOY_PACKER_CODE` · `MEAT_CENTER_STORE_CODE` | 선언만 남음 |
+| `CENTER_NAME_TRD` · `CENTER_NAME_WET` · `CENTER_NAME_ET` | 선언만 남음 |
+| `LOTTE_BOX_ORDER_MAX` | 선언만 남음 |
+| `lotte_TryCount` 필드 | Step 8 부터 이미 미사용. 실제 동작은 `LotteType` 자체 필드 |
 
 ---
 
@@ -1084,7 +1142,7 @@ Step 10: 통합 테스트
 | 6 | 전송 (2종) | ✅ 완료 (2026-09-17, 추가 0줄 · production JSP 단일 · 2종 동일 · Javadoc 정정 6파일 · 빌드 통과) |
 | 7 | 수기 입력 (2종) | ✅ 완료 (2026-09-17, 추가 0줄 · 726/727 개별 접기 · 킬코이·CENTERNAME 유지 · 스텁 0건 · 빌드 통과) |
 | 8 | 컷오버 — onCreate + setBarcodeMsg 전환 | ✅ 완료 (2026-09-17, 8종 전부 연결 · 3,103→2,805줄 · 주석 11곳 정리 · 빌드 통과 · **실기기 미검증**) |
-| 9 | 위임 게이트 단순화 + 죽은 코드 정리 (선택) | ⏳ 대기 |
+| 9 | 위임 게이트 단순화 + 죽은 코드 정리 (선택) | ✅ 완료 (2026-09-17, 사용자 승인 · 2,805→2,280줄 · find_work_info 유지 · 빌드 통과) |
 | 10 | 통합 테스트 | ⏳ 대기 |
 
 ---
