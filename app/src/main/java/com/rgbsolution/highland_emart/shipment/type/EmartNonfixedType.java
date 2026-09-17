@@ -752,16 +752,6 @@ public class EmartNonfixedType implements ShipmentType {
     }
 
     /**
-     * 서버 전송 — 원본 ProgressDlgShipmentSend.doInBackground 의 <b>일괄 누적</b>(원본 3015~3117) 이관 (개발66 Step 10)
-     *
-     * <p>목록 조회(원본 2919~2937)는 Activity 에 남아 있고, 이 메서드는 조회 결과를 받아 전송만 한다.
-     * 일괄은 전 건을 {@code ##} 로 이어붙여 {@code insert_goods_wet_new.jsp} 로 한 번에 보내고,
-     * 그 결과로 계근데이터 전체의 로컬DB를 갱신한다.</p>
-     *
-     * <p>원본 3057 · 3059(이마트 · 홈플러스 분기)은 이 두 타입이 건별 루프로 빠져 도달할 수 없다.
-     * 원본에서 지우지 않고 이 타입 파일에서 자연히 빠진 것이다(문서 Step 10 #3).</p>
-     */
-    /**
      * 수기 입력 — 원본 inputBtnListener 의 {@code work_flag == 0} 분기 이관 (개발66 Step 11)
      *
      * <p>입력값 검증(원본 647~655)은 Activity 에 남아 있고, 이 메서드는 검증을 통과한 뒤의 처리만 한다.</p>
@@ -827,6 +817,16 @@ public class EmartNonfixedType implements ShipmentType {
         }
         a.edit_barcode.setText("");
     }
+    /**
+     * 서버 전송 — 원본 ProgressDlgShipmentSend.doInBackground 의 <b>일괄 누적</b>(원본 3015~3117) 이관 (개발66 Step 10)
+     *
+     * <p>목록 조회(원본 2919~2937)는 Activity 에 남아 있고, 이 메서드는 조회 결과를 받아 전송만 한다.
+     * 일괄은 전 건을 {@code ##} 로 이어붙여 {@code insert_goods_wet_new.jsp} 로 한 번에 보내고,
+     * 그 결과로 계근데이터 전체의 로컬DB를 갱신한다.</p>
+     *
+     * <p>원본 3057 · 3059(이마트 · 홈플러스 분기)은 이 두 타입이 건별 루프로 빠져 도달할 수 없다.
+     * 원본에서 지우지 않고 이 타입 파일에서 자연히 빠진 것이다(문서 Step 10 #3).</p>
+     */
     @Override
     public String send(Context mContext, ArrayList<Goodswets_Info> list_send_info, ArrayList<Shipments_Info> arSM) {
         String result = "";

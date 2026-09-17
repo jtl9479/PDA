@@ -738,12 +738,6 @@ public class HomeplusType implements ShipmentType {
     }
 
     /**
-     * 서버 전송 — 원본 ProgressDlgShipmentSend.doInBackground 의 <b>건별 루프</b>(원본 2938~3014) 이관 (개발66 Step 10)
-     *
-     * <p>목록 조회(원본 2919~2937)는 Activity 에 남아 있고, 이 메서드는 조회 결과를 받아 전송만 한다.
-     * 건별은 계근 1건마다 패킷을 만들어 {@code insert_goods_wet.jsp} 로 보내고 그때마다 로컬DB를 갱신한다.</p>
-     */
-    /**
      * 수기 입력 — 원본 inputBtnListener 의 {@code work_flag == 0} 분기 이관 (개발66 Step 11)
      *
      * <p>입력값 검증(원본 647~655)은 Activity 에 남아 있고, 이 메서드는 검증을 통과한 뒤의 처리만 한다.</p>
@@ -809,6 +803,12 @@ public class HomeplusType implements ShipmentType {
         }
         a.edit_barcode.setText("");
     }
+    /**
+     * 서버 전송 — 원본 ProgressDlgShipmentSend.doInBackground 의 <b>건별 루프</b>(원본 2938~3014) 이관 (개발66 Step 10)
+     *
+     * <p>목록 조회(원본 2919~2937)는 Activity 에 남아 있고, 이 메서드는 조회 결과를 받아 전송만 한다.
+     * 건별은 계근 1건마다 패킷을 만들어 {@code insert_goods_wet.jsp} 로 보내고 그때마다 로컬DB를 갱신한다.</p>
+     */
     @Override
     public String send(Context mContext, ArrayList<Goodswets_Info> list_send_info, ArrayList<Shipments_Info> arSM) {
         String result = "";
