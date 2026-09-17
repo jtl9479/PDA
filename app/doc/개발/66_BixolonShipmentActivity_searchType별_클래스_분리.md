@@ -1106,17 +1106,55 @@ if (!Common.searchType.equals(SEARCH_TYPE_PRODUCTION)
 - 주의사항: 생산은 `wet_data_insert`의 else 경로(일반 INSERT, 3자리 반올림, 라벨 없음)를 탄다. **생산 경로가 바뀌지 않는지 매번 확인**한다
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트
-- [ ] Part 6: 회귀테스트
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인 — `gradlew assembleDebug` → `BUILD SUCCESSFUL` (2026-09-17)
+- [ ] Part 5: 단위테스트 — 실기기 확인 필요 (타입별 계근 저장 · 라벨 출력 · 롯데 박스순번 연속성 · 상세팝업 재출력)
+- [ ] Part 6: 회귀테스트 — 실기기 확인 필요 (생산(1) 계근 저장·중량 3자리 무영향, 도매 무인쇄 유지)
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용** (완료):
+- **무엇을**: `wet_data_insert`(원본 1503~1651) · `mHandler` MESSAGE_REPRINT(원본 942~959) · `ProgressDlgShipSelect` 롯데 박스순번 초기화(원본 2111~2128)를 타입 파일 6개의 `onWeightConfirmed` · `reprintLabel` · `onShipmentLoaded` 로 이관. Activity는 위임만 추가
+- **왜**: 차이 5항목(INSERT 방식 · 중량 반올림 4곳 · 계근 라벨 · 재출력 라벨 · 롯데 카운터)이 한 메서드에 섞여 있어 타입 하나를 고치면 6종이 모두 영향을 받는다
+- **어떻게**: 위임 게이트를 **`shipmentType != null`** 로 두고 Activity의 기존 본문을 **삭제하지 않았다**. 생산(1)·생산라벨(7)은 `shipmentType` 이 null 이라 기존 본문을 그대로 타므로 생산 경로가 한 줄도 바뀌지 않는다
+
+**타입별 접기 결과**
+
+| 타입 | INSERT | 중량 반올림 | 계근 라벨 | 재출력 라벨 |
+|---|---|---|---|---|
+| 이마트(0) | 일반 | **1자리**(원본 1559 if 경로) | `setPrinting` | else → 이마트 |
+| 홈플러스(2) | **Homeplus**(maxBoxOrder) | 3자리(else) | `setHomeplusPrinting` | 홈플 |
+| 도매(3) | 일반 | 3자리(else) | **없음** (해당 분기 없음) | else → 이마트 |
+| 이마트비정량(4) | 일반 | 3자리(else) | `setPrinting` | else → 이마트 |
+| 홈플비정량(5) | 일반 | 3자리(else) | `setHomeplusPrinting` | 홈플 |
+| 롯데(6) | **Lotte**(박스순번 확정·증가) | 3자리(else) | `setPrintingLotte` | 롯데(`box_order`) |
+
+> 홈플러스 비정량(5)의 INSERT는 **일반**이다. 원본 INSERT 분기는 `searchType 2` 만 홈플러스 전용 경로를 탄다.
+
+> 재출력 위임 시 `BOX_ORDER` 를 타입 구분 없이 꺼내 전달한다. `DetailAdapter` 가 타입 불문 항상 `BOX_ORDER` 를 번들에 담으므로(원본 154) 롯데 외 타입에서도 문제가 없다. 원본이 `.toString()` 을 붙였던 것과 달리 그대로 전달하며, 값을 쓰는 곳은 롯데뿐이다.
+
+**롯데 박스순번 파이프라인** (개발63 유지 확인)
+
+`LotteType.onShipmentLoaded` 초기화(LAST_BOX_ORDER + 1 → 9999 롤오버 → 찍힌 수량 합산 → 재초과 시 % 9999)
+→ `onWeightConfirmed` 에서 `lotteBoxOrder` 확정 → `insertqueryGoodsWetLotte` → 카운터 증가 → `setPrintingLotte` 전달.
+`lotte_TryCount` 를 `LotteType` 자체 필드로 옮겼고, Activity 필드는 생산 경로용으로 남겼다.
+
+**검증 결과**
+
+| 항목 | 예상 | 실제 |
+|---|---|---|
+| 빌드 | — | `BUILD SUCCESSFUL` |
+| 원본 본문 대조 (6종, 정규화 후) | 추가 0줄 / 삭제는 미해당 분기만 | **추가 0줄**, 삭제 40~50줄(타입별 미해당 분기) |
+| `Common.searchType.equals` 잔존 | 0 | **0건** (6개 파일 전부) |
+| 스텁(`UnsupportedOperationException`) 잔존 | 2개(Step 9 · 10 예정분) | **각 파일 2개** |
+| Activity 변경 | 위임 3곳 + 필드 공개 | 추가 21 / 삭제 17 (롯데 블록 이관), 로직 변경 없음 |
+| 생산(1) 경로 | 기존 본문 유지 | **유지** (`shipmentType == null` 이라 위임되지 않음) |
+| 생산라벨(7) 경로 | 기존 본문 유지 | **유지** — Step 7의 `setBarcodeMsg` 와 달리 회귀 없음 |
+| 타입 파일 크기 | — | 580 ~ 615줄 (총 +789줄) |
+
+**Activity 필드 공개** — 타입 파일 접근용으로 10개를 `private` → `public` 으로 열었다(§4.5).
+
+`labelPrintHelper` · `printerCallback` · `edit_center_tcount` · `edit_center_tweight` · `edit_wet_count` · `edit_wet_weight` · `sListAdapter` · `centerTotalWeight` · `centerWorkWeight` · `select_position`
 
 ---
 
@@ -1421,7 +1459,7 @@ Step 14: 통합 테스트
 | 5 | 바코드 스캔 — 홈플러스비정량(5) | ✅ 완료 (2026-09-16, 중복확인 우회 보존 검증 · 빌드 통과) |
 | 6 | 바코드 스캔 — 이마트비정량(4) | ✅ 완료 (2026-09-16, EMART 조건 3건 접힘 검증 · 빌드 통과) |
 | 7 | 바코드 스캔 — 이마트(0) + 과도기 분기 제거 | ✅ 완료 (2026-09-17, 원본 대조 통과 · 과도기 분기 제거 · 빌드 통과 · 생산라벨(7) 경로 미해결) |
-| 8 | 계근 저장 + 라벨 (6종) | ⏳ 대기 |
+| 8 | 계근 저장 + 라벨 (6종) | ✅ 완료 (2026-09-17, 추가 로직 0줄 · 롯데 박스순번 유지 · 생산(1)·생산라벨(7) 무영향 · 빌드 통과) |
 | 9 | 상품 매칭 (6종) | ⏳ 대기 |
 | 10 | 전송 (6종) | ⏳ 대기 |
 | 11 | 수기 입력 (6종) | ⏳ 대기 |
