@@ -1,11 +1,13 @@
 package com.rgbsolution.highland_emart.shipment.type;
 
 import android.content.Context;
+import android.content.Intent;
 import android.widget.Toast;
 import android.util.Log;
 import android.app.AlertDialog;
 
 import com.rgbsolution.highland_emart.BixolonShipmentActivity;
+import com.rgbsolution.highland_emart.ExpiryEnterActivity;
 import com.rgbsolution.highland_emart.common.HttpHelper;
 import com.rgbsolution.highland_emart.db.DBHandler;
 import com.rgbsolution.highland_emart.common.Common;
@@ -607,9 +609,71 @@ public class ProductionType implements ShipmentType {
         // 롯데 전용 블록이라 이 타입은 수행할 작업이 없다
     }
 
+    /**
+     * 수기 입력 — 원본 inputBtnListener 의 {@code work_flag == 0} 분기 이관 (개발67 Step 7)
+     *
+     * <p>입력값 검증(원본 655~663)은 Activity 에 남아 있고, 이 메서드는 검증을 통과한 뒤의 처리만 한다.</p>
+     *
+     * <p>킬코이 · 미트센터 분기(원본 706~725)와 바깥 {@code else if} 의 CENTERNAME 판정은
+     * searchType 게이트가 아니라 데이터 의존이므로 접지 않는다(개발67 §1.5).</p>
+     */
     @Override
     public void onManualInput() {
-        throw new UnsupportedOperationException("개발67 Step 7에서 이관 예정");
+        a.work_item_fullbarcode = "";
+        String weight_str = a.edit_barcode.getText().toString();    // 입력값 저장
+
+        Log.i(TAG, "=====================weight_str 1==================" + weight_str);
+
+        double weight_double = Double.parseDouble(weight_str);    // 소수점 1자리로 변환
+
+        Log.i(TAG, "=====================weight_double 1==================" + weight_double);
+
+        String temp_weight = "";
+
+        // 원본 683 : else 경로(그대로 입력). 생산 2종은 EMART("0")가 아니다
+        temp_weight = Double.toString(weight_double); //생산일 경우 그대로 입력
+        Log.i(TAG, "=====================temp_weight production==================" + temp_weight);
+
+        Log.i(TAG, "=====================temp_weight out==================" + temp_weight);
+
+        weight_double = Double.parseDouble(temp_weight); //생산이든 출하든 똑같이 타야함
+
+        Log.i(TAG, "=====================weight_double 3==================" + weight_double);
+
+        weight_str = String.valueOf(weight_double);                                         // 반올림값 다시 저장
+
+        Log.i(TAG, "=====================패커코드 체크==================" + a.arSM.get(a.current_work_position).getPACKER_CODE());
+        Log.i(TAG, "=====================스토어코드 체크==================" + a.arSM.get(a.current_work_position).getSTORE_CODE());
+
+        if (a.arSM.get(a.current_work_position).getPACKER_CODE().equals(ShipmentConst.KILKOY_PACKER_CODE)
+                && a.arSM.get(a.current_work_position).getSTORE_CODE().equals(ShipmentConst.MEAT_CENTER_STORE_CODE)) {
+              String makingFrom = a.work_item_bi_info.getMAKINGDATE_FROM();
+              String makingTo = a.work_item_bi_info.getMAKINGDATE_TO();
+
+              Intent IntentA = new Intent(a, ExpiryEnterActivity.class);
+
+              String weightStrKey = "weightStrKey";
+              String weightDblKey = "weightDblKey";
+              String makingFromKey = "makingFromKey";
+              String makingToKey = "makingToKey";
+
+              IntentA.putExtra(weightStrKey,weight_str);
+              IntentA.putExtra(weightDblKey,weight_double);
+
+              IntentA.putExtra(makingFromKey,makingFrom);
+              IntentA.putExtra(makingToKey,makingTo);
+
+              a.startActivityForResult(IntentA,BixolonShipmentActivity.GET_DATA_REQUEST);
+
+        // 원본 726 : 바깥 else if 의 `|| searchType == LOTTE` 는 생산 2종에서 거짓이라 그 항만 접었다.
+        // CENTERNAME 판정은 데이터 의존이라 그대로 둔다.
+        }else if(a.arSM.get(a.current_work_position).getCENTERNAME().contains(ShipmentConst.CENTER_NAME_TRD) || a.arSM.get(a.current_work_position).getCENTERNAME().contains(ShipmentConst.CENTER_NAME_WET) || a.arSM.get(a.current_work_position).getCENTERNAME().contains(ShipmentConst.CENTER_NAME_ET)){
+            // 원본 727 : if (EMART || LOTTE) 소비기한 창 — 생산 2종은 미해당이라 else(원본 746) 경로만 남긴다
+            a.wet_data_insert(weight_str, weight_double, "", "");
+        }else{
+            a.wet_data_insert(weight_str, weight_double, "", "");
+        }
+        a.edit_barcode.setText("");
     }
 
     /**
