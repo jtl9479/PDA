@@ -9,6 +9,7 @@ import com.rgbsolution.highland_emart.BixolonShipmentActivity;
 import com.rgbsolution.highland_emart.R;
 import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.db.DBHandler;
+import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Goodswets_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 
@@ -86,11 +87,11 @@ public class HomeplusNonfixedType implements ShipmentType {
 
                     if (a.work_flag == 1) {
                         Log.e(TAG, "========================상품바코드스캔1======================");
-                        find_ppcodetemp = a.find_PackerProduct(msg);
+                        find_ppcodetemp = this.findPackerProduct(msg, 1);   // 원본 : a.find_PackerProduct(msg)
                         Log.e(TAG, "========================상품바코드스캔1 ppcode ======================" + find_ppcodetemp);
                     }else {
                         Log.e(TAG, "========================상품코드스캔2======================");
-                        find_ppcodetemp = a.find_PackerProductBarcodeGoods(msg);
+                        find_ppcodetemp = this.findPackerProduct(msg, 2);   // 원본 : a.find_PackerProductBarcodeGoods(msg)
                         Log.e(TAG, "========================상품코드스캔2 ppcode ======================" + find_ppcodetemp);
                     }
                     Log.e(TAG, "========================바코드 정보가져옴======================");
@@ -446,7 +447,7 @@ public class HomeplusNonfixedType implements ShipmentType {
     /**
      * 계근 저장 + 라벨 — 원본 BixolonShipmentActivity.wet_data_insert 본문 이관 (개발66 Step 8)
      *
-     * <p>원본 대비 접은 조건 : INSERT(원본 1537~1553) · 중량 반올림 4곳(1559 · 1573 · 1591 · 1601) ·
+     * <p>원본 대비 접은 조건 : INSERT(원본 1918~1934) · 중량 반올림 4곳(1940 · 1954 · 1972 · 1982) ·
      * 계근 라벨(1624~1641) 을 이 타입 경로 하나로 고정했다. 그 외 로직은 원본 그대로다.</p>
      */
     @Override
@@ -483,14 +484,14 @@ public class HomeplusNonfixedType implements ShipmentType {
         gi.setDUPLICATE("F");
 
 
-        // 원본 1551 : 일반 INSERT(else 경로). 이 타입은 홈플러스·롯데 분기에 해당하지 않는다
+        // 원본 1932 : 일반 INSERT(else 경로). 이 타입은 홈플러스·롯데 분기에 해당하지 않는다
         DBHandler.insertqueryGoodsWet(a, gi);
 
         Log.e(TAG, "=========================계근중량 변환전=========================" + weight_double);
 
         String temp_weight = "";
 
-        // 원본 1563 : else 경로(그대로 입력). 이 타입은 EMART(0)가 아니다
+        // 원본 1944 : else 경로(그대로 입력). 이 타입은 EMART(0)가 아니다
         temp_weight = Double.toString(weight_double); //생산일 경우 그대로 입력
 
         weight_double = Double.parseDouble(temp_weight);
@@ -499,7 +500,7 @@ public class HomeplusNonfixedType implements ShipmentType {
 
         a.arSM.get(a.current_work_position).setPACKING_QTY(a.arSM.get(a.current_work_position).getPACKING_QTY() + 1);           // 계근수량
 
-        // 원본 1573 : 계근중량 합산 — else 3자리 경로
+        // 원본 1954 : 계근중량 합산 — else 3자리 경로
         double v1 = a.arSM.get(a.current_work_position).getGI_QTY();
         double v2 = weight_double;
 
@@ -514,14 +515,14 @@ public class HomeplusNonfixedType implements ShipmentType {
 
         Log.e(TAG, "=========================센터중량 변환전=========================" + a.centerWorkWeight);
 
-        // 원본 1591 : 센터중량 반올림 — else 소수 3자리
+        // 원본 1972 : 센터중량 반올림 — else 소수 3자리
         a.centerWorkWeight = Math.round(a.centerWorkWeight*1000)/1000.0; //생산일 경우 소수점 넷째자리에서 반올림
 
         Log.e(TAG, "=========================센터중량 변환후=========================" + a.centerWorkWeight);
 
         a.edit_center_tcount.setText(a.centerTotalCount + " / " + a.centerWorkCount);
 
-        // 원본 1601 : 센터중량 표시 — else 경로
+        // 원본 1982 : 센터중량 표시 — else 경로
         a.edit_center_tweight.setText(a.centerTotalWeight + " / " + a.centerWorkWeight);
 
         a.edit_wet_count.setText(a.arSM.get(a.current_work_position).getGI_REQ_PKG() + " / " + a.arSM.get(a.current_work_position).getPACKING_QTY());
@@ -542,7 +543,7 @@ public class HomeplusNonfixedType implements ShipmentType {
         a.sList.setSelection(a.current_work_position);
 
         if (Common.print_bool) {
-            // 원본 1625~1640 : 라벨 분기 — 이 타입 고정이라 searchType 조건만 제거
+            // 원본 2006~2021 : 라벨 분기 — 이 타입 고정이라 searchType 조건만 제거
             Log.d(TAG, "===========홈플 출력 시작 ================");
             a.labelPrintHelper.setHomeplusPrinting(weight_double, a.arSM.get(a.current_work_position), false, a.printerCallback);
         }
@@ -557,9 +558,158 @@ public class HomeplusNonfixedType implements ShipmentType {
         }
     }
 
+    /**
+     * 상품 매칭 — 원본 find_PackerProduct · find_PackerProductBarcodeGoods 이관 (개발66 Step 9)
+     *
+     * <p>원본은 {@code work_flag} 로 두 메서드를 나눠 호출했다. 인자와 실행 순서는 원본과 같다.</p>
+     */
     @Override
     public String findPackerProduct(String barcode, int workFlag) {
-        throw new UnsupportedOperationException("개발66 Step 9에서 이관 예정");
+        if (workFlag == 1) {   // 원본 find_PackerProduct (work_flag 1 : 상품 바코드 스캔)
+            try {
+                String pp_code = "";
+                Log.e(TAG, "========================pp_code 가져오기 시작======================");
+                pp_code = find_work_info(barcode, true);
+                Log.e(TAG, "========================pp_code 가져오기 끝======================");
+                if (!a.edit_product_name.getText().equals("")) {
+                    return pp_code;
+                } else {
+                    return "null";
+                }
+            } catch (Exception ex) {
+                Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
+                return "null";
+            }
+        } else {              // 원본 find_PackerProductBarcodeGoods (work_flag 2 : 상품코드 스캔)
+            Log.e(TAG, "find_PackerProductBarcodeGoods");
+
+            try {
+                String pp_code = "";
+                pp_code = find_work_info_barcodeGoods(barcode, false);
+                if (!a.edit_product_name.getText().equals("")) {
+                    return pp_code;
+                } else {
+                    return "null";
+                    //scanFlag_swap();
+                }
+            } catch (Exception ex) {
+                Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
+                return "null";
+            }
+        }
+    }
+
+    /**
+     * 바코드정보 매칭 — 원본 find_work_info 이관 (개발66 Step 9)
+     *
+     * <p>구간 추출(원본 2121)은 길이 체크가 있는 쪽이며, {@code find_work_info_barcodeGoods}(원본 2184) 와
+     * 합치지 않는다. 항상 참인 {@code Editable} 비교(원본 2065 · 2081)도 원본 그대로 둔다.</p>
+     */
+    private String find_work_info(String req, boolean type) {
+        try {
+            String pp_code = "";
+            int count = 0;
+            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeInfo(a);
+            Log.e(TAG, "===================바코드 디비조회 완료=======================");
+            Log.e(TAG, "===================    req check !!   ======================="+req); //여기서 풀바코드를 던진다
+            for (Barcodes_Info bi : list_barcode_info) {
+                String bg = bi.getBARCODEGOODS();
+                String bg_from = bi.getBARCODEGOODS_FROM();
+                String bg_to = bi.getBARCODEGOODS_TO();
+                String temp_bg;
+
+                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
+                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
+
+                if (type && req.length() >= Integer.parseInt(bg_to)) {              // PACKER_PRODUCT_CODE로 찾을 경우
+                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
+                } else {                // false : BL로 찾을 경우
+                    temp_bg = req;
+                }
+
+                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
+                Log.i(TAG, "TEMP BARCODEGOODS eq : \t" + temp_bg.equals(bg));
+
+                if (temp_bg.equals(bg)) {                       // barcodegoods find success
+                    Log.i(TAG, "barcodegoods find success");
+                    a.work_item_bi_info = bi;
+                    a.edit_product_name.setText(bi.getITEM_NAME_KR());
+                    a.edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
+                    if(count == 0){
+                        pp_code = bi.getPACKER_PRODUCT_CODE();
+                    }else{
+                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
+                    }
+                    Log.i(TAG, "===================pp_code=================" + pp_code);
+                    a.work_item_barcodegoods = bg;
+                    count++;
+                } else {
+                    a.edit_product_name.setText("");
+                    a.edit_product_code.setText("");
+                    a.work_item_barcodegoods = "";
+                }
+
+                // 원본 2149 : searchType 4(이마트 비정량) 전부 매칭 — 이 타입은 미해당으로 접었다
+            }
+
+            Log.i(TAG, "===================return pp_code test!!! =================" + pp_code);
+            return pp_code;
+        } catch (Exception ex) {
+            Log.e(TAG, "======== find_work_info Exception ========");
+            Log.e(TAG, ex.getMessage().toString());
+            return "null";
+        }
+    }
+
+    /**
+     * 상품코드 매칭 — 원본 find_work_info_barcodeGoods 이관 (개발66 Step 9)
+     */
+    private String find_work_info_barcodeGoods(String req, boolean type) {
+        Log.e(TAG, "find_work_info_barcodeGoods");
+        try {
+            String pp_code = "";
+            int count = 0;
+            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeGoodsInfo(a);
+            for (Barcodes_Info bi : list_barcode_info) {
+                String bg = bi.getBARCODEGOODS();
+                String bg_from = bi.getBARCODEGOODS_FROM();
+                String bg_to = bi.getBARCODEGOODS_TO();
+                String temp_bg;
+                if (type) {              // PACKER_PRODUCT_CODE로 찾을 경우
+                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
+                } else {                // false : BL로 찾을 경우
+                    temp_bg = req;
+                }
+                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
+                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
+                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
+
+                if (temp_bg.equals(bg)) {                       // barcodegoods find success
+                    //pp_name = bi.getITEM_NAME_KR();
+                    a.work_item_bi_info = bi;
+                    a.edit_product_name.setText(bi.getITEM_NAME_KR());
+                    a.edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
+                    if(count == 0){
+                        pp_code = bi.getPACKER_PRODUCT_CODE();
+                    }else{
+                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
+                    }
+                    Log.i(TAG, "===================pp_code=================" + pp_code);
+                    //a.work_ppcode = bi.getPACKER_PRODUCT_CODE();
+                    a.work_item_barcodegoods = bg;
+                    count++;
+                } else {
+                    a.edit_product_name.setText("");
+                    a.edit_product_code.setText("");
+                    a.work_item_barcodegoods = "";
+                }
+            }
+            return pp_code;
+        } catch (Exception ex) {
+            Log.e(TAG, "======== find_work_info_barcodeGoods Exception ========");
+            Log.e(TAG, ex.getMessage().toString());
+            return "null";
+        }
     }
 
     /**
@@ -567,18 +717,18 @@ public class HomeplusNonfixedType implements ShipmentType {
      */
     @Override
     public void reprintLabel(String print_weight_str, String making_date, String box_order, int select_position) {
-        // 원본 947 : searchType 2·5 홈플러스 라벨 경로. 이 타입 고정이라 조건문만 제거
+        // 원본 939 : searchType 2·5 홈플러스 라벨 경로. 이 타입 고정이라 조건문만 제거
         a.labelPrintHelper.setHomeplusPrinting(Double.parseDouble(print_weight_str), a.arSM.get(select_position), true, a.printerCallback);
     }
 
     /**
      * 출하대상 조회 후처리 — 이 타입은 원본에 해당 분기가 없다 (개발66 Step 8)
      *
-     * <p>원본 2112 의 박스순번 초기화는 searchType 6(롯데) 전용이다.</p>
+     * <p>원본 2549 의 박스순번 초기화는 searchType 6(롯데) 전용이다.</p>
      */
     @Override
     public void onShipmentLoaded(ArrayList<Shipments_Info> arSM) {
-        // 원본 2112 : 롯데 전용 블록이라 이 타입은 수행할 작업이 없다
+        // 원본 2549 : 롯데 전용 블록이라 이 타입은 수행할 작업이 없다
     }
 
     @Override

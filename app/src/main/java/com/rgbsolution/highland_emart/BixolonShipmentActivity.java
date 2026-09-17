@@ -295,9 +295,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /** 센터 선택 스피너 - 이마트 물류센터 선택 */
     public Spinner sp_center_name;  // 개발66 Step 2: 타입 파일 접근용 공개
     /** 상품명 표시 필드 - 현재 작업 중인 상품명 (ITEM_NAME) */
-    private EditText edit_product_name;
+    public EditText edit_product_name;  // 개발66 Step 9: 타입 파일 접근용 공개
     /** 상품코드 표시 필드 - 현재 작업 중인 패커상품코드 (PACKER_PRODUCT_CODE) */
-    private EditText edit_product_code;
+    public EditText edit_product_code;  // 개발66 Step 9: 타입 파일 접근용 공개
     /** BL번호 선택 스피너 - 동일 BL건 그룹핑 */
     public Spinner sp_bl_no;        // 개발66 Step 2: 타입 파일 접근용 공개
     /** 센터 총 요청수량 - 선택된 센터의 전체 GI_REQ_PKG 합계 */
