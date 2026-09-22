@@ -114,7 +114,6 @@ import static com.rgbsolution.highland_emart.R.id.sp_center;
  * @see MainActivity 메인 화면
  */
 public class BixolonShipmentActivity extends HoneywellScannerActivity {
-
     // ========================================================================================
     // 상수 정의
     // ========================================================================================
@@ -130,7 +129,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // ========================================================================================
     // 블루투스 프린터 관련 상수 및 필드
     // ========================================================================================
-
     /** 프린터 연결 요청 코드 */
     public static final int REQUEST_CONNECT_DEVICE = 1;
 
@@ -193,7 +191,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // ========================================================================================
     // UI 컴포넌트 및 Activity 필드
     // ========================================================================================
-
     private LayoutInflater Inflater;
     /** 로딩 다이얼로그 */
     private ProgressDialog pDialog = null;
@@ -294,7 +291,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // ========================================================================================
     // Keyboard Wedge 자동 감지 (바코드 스캐너 지원)
     // ========================================================================================
-
     /** setBarcodeMsg 마지막 처리 시각 (중복 호출 방지용) */
     private long lastBarcodeProcessedTime = 0;
     /** setBarcodeMsg 마지막 처리 바코드 값 (같은 바코드 여부 판별용) */
@@ -318,7 +314,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         Log.i(TAG, "=====================Common.searchType Check==================" + Common.searchType);
 
         super.onCreate(savedInstanceState);
@@ -335,7 +330,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
 
         current_work_position = -1;
-
         centerTotalCount = 0;
         centerTotalWeight = 0.0;
         centerWorkCount = 0;
@@ -419,8 +413,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             Toast.makeText(this, R.string.toast_bt_na, Toast.LENGTH_LONG).show();
             finish();
             return;
-
-
         }
         Log.i(TAG, "***********************onCreate 끝 " );
 
@@ -440,7 +432,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
     @Override
     protected void onStart() {
-
         super.onStart();
         Log.i(TAG, TAG + " onStart");
         // 출하대상 불러오기 끝, Print 연결 시작
@@ -468,7 +459,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
             // Otherwise, setup the chat session
-
         } else {
             if (Common.printer_setting && !Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION)) {  //메인화면 프린터설정에서 ON으로 하면 아래 로직을 탄다, 이노이천에서 생산 계근일떄는 물어보지 않도록 변경
                 if (mBixolonPrinter == null) {
@@ -480,7 +470,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     } else {
                         new ProgressDlgPrintConnect(BixolonShipmentActivity.this).execute();
                     }
-
                 }
             }
         }
@@ -533,6 +522,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             Log.i(TAG, "입력버튼 클릭");
 
             hideKeyboard();
+
             if (work_flag == 1) {     // 바코드 스캔 작업
                 setBarcodeMsg(edit_barcode.getText().toString());
             } else if (work_flag == 0) {            // 수기 입력 작업
@@ -599,7 +589,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                           IntentA.putExtra(makingToKey,makingTo);
 
                           startActivityForResult(IntentA,GET_DATA_REQUEST);
-
                     }else if(arSM.get(current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_TRD) || arSM.get(current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_WET) || arSM.get(current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_ET) || Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)){
                         if(Common.searchType.equals(Common.SEARCH_TYPE_EMART) || Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)){ //수입육 계근, 롯데계근일 때 수기입력시 소비기한 창 띄움
                             String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
@@ -687,12 +676,14 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         public void onClick(View v) {
             Log.i(TAG, "Select 버튼 클릭");
             setSelect_Position(-1);
+
             for (int i = 0; i < sListAdapter.cbStatus.size(); i++) {
                 if (sListAdapter.cbStatus.get(i)) {
                     setSelect_Position(i);
                     break;
                 }
             }
+
             if (getSelect_Position() != -1) {
                 show_wetDetailDialog(arSM.get(getSelect_Position()), work_item_bi_info, getSelect_Position());
                 set_scanFlag(true);
@@ -865,9 +856,11 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                 cDialog.dismiss();
                             }
                             Log.d(TAG, "Bixolon connected");
+
                             if (getSupportActionBar() != null) {
                                 getSupportActionBar().setSubtitle("Printer Connected");
                             }
+
                             break;
                         case BixolonSocketPrinter.STATE_CONNECTING:
                             if (getSupportActionBar() != null) {
@@ -2664,7 +2657,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     show_wetFinishDialog();
                 } else if (arSM.get(current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.get(current_work_position).getPACKING_QTY()))) {
                     //scanFlag_swap();
-                    //show_wetNextDialog();
                 }
             } else {            // 결과 없음
                 vibrator.vibrate(1000);
@@ -3439,39 +3431,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     edit_barcode.setText("");
                     work_item_fullbarcode = "";
                     work_item_barcodegoods = "";
-                }).show();
-    }
-
-    // 다음 지점 계근을 묻는 Dialog
-    private void show_wetNextDialog() {
-        dialog_flag = true;
-        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
-                .setIcon(R.drawable.highland)
-                .setTitle(R.string.shipment_wet_finish)
-                .setMessage(R.string.shipment_wet_next_msg)
-                .setCancelable(false)
-                .setPositiveButton(R.string.shipment_wet_ok, (dialog, which) -> {
-                    // 다음 지점 선택
-                    if (work_flag == 1) {
-                        scanFlag_init();
-                    } else if (work_flag == 0){
-                        set_scanFlag(false);
-                    } else if (work_flag == 2){
-                        scanFlag_init();
-                    }
-                    select_flag = false;
-
-                    work_item_fullbarcode = "";
-                    edit_barcode.setText("");
-                    //edit_wet_count.setText("0 / 0");
-                    //edit_wet_weight.setText("0 / 0");
-                    btn_send.setEnabled(false);
-                    btn_send.setBackgroundResource(R.drawable.disable_round_button);
-                    dialog_flag = false;
-                    //for (int i = 0; i < arSM.size(); i++) {
-                    //    arSM.get(i).setWORK_FLAG(false);
-                    //}
-                    sListAdapter.notifyDataSetChanged();
                 }).show();
     }
 
