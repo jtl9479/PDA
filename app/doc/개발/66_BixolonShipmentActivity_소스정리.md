@@ -528,7 +528,64 @@ import android.view.inputmethod.InputMethodManager;   // 새로 생김
 
 ---
 
-## 15. 미조치 / 후속 후보
+## 15. Step 12 — Javadoc 단순화 + 죽은 SLCS 헬퍼 제거
+
+### 15.1 Javadoc 단순화 (186 → 51줄)
+
+Javadoc 이 **코드를 그대로 옮겨 적고 있어** 코드가 바뀌면 곧바로 낡는 구조였다(파일의 10%, 328줄).
+
+| 대상 | 전 | 후 |
+|------|---:|---:|
+| 클래스 Javadoc | 65 | **7** |
+| `wet_data_insert` | 27 | 8 |
+| `setBarcodeMsgProduction` | 20 | 7 |
+| `setBarcodeMsg` | 17 | 6 |
+| `ProgressDlgShipmentSend` | 15 | 5 |
+| `inputBtnListener` | 12 | 5 |
+| `mHandler` | 12 | 4 |
+| `ProgressDlgShipSelect` | 11 | 5 |
+| `onOptionsItemSelected` | 7 | 4 |
+
+**기준**
+
+| 유지 | 삭제 |
+|------|------|
+| 한 줄 요약 | "처리 흐름" 단계 나열 — 코드에 이미 있음 |
+| 코드로 안 드러나는 이유·주의 | 메서드명이 이미 말하는 것 |
+| 의미가 불명확한 `@param` | 분기 목록 — 코드가 더 정확함 |
+
+**실제로 낡아 있던 것들**
+
+- `ProgressDlgShipmentSend` — "홈플러스(2)·롯데(6) → insert_goods_wet_homeplus.jsp" 라고 적혀 있으나 실제로 `homeplus.jsp` 를 쓰는 분기는 **없다**. 홈플러스·롯데는 `URL_INSERT_GOODS_WET`, 비정량은 `_NEW`, 생산은 `_PRODUCTION` 이다
+- `mHandler` — `MESSAGE_ROWCHECK`·`COMPLETE`·`SEARCHCHECK` 를 설명하지만 이 3개는 **보내는 쪽이 없는 죽은 case** 다
+
+### 15.2 죽은 SLCS 헬퍼 제거 (−55줄)
+
+| 대상 | 줄수 | 근거 |
+|------|---:|------|
+| `slcsBarcode` | 14 | Activity 호출 **0건** |
+| `slcsLine` | 14 | 호출 0건 |
+| `slcsBox` | 14 | 호출 0건 |
+| `// Label printing methods moved to LabelPrintHelper` 블록 | 9 | 클래스명으로 자명 |
+| `// SLCS 헬퍼 메서드 → LabelPrintHelper로 이동됨` 블록 | 4 | **사실과 다름** — 바로 아래 8개가 그대로 있었다 |
+
+**원본 대조**: 원본 `ShipmentActivity.java` 에 `slcs` 는 **0건**이다(BIXOLON 전환 시 신설). 원본 합계 라벨은 Woosim 명령으로 **텍스트만** 찍었고(`PM_setPosition` + `getTTFcode`), `WoosimBarcode`·`drawLine`·`drawBox` 사용이 **0건**이었다. 즉 이 3개는 전환 시 헬퍼 세트로 만들어두고 한 번도 쓰이지 않은 코드다.
+
+**남긴 5개는 전부 사용 중** — `slcsInit`(2) · `slcsLabelSize`(2) · `slcsText`(3) · `slcsPrint`(2) · `slcsFeedToMark`(2). `show_wetDetailDialog` 의 합계 라벨에서만 쓴다.
+
+> `slcsBarcode` 는 Activity(`BD` 명령, narrow=2 wide=4)와 `LabelPrintHelper`(`B1` 명령, narrow=2 wide=3)의 **본문이 갈라져 있었다.** 다만 Activity 쪽은 호출 0건이라 출력에 영향이 없었다. 복사 후 한쪽만 수정된 전형적인 사례다.
+
+### 15.3 기타
+
+`// SLCS 메소드들 - weight list printing(4143, 4188줄)에서 사용되므로 유지` 의 **줄 번호가 현재와 달라**(실제 2847·2887) 위치 대신 메서드명으로 바꿨다. 줄 번호는 금방 낡는다.
+
+### 15.4 결과
+
+3,275 → **3,077줄** (−198). 주석/죽은코드 외 로직 변경 0건, 빌드 통과.
+
+---
+
+## 16. 미조치 / 후속 후보
 
 이번 범위 밖이며, **사용자 지시 대기** 상태다.
 
@@ -542,7 +599,7 @@ import android.view.inputmethod.InputMethodManager;   // 새로 생김
 
 ---
 
-## 16. 진행 현황
+## 17. 진행 현황
 
 | Step | 작업 | 상태 |
 |------|------|:----:|
@@ -557,6 +614,8 @@ import android.view.inputmethod.InputMethodManager;   // 새로 생김
 | 9 | `select_flag` 죽은 분기 제거 | ✅ 완료 (2026-09-22, −11줄, 원본 5곳 전수 대조, 원본에서도 항상 true, 빌드 통과) |
 | 10 | `hideKeyboard()` 중복 제거 | ✅ 완료 (2026-09-22, 3파일 중복 → 1벌, ShipmentActivity 제외, 호출부 4곳 치환, 캐시 배제 빌드 통과) |
 | 10-1 | `CommonUtils` 분리 | ✅ 완료 (2026-09-22, Common 의 Android 의존 제거, 값/동작 배치 기준 확립, 빌드 통과) |
+| 11 | 소비기한 입력 화면 호출 중복 제거 | ✅ 완료 (2026-09-22, Intent 키 멤버변수화 + startExpiryEnter 추출, 분기 구조 유지, 빌드 통과) |
+| 12 | Javadoc 단순화 + 죽은 SLCS 헬퍼 제거 | ✅ 완료 (2026-09-22, −198줄, 낡은 주석 2건 확인, 원본 대조 완료, 빌드 통과) |
 
 ---
 

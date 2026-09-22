@@ -49,69 +49,11 @@ import java.util.ArrayList;
 import static com.rgbsolution.highland_emart.R.id.sp_center;
 
 /**
- * BixolonShipmentActivity - 출하 계근 작업 화면
- * 개요
- * PDA 앱에서 출하 대상 상품의 계근(무게 측정) 작업을 수행하는 핵심 Activity.
- * 바코드 스캔, 중량 입력, 바코드 라벨 인쇄, 서버 전송 기능을 담당한다.
- * 주요 기능
- *   출하 대상 조회: 센터별/BL번호별 출하 대상 상품 목록 표시
- *   바코드 스캔: 상품 바코드 및 BL번호 바코드 스캔으로 작업 상품 식별
- *   계근 작업: 저울 연동 또는 수기 입력으로 중량 측정
- *   라벨 인쇄: 블루투스 프린터로 바코드 라벨 인쇄 (BIXOLON, SLCS 명령어)
- *   서버 전송: 계근 완료 데이터를 서버(G3)로 전송
- * 출하 유형 (Common.searchType)
- *   "0" : 이마트 출하     - 바코드 타입별 라벨 인쇄 (M0, M1, M3, M4, M8, M9, E0-E3, P0 등)
- *   "1" : 생산 계근       - 라벨 인쇄 분기 없음, 생산 공정용
- *   "2" : 홈플러스 출하   - setHomeplusPrinting 라벨
- *   "3" : 도매 출하       - activity_shipment_wholesale 레이아웃 사용, 라벨 인쇄 분기 없음
- *   "4" : 비정량 출하     - 라벨은 이마트와 동일한 setPrinting 경로
- *   "5" : 홈플러스 비정량 - 라벨은 홈플러스와 동일한 setHomeplusPrinting 경로
- *   "6" : 롯데 출하       - setPrintingLotte 라벨, 박스 순번 부여
- *   "7" : 생산 라벨       - 미사용 (2026-08-04 제외 결정)
- * 계근 방식 (ITEM_TYPE)
- *   "W", "HW" : 바코드 계근 - 바코드에서 중량 추출
- *   "S" : 저울 계근 - 저울에서 중량 입력 (소수점 2자리)
- *   "J" : 지정 중량 - PACKWEIGHT 값 사용
- *   "B" : 박스 계근
- * 바코드 타입 (BARCODE_TYPE) - 라벨 인쇄 분기
- *   "M0" : 이마트 기본 (미트센터 분기 포함)
- *   "M1" : 이마트 타입1
- *   "M3", "M4" : 이마트 타입3/4
- *   "M8" : 수입식별번호 포함
- *   "M9" : 납품일자 포함
- *   "E0", "E1", "E2", "E3" : 이마트 확장 타입
- *   "P0" : 기본 바코드
- *   "NA" : 도매용 (바코드 타입 없음)
- * 화면 구성
- *   sp_center_name : 이마트 센터 선택 스피너
- *   sp_bl_no : BL번호 선택 스피너
- *   sp_point_name : 지점 선택 스피너
- *   edit_barcode : 바코드/중량 입력 필드
- *   edit_product_name, edit_product_code : 상품명/상품코드 표시
- *   edit_wet_count, edit_wet_weight : 요청수량/중량 vs 계근수량/중량 표시
- *   sList : 작업 대상 지점 리스트뷰
- * 주요 데이터 흐름
- *   출하 대상 조회 (VIEW → JSP → 앱 로컬 DB)
- *   센터/BL/지점 선택
- *   상품 바코드 스캔 → 상품 매칭
- *   중량 입력 (바코드/저울/수기)
- *   라벨 인쇄 (프린터 연결 시)
- *   계근 데이터 로컬 DB 저장
- *   전송 버튼 → 서버 전송 (insert_goods_wet.jsp)
- * 관련 클래스
- *   {@link Shipments_Info} : 출하 대상 정보 DTO
- *   {@link Goodswets_Info} : 계근 데이터 DTO
- *   {@link Barcodes_Info} : 바코드 정보 DTO
- *   {@link DBHandler} : 로컬 SQLite DB 핸들러
- *   {@link ShipmentListAdapter} : 출하 리스트 어댑터
- * 관련 VIEW
- *   VW_PDA_WID_LIST : 이마트 출하용
- *   VW_PDA_WID_WHOLESALE_LIST : 도매 출하용
- *   VW_PDA_WID_PRO_LIST : 생산 투입용
- *   VW_PDA_WID_LIST_LOTTE : 롯데 출하용
- *   VW_PDA_WID_HOMEPLUS_LIST : 홈플러스 출하용
- * @see LoginActivity 로그인 및 출하 유형 선택
- * @see MainActivity 메인 화면
+ * 출하 계근 작업 화면
+ * 바코드 스캔 → 중량 확정 → 로컬 DB 저장 → 라벨 인쇄 → 서버 전송 까지를 담당한다.
+ * 라벨 인쇄는 {@link LabelPrintHelper}(BIXOLON SLCS), 출하 유형은 {@code Common.searchType} 으로 갈린다.
+ * searchType 값과 의미는 {@link com.rgbsolution.highland_emart.common.Common} 의 SEARCH_TYPE_* 상수 참조.
+ * 생산(1)·생산라벨(7)은 미사용이며 7은 UI 가 막혀 있다.
  */
 public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // ========================================================================================
@@ -522,15 +464,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
     /**
      * 입력 버튼 클릭 리스너
-     * 작업 모드(work_flag)에 따라 동작이 달라짐:
-     *   work_flag=1 (바코드 스캔): setBarcodeMsg() 호출하여 바코드 처리
-     *   work_flag=0 (수기 입력): 입력된 중량값으로 wet_data_insert() 호출
-     *   work_flag=2 (상품코드): setBarcodeMsg() 호출하여 상품코드 처리
-     * 수기 입력 시 특수 조건:
-     *   킬코이 미트센터(패커코드 30228, 스토어 9231): 소비기한 입력 화면으로 이동
-     *   수입육 센터(TRD/WET/E/T): 이마트/롯데 출하 시 소비기한 입력 화면으로 이동
-     *   이마트 출하: 소수점 첫째자리까지 반올림
-     *   생산/홈플러스: 입력값 그대로 사용
+     * {@code work_flag} 에 따라 바코드 처리(1,2)와 수기 중량 입력(0)으로 갈린다.
+     * 수기 입력 중 킬코이 미트센터·수입육 센터·롯데는 소비기한 입력 화면을 먼저 띄운다.
      */
     private View.OnClickListener inputBtnListener = new View.OnClickListener() {
         @Override
@@ -705,22 +640,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // ========================================================================================
 
     /**
-     * 메인 핸들러 - UI 스레드에서 메시지 처리
-     * 처리하는 메시지 유형:
-     *   MESSAGE_ROWCHECK (1000): 리스트 행 체크 완료 - 해당 위치로 스크롤
-     *   MESSAGE_COMPLETE (1001): 계근 작업 완료 알림
-     *   MESSAGE_SEARCHCHECK (1002): 검색 체크 - GI_D_ID로 해당 행 선택
-     *   MESSAGE_DEVICE_NAME (1): 프린터 연결 성공 - 디바이스명 저장 및 성공음 재생
-     *   MESSAGE_TOAST (2): Toast 메시지 표시
-     *   MESSAGE_READ (3): 프린터 데이터 읽기 - Bixolon 은 별도 처리 불필요(no-op)
-     *   MESSAGE_SEARCH (4): 프린터 검색 - DeviceListActivity 호출
-     *   MESSAGE_REPRINT (5): 재인쇄 요청 - 출하 유형별 프린팅 메서드 호출
+     * 메인 핸들러 - UI 스레드 메시지 처리
+     * 처리 대상은 {@code MESSAGE_*} 상수. 각 case 본문 참조.
      */
     public Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             try {
                 int pos = 0;
-
                 Log.i(TAG, "스캔 버튼 클릭!!!!");
 
                 switch (msg.what) {
@@ -785,7 +711,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         }
                         break;
                     case MESSAGE_REPRINT:
-
                         String print_weight_str = msg.getData().getString("WEIGHT").toString();
                         String making_date = msg.getData().getString("MAKINGDATE").toString();
 
@@ -891,8 +816,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     };
 
     /**
-     * 액션바 메뉴 생성 (개발42)
-     * - bixolon_shipment_menu.xml inflate
+     * 액션바 메뉴 생성
      * - 6개 항목: 프린터설정/출하대상/바코드정보/계근데이터/날짜설정 + 테스트 출력
      */
     @Override
@@ -902,11 +826,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     }
 
     /**
-     * 액션바 메뉴 클릭 처리 (개발42)
-     * - action_test_print: 연결된 프린터로 테스트 라벨 1장 출력
-     *   · mBixolonPrinter null 체크 + isConnected() 체크 후 printTestLabel() 호출
-     *   · 미연결 시 Toast "프린터가 연결되지 않았습니다"
-     * - 그 외 항목: super.onOptionsItemSelected(item) 위임 (기존 동작 유지)
+     * 액션바 메뉴 클릭 처리
+     * 테스트 출력 항목만 직접 처리하고 나머지는 상위 클래스에 위임한다.
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -962,20 +883,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     boolean dialog_flag = false;
 
     /**
-     * 바코드 메시지 처리 핵심 메서드
-     * 스캔된 바코드를 분석하여 상품을 매칭하고 계근 작업을 수행한다.
-     * scan_flag에 따라 상품 바코드 또는 BL번호 바코드를 처리한다.
-     * 처리 흐름
-     *   scan_flag=true (상품 바코드 스캔):
-     *       work_flag=1: find_PackerProduct()로 바코드에서 패커상품코드 추출
-     *       work_flag=2: find_PackerProductBarcodeGoods()로 상품코드로 검색
-     *       중복 스캔 체크 (홈플러스 비정량은 중복 허용)
-     *       출하 대상 조회 (ProgressDlgShipSelect 실행)
-     *   scan_flag=false (BL번호 스캔):
-     *       BL번호 일치 확인
-     *       ITEM_TYPE에 따른 중량 추출 (W/HW: 바코드, S: 저울, J: 지정)
-     *       LB→KG 환산 (필요시)
-     *       wet_data_insert() 호출
+     * 스캔된 바코드 처리 (생산 제외 6종)
+     * {@code scan_flag} 가 true 면 상품 바코드, false 면 BL번호 차례다.
+     * 생산(1)은 진입 즉시 {@link #setBarcodeMsgProduction(String)} 으로 위임한다.
      * @param msg 스캔된 바코드 문자열
      */
     public void setBarcodeMsg(final String msg) {
@@ -1010,14 +920,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     String find_ppcodetemp = "";
 
                     if (work_flag == 1) {
-                        Log.e(TAG, "========================상품바코드스캔1======================");
                         find_ppcodetemp = find_PackerProduct(msg);
                         Log.e(TAG, "========================상품바코드스캔1 ppcode ======================" + find_ppcodetemp);
                     }else {
-                        Log.e(TAG, "========================상품코드스캔2======================");
                         find_ppcodetemp = find_PackerProductBarcodeGoods(msg);
                         Log.e(TAG, "========================상품코드스캔2 ppcode ======================" + find_ppcodetemp);
                     }
+
                     Log.e(TAG, "========================바코드 정보가져옴======================");
                     final String find_ppcode = find_ppcodetemp;
 
@@ -1028,9 +937,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         work_item_barcodegoods = "";
                     } else {
                         if (work_ppcode.equals("")) {
-                            boolean dup = DBHandler.duplicatequeryGoodsWet_check(getApplicationContext(), msg);
-                            // 최초 스캔일 경우
-                            Log.e(TAG, "========================최초 스캔11======================");
                             Log.e(TAG, "========================find_ppcode test!!======================"+find_ppcode);
                             work_ppcode = find_ppcode;
                             work_item_fullbarcode = msg;
@@ -1385,21 +1291,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
     /**
      * 생산(searchType=1) 전용 바코드 처리 (개발60)
-     * setBarcodeMsg()에서 생산만 분리한 메서드. 생산이 타지 않는 분기를 제외해
-     * 유지보수를 쉽게 하고, 다른 searchType 수정 시 영향을 받지 않도록 한다.
-     * 제외된 분기 (생산 미해당)
-     *   비정량(4,5) 중복검사 우회 2곳
-     *   킬코이 미트센터 소비기한 검증 (PACKER_CODE / STORE_CODE 미사용)
-     *   CENTERNAME TRD/E/T/WET 소비기한 검증 ('하이랜드푸드' 고정)
-     *   ITEM_TYPE W / HW (생산 VIEW 미출력)
-     *   ITEM_TYPE B (홈플러스 비정량 전용)
-     *   이마트 LB 환산 자릿수 분기 (searchType==0 전용)
-     * 처리 흐름
-     *   디바운스 (동일 바코드 1초)
-     *   1차 패커상품 스캔 → 대상 확정
-     *   2차 BL 스캔 → 중복검사
-     *   중량 추출 (ITEM_TYPE S / J)
-     *   wet_data_insert()
+     * {@link #setBarcodeMsg(String)} 에서 생산이 타지 않는 분기를 걷어낸 사본이다.
+     * 두 메서드는 본문이 다르므로 한쪽만 고치지 말 것.
      * @param msg 스캔된 바코드 문자열
      * @see #setBarcodeMsg(String)
      */
@@ -1669,31 +1562,12 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // ========================================================================================
 
     /**
-     * 계근 데이터 저장 및 UI 업데이트
-     * 계근 완료된 데이터를 로컬 DB에 저장하고 화면에 반영하는 핵심 메서드.
-     * 출하 유형에 따라 다른 DB 테이블/로직을 사용한다.
-     * 처리 흐름
-     *   요청수량 완료 여부 체크 - 완료 시 다음 지점으로 이동 알림
-     *   Goodswets_Info 객체 생성 및 데이터 설정
-     *   출하 유형별 DB 저장:
-     *       홈플러스(2): insertqueryGoodsWetHomeplus()
-     *       롯데(6): insertqueryGoodsWetLotte() - 박스 순번(lotte_TryCount) 관리
-     *       기타: insertqueryGoodsWet()
-     *   출하 유형별 중량 처리:
-     *       이마트(0): 소수점 첫째자리까지 (10단위 반올림)
-     *       생산/홈플러스: 입력값 그대로
-     *   계근수량(PACKING_QTY), 계근중량(GI_QTY) 업데이트
-     *   센터 합계 업데이트 (centerWorkCount, centerWorkWeight)
-     *   UI 업데이트 (EditText, ListView)
-     *   라벨 인쇄 (Common.print_bool이 true일 때):
-     *       홈플러스(2,5): setHomeplusPrinting()
-     *       이마트(0,4): setPrinting()
-     *       롯데(6): setPrintingLotte()
-     *       생산(7): setPrinting_prod()
+     * 계근 데이터 저장 및 화면 반영
+     * 출하 유형별로 저장 테이블·중량 자릿수·라벨 분기가 달라진다. 상세는 본문 분기 참조.
      * @param weight_str 중량 문자열 (서버 전송용)
-     * @param weight_double 중량 실수값 (UI 표시 및 계산용)
-     * @param making_date 제조일자 (바코드에서 추출, 없으면 빈 문자열)
-     * @param box_serial 박스 시리얼 번호 (바코드에서 추출, 없으면 빈 문자열)
+     * @param weight_double 중량 실수값 (화면 표시·계산용)
+     * @param making_date 제조일자. 바코드에서 못 뽑으면 빈 문자열
+     * @param box_serial 박스 시리얼. 없으면 빈 문자열
      */
     public void wet_data_insert(String weight_str, double weight_double, String making_date, String box_serial) {
         Log.e(TAG, "=========================계근입력 시작=========================" + weight_double);
@@ -2134,20 +2008,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     }
 
 
-    // ========================================================================================
-    // Label printing methods moved to LabelPrintHelper
-    // - setPrinting_prod(): Production label
-    // - setPrinting(): Emart/Non-fixed label
-    // - setHomeplusPrinting(): Homeplus label
-    // - setPrintingLotte(): Lotte label
-    // @see com.rgbsolution.highland_emart.print.LabelPrintHelper
-    // ========================================================================================
-
-    // ========================================================================================
-    // SLCS 헬퍼 메서드 → LabelPrintHelper로 이동됨
-    // ========================================================================================
-
-    // SLCS 메소드들 - weight list printing(4143, 4188줄)에서 사용되므로 유지
+    // SLCS 메소드들 - show_wetDetailDialog 의 합계 라벨 인쇄에서 사용
     // LabelPrintHelper에도 복사본 존재 (라벨 출력용)
     private String slcsInit() {
         return "CB\r\n" + "CS13,0\r\n";
@@ -2177,48 +2038,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         // V x,y,K,w,h,0,N,B,N,0,L,0,'text'
         // K: 한글, 0: 회전없음, N: 일반, B: 굵게, N: 이탤릭없음, 0: 자간, L: 왼쪽정렬, 0: 줄간격
         return "V" + x + "," + y + ",K," + width + "," + height + ",0,N,B,N,0,L,0,'" + text + "'\r\n";
-    }
-
-    /**
-     * SLCS CODE128 바코드 생성
-     * @param x      X 좌표
-     * @param y      Y 좌표
-     * @param height 바코드 높이
-     * @param data   바코드 데이터
-     * @return SLCS 바코드 명령어 문자열
-     */
-    private String slcsBarcode(int x, int y, int height, String data) {
-        // BD x,y,barcode_type,narrow,wide,height,rotation,HRI,quiet_zone,'data'
-        // CODE128, narrow=2, wide=4, HRI=0(없음), quiet_zone=0
-        return "BD" + x + "," + y + ",CODE128,2,4," + height + ",0,0,0,'" + data + "'\r\n";
-    }
-
-    /**
-     * SLCS 선 그리기
-     * @param x1    시작 X 좌표
-     * @param y1    시작 Y 좌표
-     * @param x2    끝 X 좌표
-     * @param y2    끝 Y 좌표
-     * @param width 선 두께
-     * @return SLCS 선 명령어 문자열
-     */
-    private String slcsLine(int x1, int y1, int x2, int y2, int width) {
-        // LS x1,y1,x2,y2,width
-        return "LS" + x1 + "," + y1 + "," + x2 + "," + y2 + "," + width + "\r\n";
-    }
-
-    /**
-     * SLCS 박스 그리기
-     * @param x         X 좌표
-     * @param y         Y 좌표
-     * @param width     박스 너비
-     * @param height    박스 높이
-     * @param thickness 선 두께
-     * @return SLCS 박스 명령어 문자열
-     */
-    private String slcsBox(int x, int y, int width, int height, int thickness) {
-        // LB x1,y1,x2,y2,thickness
-        return "LB" + x + "," + y + "," + (x + width) + "," + (y + height) + "," + thickness + "\r\n";
     }
 
     /**
@@ -2263,14 +2082,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
     /**
      * 출하 대상 조회 AsyncTask
-     * 패커상품코드 또는 BL번호로 출하 대상 목록을 조회한다.
-     * 로컬 DB에서 조회하여 arSM 리스트에 저장하고 ListView에 표시한다.
-     * 처리 흐름
-     *   onPreExecute: 로딩 다이얼로그 표시, 카운터 초기화
-     *   doInBackground: DBHandler.selectqueryShipment() 호출
-     *   롯데의 경우 lotte_TryCount 계산 (박스 순번 관리)
-     *   onPostExecute: ListView 어댑터 설정, 센터 합계 표시
-     * @see DBHandler#selectqueryShipment(Context, String, String, boolean)
+     * 로컬 DB 에서 선택 센터의 출하 대상을 읽어 리스트·스피너·센터 집계를 채우고,
+     * 조회에 성공하면 BL 스캔 차례로 전환한다.
      */
     class ProgressDlgShipSelect extends AsyncTask<Integer, String, Integer> {
         private Context mContext;
@@ -2461,17 +2274,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
     /**
      * 계근 데이터 서버 전송 AsyncTask
-     * 로컬 DB에 저장된 계근 데이터를 서버(G3)로 전송한다.
-     * 출하 유형별로 다른 JSP URL을 호출한다.
-     * 전송 URL (Common.searchType 기준)
-     *   이마트(0), 도매(3): insert_goods_wet.jsp (inno 스키마)
-     *   생산(1), 생산출력(7): insert_goods_wet.jsp (inno 스키마)
-     *   홈플러스(2), 롯데(6): insert_goods_wet_homeplus.jsp (inno 스키마)
-     *   홈플러스 비정량(4,5): insert_goods_wet_homeplus.jsp
-     * 전송 패킷 구조 (:: 구분자)
-     * GI_D_ID::WEIGHT::WEIGHT_UNIT::PACKER_PRODUCT_CODE::BARCODE::
-     * PACKER_CLIENT_CODE::MAKINGDATE::BOXSERIAL::BOX_CNT::REG_ID::
-     * ITEM_CODE::BRAND_CODE::CLIENT_TYPE::BOX_ORDER
+     * 출하 유형별로 호출 URL 이 다르다(본문 분기 참조). 패킷 구분자는 {@code ::} 다.
      * @see HttpHelper#sendDataDb(String, String, String, String)
      */
     class ProgressDlgShipmentSend extends AsyncTask<Void, String, String> {
