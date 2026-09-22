@@ -56,94 +56,197 @@ import static com.rgbsolution.highland_emart.R.id.sp_center;
  * 생산(1)·생산라벨(7)은 미사용이며 7은 UI 가 막혀 있다.
  */
 public class BixolonShipmentActivity extends HoneywellScannerActivity {
-    // ========================================================================================
-    // 상수 정의
-    // ========================================================================================
+
+    // ====================================================================================
+    // 상수 - Handler 메시지 / 요청 코드 / Intent 키
+    // ====================================================================================
+
     private final String TAG = "BixolonShipmentActivity";
 
     /** Handler 메시지 타입 - 리스트 행 체크 완료 */
     private final int MESSAGE_ROWCHECK = 1000;
+
     /** Handler 메시지 타입 - 계근 작업 완료 */
     private final int MESSAGE_COMPLETE = 1001;
+
     /** Handler 메시지 타입 - 검색 체크 완료 */
     private final int MESSAGE_SEARCHCHECK = 1002;
 
-    // ========================================================================================
-    // 블루투스 프린터 관련 상수 및 필드
-    // ========================================================================================
     /** 프린터 연결 요청 코드 */
     public static final int REQUEST_CONNECT_DEVICE = 1;
+
+    /** 비보안 모드 프린터 연결 요청 코드 */
+    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
+
+    /** 블루투스 활성화 요청 코드 */
+    private static final int REQUEST_ENABLE_BT = 3;
 
     // BluetoothPrintService Handler 메시지 타입
     /** 프린터 디바이스명 수신 */
     public static final int MESSAGE_DEVICE_NAME = 1;
+
     /** Toast 메시지 표시 */
     public static final int MESSAGE_TOAST = 2;
+
     /** 프린터 데이터 읽기 */
     public static final int MESSAGE_READ = 3;
+
     /** 검색 완료 */
     public static final int MESSAGE_SEARCH = 4;
+
     /** 재인쇄 요청 */
     public static final int MESSAGE_REPRINT = 5;
+
     /** 소비기한 입력 화면에서 데이터 수신 요청 코드 */
     public static final int GET_DATA_REQUEST = 8;
 
-    // 소비기한 입력 화면(ExpiryEnterActivity)으로 넘길 때 쓰는 Intent 키
-    private final String weightStrKey = "weightStrKey";
-    private final String weightDblKey = "weightDblKey";
-    private final String makingFromKey = "makingFromKey";
-    private final String makingToKey = "makingToKey";
-
     // Handler 키 이름
     public static final String DEVICE_NAME = "device_name";
+
     public static final String TOAST = "toast";
 
-    /** 비보안 모드 프린터 연결 요청 코드 */
-    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
-    /** 블루투스 활성화 요청 코드 */
-    private static final int REQUEST_ENABLE_BT = 3;
+    // 소비기한 입력 화면(ExpiryEnterActivity)으로 넘길 때 쓰는 Intent 키
+    private final String weightStrKey = "weightStrKey";
+
+    private final String weightDblKey = "weightDblKey";
+
+    private final String makingFromKey = "makingFromKey";
+
+    private final String makingToKey = "makingToKey";
+
+    /** 중복 처리 방지 간격 (ms) - 같은 바코드 처리 후 1초 이내 재처리 차단 */
+    private static final long BARCODE_PROCESS_DEBOUNCE_MS = 1000;
+
+    // ====================================================================================
+    // 필드 - 프린터 / 블루투스 / 사운드
+    // ====================================================================================
 
     /** 연결된 프린터 디바이스명 */
     private String mConnectedDeviceName = null;
+
     /** 블루투스 어댑터 */
     private BluetoothAdapter mBluetoothAdapter = null;
+
     /** 블루투스 프린터 서비스 */
     private BixolonSocketPrinter mBixolonPrinter = null;
+
     /** Bixolon 프린터 이전 상태 (연결 실패 판단용) */
     private int mPreviousBixolonState = BixolonSocketPrinter.STATE_NONE;
 
     /** 라벨 출력 헬퍼 */
     private LabelPrintHelper labelPrintHelper = new LabelPrintHelper();
-    /** 프린터 콜백 - LabelPrintHelper에서 프린터 데이터 전송 및 UI 업데이트 */
-    private LabelPrintHelper.PrinterCallback printerCallback = new LabelPrintHelper.PrinterCallback() {
-        @Override
-        public void sendData(byte[] data) {
-            BixolonShipmentActivity.this.sendData(data);
-        }
-
-        @Override
-        public void clearBarcodeInput() {
-            edit_barcode.setText("");
-        }
-    };
 
     /** 효과음 풀 */
     protected SoundPool sound_pool;
+
     /** 성공 효과음 ID */
     protected int sound_success;
+
     /** 실패 효과음 ID */
     protected int sound_fail;
-    /** 롯데 전송 재시도 카운트 */
-    private int lotte_TryCount = 0;
 
-    // ========================================================================================
-    // UI 컴포넌트 및 Activity 필드
-    // ========================================================================================
+    /** 진동 알림 */
+    private Vibrator vibrator;
+
+    // ====================================================================================
+    // 필드 - 화면 위젯 (메인)
+    // ====================================================================================
+
     private LayoutInflater Inflater;
+
     /** 로딩 다이얼로그 */
     private ProgressDialog pDialog = null;
+
     /** 프린터 연결 다이얼로그 */
     private ProgressDialog cDialog = null;
+
+    AlertDialog alert;
+
+    /** 작업 모드 선택 스피너 (바코드스캔/수기입력/상품코드) */
+    private Spinner sp_work;
+
+    /** 센터 선택 스피너 - 이마트 물류센터 선택 */
+    private Spinner sp_center_name;
+
+    /** 지점 선택 스피너 - 출고 대상 지점 선택 (CLIENTNAME) */
+    private Spinner sp_point_name;
+
+    /** BL번호 선택 스피너 - 동일 BL건 그룹핑 */
+    private Spinner sp_bl_no;
+
+    /** 바코드/중량 입력 필드 - 스캔된 바코드 또는 수기 입력 중량 */
+    private EditText edit_barcode;
+
+    /** 상품명 표시 필드 - 현재 작업 중인 상품명 (ITEM_NAME) */
+    private EditText edit_product_name;
+
+    /** 상품코드 표시 필드 - 현재 작업 중인 패커상품코드 (PACKER_PRODUCT_CODE) */
+    private EditText edit_product_code;
+
+    /** 센터 총 요청수량 - 선택된 센터의 전체 GI_REQ_PKG 합계 */
+    private EditText edit_center_tcount;
+
+    /** 센터 총 요청중량 - 선택된 센터의 전체 GI_REQ_QTY 합계 */
+    private EditText edit_center_tweight;
+
+    /** 지점 계근 현황 - "요청수량 / 완료수량" 형태 (GI_REQ_PKG / PACKING_QTY) */
+    private EditText edit_wet_count;
+
+    /** 지점 계근 중량 - "요청중량 / 완료중량" 형태 (GI_REQ_QTY / GI_QTY) */
+    private EditText edit_wet_weight;
+
+    /** 입력 버튼 - 바코드 입력 또는 중량 입력 확인 */
+    private Button btn_input;
+
+    /** 뒤로가기 버튼 */
+    private Button btn_back;
+
+    /** 전송 버튼 - 계근 완료 데이터를 서버(G3)로 전송 */
+    private Button btn_send;
+
+    /** 선택 버튼 - 선택된 지점의 계근 상세정보 팝업 */
+    private Button btn_select;
+
+    /** 출하 대상 리스트뷰 - 센터별 출하 대상 목록 표시 */
+    private ListView sList;
+
+    /** 출하 대상 리스트 어댑터 */
+    private ShipmentListAdapter sListAdapter;
+
+    // ====================================================================================
+    // 필드 - 화면 위젯 (계근 상세 팝업)
+    // ====================================================================================
+
+    /*
+        계근 상세내역 팝업 필드
+     */
+    private View detail_layout;
+
+    private AlertDialog detail_dialog;
+
+    private EditText detail_edit_position_name;
+
+    private EditText detail_edit_ppname;
+
+    private EditText detail_edit_ppcode;
+
+    private EditText detail_edit_count;
+
+    private EditText detail_edit_weight;
+
+    private ListView detail_list;
+
+    private DetailAdapter detailAdapter;
+
+    private Button detail_btn_back;
+
+    private Button detail_btn_delete;
+
+    private Button detail_btn_sum;
+
+    // ====================================================================================
+    // 필드 - 계근 상태
+    // ====================================================================================
 
     /**
      * 출하 대상 리스트 - VIEW에서 조회한 출하 대상 정보
@@ -151,62 +254,31 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      */
     private ArrayList<Shipments_Info> arSM;
 
-    /** 작업 모드 선택 스피너 (바코드스캔/수기입력/상품코드) */
-    private Spinner sp_work;
-    /** 바코드/중량 입력 필드 - 스캔된 바코드 또는 수기 입력 중량 */
-    private EditText edit_barcode;
-    /** 입력 버튼 - 바코드 입력 또는 중량 입력 확인 */
-    private Button btn_input;
-    /** 센터 선택 스피너 - 이마트 물류센터 선택 */
-    private Spinner sp_center_name;
-    /** 상품명 표시 필드 - 현재 작업 중인 상품명 (ITEM_NAME) */
-    private EditText edit_product_name;
-    /** 상품코드 표시 필드 - 현재 작업 중인 패커상품코드 (PACKER_PRODUCT_CODE) */
-    private EditText edit_product_code;
-    /** BL번호 선택 스피너 - 동일 BL건 그룹핑 */
-    private Spinner sp_bl_no;
-    /** 센터 총 요청수량 - 선택된 센터의 전체 GI_REQ_PKG 합계 */
-    private EditText edit_center_tcount;
-    /** 센터 총 요청중량 - 선택된 센터의 전체 GI_REQ_QTY 합계 */
-    private EditText edit_center_tweight;
-    /** 지점 선택 스피너 - 출고 대상 지점 선택 (CLIENTNAME) */
-    private Spinner sp_point_name;
-    /** 지점 계근 현황 - "요청수량 / 완료수량" 형태 (GI_REQ_PKG / PACKING_QTY) */
-    private EditText edit_wet_count;
-    /** 지점 계근 중량 - "요청중량 / 완료중량" 형태 (GI_REQ_QTY / GI_QTY) */
-    private EditText edit_wet_weight;
+    /** 전송할 계근 데이터 목록 */
+    private ArrayList<Goodswets_Info> list_send_info;
 
-    /** 출하 대상 리스트 어댑터 */
-    private ShipmentListAdapter sListAdapter;
-    /** 출하 대상 리스트뷰 - 센터별 출하 대상 목록 표시 */
-    private ListView sList;
+    private ArrayList<Goodswets_Info> list_gi_info;
 
-    /** 뒤로가기 버튼 */
-    private Button btn_back;
-    /** 전송 버튼 - 계근 완료 데이터를 서버(G3)로 전송 */
-    private Button btn_send;
-    /** 선택 버튼 - 선택된 지점의 계근 상세정보 팝업 */
-    private Button btn_select;
-
-    // ========================================================================================
-    // 계근 작업 상태 관리 필드
-    // ========================================================================================
-
-    /** 센터 총 요청수량 (GI_REQ_PKG 합계) */
-    private int centerTotalCount;
-    /** 센터 완료수량 (PACKING_QTY 합계) */
-    private int centerWorkCount;
-    /** 센터 총 요청중량 (GI_REQ_QTY 합계) */
-    private double centerTotalWeight;
-    /** 센터 완료중량 (GI_QTY 합계) */
-    private double centerWorkWeight;
-    /** 리스트에서 선택된 위치 (상세보기용) */
-    private int select_position;
     /**
      * 현재 계근 작업 중인 리스트 위치
      * -1: 미선택, 0~n: arSM 리스트 인덱스
      */
     private int current_work_position;
+
+    /** 리스트에서 선택된 위치 (상세보기용) */
+    private int select_position;
+
+    /** 센터 총 요청수량 (GI_REQ_PKG 합계) */
+    private int centerTotalCount;
+
+    /** 센터 완료수량 (PACKING_QTY 합계) */
+    private int centerWorkCount;
+
+    /** 센터 총 요청중량 (GI_REQ_QTY 합계) */
+    private double centerTotalWeight;
+
+    /** 센터 완료중량 (GI_QTY 합계) */
+    private double centerWorkWeight;
 
     /**
      * 작업 모드 플래그
@@ -215,6 +287,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * 2: 상품코드 입력 모드
      */
     private int work_flag = 1;
+
     /**
      * 스캔 순서 플래그
      * true: 상품 바코드 스캔 차례
@@ -222,25 +295,42 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      */
     private boolean scan_flag = true;
 
-    /** 진동 알림 */
-    private Vibrator vibrator;
-    AlertDialog alert;
+    /** 롯데 전송 재시도 카운트 */
+    private int lotte_TryCount = 0;
+
+    /** 현재 작업 중인 바코드 정보 (S_BARCODE_INFO 테이블 데이터) */
+    Barcodes_Info work_item_bi_info;
+
+    /** 현재 작업 중인 패커 상품 코드 */
+    String work_ppcode = "";
+
+    /** 현재 작업 중인 BL 번호 */
+    String work_bl_no = "";
+
+    /** 스캔된 전체 바코드 문자열 (중량, 제조일 추출용) */
+    String work_item_fullbarcode = "";
+
+    /** 바코드 상품 코드 (BARCODEGOODS) */
+    String work_item_barcodegoods = "";
+
+    /** 소비기한 전송용 변수 */
+    String expiryDayTrans = "";
+
     /** 다이얼로그 중복 표시 방지 플래그 */
     boolean alert_flag = false;
 
-    // ========================================================================================
-    // Keyboard Wedge 자동 감지 (바코드 스캐너 지원)
-    // ========================================================================================
+    /** 다이얼로그 표시 중 플래그 (중복 처리 방지) */
+    boolean dialog_flag = false;
+
     /** setBarcodeMsg 마지막 처리 시각 (중복 호출 방지용) */
     private long lastBarcodeProcessedTime = 0;
+
     /** setBarcodeMsg 마지막 처리 바코드 값 (같은 바코드 여부 판별용) */
     private String lastProcessedBarcode = "";
-    /** 중복 처리 방지 간격 (ms) - 같은 바코드 처리 후 1초 이내 재처리 차단 */
-    private static final long BARCODE_PROCESS_DEBOUNCE_MS = 1000;
 
-    // ========================================================================================
-    // Activity 생명주기 메서드
-    // ========================================================================================
+    // ====================================================================================
+    // 생명주기
+    // ====================================================================================
 
     /**
      * Activity 생성 — 레이아웃·위젯·리스너·블루투스 초기화
@@ -429,30 +519,130 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
-    /**
-     * 소비기한 입력 화면(ExpiryEnterActivity) 호출
-     * 수기 중량 입력 시 소비기한을 직접 받아야 하는 두 경로(킬코이 미트센터 / 수입육 센터·롯데)가
-     * 동일한 코드를 갖고 있어 메서드로 묶었다. 분기 조건과 호출 순서는 그대로다.
-     * 결과는 {@code onActivityResult} 의 {@code GET_DATA_REQUEST} 에서 받는다.
-     */
-    private void startExpiryEnter(String weight_str, double weight_double) {
-        String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
-        String makingTo = work_item_bi_info.getMAKINGDATE_TO();
+    //	모바일프린터 장비 검색창의 결과를 받는 곳
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (Common.D) {
+            Log.d(TAG, "onActivityResult " + resultCode);
+        }
+        switch (requestCode) {
+            case REQUEST_CONNECT_DEVICE:
+                if (resultCode == Activity.RESULT_OK) {                // 장비 선택 시
+                    if (data != null) {
+                        String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                        if (Common.D) {
+                            Log.d(TAG, "address = " + address);
+                        }
 
-        Intent IntentA = new Intent(BixolonShipmentActivity.this, ExpiryEnterActivity.class);
+                        // 선택된 장비의 Address 저장
+                        Common.printer_address = address;
+                        try {
+                            if (!"".equals(Common.printer_address)) {
+                                // 모바일프린터 정보 Sharedpreferences에 저장
+                                SharedPreferences spfBluetooth = getSharedPreferences("spfBluetooth", Activity.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = spfBluetooth.edit();
+                                editor.putString("printer_address", Common.printer_address);
+                                editor.putInt("printer_no", 10);                //	30 = PM30
+                                editor.commit();
+                                new ProgressDlgPrintConnect(BixolonShipmentActivity.this).execute();        // 선택된 모바일프린터 연결 시도
+                            }
+                        } catch (Exception e) {
+                            if (Common.D) {
+                                Log.e(TAG, "e : " + e.toString());
+                            }
+                        }
+                    } else {
+                        finish();
+                    }
+                } else {
+                    //모바일프린터 미선택 시 프린터 사용 OFF로 설정
+                    if (Common.D) {
+                        Log.d(TAG, "Print not Use");
+                    }
+                    Common.printer_address = "";
+                    Common.printer_setting = false;
+                    Common.print_bool = false;
+                    SharedPreferences spfBluetooth = getSharedPreferences("spfBluetooth", Activity.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = spfBluetooth.edit();
+                    editor.putString("printer_address", Common.printer_address);
+                    editor.putBoolean("printer_setting", Common.printer_setting);
+                    editor.commit();
+                    swt_print.setChecked(false);
+                }
+                break;
+            case REQUEST_CONNECT_DEVICE_INSECURE:
+                if (resultCode == Activity.RESULT_OK) {
+                }
+                break;
+            case REQUEST_ENABLE_BT:
+                // 장비의 블루투스 사용 가능여부 확인
+                if (resultCode == Activity.RESULT_OK) {
+                    // Bluetooth is now enabled, so set up a print
+                    // 장비 블루투스 사용 가능
+                    Message msg = new Message();
+                    msg.what = MESSAGE_SEARCH;
+                    mHandler.sendMessage(msg);
+                } else {
+                    // 장비 블루투스 사용 불가능
+                    if (Common.D) {
+                        Log.d(TAG, "BT not enabled");
+                    }
+                    Toast.makeText(this, R.string.bt_not_enabled_leaving, Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            case GET_DATA_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    //weight 그대로 받아온 거..
+                    String weight_str = data.getStringExtra("enteredWeightSend");
+                    Double weight_double = data.getDoubleExtra("enteredWeightDblSend",0);
+                    String making_date = data.getStringExtra("enteredMakingDateSend");
 
-        IntentA.putExtra(weightStrKey,weight_str);
-        IntentA.putExtra(weightDblKey,weight_double);
-        IntentA.putExtra(makingFromKey,makingFrom);
-        IntentA.putExtra(makingToKey,makingTo);
+                    Log.d(TAG, "입력 데이터 확인... 1 : " + weight_str);
+                    Log.d(TAG, "입력 데이터 확인... 2 : " + weight_double);
+                    Log.d(TAG, "입력 데이터 확인... 3 : " + making_date);
 
-        //소비기한 입력 화면 띄우며 값 전달
-        startActivityForResult(IntentA,GET_DATA_REQUEST);
+                    //팝업에서 넘긴 데이터를 기준으로 insert 시작
+                    wet_data_insert(weight_str, weight_double, making_date, "");
+                }
+        }
     }
 
-    // ========================================================================================
-    // 버튼 클릭 리스너
-    // ========================================================================================
+    // ====================================================================================
+    // 액션바 메뉴
+    // ====================================================================================
+
+    /**
+     * 액션바 메뉴 생성
+     * - 6개 항목: 프린터설정/출하대상/바코드정보/계근데이터/날짜설정 + 테스트 출력
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.bixolon_shipment_menu, menu);
+        return true;
+    }
+
+    /**
+     * 액션바 메뉴 클릭 처리
+     * 테스트 출력 항목만 직접 처리하고 나머지는 상위 클래스에 위임한다.
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_test_print) {
+            if (mBixolonPrinter == null || !mBixolonPrinter.isConnected()) {
+                Toast.makeText(this, "프린터가 연결되지 않았습니다", Toast.LENGTH_SHORT).show();
+            } else {
+                mBixolonPrinter.printTestLabel();
+            }
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    // ====================================================================================
+    // 리스너 - 버튼
+    // ====================================================================================
 
     /**
      * 입력 버튼 클릭 리스너
@@ -609,17 +799,115 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     };
 
-    public void setSelect_Position(int i) {
-        this.select_position = i;
-    }
+    // ====================================================================================
+    // 리스너 - 스피너
+    // ====================================================================================
 
-    public int getSelect_Position() {
-        return this.select_position;
-    }
+    private Spinner.OnItemSelectedListener workSelectedListener = new Spinner.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+            try {
+                Toast.makeText(getApplicationContext(), "현재작업 : " + sp_center_name.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
+                edit_barcode.setText("");
+                switch (arg2) {
+                    case 0:        // 바코드
+                        work_flag = 1;
+                        scan_flag = true;
+                        break;
+                    case 1:        // 수기
+                        work_flag = 0;
+                        work_item_fullbarcode = "";
+                        set_scanFlag(false);        // 수기 BL스캔
+                        if (arSM.size() > 0) {
+                            current_work_position = -1;
+                            for (int i = 0; i < arSM.size(); i++) {
+                                if (!arSM.get(i).getGI_REQ_PKG().equals(String.valueOf(arSM.get(i).getPACKING_QTY()))) {     // 계근이 완료되지 않은 지점
+                                    current_work_position = i;
+                                    sp_point_name.setSelection(current_work_position);
+                                    break;
+                                }
+                            }
+                            if (current_work_position == -1)
+                                show_wetFinishDialog();
+                        }
+                        break;
+                    case 2:     // 상품코드
+                        work_flag = 2;
+                        scan_flag = true;
+                        break;
+                }
+            } catch (Exception ex) {
+                Log.e(TAG, "======== workSelectedListener Exception ========");
+                Log.e(TAG, ex.getMessage().toString());
+            }
+        }
 
-    // ========================================================================================
-    // Handler - 비동기 메시지 처리
-    // ========================================================================================
+        @Override
+        public void onNothingSelected(AdapterView<?> arg0) {
+        }
+    };
+
+    //센터명 spinner
+    private Spinner.OnItemSelectedListener emartCenterSelectedListener = new Spinner.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+            try {
+                Toast.makeText(getApplicationContext(), "센터명 : " + sp_center_name.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
+                if (!work_ppcode.equals("")) {
+                    // ############# 바코드 작업이냐 수기 작업이냐 구분해서 scan_flag값 주기  ##################
+                    Log.e(TAG, "========================1====================");
+                    if (work_flag == 1) {
+                        set_scanFlag(true);
+                        work_ppcode = "";
+                    } else if(work_flag == 0){
+                        set_scanFlag(false);
+                    } else if(work_flag == 2){
+                        set_scanFlag(true);
+                        work_ppcode = "";
+                    }
+                }
+            } catch (Exception ex) {
+                Log.e(TAG, "======== emartCenterSelectedListener Exception ========");
+                Log.e(TAG, ex.getMessage().toString());
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> arg0) {
+        }
+    };
+
+    private Spinner.OnItemSelectedListener emartPointSelectedListener = new Spinner.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+            try {
+                Toast.makeText(getApplicationContext(), "작업지점 : " + sp_point_name.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
+                current_work_position = sp_point_name.getSelectedItemPosition();
+                //작업지점 선택시 List해당 지점 작업으로 보여지게 이동
+                sp_point_name.setSelection(current_work_position);
+
+                calc_info(current_work_position);
+
+                if(arSM.get(current_work_position).getBL_NO() == ""){
+                    showAlertDialog("bl",current_work_position+1);
+                    alert_flag = true;
+                }else{
+                    alert_flag = false;
+                }
+            } catch (Exception ex) {
+                Log.e(TAG, "======== emartPointSelectedListener Exception ========");
+                Log.e(TAG, ex.getMessage().toString());
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> arg0) {
+        }
+    };
+
+    // ====================================================================================
+    // 핸들러 / 콜백
+    // ====================================================================================
 
     /**
      * 메인 핸들러 - UI 스레드 메시지 처리
@@ -793,72 +1081,22 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     };
 
-    /**
-     * 액션바 메뉴 생성
-     * - 6개 항목: 프린터설정/출하대상/바코드정보/계근데이터/날짜설정 + 테스트 출력
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.bixolon_shipment_menu, menu);
-        return true;
-    }
-
-    /**
-     * 액션바 메뉴 클릭 처리
-     * 테스트 출력 항목만 직접 처리하고 나머지는 상위 클래스에 위임한다.
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_test_print) {
-            if (mBixolonPrinter == null || !mBixolonPrinter.isConnected()) {
-                Toast.makeText(this, "프린터가 연결되지 않았습니다", Toast.LENGTH_SHORT).show();
-            } else {
-                mBixolonPrinter.printTestLabel();
-            }
-            return true;
+    /** 프린터 콜백 - LabelPrintHelper에서 프린터 데이터 전송 및 UI 업데이트 */
+    private LabelPrintHelper.PrinterCallback printerCallback = new LabelPrintHelper.PrinterCallback() {
+        @Override
+        public void sendData(byte[] data) {
+            BixolonShipmentActivity.this.sendData(data);
         }
 
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void setMessage(String msg) {
-        if (Common.D) {
-            Log.d(TAG, "바코드스캐너 입력값 : " + msg);
+        @Override
+        public void clearBarcodeInput() {
+            edit_barcode.setText("");
         }
+    };
 
-        if (msg != null) {
-            if (work_flag == 1) {
-                setBarcodeMsg(msg);
-            } else if(work_flag == 0){
-                // BL코드로 계근 리스트 조회하기
-                new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), msg, scan_flag).execute();
-            } else if(work_flag == 2){
-                setBarcodeMsg(msg);
-            }
-        }
-    }
-
-    // ========================================================================================
-    // 바코드 처리 관련 필드 및 메서드
-    // ========================================================================================
-
-    /** 현재 작업 중인 바코드 정보 (S_BARCODE_INFO 테이블 데이터) */
-    Barcodes_Info work_item_bi_info;
-    /** 현재 작업 중인 패커 상품 코드 */
-    String work_ppcode = "";
-    /** 현재 작업 중인 BL 번호 */
-    String work_bl_no = "";
-    /** 스캔된 전체 바코드 문자열 (중량, 제조일 추출용) */
-    String work_item_fullbarcode = "";
-    /** 바코드 상품 코드 (BARCODEGOODS) */
-    String work_item_barcodegoods = "";
-    /** 소비기한 전송용 변수 */
-    String expiryDayTrans = "";
-    /** 다이얼로그 표시 중 플래그 (중복 처리 방지) */
-    boolean dialog_flag = false;
+    // ====================================================================================
+    // 바코드 스캔 처리
+    // ====================================================================================
 
     /**
      * 스캔된 바코드 처리 (생산 제외 6종)
@@ -1535,9 +1773,171 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
-    // ========================================================================================
-    // 핵심 비즈니스 로직 메서드
-    // ========================================================================================
+    public String find_PackerProduct(String barcode) {
+        try {
+            String pp_code = "";
+            Log.e(TAG, "========================pp_code 가져오기 시작======================");
+            pp_code = find_work_info(barcode, true);
+            Log.e(TAG, "========================pp_code 가져오기 끝======================");
+            if (!edit_product_name.getText().equals("")) {
+                return pp_code;
+            } else {
+                return "null";
+            }
+        } catch (Exception ex) {
+            Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
+            return "null";
+        }
+    }
+
+    public String find_PackerProductBarcodeGoods(String barcode) {
+        Log.e(TAG, "find_PackerProductBarcodeGoods");
+        try {
+            String pp_code = "";
+            pp_code = find_work_info_barcodeGoods(barcode, false);
+            if (!edit_product_name.getText().equals("")) {
+                return pp_code;
+            } else {
+                return "null";
+            }
+        } catch (Exception ex) {
+            Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
+            return "null";
+        }
+    }
+
+    private String find_work_info(String req, boolean type) {
+        try {
+            String pp_code = "";
+            int count = 0;
+            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeInfo(this);
+            Log.e(TAG, "===================바코드 디비조회 완료=======================");
+            Log.e(TAG, "===================    req check !!   ======================="+req); //여기서 풀바코드를 던진다
+            for (Barcodes_Info bi : list_barcode_info) {
+                String bg = bi.getBARCODEGOODS();
+                String bg_from = bi.getBARCODEGOODS_FROM();
+                String bg_to = bi.getBARCODEGOODS_TO();
+                String temp_bg;
+
+                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
+                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
+
+                if (type && req.length() >= Integer.parseInt(bg_to)) {              // PACKER_PRODUCT_CODE로 찾을 경우
+                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
+                } else {                // false : BL로 찾을 경우
+                    temp_bg = req;
+                }
+
+                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
+                Log.i(TAG, "TEMP BARCODEGOODS eq : \t" + temp_bg.equals(bg));
+
+                if (temp_bg.equals(bg)) {                       // barcodegoods find success
+                    Log.i(TAG, "barcodegoods find success");
+                    work_item_bi_info = bi;
+                    edit_product_name.setText(bi.getITEM_NAME_KR());
+                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
+                    if(count == 0){
+                        pp_code = bi.getPACKER_PRODUCT_CODE();
+                    }else{
+                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
+                    }
+                    Log.i(TAG, "===================pp_code=================" + pp_code);
+                    work_item_barcodegoods = bg;
+                    count++;
+                } else {
+                    edit_product_name.setText("");
+                    edit_product_code.setText("");
+                    work_item_barcodegoods = "";
+                }
+
+                if(Common.searchType.equals(Common.SEARCH_TYPE_NONFIXED)){
+                    work_item_bi_info = bi;
+                    edit_product_name.setText(bi.getITEM_NAME_KR());
+                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
+                    if(count == 0){
+                        pp_code = bi.getPACKER_PRODUCT_CODE();
+                    }else{
+                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
+                    }
+                    Log.i(TAG, "===================pp_code=================" + pp_code);
+                    work_item_barcodegoods = bg;
+                    count++;
+                }
+            }
+
+            Log.i(TAG, "===================return pp_code test!!! =================" + pp_code);
+            return pp_code;
+        } catch (Exception ex) {
+            Log.e(TAG, "======== find_work_info Exception ========");
+            Log.e(TAG, ex.getMessage().toString());
+            return "null";
+        }
+    }
+
+    private String find_work_info_barcodeGoods(String req, boolean type) {
+        Log.e(TAG, "find_work_info_barcodeGoods");
+        try {
+            String pp_code = "";
+            int count = 0;
+            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeGoodsInfo(this);
+            for (Barcodes_Info bi : list_barcode_info) {
+                String bg = bi.getBARCODEGOODS();
+                String bg_from = bi.getBARCODEGOODS_FROM();
+                String bg_to = bi.getBARCODEGOODS_TO();
+                String temp_bg;
+                if (type) {              // PACKER_PRODUCT_CODE로 찾을 경우
+                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
+                } else {                // false : BL로 찾을 경우
+                    temp_bg = req;
+                }
+                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
+                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
+                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
+
+                if (temp_bg.equals(bg)) {                       // barcodegoods find success
+                    work_item_bi_info = bi;
+                    edit_product_name.setText(bi.getITEM_NAME_KR());
+                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
+                    if(count == 0){
+                        pp_code = bi.getPACKER_PRODUCT_CODE();
+                    }else{
+                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
+                    }
+                    Log.i(TAG, "===================pp_code=================" + pp_code);
+                    work_item_barcodegoods = bg;
+                    count++;
+                } else {
+                    edit_product_name.setText("");
+                    edit_product_code.setText("");
+                    work_item_barcodegoods = "";
+                }
+            }
+            return pp_code;
+        } catch (Exception ex) {
+            Log.e(TAG, "======== find_work_info_barcodeGoods Exception ========");
+            Log.e(TAG, ex.getMessage().toString());
+            return "null";
+        }
+    }
+
+    public void scanFlag_init() {
+        if (work_flag == 1)
+            scan_flag = true;
+        else if (work_flag == 0)
+            scan_flag = false;
+        else if (work_flag == 2)
+            scan_flag = true;
+        Log.i(TAG, "############ scan_flag init ###########");
+    }
+
+    public void set_scanFlag(boolean bool) {
+        scan_flag = bool;
+        Log.i(TAG, "####### scan_flag : " + scan_flag + " #######");
+    }
+
+    // ====================================================================================
+    // 계근 저장 / 집계
+    // ====================================================================================
 
     /**
      * 계근 데이터 저장 및 화면 반영
@@ -1697,271 +2097,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
-    public void scanFlag_init() {
-        if (work_flag == 1)
-            scan_flag = true;
-        else if (work_flag == 0)
-            scan_flag = false;
-        else if (work_flag == 2)
-            scan_flag = true;
-        Log.i(TAG, "############ scan_flag init ###########");
-    }
-
-
-    public void set_scanFlag(boolean bool) {
-        scan_flag = bool;
-        Log.i(TAG, "####### scan_flag : " + scan_flag + " #######");
-    }
-
-    public String find_PackerProduct(String barcode) {
-        try {
-            String pp_code = "";
-            Log.e(TAG, "========================pp_code 가져오기 시작======================");
-            pp_code = find_work_info(barcode, true);
-            Log.e(TAG, "========================pp_code 가져오기 끝======================");
-            if (!edit_product_name.getText().equals("")) {
-                return pp_code;
-            } else {
-                return "null";
-            }
-        } catch (Exception ex) {
-            Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
-            return "null";
-        }
-    }
-
-    public String find_PackerProductBarcodeGoods(String barcode) {
-        Log.e(TAG, "find_PackerProductBarcodeGoods");
-        try {
-            String pp_code = "";
-            pp_code = find_work_info_barcodeGoods(barcode, false);
-            if (!edit_product_name.getText().equals("")) {
-                return pp_code;
-            } else {
-                return "null";
-            }
-        } catch (Exception ex) {
-            Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
-            return "null";
-        }
-    }
-
-    private String find_work_info(String req, boolean type) {
-        try {
-            String pp_code = "";
-            int count = 0;
-            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeInfo(this);
-            Log.e(TAG, "===================바코드 디비조회 완료=======================");
-            Log.e(TAG, "===================    req check !!   ======================="+req); //여기서 풀바코드를 던진다
-            for (Barcodes_Info bi : list_barcode_info) {
-                String bg = bi.getBARCODEGOODS();
-                String bg_from = bi.getBARCODEGOODS_FROM();
-                String bg_to = bi.getBARCODEGOODS_TO();
-                String temp_bg;
-
-                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
-                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
-
-                if (type && req.length() >= Integer.parseInt(bg_to)) {              // PACKER_PRODUCT_CODE로 찾을 경우
-                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
-                } else {                // false : BL로 찾을 경우
-                    temp_bg = req;
-                }
-
-                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
-                Log.i(TAG, "TEMP BARCODEGOODS eq : \t" + temp_bg.equals(bg));
-
-                if (temp_bg.equals(bg)) {                       // barcodegoods find success
-                    Log.i(TAG, "barcodegoods find success");
-                    work_item_bi_info = bi;
-                    edit_product_name.setText(bi.getITEM_NAME_KR());
-                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
-                    if(count == 0){
-                        pp_code = bi.getPACKER_PRODUCT_CODE();
-                    }else{
-                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
-                    }
-                    Log.i(TAG, "===================pp_code=================" + pp_code);
-                    work_item_barcodegoods = bg;
-                    count++;
-                } else {
-                    edit_product_name.setText("");
-                    edit_product_code.setText("");
-                    work_item_barcodegoods = "";
-                }
-
-                if(Common.searchType.equals(Common.SEARCH_TYPE_NONFIXED)){
-                    work_item_bi_info = bi;
-                    edit_product_name.setText(bi.getITEM_NAME_KR());
-                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
-                    if(count == 0){
-                        pp_code = bi.getPACKER_PRODUCT_CODE();
-                    }else{
-                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
-                    }
-                    Log.i(TAG, "===================pp_code=================" + pp_code);
-                    work_item_barcodegoods = bg;
-                    count++;
-                }
-            }
-
-            Log.i(TAG, "===================return pp_code test!!! =================" + pp_code);
-            return pp_code;
-        } catch (Exception ex) {
-            Log.e(TAG, "======== find_work_info Exception ========");
-            Log.e(TAG, ex.getMessage().toString());
-            return "null";
-        }
-    }
-
-    private String find_work_info_barcodeGoods(String req, boolean type) {
-        Log.e(TAG, "find_work_info_barcodeGoods");
-        try {
-            String pp_code = "";
-            int count = 0;
-            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeGoodsInfo(this);
-            for (Barcodes_Info bi : list_barcode_info) {
-                String bg = bi.getBARCODEGOODS();
-                String bg_from = bi.getBARCODEGOODS_FROM();
-                String bg_to = bi.getBARCODEGOODS_TO();
-                String temp_bg;
-                if (type) {              // PACKER_PRODUCT_CODE로 찾을 경우
-                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
-                } else {                // false : BL로 찾을 경우
-                    temp_bg = req;
-                }
-                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
-                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
-                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
-
-                if (temp_bg.equals(bg)) {                       // barcodegoods find success
-                    work_item_bi_info = bi;
-                    edit_product_name.setText(bi.getITEM_NAME_KR());
-                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
-                    if(count == 0){
-                        pp_code = bi.getPACKER_PRODUCT_CODE();
-                    }else{
-                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
-                    }
-                    Log.i(TAG, "===================pp_code=================" + pp_code);
-                    work_item_barcodegoods = bg;
-                    count++;
-                } else {
-                    edit_product_name.setText("");
-                    edit_product_code.setText("");
-                    work_item_barcodegoods = "";
-                }
-            }
-            return pp_code;
-        } catch (Exception ex) {
-            Log.e(TAG, "======== find_work_info_barcodeGoods Exception ========");
-            Log.e(TAG, ex.getMessage().toString());
-            return "null";
-        }
-    }
-
-    private Spinner.OnItemSelectedListener workSelectedListener = new Spinner.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-            try {
-                Toast.makeText(getApplicationContext(), "현재작업 : " + sp_center_name.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
-                edit_barcode.setText("");
-                switch (arg2) {
-                    case 0:        // 바코드
-                        work_flag = 1;
-                        scan_flag = true;
-                        break;
-                    case 1:        // 수기
-                        work_flag = 0;
-                        work_item_fullbarcode = "";
-                        set_scanFlag(false);        // 수기 BL스캔
-                        if (arSM.size() > 0) {
-                            current_work_position = -1;
-                            for (int i = 0; i < arSM.size(); i++) {
-                                if (!arSM.get(i).getGI_REQ_PKG().equals(String.valueOf(arSM.get(i).getPACKING_QTY()))) {     // 계근이 완료되지 않은 지점
-                                    current_work_position = i;
-                                    sp_point_name.setSelection(current_work_position);
-                                    break;
-                                }
-                            }
-                            if (current_work_position == -1)
-                                show_wetFinishDialog();
-                        }
-                        break;
-                    case 2:     // 상품코드
-                        work_flag = 2;
-                        scan_flag = true;
-                        break;
-                }
-            } catch (Exception ex) {
-                Log.e(TAG, "======== workSelectedListener Exception ========");
-                Log.e(TAG, ex.getMessage().toString());
-            }
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> arg0) {
-        }
-    };
-
-    //센터명 spinner
-    private Spinner.OnItemSelectedListener emartCenterSelectedListener = new Spinner.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-            try {
-                Toast.makeText(getApplicationContext(), "센터명 : " + sp_center_name.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
-                if (!work_ppcode.equals("")) {
-                    // ############# 바코드 작업이냐 수기 작업이냐 구분해서 scan_flag값 주기  ##################
-                    Log.e(TAG, "========================1====================");
-                    if (work_flag == 1) {
-                        set_scanFlag(true);
-                        work_ppcode = "";
-                    } else if(work_flag == 0){
-                        set_scanFlag(false);
-                    } else if(work_flag == 2){
-                        set_scanFlag(true);
-                        work_ppcode = "";
-                    }
-                }
-            } catch (Exception ex) {
-                Log.e(TAG, "======== emartCenterSelectedListener Exception ========");
-                Log.e(TAG, ex.getMessage().toString());
-            }
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> arg0) {
-        }
-    };
-
-    private Spinner.OnItemSelectedListener emartPointSelectedListener = new Spinner.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-            try {
-                Toast.makeText(getApplicationContext(), "작업지점 : " + sp_point_name.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
-                current_work_position = sp_point_name.getSelectedItemPosition();
-                //작업지점 선택시 List해당 지점 작업으로 보여지게 이동
-                sp_point_name.setSelection(current_work_position);
-
-                calc_info(current_work_position);
-
-                if(arSM.get(current_work_position).getBL_NO() == ""){
-                    showAlertDialog("bl",current_work_position+1);
-                    alert_flag = true;
-                }else{
-                    alert_flag = false;
-                }
-            } catch (Exception ex) {
-                Log.e(TAG, "======== emartPointSelectedListener Exception ========");
-                Log.e(TAG, ex.getMessage().toString());
-            }
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> arg0) {
-        }
-    };
-
     private void calc_info(int work_position) {
         try {
             ArrayList<String> list_bl = new ArrayList<String>();
@@ -1982,6 +2117,403 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
+    public void refresh_delete(String delete_weight) {
+        Log.d(TAG, "삭제되는 계근대상의 중량 : " + delete_weight);
+        arSM.get(select_position).setPACKING_QTY(arSM.get(select_position).getPACKING_QTY() - 1);
+        double temp = arSM.get(select_position).getGI_QTY() - Double.parseDouble(delete_weight);
+        temp = Math.round(temp * 100) / 100.0;
+        arSM.get(select_position).setGI_QTY(temp);
+
+        detail_edit_count.setText(arSM.get(select_position).getGI_REQ_PKG() + " / " + arSM.get(select_position).getPACKING_QTY());
+        detail_edit_weight.setText(arSM.get(select_position).getGI_REQ_QTY() + " / " + arSM.get(select_position).getGI_QTY());
+    }
+
+    public Shipments_Info getSelect_Shipment(int pos) {
+        return arSM.get(pos);
+    }
+
+    public void setSelect_Position(int i) {
+        this.select_position = i;
+    }
+
+    public int getSelect_Position() {
+        return this.select_position;
+    }
+
+    // ====================================================================================
+    // 다이얼로그
+    // ====================================================================================
+
+    private void show_wetDetailDialog(Shipments_Info si, Barcodes_Info bi, int position) {
+        try {
+            dialog_flag = true;
+            detail_layout = Inflater.inflate(R.layout.dialog_detailshipment, null);
+
+            detail_edit_position_name = (EditText) detail_layout.findViewById(R.id.detail_edit_position);
+            detail_edit_ppname = (EditText) detail_layout.findViewById(R.id.detail_edit_ppname);
+            detail_edit_ppcode = (EditText) detail_layout.findViewById(R.id.detail_edit_ppcode);
+            detail_edit_count = (EditText) detail_layout.findViewById(R.id.detail_edit_count);
+            detail_edit_weight = (EditText) detail_layout.findViewById(R.id.detail_edit_weight);
+
+            detail_btn_back = (Button) detail_layout.findViewById(R.id.detail_btn_back);
+            detail_btn_delete = (Button) detail_layout.findViewById(R.id.detail_btn_select);
+            detail_btn_sum = (Button) detail_layout.findViewById(R.id.detail_btn_sum);
+
+            detail_edit_position_name.setText(si.getCLIENTNAME());
+            detail_edit_ppname.setText(si.getITEM_NAME());
+            detail_edit_ppcode.setText(si.getPACKER_PRODUCT_CODE());
+            detail_edit_count.setText(si.getGI_REQ_PKG() + " / " + si.getPACKING_QTY());
+            detail_edit_weight.setText(si.getGI_REQ_QTY() + " / " + si.getGI_QTY());
+
+            final AlertDialog.Builder dlog = new AlertDialog.Builder(this, R.style.AppCompatDialogStyle)
+                    .setCancelable(false);
+            dlog.setView(detail_layout);
+            detail_dialog = dlog.create();
+            detail_dialog.show();
+
+            detail_btn_back.setOnClickListener(v -> {
+                detail_dialog.dismiss();
+                dialog_flag = false;
+                for (int i = 0; i < sListAdapter.cbStatus.size(); i++) {
+                    sListAdapter.cbStatus.set(i, false);
+                }
+                edit_barcode.setText("");
+                edit_wet_count.setText("");
+                edit_wet_weight.setText("");
+                if (work_flag == 1) {
+                    new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true).execute();
+                } else if (work_flag == 0){
+                    Log.e(TAG, "수기일때 뒤로가기 = " + work_bl_no);
+                    // BL코드로 계근 리스트 조회하기
+                    new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
+                } else if (work_flag == 2){
+                    new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
+                }
+            });
+
+            detail_btn_delete.setOnClickListener(v -> {
+                // 선택된 Items 삭제
+                try {
+                    if (list_gi_info.size() == 0) {
+                        Toast.makeText(getApplicationContext(), "삭제할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
+                        vibrator.vibrate(1000);
+                    } else if (list_gi_info.size() > 0) {
+                        ArrayList<Goodswets_Info> list_delete = new ArrayList<Goodswets_Info>();
+                        for (int i = 0; i < detailAdapter.cbStatus.size(); i++) {
+                            if (detailAdapter.cbStatus.get(i))
+                                list_delete.add(list_gi_info.get(i));
+                        }
+                        if (list_delete.size() > 0) {
+                            deleteQuestionDialog(getSelect_Shipment(getSelect_Position()), list_delete);
+                        } else {
+                            Toast.makeText(getApplicationContext(), "삭제할 항목을 선택하세요.", Toast.LENGTH_SHORT).show();
+                            vibrator.vibrate(1000);
+                        }
+                    }
+                } catch (Exception ex) {
+                    Log.e(TAG, "==== detail_btn_delete Exception ====");
+                    Log.e(TAG, ex.getMessage().toString());
+                }
+            });
+
+            detail_btn_sum.setOnClickListener(v -> {
+                // 전체 리스트 합
+                try {
+                    if (list_gi_info.size() == 0) {
+                        Toast.makeText(getApplicationContext(), "합산할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
+                        vibrator.vibrate(1000);
+                    } else if (list_gi_info.size() > 0) {
+                        // ========== SLCS 명령어로 합계 라벨 인쇄 (Bixolon 프린터) ==========
+                        // 원본: Woosim ByteArrayOutputStream + WoosimCmd 명령어
+                        // 변환: StringBuilder + SLCS 헬퍼 메서드
+                        // 용도: 계근 내역 합계 버튼 클릭 시 중량 합산 라벨 인쇄
+                        // 출력 항목:
+                        //   [1] 개별 중량 - 동적 좌표(p_weight, p_hight) 40x40
+                        //   [2] 페이지별 총 중량 - (100, 350) 60x60
+                        // 주의: 36개 항목 단위로 라벨 1장 인쇄 (6열 x 6행)
+                        try {
+                            StringBuilder slcsCmd = new StringBuilder();
+
+                            // 초기화: CB(버퍼클리어) + CS13,0(한글문자셋)
+                            // 원본: WoosimCmd.initPrinter() + setPageMode() + selectTTF() + setTextStyle()
+                            slcsCmd.append(slcsInit());
+
+                            // 라벨 크기 설정: 576x460 도트
+                            // 원본: WoosimCmd.PM_setArea(0, 0, 576, 460)
+                            slcsCmd.append(slcsLabelSize(576, 460));
+
+                            double weight_sum = 0;
+                            int p_weight = 0;
+                            int p_hight = 0;
+
+                            for (int i = 0; i < list_gi_info.size(); i++) {
+                                // 동적 좌표 계산 (6열 x 6행 = 36개 단위)
+                                // p_hight: 행 위치 (0~5행 반복, 36개마다 리셋)
+                                // p_weight: 열 위치 (0~5열 반복)
+                                p_hight = 10 + (i / 6 * 50) - (i / 36 * 300);
+                                p_weight = 100 * (i % 6);
+
+                                // [1] 개별 중량 출력 (동적 좌표, 폰트크기 40x40)
+                                // 원본: PM_setPosition(p_weight, p_hight) + getTTFcode(40, 40, weight)
+                                slcsCmd.append(slcsText(p_weight, p_hight, 40, 40, list_gi_info.get(i).getWEIGHT()));
+
+                                weight_sum += Double.parseDouble(list_gi_info.get(i).getWEIGHT());
+
+                                // 36개 단위 완료 시 라벨 인쇄
+                                if ((i + 1) % 36 == 0) {
+                                    weight_sum = Math.floor(weight_sum * 100);
+                                    weight_sum = weight_sum / 100.0;
+
+                                    String temp_weight = String.format("%.1f", weight_sum);
+                                    weight_sum = Double.parseDouble(temp_weight);
+
+                                    // [2] 페이지별 총 중량 (x=100, y=350, 폰트크기 60x60)
+                                    // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
+                                    slcsCmd.append(slcsText(100, 350, 60, 60, ((i + 1) / 36) + "번 총 중량 : " + Double.toString(weight_sum)));
+
+                                    // 인쇄 실행 + 라벨 피드
+                                    // 원본: PM_printData() + feedToMark()
+                                    slcsCmd.append(slcsPrint(1));
+                                    slcsCmd.append(slcsFeedToMark());
+
+                                    // 전송
+                                    sendData(slcsCmd.toString().getBytes("EUC-KR"));
+
+                                    // StringBuilder 초기화 (원본: byteStream.reset())
+                                    slcsCmd.setLength(0);
+                                    slcsCmd.append(slcsInit());
+                                    slcsCmd.append(slcsLabelSize(576, 460));
+                                    weight_sum = 0;
+
+                                } else if ((i + 1) == list_gi_info.size()) {
+                                    // 마지막 항목 처리 (36개 미만인 경우)
+                                    weight_sum = Math.floor(weight_sum * 100);
+                                    weight_sum = weight_sum / 100.0;
+
+                                    String temp_weight = String.format("%.1f", weight_sum);
+                                    weight_sum = Double.parseDouble(temp_weight);
+
+                                    // [2] 페이지별 총 중량 (마지막 페이지)
+                                    // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
+                                    slcsCmd.append(slcsText(100, 350, 60, 60, (((i + 1) / 36) + 1) + "번 총 중량 : " + Double.toString(weight_sum)));
+
+                                    // 인쇄 실행 + 라벨 피드
+                                    // 원본: PM_printData() + feedToMark()
+                                    slcsCmd.append(slcsPrint(1));
+                                    slcsCmd.append(slcsFeedToMark());
+
+                                    // 전송
+                                    sendData(slcsCmd.toString().getBytes("EUC-KR"));
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            if (Common.D) {
+                                Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    Log.e(TAG, "==== detail_btn_sum Exception ====");
+                    Log.e(TAG, ex.getMessage().toString());
+                }
+            });
+
+            list_gi_info = DBHandler.selectqueryGoodsWet(BixolonShipmentActivity.this, si.getGI_D_ID(), si.getPACKER_PRODUCT_CODE(), si.getCLIENT_CODE(), si.getGI_L_ID());
+            detailAdapter = new DetailAdapter(BixolonShipmentActivity.this, R.layout.list_detailshipment, list_gi_info, mHandler);
+
+            detail_list = (ListView) detail_layout.findViewById(R.id.detail_list);
+            detail_list.setAdapter(detailAdapter);
+            detailAdapter.notifyDataSetChanged();
+        } catch (Exception ex) {
+            Log.e(TAG, "======== show_wetDetailDialog Exception ========");
+            Log.e(TAG, ex.getMessage().toString());
+        }
+    }
+
+    //	계근상품 삭제 Dialog
+    public void deleteQuestionDialog(final Shipments_Info si, final ArrayList<Goodswets_Info> list_delete) {
+        String alertTitle = "계근상품 삭제";
+        String buttonMessage = "정말 삭제하시겠습니까?";
+        String buttonYes = "삭제";
+        String buttonNo = "취소";
+
+        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+                .setIcon(R.drawable.highland)
+                .setTitle(alertTitle)
+                .setMessage(buttonMessage)
+                .setCancelable(false)
+                .setPositiveButton(buttonYes, (dialog, which) -> {
+                    try {
+                        if (Common.D) {
+                            Log.d(TAG, "삭제할 계근상품 수 : " + list_delete.size());
+                        }
+                        for (int i = list_delete.size()-1; i >= 0; i--) {
+                            // List 삭제 & SQLite 삭제
+                            Log.i(TAG, "삭제 i count : " + i);
+                            Log.i(TAG, "삭제 row position : " + list_delete.get(i).getBOX_CNT());
+                            String delete_box = list_delete.get(i).getBOX_CNT();
+
+                            DBHandler.deletequerySelectGoodsWet(getApplicationContext(),
+                                    list_delete.get(i).getGI_D_ID(), list_delete.get(i).getBARCODE(), Integer.parseInt(delete_box), list_delete.get(i).getGI_L_ID());
+                            refresh_delete(list_delete.get(i).getWEIGHT());
+
+                        /*    int removeindex = Integer.parseInt(delete_box)-1;
+                            detailAdapter.remove(removeindex);*/
+                        }
+                        /*detailAdapter.notifyDataSetChanged();*/
+
+                        vibrator.vibrate(500);
+                        btn_send.setEnabled(false);
+                        btn_send.setBackgroundResource(R.drawable.disable_round_button);
+
+                        detail_btn_back.performClick();
+
+                        if (Common.D) {
+                            Log.d(TAG, "계근 선택항목 삭제 성공 !");
+                        }
+                        Toast.makeText(getApplicationContext(), "삭제 성공", Toast.LENGTH_SHORT).show();
+
+                    } catch (Exception ex) {
+                        if (Common.D) {
+                            Log.d(TAG, "계근 선택항목 삭제 실패 -> " + ex.getMessage().toString());
+                        }
+                        Toast.makeText(getApplicationContext(), "삭제 실패", Toast.LENGTH_SHORT).show();
+                    }
+                }).setNegativeButton(buttonNo, null)
+                .show();
+    }
+
+    // 전송이 끝났음을 알리는 Dialog
+    private void show_sendFinishDialog() {
+        dialog_flag = true;
+        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+                .setIcon(R.drawable.highland)
+                .setTitle(R.string.shipment_wet_send_finish)
+                .setMessage(R.string.shipment_wet_send_finish_msg)
+                .setCancelable(false)
+                .setPositiveButton("확인", (dialog, which) -> {
+                    btn_send.setEnabled(false);
+                    btn_send.setBackgroundResource(R.drawable.disable_round_button);
+                    dialog_flag = false;
+                    if (work_flag == 1) {
+                        scanFlag_init();
+                    } else if (work_flag == 0){
+                        set_scanFlag(false);
+                    } else if (work_flag == 2){
+                        scanFlag_init();
+                    }
+
+                    edit_barcode.setText("");
+                    work_item_fullbarcode = "";
+                    work_item_barcodegoods = "";
+                }).show();
+    }
+
+    // 계근이 끝났음을 알리는 Dialog
+    private void show_wetFinishDialog() {
+        dialog_flag = true;
+        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+                .setIcon(R.drawable.highland)
+                .setTitle(R.string.shipment_wet_finish)
+                .setMessage(R.string.shipment_wet_finish_msg)
+                .setCancelable(false)
+                .setPositiveButton("확인", (dialog, which) -> {
+                    btn_send.setEnabled(true);
+                    btn_send.setBackgroundResource(R.drawable.round_button);
+                    dialog_flag = false;
+
+                    if (work_flag == 1) {
+                        scanFlag_init();
+                    } else if (work_flag == 0){
+                        set_scanFlag(false);
+                    } else if (work_flag == 2){
+                        scanFlag_init();
+                    }
+                    edit_barcode.setText("");
+                }).show();
+    }
+
+    // 에러가 났을 때, 알림창 표시 showAelrtDialog 추가
+    public void showAlertDialog(String s,int i){
+        try {
+            Inflater = (LayoutInflater) BixolonShipmentActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle);
+            vibrator.vibrate(500);
+            builder.setIcon(R.drawable.highland);
+            builder.setTitle("스캔 오류");
+            Log.d(TAG, "alert_flag1 : " + alert_flag);
+
+            if(!alert_flag) {
+                if (s.equals("weight")) {
+                    builder.setMessage("중량위치정보가 없습니다.\n다른 바코드를 스캔해주세요.");
+                } else if (s.equals("barcode")) {
+                    builder.setMessage("바코드 정보(조회결과)가 없습니다.\n다른 바코드를 스캔해주세요");
+                } else if (s.equals("bl")) {
+                    builder.setMessage(i + "번 상품의 bl정보가 없습니다.");
+                }
+
+                builder.setNeutralButton("확인", (dialog, id) -> {
+                    alert_flag = false;
+                    alert.dismiss();
+                });
+
+                alert = builder.create();
+                alert.setCanceledOnTouchOutside(false);
+                alert.show();
+                alert_flag = true;
+            }else if(alert_flag)
+                return;
+
+            Log.d(TAG, "alert.isShowing:" + alert.isShowing());
+            Log.d(TAG, "alert_flag2: " + alert_flag);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void setMessage(String msg) {
+        if (Common.D) {
+            Log.d(TAG, "바코드스캐너 입력값 : " + msg);
+        }
+
+        if (msg != null) {
+            if (work_flag == 1) {
+                setBarcodeMsg(msg);
+            } else if(work_flag == 0){
+                // BL코드로 계근 리스트 조회하기
+                new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), msg, scan_flag).execute();
+            } else if(work_flag == 2){
+                setBarcodeMsg(msg);
+            }
+        }
+    }
+
+    /**
+     * 소비기한 입력 화면(ExpiryEnterActivity) 호출
+     * 수기 중량 입력 시 소비기한을 직접 받아야 하는 두 경로(킬코이 미트센터 / 수입육 센터·롯데)가
+     * 동일한 코드를 갖고 있어 메서드로 묶었다. 분기 조건과 호출 순서는 그대로다.
+     * 결과는 {@code onActivityResult} 의 {@code GET_DATA_REQUEST} 에서 받는다.
+     */
+    private void startExpiryEnter(String weight_str, double weight_double) {
+        String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
+        String makingTo = work_item_bi_info.getMAKINGDATE_TO();
+
+        Intent IntentA = new Intent(BixolonShipmentActivity.this, ExpiryEnterActivity.class);
+
+        IntentA.putExtra(weightStrKey,weight_str);
+        IntentA.putExtra(weightDblKey,weight_double);
+        IntentA.putExtra(makingFromKey,makingFrom);
+        IntentA.putExtra(makingToKey,makingTo);
+
+        //소비기한 입력 화면 띄우며 값 전달
+        startActivityForResult(IntentA,GET_DATA_REQUEST);
+    }
+
+    // ====================================================================================
+    // 프린터 - SLCS 명령 조립 / 전송
+    // ====================================================================================
 
     // SLCS 메소드들 - show_wetDetailDialog 의 합계 라벨 인쇄에서 사용
     // LabelPrintHelper에도 복사본 존재 (라벨 출력용)
@@ -2013,11 +2545,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private String slcsFeedToMark() {
         return "T\r\n";
     }
-    // SLCS 메소드들 끝
 
-    // ========================================================================================
-    // 프린터 데이터 전송
-    // ========================================================================================
+    // SLCS 메소드들 끝
 
     private void sendData(byte[] data) {
         // Check that we're actually connected before trying printing
@@ -2031,9 +2560,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             mBixolonPrinter.sendCommandBytes(data);
     }
 
-    // ========================================================================================
-    // AsyncTask 클래스 - 백그라운드 비동기 작업
-    // ========================================================================================
+    // ====================================================================================
+    // 내부 클래스 - AsyncTask
+    // ====================================================================================
 
     /**
      * 출하 대상 조회 AsyncTask
@@ -2216,9 +2745,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             }
         }
     }
-
-    /** 전송할 계근 데이터 목록 */
-    private ArrayList<Goodswets_Info> list_send_info;
 
     /**
      * 계근 데이터 서버 전송 AsyncTask
@@ -2529,93 +3055,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
-    //	모바일프린터 장비 검색창의 결과를 받는 곳
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (Common.D) {
-            Log.d(TAG, "onActivityResult " + resultCode);
-        }
-        switch (requestCode) {
-            case REQUEST_CONNECT_DEVICE:
-                if (resultCode == Activity.RESULT_OK) {                // 장비 선택 시
-                    if (data != null) {
-                        String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-                        if (Common.D) {
-                            Log.d(TAG, "address = " + address);
-                        }
-
-                        // 선택된 장비의 Address 저장
-                        Common.printer_address = address;
-                        try {
-                            if (!"".equals(Common.printer_address)) {
-                                // 모바일프린터 정보 Sharedpreferences에 저장
-                                SharedPreferences spfBluetooth = getSharedPreferences("spfBluetooth", Activity.MODE_PRIVATE);
-                                SharedPreferences.Editor editor = spfBluetooth.edit();
-                                editor.putString("printer_address", Common.printer_address);
-                                editor.putInt("printer_no", 10);                //	30 = PM30
-                                editor.commit();
-                                new ProgressDlgPrintConnect(BixolonShipmentActivity.this).execute();        // 선택된 모바일프린터 연결 시도
-                            }
-                        } catch (Exception e) {
-                            if (Common.D) {
-                                Log.e(TAG, "e : " + e.toString());
-                            }
-                        }
-                    } else {
-                        finish();
-                    }
-                } else {
-                    //모바일프린터 미선택 시 프린터 사용 OFF로 설정
-                    if (Common.D) {
-                        Log.d(TAG, "Print not Use");
-                    }
-                    Common.printer_address = "";
-                    Common.printer_setting = false;
-                    Common.print_bool = false;
-                    SharedPreferences spfBluetooth = getSharedPreferences("spfBluetooth", Activity.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = spfBluetooth.edit();
-                    editor.putString("printer_address", Common.printer_address);
-                    editor.putBoolean("printer_setting", Common.printer_setting);
-                    editor.commit();
-                    swt_print.setChecked(false);
-                }
-                break;
-            case REQUEST_CONNECT_DEVICE_INSECURE:
-                if (resultCode == Activity.RESULT_OK) {
-                }
-                break;
-            case REQUEST_ENABLE_BT:
-                // 장비의 블루투스 사용 가능여부 확인
-                if (resultCode == Activity.RESULT_OK) {
-                    // Bluetooth is now enabled, so set up a print
-                    // 장비 블루투스 사용 가능
-                    Message msg = new Message();
-                    msg.what = MESSAGE_SEARCH;
-                    mHandler.sendMessage(msg);
-                } else {
-                    // 장비 블루투스 사용 불가능
-                    if (Common.D) {
-                        Log.d(TAG, "BT not enabled");
-                    }
-                    Toast.makeText(this, R.string.bt_not_enabled_leaving, Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-            case GET_DATA_REQUEST:
-                if (resultCode == RESULT_OK) {
-                    //weight 그대로 받아온 거..
-                    String weight_str = data.getStringExtra("enteredWeightSend");
-                    Double weight_double = data.getDoubleExtra("enteredWeightDblSend",0);
-                    String making_date = data.getStringExtra("enteredMakingDateSend");
-
-                    Log.d(TAG, "입력 데이터 확인... 1 : " + weight_str);
-                    Log.d(TAG, "입력 데이터 확인... 2 : " + weight_double);
-                    Log.d(TAG, "입력 데이터 확인... 3 : " + making_date);
-
-                    //팝업에서 넘긴 데이터를 기준으로 insert 시작
-                    wet_data_insert(weight_str, weight_double, making_date, "");
-                }
-        }
-    }
-
     /**
      * 블루투스 프린터 연결 해제 AsyncTask
      * Activity 종료 시 프린터 연결을 해제한다.
@@ -2653,363 +3092,4 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
-    /*
-        계근 상세내역 팝업 필드
-     */
-    private View detail_layout;
-    private AlertDialog detail_dialog;
-    private EditText detail_edit_position_name;
-    private EditText detail_edit_ppname;
-    private EditText detail_edit_ppcode;
-    private EditText detail_edit_count;
-    private EditText detail_edit_weight;
-    private DetailAdapter detailAdapter;
-    private ListView detail_list;
-    private Button detail_btn_back;
-    private Button detail_btn_delete;
-    private Button detail_btn_sum;
-    private ArrayList<Goodswets_Info> list_gi_info;
-
-    private void show_wetDetailDialog(Shipments_Info si, Barcodes_Info bi, int position) {
-        try {
-            dialog_flag = true;
-            detail_layout = Inflater.inflate(R.layout.dialog_detailshipment, null);
-
-            detail_edit_position_name = (EditText) detail_layout.findViewById(R.id.detail_edit_position);
-            detail_edit_ppname = (EditText) detail_layout.findViewById(R.id.detail_edit_ppname);
-            detail_edit_ppcode = (EditText) detail_layout.findViewById(R.id.detail_edit_ppcode);
-            detail_edit_count = (EditText) detail_layout.findViewById(R.id.detail_edit_count);
-            detail_edit_weight = (EditText) detail_layout.findViewById(R.id.detail_edit_weight);
-
-            detail_btn_back = (Button) detail_layout.findViewById(R.id.detail_btn_back);
-            detail_btn_delete = (Button) detail_layout.findViewById(R.id.detail_btn_select);
-            detail_btn_sum = (Button) detail_layout.findViewById(R.id.detail_btn_sum);
-
-            detail_edit_position_name.setText(si.getCLIENTNAME());
-            detail_edit_ppname.setText(si.getITEM_NAME());
-            detail_edit_ppcode.setText(si.getPACKER_PRODUCT_CODE());
-            detail_edit_count.setText(si.getGI_REQ_PKG() + " / " + si.getPACKING_QTY());
-            detail_edit_weight.setText(si.getGI_REQ_QTY() + " / " + si.getGI_QTY());
-
-            final AlertDialog.Builder dlog = new AlertDialog.Builder(this, R.style.AppCompatDialogStyle)
-                    .setCancelable(false);
-            dlog.setView(detail_layout);
-            detail_dialog = dlog.create();
-            detail_dialog.show();
-
-            detail_btn_back.setOnClickListener(v -> {
-                detail_dialog.dismiss();
-                dialog_flag = false;
-                for (int i = 0; i < sListAdapter.cbStatus.size(); i++) {
-                    sListAdapter.cbStatus.set(i, false);
-                }
-                edit_barcode.setText("");
-                edit_wet_count.setText("");
-                edit_wet_weight.setText("");
-                if (work_flag == 1) {
-                    new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true).execute();
-                } else if (work_flag == 0){
-                    Log.e(TAG, "수기일때 뒤로가기 = " + work_bl_no);
-                    // BL코드로 계근 리스트 조회하기
-                    new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
-                } else if (work_flag == 2){
-                    new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
-                }
-            });
-
-            detail_btn_delete.setOnClickListener(v -> {
-                // 선택된 Items 삭제
-                try {
-                    if (list_gi_info.size() == 0) {
-                        Toast.makeText(getApplicationContext(), "삭제할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
-                        vibrator.vibrate(1000);
-                    } else if (list_gi_info.size() > 0) {
-                        ArrayList<Goodswets_Info> list_delete = new ArrayList<Goodswets_Info>();
-                        for (int i = 0; i < detailAdapter.cbStatus.size(); i++) {
-                            if (detailAdapter.cbStatus.get(i))
-                                list_delete.add(list_gi_info.get(i));
-                        }
-                        if (list_delete.size() > 0) {
-                            deleteQuestionDialog(getSelect_Shipment(getSelect_Position()), list_delete);
-                        } else {
-                            Toast.makeText(getApplicationContext(), "삭제할 항목을 선택하세요.", Toast.LENGTH_SHORT).show();
-                            vibrator.vibrate(1000);
-                        }
-                    }
-                } catch (Exception ex) {
-                    Log.e(TAG, "==== detail_btn_delete Exception ====");
-                    Log.e(TAG, ex.getMessage().toString());
-                }
-            });
-
-            detail_btn_sum.setOnClickListener(v -> {
-                // 전체 리스트 합
-                try {
-                    if (list_gi_info.size() == 0) {
-                        Toast.makeText(getApplicationContext(), "합산할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
-                        vibrator.vibrate(1000);
-                    } else if (list_gi_info.size() > 0) {
-                        // ========== SLCS 명령어로 합계 라벨 인쇄 (Bixolon 프린터) ==========
-                        // 원본: Woosim ByteArrayOutputStream + WoosimCmd 명령어
-                        // 변환: StringBuilder + SLCS 헬퍼 메서드
-                        // 용도: 계근 내역 합계 버튼 클릭 시 중량 합산 라벨 인쇄
-                        // 출력 항목:
-                        //   [1] 개별 중량 - 동적 좌표(p_weight, p_hight) 40x40
-                        //   [2] 페이지별 총 중량 - (100, 350) 60x60
-                        // 주의: 36개 항목 단위로 라벨 1장 인쇄 (6열 x 6행)
-                        try {
-                            StringBuilder slcsCmd = new StringBuilder();
-
-                            // 초기화: CB(버퍼클리어) + CS13,0(한글문자셋)
-                            // 원본: WoosimCmd.initPrinter() + setPageMode() + selectTTF() + setTextStyle()
-                            slcsCmd.append(slcsInit());
-
-                            // 라벨 크기 설정: 576x460 도트
-                            // 원본: WoosimCmd.PM_setArea(0, 0, 576, 460)
-                            slcsCmd.append(slcsLabelSize(576, 460));
-
-                            double weight_sum = 0;
-                            int p_weight = 0;
-                            int p_hight = 0;
-
-                            for (int i = 0; i < list_gi_info.size(); i++) {
-                                // 동적 좌표 계산 (6열 x 6행 = 36개 단위)
-                                // p_hight: 행 위치 (0~5행 반복, 36개마다 리셋)
-                                // p_weight: 열 위치 (0~5열 반복)
-                                p_hight = 10 + (i / 6 * 50) - (i / 36 * 300);
-                                p_weight = 100 * (i % 6);
-
-                                // [1] 개별 중량 출력 (동적 좌표, 폰트크기 40x40)
-                                // 원본: PM_setPosition(p_weight, p_hight) + getTTFcode(40, 40, weight)
-                                slcsCmd.append(slcsText(p_weight, p_hight, 40, 40, list_gi_info.get(i).getWEIGHT()));
-
-                                weight_sum += Double.parseDouble(list_gi_info.get(i).getWEIGHT());
-
-                                // 36개 단위 완료 시 라벨 인쇄
-                                if ((i + 1) % 36 == 0) {
-                                    weight_sum = Math.floor(weight_sum * 100);
-                                    weight_sum = weight_sum / 100.0;
-
-                                    String temp_weight = String.format("%.1f", weight_sum);
-                                    weight_sum = Double.parseDouble(temp_weight);
-
-                                    // [2] 페이지별 총 중량 (x=100, y=350, 폰트크기 60x60)
-                                    // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
-                                    slcsCmd.append(slcsText(100, 350, 60, 60, ((i + 1) / 36) + "번 총 중량 : " + Double.toString(weight_sum)));
-
-                                    // 인쇄 실행 + 라벨 피드
-                                    // 원본: PM_printData() + feedToMark()
-                                    slcsCmd.append(slcsPrint(1));
-                                    slcsCmd.append(slcsFeedToMark());
-
-                                    // 전송
-                                    sendData(slcsCmd.toString().getBytes("EUC-KR"));
-
-                                    // StringBuilder 초기화 (원본: byteStream.reset())
-                                    slcsCmd.setLength(0);
-                                    slcsCmd.append(slcsInit());
-                                    slcsCmd.append(slcsLabelSize(576, 460));
-                                    weight_sum = 0;
-
-                                } else if ((i + 1) == list_gi_info.size()) {
-                                    // 마지막 항목 처리 (36개 미만인 경우)
-                                    weight_sum = Math.floor(weight_sum * 100);
-                                    weight_sum = weight_sum / 100.0;
-
-                                    String temp_weight = String.format("%.1f", weight_sum);
-                                    weight_sum = Double.parseDouble(temp_weight);
-
-                                    // [2] 페이지별 총 중량 (마지막 페이지)
-                                    // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
-                                    slcsCmd.append(slcsText(100, 350, 60, 60, (((i + 1) / 36) + 1) + "번 총 중량 : " + Double.toString(weight_sum)));
-
-                                    // 인쇄 실행 + 라벨 피드
-                                    // 원본: PM_printData() + feedToMark()
-                                    slcsCmd.append(slcsPrint(1));
-                                    slcsCmd.append(slcsFeedToMark());
-
-                                    // 전송
-                                    sendData(slcsCmd.toString().getBytes("EUC-KR"));
-                                }
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            if (Common.D) {
-                                Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
-                            }
-                        }
-                    }
-                } catch (Exception ex) {
-                    Log.e(TAG, "==== detail_btn_sum Exception ====");
-                    Log.e(TAG, ex.getMessage().toString());
-                }
-            });
-
-            list_gi_info = DBHandler.selectqueryGoodsWet(BixolonShipmentActivity.this, si.getGI_D_ID(), si.getPACKER_PRODUCT_CODE(), si.getCLIENT_CODE(), si.getGI_L_ID());
-            detailAdapter = new DetailAdapter(BixolonShipmentActivity.this, R.layout.list_detailshipment, list_gi_info, mHandler);
-
-            detail_list = (ListView) detail_layout.findViewById(R.id.detail_list);
-            detail_list.setAdapter(detailAdapter);
-            detailAdapter.notifyDataSetChanged();
-        } catch (Exception ex) {
-            Log.e(TAG, "======== show_wetDetailDialog Exception ========");
-            Log.e(TAG, ex.getMessage().toString());
-        }
-    }
-
-    public Shipments_Info getSelect_Shipment(int pos) {
-        return arSM.get(pos);
-    }
-
-    //	계근상품 삭제 Dialog
-    public void deleteQuestionDialog(final Shipments_Info si, final ArrayList<Goodswets_Info> list_delete) {
-        String alertTitle = "계근상품 삭제";
-        String buttonMessage = "정말 삭제하시겠습니까?";
-        String buttonYes = "삭제";
-        String buttonNo = "취소";
-
-        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
-                .setIcon(R.drawable.highland)
-                .setTitle(alertTitle)
-                .setMessage(buttonMessage)
-                .setCancelable(false)
-                .setPositiveButton(buttonYes, (dialog, which) -> {
-                    try {
-                        if (Common.D) {
-                            Log.d(TAG, "삭제할 계근상품 수 : " + list_delete.size());
-                        }
-                        for (int i = list_delete.size()-1; i >= 0; i--) {
-                            // List 삭제 & SQLite 삭제
-                            Log.i(TAG, "삭제 i count : " + i);
-                            Log.i(TAG, "삭제 row position : " + list_delete.get(i).getBOX_CNT());
-                            String delete_box = list_delete.get(i).getBOX_CNT();
-
-                            DBHandler.deletequerySelectGoodsWet(getApplicationContext(),
-                                    list_delete.get(i).getGI_D_ID(), list_delete.get(i).getBARCODE(), Integer.parseInt(delete_box), list_delete.get(i).getGI_L_ID());
-                            refresh_delete(list_delete.get(i).getWEIGHT());
-
-                        /*    int removeindex = Integer.parseInt(delete_box)-1;
-                            detailAdapter.remove(removeindex);*/
-                        }
-                        /*detailAdapter.notifyDataSetChanged();*/
-
-                        vibrator.vibrate(500);
-                        btn_send.setEnabled(false);
-                        btn_send.setBackgroundResource(R.drawable.disable_round_button);
-
-                        detail_btn_back.performClick();
-
-                        if (Common.D) {
-                            Log.d(TAG, "계근 선택항목 삭제 성공 !");
-                        }
-                        Toast.makeText(getApplicationContext(), "삭제 성공", Toast.LENGTH_SHORT).show();
-
-                    } catch (Exception ex) {
-                        if (Common.D) {
-                            Log.d(TAG, "계근 선택항목 삭제 실패 -> " + ex.getMessage().toString());
-                        }
-                        Toast.makeText(getApplicationContext(), "삭제 실패", Toast.LENGTH_SHORT).show();
-                    }
-                }).setNegativeButton(buttonNo, null)
-                .show();
-    }
-
-    public void refresh_delete(String delete_weight) {
-        Log.d(TAG, "삭제되는 계근대상의 중량 : " + delete_weight);
-        arSM.get(select_position).setPACKING_QTY(arSM.get(select_position).getPACKING_QTY() - 1);
-        double temp = arSM.get(select_position).getGI_QTY() - Double.parseDouble(delete_weight);
-        temp = Math.round(temp * 100) / 100.0;
-        arSM.get(select_position).setGI_QTY(temp);
-
-        detail_edit_count.setText(arSM.get(select_position).getGI_REQ_PKG() + " / " + arSM.get(select_position).getPACKING_QTY());
-        detail_edit_weight.setText(arSM.get(select_position).getGI_REQ_QTY() + " / " + arSM.get(select_position).getGI_QTY());
-    }
-
-    // 전송이 끝났음을 알리는 Dialog
-    private void show_sendFinishDialog() {
-        dialog_flag = true;
-        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
-                .setIcon(R.drawable.highland)
-                .setTitle(R.string.shipment_wet_send_finish)
-                .setMessage(R.string.shipment_wet_send_finish_msg)
-                .setCancelable(false)
-                .setPositiveButton("확인", (dialog, which) -> {
-                    btn_send.setEnabled(false);
-                    btn_send.setBackgroundResource(R.drawable.disable_round_button);
-                    dialog_flag = false;
-                    if (work_flag == 1) {
-                        scanFlag_init();
-                    } else if (work_flag == 0){
-                        set_scanFlag(false);
-                    } else if (work_flag == 2){
-                        scanFlag_init();
-                    }
-
-                    edit_barcode.setText("");
-                    work_item_fullbarcode = "";
-                    work_item_barcodegoods = "";
-                }).show();
-    }
-
-    // 계근이 끝났음을 알리는 Dialog
-    private void show_wetFinishDialog() {
-        dialog_flag = true;
-        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
-                .setIcon(R.drawable.highland)
-                .setTitle(R.string.shipment_wet_finish)
-                .setMessage(R.string.shipment_wet_finish_msg)
-                .setCancelable(false)
-                .setPositiveButton("확인", (dialog, which) -> {
-                    btn_send.setEnabled(true);
-                    btn_send.setBackgroundResource(R.drawable.round_button);
-                    dialog_flag = false;
-
-                    if (work_flag == 1) {
-                        scanFlag_init();
-                    } else if (work_flag == 0){
-                        set_scanFlag(false);
-                    } else if (work_flag == 2){
-                        scanFlag_init();
-                    }
-                    edit_barcode.setText("");
-                }).show();
-    }
-
-    // 에러가 났을 때, 알림창 표시 showAelrtDialog 추가
-    public void showAlertDialog(String s,int i){
-        try {
-            Inflater = (LayoutInflater) BixolonShipmentActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            final AlertDialog.Builder builder = new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle);
-            vibrator.vibrate(500);
-            builder.setIcon(R.drawable.highland);
-            builder.setTitle("스캔 오류");
-            Log.d(TAG, "alert_flag1 : " + alert_flag);
-
-            if(!alert_flag) {
-                if (s.equals("weight")) {
-                    builder.setMessage("중량위치정보가 없습니다.\n다른 바코드를 스캔해주세요.");
-                } else if (s.equals("barcode")) {
-                    builder.setMessage("바코드 정보(조회결과)가 없습니다.\n다른 바코드를 스캔해주세요");
-                } else if (s.equals("bl")) {
-                    builder.setMessage(i + "번 상품의 bl정보가 없습니다.");
-                }
-
-                builder.setNeutralButton("확인", (dialog, id) -> {
-                    alert_flag = false;
-                    alert.dismiss();
-                });
-
-                alert = builder.create();
-                alert.setCanceledOnTouchOutside(false);
-                alert.show();
-                alert_flag = true;
-            }else if(alert_flag)
-                return;
-
-            Log.d(TAG, "alert.isShowing:" + alert.isShowing());
-            Log.d(TAG, "alert_flag2: " + alert_flag);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 }
