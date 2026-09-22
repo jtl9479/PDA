@@ -5,13 +5,14 @@ import android.content.Context;
 import android.view.inputmethod.InputMethodManager;
 
 /**
- * 화면 관련 공통 유틸
- * Activity·Context 를 받아 동작하는 UI 헬퍼를 모은다.
+ * Activity 공통 유틸
+ * 여러 Activity 가 공통으로 쓰거나 쓸 가능성이 있는 함수를 모은다.
  * 값(설정·상수·전역 상태)은 {@link Common} 에 두고, 동작은 이쪽에 둔다.
+ * 단, 특정 업무에만 쓰이는 로직은 전용 클래스로 뺀다(예: 상품 판정).
  */
-public class UiUtils {
+public class CommonUtils {
 
-    private UiUtils() {
+    private CommonUtils() {
     }
 
     /**

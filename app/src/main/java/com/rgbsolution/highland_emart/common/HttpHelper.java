@@ -101,6 +101,7 @@ public class HttpHelper {
 		}
 	}
 
+	// 응답 문자열 반환
 	private HttpPost makeHttpPostDb(String data, String dbid, String type, String url) throws Exception {
 		HttpPost request = null;
 		try {
