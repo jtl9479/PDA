@@ -340,18 +340,65 @@ ShipmentActivity (원형, 상수 실사용 중)
 
 ---
 
-## 12. 미조치 / 후속 후보
+## 12. Step 8 — 죽은 메서드·클래스 제거
+
+### 12.1 판정 방법
+
+"살아있는 호출"만 센다 — `//` 로 주석 처리된 호출부는 제외한다. 각 건은 **원본(`D:\PDA\PDA-INNO(원본)` `ShipmentActivity.java`)에서도 죽어 있는지** 대조했다.
+
+### 12.2 삭제 내역
+
+| 대상 | 줄수 | 현재 호출부 | 원본 호출부 | 판정 |
+|------|---:|------|------|:---:|
+| `show_wetNextDialog()` + 주석 호출부 1 | 34 | `//show_wetNextDialog();` 1곳(주석) | 주석 4곳(867·1110·1249·3249), 살아있는 호출 0 | 원본부터 죽음 |
+| **`ProgressDlgShipSelectBL`** (내부 AsyncTask + Javadoc) | **183** | `new ...` **0건** | `new ...` **0건** (선언 3100 + 생성자 3105 뿐) | 원본부터 죽음 |
+| `find_BL(String)` | 12 | 0건 | `//if (find_BL(msg))` 1곳(주석), 선언 1315 | 원본부터 죽음 |
+| `scanFlag_swap()` | 9 | `//scanFlag_swap();` 4곳(전부 주석) | 주석 10곳, 살아있는 호출 0 | 원본부터 죽음 |
+| **합계** | **238** | | | |
+
+`ProgressDlgShipSelectBL` 은 `ProgressDlgShipSelect` 의 **BL번호 전용 복사본**이었고 인스턴스화되는 곳이 없었다. 그 안에 들어 있던 `//scanFlag_swap();` 3곳과 `//show_wetNextDialog();` 1곳도 클래스와 함께 제거됐다.
+
+### 12.3 오탐 제외
+
+`onKey` 는 정적 호출이 0건이라 후보로 잡혔으나, `edit_barcode.setOnKeyListener(new View.OnKeyListener(){ ... })` 로 등록된 **프레임워크 콜백**이라 살아있다. 삭제하지 않았다.
+
+### 12.4 검증
+
+| # | 항목 | 결과 |
+|:-:|------|:----:|
+| 1 | 잔존 참조 | ✅ `//scanFlag_swap();` 1곳(주석)만 — §13 ②로 이월 |
+| 2 | 살아있는 내부 클래스 4개 온전 | ✅ `ProgressDlgShipSelect`(9곳 인스턴스화)·`ProgressDlgShipmentSend`·`ProgressDlgPrintConnect`·`ProgressDlgDiscon` |
+| 3 | `show_wetFinishDialog` 호출 8곳 유지 | ✅ |
+| 4 | 빌드 (`--rerun-tasks` 캐시 배제) | ✅ 통과 |
+
+### 12.5 부수 발견 — `select_flag`
+
+`select_flag = false` 는 `show_wetNextDialog()` 안에만 있었다(원본 4073도 동일). 삭제 후 `select_flag` 는 `= true` 로만 설정되므로 `if (!select_flag)`(현 2168 부근)는 **절대 참이 되지 않는다**.
+
+단 이는 삭제로 생긴 것이 아니다. 유일한 `false` 기록자가 **원래부터 도달 불가 메서드**였으므로 삭제 전에도 항상 거짓이었다. 동작 변화 없이 사실이 드러난 것이며, 정리는 별건으로 남긴다.
+
+### 12.6 결과
+
+3,536 → **3,298줄** (−238)
+
+---
+
+## 13. 미조치 / 후속 후보
 
 이번 범위 밖이며, **사용자 지시 대기** 상태다.
 
 | # | 항목 | 내용 |
 |:-:|------|------|
-| 1 | 회사코드 `610933` 중복 선언 | `LabelPrintHelper`·`ShipmentActivity` 2곳에 각각 선언. CLAUDE.md "5. 회사코드 추가" 와 함께 별건 |
+| 1 | **주석 처리된 코드 19줄** (②) | `//scanFlag_swap();`(1906, 이제 존재하지 않는 메서드 지칭), `//current_work_position = -1;`, `//setBarcodeMsg(msg);` 등. 의도적으로 막아둔 로직일 수 있어 원본 대조 후 판단 |
+| 2 | `select_flag` 죽은 분기 | §12.5 — `if (!select_flag)` 가 항상 거짓 |
+| 3 | `ShipmentActivity.java` (4,460줄) | Manifest 등록돼 있으나 `startActivity` 0건. 진입 불가 |
+| 4 | `setBarcodeMsg`(404줄) 분리 | `WeighingState` + 콜백 인터페이스 방식. 실행 코드 재작성이라 **실기기 기준선 확보 후** 착수 |
+| 5 | 회사코드 `610933` 중복 선언 | `LabelPrintHelper`·`ShipmentActivity` 2곳에 각각 선언. CLAUDE.md "5. 회사코드 추가" 와 함께 별건 |
 
 
 ---
 
-## 13. 진행 현황
+## 14. 진행 현황
 
 | Step | 작업 | 상태 |
 |------|------|:----:|
@@ -362,6 +409,7 @@ ShipmentActivity (원형, 상수 실사용 중)
 | 5 | `BixolonShipmentActivity_back.java` 삭제 | ✅ 완료 (2026-09-22, 3,730줄, 보존 커밋 `d2e7ddf` 후 삭제, 참조 0건, 빌드 통과) |
 | 6 | Woosim 잔재 주석 9줄 제거 | ✅ 완료 (2026-09-22, 유지 6건은 살아있는 로직·빈 case 사유·SLCS 대응 기록, 빌드 통과) |
 | 7 | 업무 도메인 상수 19개 `Common` 이동 | ✅ 완료 (2026-09-22, 참조 76곳 치환, 리터럴 오염 0건, Activity −30줄 / Common +32줄, 캐시 배제 빌드 통과) |
+| 8 | 죽은 메서드·클래스 4건 제거 | ✅ 완료 (2026-09-22, −238줄, 전부 원본에서도 죽어 있음 대조 완료, onKey 오탐 제외, 캐시 배제 빌드 통과) |
 
 ---
 
