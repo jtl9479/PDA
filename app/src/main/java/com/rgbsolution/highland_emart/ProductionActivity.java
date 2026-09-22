@@ -8,7 +8,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -194,14 +193,6 @@ public class ProductionActivity extends HoneywellScannerActivity {
     // 유틸리티 메서드
     // ========================================================================================
 
-    /**
-     * 소프트 키보드 숨김
-     */
-    private void hideKeyboard() {
-        InputMethodManager btn_input = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        btn_input.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-    }
-
     // ========================================================================================
     // 버튼 리스너
     // ========================================================================================
@@ -218,7 +209,7 @@ public class ProductionActivity extends HoneywellScannerActivity {
         public void onClick(View v) {
 
             Log.i(TAG, "계근 입력버튼 클릭");
-            hideKeyboard();
+            Common.hideKeyboard(ProductionActivity.this);
 
                 if (work_flag == 1) {     // 바코드 스캔 작업
 
@@ -253,7 +244,7 @@ public class ProductionActivity extends HoneywellScannerActivity {
                 return;
             }
             getBarcodeInfo();
-            hideKeyboard();
+            Common.hideKeyboard(ProductionActivity.this);
         }
     };
 

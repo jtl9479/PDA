@@ -21,7 +21,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -353,7 +352,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     String barcodeText = edit_barcode.getText().toString().trim();
                     if (!barcodeText.isEmpty()) {
                         Log.d(TAG, "Keyboard Wedge ENTER/TAB 감지, 바코드: " + barcodeText);
-                        hideKeyboard();
+                        Common.hideKeyboard(BixolonShipmentActivity.this);
                         if (work_flag == 1 || work_flag == 2) {
                             setBarcodeMsg(barcodeText);
                         } else if (work_flag == 0) {
@@ -489,11 +488,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
-    private void hideKeyboard() {
-        InputMethodManager btn_input = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        btn_input.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-    }
-
     // ========================================================================================
     // 버튼 클릭 리스너
     // ========================================================================================
@@ -515,7 +509,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         public void onClick(View v) {
             Log.i(TAG, "입력버튼 클릭");
 
-            hideKeyboard();
+            Common.hideKeyboard(BixolonShipmentActivity.this);
 
             if (work_flag == 1) {     // 바코드 스캔 작업
                 setBarcodeMsg(edit_barcode.getText().toString());
@@ -2637,6 +2631,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     boolean sendOrNot = true;
 
                     if(packet ==""){
+
                         sendOrNot = false;
                     }
 
@@ -3213,6 +3208,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     } else if (work_flag == 2){
                         scanFlag_init();
                     }
+
                     edit_barcode.setText("");
                     work_item_fullbarcode = "";
                     work_item_barcodegoods = "";
@@ -3231,6 +3227,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     btn_send.setEnabled(true);
                     btn_send.setBackgroundResource(R.drawable.round_button);
                     dialog_flag = false;
+
                     if (work_flag == 1) {
                         scanFlag_init();
                     } else if (work_flag == 0){
@@ -3239,8 +3236,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         scanFlag_init();
                     }
                     edit_barcode.setText("");
-                    //work_item_fullbarcode = "";
-                    //work_item_barcodegoods = "";
                 }).show();
     }
 
@@ -3253,6 +3248,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             builder.setIcon(R.drawable.highland);
             builder.setTitle("스캔 오류");
             Log.d(TAG, "alert_flag1 : " + alert_flag);
+
             if(!alert_flag) {
                 if (s.equals("weight")) {
                     builder.setMessage("중량위치정보가 없습니다.\n다른 바코드를 스캔해주세요.");
@@ -3261,10 +3257,12 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 } else if (s.equals("bl")) {
                     builder.setMessage(i + "번 상품의 bl정보가 없습니다.");
                 }
+
                 builder.setNeutralButton("확인", (dialog, id) -> {
                     alert_flag = false;
                     alert.dismiss();
                 });
+
                 alert = builder.create();
                 alert.setCanceledOnTouchOutside(false);
                 alert.show();
@@ -3274,13 +3272,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
             Log.d(TAG, "alert.isShowing:" + alert.isShowing());
             Log.d(TAG, "alert_flag2: " + alert_flag);
-
         }catch (Exception e){
             e.printStackTrace();
         }
     }
-
 }
-
-
-

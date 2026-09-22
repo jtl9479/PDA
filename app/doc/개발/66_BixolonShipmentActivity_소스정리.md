@@ -434,7 +434,69 @@ show_wetNextDialog()          호출 0건 (원본 주석 4곳: 867·1110·1249·
 
 ---
 
-## 14. 미조치 / 후속 후보
+## 14. Step 10 — `hideKeyboard()` 중복 제거 (`Common` 통합)
+
+### 14.1 배경
+
+소프트 키보드를 내리는 3줄짜리 유틸이 **3개 파일에 동일하게 복사**돼 있었다.
+
+| 파일 | 선언 | 호출처 | 처리 |
+|------|---:|------|:---:|
+| `BixolonShipmentActivity` | 492 | 356(Keyboard Wedge ENTER/TAB), 518(입력버튼) | 통합 |
+| `ProductionActivity` | 200 | 221(계근 입력버튼), 256(바코드정보 수신버튼) | 통합 |
+| `ShipmentActivity` | 522 | 556 | **제외** (유지 방침) |
+
+본문 `diff` 결과 **완전 동일**. 차이는 `ProductionActivity` 쪽에만 Javadoc 이 있는 것뿐이었다.
+
+### 14.2 작업 내용
+
+`Common` 에 `static` 유틸로 통합했다. `getSystemService`·`getCurrentFocus` 가 필요해 `Activity` 를 인자로 받는다.
+
+```java
+// Common.java
+public static void hideKeyboard(Activity activity) {
+    InputMethodManager btn_input = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+    btn_input.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+}
+```
+
+**호출부 4곳이 전부 익명 내부 클래스 안**(`View.OnClickListener`·`View.OnKeyListener`)이라 `this` 가 익명 클래스를 가리킨다. 따라서 바깥 클래스를 명시했다.
+
+```java
+hideKeyboard();  →  Common.hideKeyboard(BixolonShipmentActivity.this);
+hideKeyboard();  →  Common.hideKeyboard(ProductionActivity.this);
+```
+
+선언 삭제로 `InputMethodManager` import 가 두 파일 모두 미사용이 되어 함께 제거했다(`Context` 는 각각 12·2회 사용 중이라 유지).
+
+### 14.3 결과
+
+| 파일 | 변화 |
+|------|---:|
+| `BixolonShipmentActivity.java` | −7줄 (선언 5 + import 1 + 호출부 치환 2줄 상쇄) |
+| `ProductionActivity.java` | −9줄 |
+| `Common.java` | +12줄 (import 3 + 메서드 9) |
+| **순감** | **−4줄** |
+
+### 14.4 검증
+
+| # | 항목 | 결과 |
+|:-:|------|:----:|
+| 1 | 본문 동일성 (통합 전 `diff`) | ✅ 완전 동일 |
+| 2 | 잔존 `private void hideKeyboard()` | ✅ `ShipmentActivity` 만 (유지 대상) |
+| 3 | 호출부 4곳 치환 | ✅ |
+| 4 | 미사용 `InputMethodManager` import 제거 | ✅ 2파일 |
+| 5 | 빌드 (`--rerun-tasks` 캐시 배제) | ✅ 통과 |
+
+### 14.5 남겨둔 사항
+
+`activity.getCurrentFocus()` 가 `null` 이면 NPE 가 난다. **원본에도 동일**하고 방어 코드가 없다. 동작을 바꾸지 않기 위해 그대로 옮겼다.
+
+> 줄수 감소는 4줄로 미미하다. 목적은 **한쪽만 고치면 갈라지는 중복 제거**이며, Step 7(도메인 상수 `Common` 이동)과 같은 성격이다.
+
+---
+
+## 15. 미조치 / 후속 후보
 
 이번 범위 밖이며, **사용자 지시 대기** 상태다.
 
@@ -448,7 +510,7 @@ show_wetNextDialog()          호출 0건 (원본 주석 4곳: 867·1110·1249·
 
 ---
 
-## 15. 진행 현황
+## 16. 진행 현황
 
 | Step | 작업 | 상태 |
 |------|------|:----:|
@@ -461,6 +523,7 @@ show_wetNextDialog()          호출 0건 (원본 주석 4곳: 867·1110·1249·
 | 7 | 업무 도메인 상수 19개 `Common` 이동 | ✅ 완료 (2026-09-22, 참조 76곳 치환, 리터럴 오염 0건, Activity −30줄 / Common +32줄, 캐시 배제 빌드 통과) |
 | 8 | 죽은 메서드·클래스 4건 제거 | ✅ 완료 (2026-09-22, −238줄, 전부 원본에서도 죽어 있음 대조 완료, onKey 오탐 제외, 캐시 배제 빌드 통과) |
 | 9 | `select_flag` 죽은 분기 제거 | ✅ 완료 (2026-09-22, −11줄, 원본 5곳 전수 대조, 원본에서도 항상 true, 빌드 통과) |
+| 10 | `hideKeyboard()` `Common` 통합 | ✅ 완료 (2026-09-22, 3파일 중복 → Common 1벌, ShipmentActivity 제외, 호출부 4곳 치환, 캐시 배제 빌드 통과) |
 
 ---
 
