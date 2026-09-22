@@ -223,7 +223,38 @@ ShipmentActivity (원형, 상수 실사용 중)
 
 ---
 
-## 9. 미조치 / 후속 후보
+## 9. Step 5 — `BixolonShipmentActivity_back.java` 삭제
+
+### 9.1 확인 사항
+
+| 항목 | 결과 |
+|------|------|
+| 줄수 | 3,730줄 (`class BixolonShipmentActivity_back extends HoneywellScannerActivity`) |
+| AndroidManifest 등록 | ❌ 없음 → 실행 불가 |
+| 코드 참조 | 0건 |
+| git 추적 이력 | **없음** (한 번도 커밋된 적 없는 로컬 파일) |
+| `.gitignore` 대상 | ❌ 아님 (단순 미추적) |
+| 빌드 포함 여부 | ⭕ `src/main/java` 하위라 **컴파일 대상** |
+
+### 9.2 처리 방식 — 보존 후 삭제
+
+`git hash-object` 로 얻은 blob 이 **git 이력 전체에 존재하지 않아** 그냥 지우면 복구가 불가능했다.
+따라서 **① 보존 커밋 → ② 삭제 커밋** 2단계로 처리해 롤백 경로를 확보했다.
+
+| 커밋 | 내용 |
+|------|------|
+| `d2e7ddf` | 삭제 전 보존 (파일을 이력에 등록) |
+| 다음 커밋 | 삭제 |
+
+복구가 필요하면 `git show d2e7ddf:app/src/main/java/com/rgbsolution/highland_emart/BixolonShipmentActivity_back.java` 로 되살릴 수 있다.
+
+### 9.3 결과
+
+빌드 대상에서 3,730줄 제거. 잔존 참조 0건, 빌드 통과.
+
+---
+
+## 10. 미조치 / 후속 후보
 
 이번 범위 밖이며, **사용자 지시 대기** 상태다.
 
@@ -235,7 +266,7 @@ ShipmentActivity (원형, 상수 실사용 중)
 
 ---
 
-## 10. 진행 현황
+## 11. 진행 현황
 
 | Step | 작업 | 상태 |
 |------|------|:----:|
@@ -243,7 +274,7 @@ ShipmentActivity (원형, 상수 실사용 중)
 | 2 | 미사용 상수 15개 제거 | ✅ 완료 (2026-09-22, −19줄, 원인=LabelPrintHelper 분리 잔재, Step1 대비 diff 상수분만, 빌드 통과) |
 | 3 | 미사용 import 7개 제거 | ✅ 완료 (2026-09-22, −7줄, 전수 검사로 7개 확정, 빌드 통과) |
 | 4 | 클래스 Javadoc 내용 정정 | ✅ 완료 (2026-09-22, searchType 표 6→8줄·오류 3건 정정, Woosim 표기 3건 정정+1건 삭제, 전환 이력 주석은 보존, 빌드 통과) |
-| 5 | `BixolonShipmentActivity_back.java` 삭제 | ⏳ 진행 |
+| 5 | `BixolonShipmentActivity_back.java` 삭제 | ✅ 완료 (2026-09-22, 3,730줄, 보존 커밋 `d2e7ddf` 후 삭제, 참조 0건, 빌드 통과) |
 
 ---
 
