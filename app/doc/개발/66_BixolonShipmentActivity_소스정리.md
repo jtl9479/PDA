@@ -254,19 +254,104 @@ ShipmentActivity (원형, 상수 실사용 중)
 
 ---
 
-## 10. 미조치 / 후속 후보
+## 10. Step 6 — Woosim 잔재 주석 제거
+
+`// 원본: import com.woosim...` 처럼 **정보가 없는 전환 잔재 주석 9줄**을 제거했다. git 이력과 원본 프로젝트(`D:\PDA\PDA-INNO(원본)`)에 남아 있어 소스에 둘 이유가 없다.
+
+| 삭제 | 내용 | 줄수 |
+|------|------|---:|
+| 43~47 | Woosim import 제거 기록 | 5 |
+| 219 / 512 / 845 | `// mWoosim 제거됨 - Bixolon SLCS 명령어로 대체` (맥락 없이 떠 있음) | 3 |
+| 870 | `// WoosimService.MESSAGE_PRINTER 제거됨` (switch 끝) | 1 |
+
+**유지한 Woosim 표기 6건**
+
+| 위치 | 사유 |
+|------|------|
+| 479 `Bixolon 첫 사용 시 기존 Woosim MAC 주소 초기화` | **살아있는 로직** 설명 |
+| 833 `case MESSAGE_READ:` 의 `// mWoosim.processRcvData 제거됨` | **빈 case 사유** — 지우면 이유 없이 비어 보임 |
+| 2313 / 3275 / 3286 / 3290 `// 원본: WoosimCmd...` | SLCS↔Woosim **대응 관계** 기록. 전환 검증에 사용 |
+
+**결과**: 3,582 → 3,573줄 (−9). 주석 외 변경 0건, 빌드 통과.
+
+---
+
+## 11. Step 7 — 업무 도메인 상수 `Common` 이동
+
+### 11.1 배경
+
+`Common.searchType`(값)은 `Common` 에 있는데, 그와 비교하는 **상수만 각 클래스에 흩어져** 있었다. 그 결과 같은 상수가 4개 파일에 중복 선언되고 **주석이 이미 어긋나 있었다**.
+
+| 상수 | BixolonShipmentActivity | MainActivity |
+|------|------|------|
+| `SEARCH_TYPE_EMART` | `// 이마트 출하` | `// 출하대상` |
+| `SEARCH_TYPE_HOMEPLUS` | `// 홈플러스 출하` | `// 홈플러스 하이퍼` |
+| `SEARCH_TYPE_NONFIXED` | `// 도매 비정량` ❌ | `// 비정량 출하` ✅ |
+| `SEARCH_TYPE_WHOLESALE` | `// 도매 출하` | `// 도매업체` |
+
+현재 상태: **상수 4벌 중복 + 생리터럴 비교 23곳** 공존.
+
+### 11.2 분류 기준
+
+| 구분 | 상수 | 개수 | 처리 |
+|------|------|---:|:---:|
+| **업무 도메인** — 타 파일에도 중복 선언 | `SEARCH_TYPE_*` 8, `MEAT_CENTER_STORE_CODE`, `KILKOY_PACKER_CODE`, `LOTTE_BOX_ORDER_MAX`, `ITEM_TYPE_*` 5, `CENTER_NAME_*` 3 | **19** | `Common` 이동 |
+| **Activity 기구** — 클래스 밖에서 의미 없음 | `REQUEST_*` 3, `MESSAGE_*` 5, `GET_DATA_REQUEST`, `DEVICE_NAME`, `TOAST`, `BARCODE_PROCESS_DEBOUNCE_MS` | 12 | 유지 |
+
+`public` 상수 12개는 **외부 참조 0건**, `Common` 에 이름 충돌 0건을 사전 확인했다.
+
+### 11.3 작업 내용
+
+1. `Common.java` 의 `searchType` 선언 바로 아래에 `public static final` 19개 추가 (+32줄)
+   - `SEARCH_TYPE_NONFIXED` 주석은 Step 4 판정대로 **`// 비정량 출하`** 로 확정
+   - `SEARCH_TYPE_PRODUCTION_LABEL` 의 `@deprecated` Javadoc 도 함께 이동
+2. Activity 의 `private static final` 19개 삭제 + 빈 섹션 주석 6개 + 인접 빈 줄 5개 삭제
+3. 참조 **76곳**을 `Common.<상수>` 로 치환
+
+### 11.4 검증
+
+| # | 항목 | 결과 |
+|:-:|------|:----:|
+| 1 | 잔존 선언 | ✅ 0건 |
+| 2 | `Common.Common.` 중복 접두 | ✅ 0건 |
+| 3 | **문자열 리터럴 오염** — 전/후 리터럴 전수 비교 | ✅ 삭제된 선언의 값 18개(`"0"`~`"E/T"`)만 감소, 나머지 736개 **완전 동일** |
+| 4 | 빌드 (`--rerun-tasks` 캐시 배제) | ✅ 통과 |
+
+> `LOTTE_BOX_ORDER_MAX` 는 `int` 라 19개 선언 중 문자열 리터럴은 18개다.
+
+### 11.5 결과
+
+| 파일 | 변화 |
+|------|---:|
+| `BixolonShipmentActivity.java` | 3,573 → **3,543줄** (−30) |
+| `Common.java` | 74 → **106줄** (+32) |
+
+### 11.6 남은 작업 (사용자 지시 대기 — 파일별 순차 진행)
+
+| 파일 | 내용 |
+|------|------|
+| `ShipmentActivity.java` | `SEARCH_TYPE_*` 외 19개 중복 선언 |
+| `MainActivity.java` | `SEARCH_TYPE_*` 8개 중복 선언 |
+| `LabelPrintHelper.java` | `SEARCH_TYPE_EMART`·`LOTTE` 외 도메인 상수 중복 선언 |
+| `ProgressDlgShipSearch.java` | 리터럴 비교 13곳 |
+| `ProgressDlgBarcodeSearch.java` | 리터럴 비교 8곳 |
+| `ProgressDlgGoodsWetSearch.java` | 리터럴 비교 1곳 |
+| `ShipmentListAdapter.java` | 리터럴 비교 1곳 |
+
+---
+
+## 12. 미조치 / 후속 후보
 
 이번 범위 밖이며, **사용자 지시 대기** 상태다.
 
 | # | 항목 | 내용 |
 |:-:|------|------|
-| 1 | 상수 주석 `SEARCH_TYPE_NONFIXED = "4"  // 도매 비정량` | 라벨·전송 경로상 **이마트 계열**이므로 "도매" 표기가 부정확. Step 4 범위(클래스 Javadoc) 밖이라 미조치 |
-| 2 | 회사코드 `610933` 중복 선언 | `LabelPrintHelper`·`ShipmentActivity` 2곳에 각각 선언. CLAUDE.md "5. 회사코드 추가" 와 함께 별건 |
+| 1 | 회사코드 `610933` 중복 선언 | `LabelPrintHelper`·`ShipmentActivity` 2곳에 각각 선언. CLAUDE.md "5. 회사코드 추가" 와 함께 별건 |
 
 
 ---
 
-## 11. 진행 현황
+## 13. 진행 현황
 
 | Step | 작업 | 상태 |
 |------|------|:----:|
@@ -275,6 +360,8 @@ ShipmentActivity (원형, 상수 실사용 중)
 | 3 | 미사용 import 7개 제거 | ✅ 완료 (2026-09-22, −7줄, 전수 검사로 7개 확정, 빌드 통과) |
 | 4 | 클래스 Javadoc 내용 정정 | ✅ 완료 (2026-09-22, searchType 표 6→8줄·오류 3건 정정, Woosim 표기 3건 정정+1건 삭제, 전환 이력 주석은 보존, 빌드 통과) |
 | 5 | `BixolonShipmentActivity_back.java` 삭제 | ✅ 완료 (2026-09-22, 3,730줄, 보존 커밋 `d2e7ddf` 후 삭제, 참조 0건, 빌드 통과) |
+| 6 | Woosim 잔재 주석 9줄 제거 | ✅ 완료 (2026-09-22, 유지 6건은 살아있는 로직·빈 case 사유·SLCS 대응 기록, 빌드 통과) |
+| 7 | 업무 도메인 상수 19개 `Common` 이동 | ✅ 완료 (2026-09-22, 참조 76곳 치환, 리터럴 오염 0건, Activity −30줄 / Common +32줄, 캐시 배제 빌드 통과) |
 
 ---
 

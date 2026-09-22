@@ -51,6 +51,38 @@ public class Common {
     public static String selectWarehouseCode = "";      // 창고코드
     public static String searchType = "0";              // 계근대상 종류
 
+    // ====================== 업무 도메인 상수 ======================
+    // searchType 값 (Common.searchType 과 비교용)
+    public static final String SEARCH_TYPE_EMART = "0";             // 이마트 출하
+    public static final String SEARCH_TYPE_PRODUCTION = "1";        // 생산 계근 (이노이천)
+    public static final String SEARCH_TYPE_HOMEPLUS = "2";          // 홈플러스 출하
+    public static final String SEARCH_TYPE_WHOLESALE = "3";         // 도매 출하
+    public static final String SEARCH_TYPE_NONFIXED = "4";          // 비정량 출하
+    public static final String SEARCH_TYPE_HOMEPLUS_NONFIXED = "5"; // 홈플러스 비정량
+    public static final String SEARCH_TYPE_LOTTE = "6";             // 롯데 출하
+    /** @deprecated 미사용 (생산 라벨 PDA 출력 프로세스 미정의 - 2026-08-04 제외 결정, search_production_4label.jsp 삭제됨) */
+    public static final String SEARCH_TYPE_PRODUCTION_LABEL = "7";  // 생산 라벨 - 미사용
+
+    // 미트센터 관련
+    public static final String MEAT_CENTER_STORE_CODE = "9231";     // 미트센터 지점코드
+    public static final String KILKOY_PACKER_CODE = "30228";        // 킬코이 패커코드
+
+    // 롯데 박스 순번
+    public static final int LOTTE_BOX_ORDER_MAX = 9999;             // 롯데 박스 순번 최대값
+
+    // 계근 방식 (ITEM_TYPE)
+    public static final String ITEM_TYPE_W = "W";    // 바코드 계근
+    public static final String ITEM_TYPE_HW = "HW";  // 바코드 계근 확장
+    public static final String ITEM_TYPE_S = "S";    // 저울 계근
+    public static final String ITEM_TYPE_J = "J";    // 지정 중량
+    public static final String ITEM_TYPE_B = "B";    // 홈플러스 비정량
+
+    // 센터명 (수입육 센터 판별용)
+    public static final String CENTER_NAME_TRD = "TRD";
+    public static final String CENTER_NAME_WET = "WET";
+    public static final String CENTER_NAME_ET = "E/T";
+    // =============================================================
+
     public static ArrayList<String> warehouseNames = new ArrayList<>();   // 창고명 목록 (Spinner 표시)
     public static ArrayList<String> warehouseCodes = new ArrayList<>();   // 창고코드 목록 (쿼리 조건)
 
