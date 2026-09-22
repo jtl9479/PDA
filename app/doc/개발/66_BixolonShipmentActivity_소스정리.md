@@ -167,26 +167,83 @@ ShipmentActivity (원형, 상수 실사용 중)
 
 ---
 
-## 7. 미조치 / 후속 후보
+## 7. Step 3 — 미사용 import 제거
+
+`import` 만 있고 본문 사용이 0회인 7개를 제거했다. 전체 import 를 전수 검사해 이 7개 외에는 없음을 확인했다.
+
+| import | 본문 사용 |
+|--------|:---:|
+| `java.io.IOException` | 0 |
+| `java.text.DecimalFormat` | 0 |
+| `java.text.ParseException` | 0 |
+| `java.text.SimpleDateFormat` | 0 |
+| `java.util.Calendar` | 0 |
+| `java.util.Date` | 0 |
+| `java.util.Set` | 0 |
+
+**유지**: `java.io.ByteArrayOutputStream`·`java.util.ArrayList`·`import static ...R.id.sp_center`(422 에서 사용) 및 나머지 전부.
+**유지**: 43~47 의 Woosim import 제거 기록 주석 — Bixolon 전환 이력이므로 보존한다.
+
+**결과**: 3,588 → 3,581줄 (−7). diff 상 import 7줄 외 변경 0건, 빌드 통과.
+
+---
+
+## 8. Step 4 — 클래스 Javadoc 내용 정정
+
+주석 **내용**이 실제 코드와 다른 부분을 코드로 대조해 정정했다. 로직 변경 0건.
+
+### 8.1 searchType 표 (6줄 → 8줄)
+
+| searchType | 정정 전 | 정정 후 | 코드 근거 |
+|:---:|------|------|------|
+| 0 | 이마트 출하 | 이마트 출하 (유지) | `setPrinting` |
+| 1 | 생산 투입 - **프린터 비활성화** | 생산 계근 - **라벨 인쇄 분기 없음** | 라벨 분기에 1 없음 |
+| 2 | **누락** | 홈플러스 출하 - `setHomeplusPrinting` | 1881 |
+| 3 | 도매 출하 | 도매 출하 + 라벨 분기 없음 명시 | 365 레이아웃, 라벨 분기 없음 |
+| 4 | **홈플러스 출하** ❌ | **비정량 출하** - 이마트와 동일 `setPrinting` | 1887~1889 (로그 "이마트(비정량)") |
+| 5 | **롯데 출하** ❌ | **홈플러스 비정량** - `setHomeplusPrinting` | 1881 (2 와 동일 분기) |
+| 6 | **원앤원 출하** ❌ | **롯데 출하** - `setPrintingLotte`, 박스 순번 | 1890, 1797 |
+| 7 | **누락** | 생산 라벨 - 미사용 (2026-08-04 제외 결정) | 상수 `@deprecated` |
+
+### 8.2 그 외 정정 3건 + 삭제 1건
+
+| 위치 | 정정 전 | 정정 후 |
+|------|------|------|
+| 클래스 Javadoc 첫 줄 | `ShipmentActivity - 출하 계근 작업 화면` | `BixolonShipmentActivity - ...` |
+| 주요 기능 | 라벨 인쇄 ... **(Woosim 프린터)** | ... **(BIXOLON, SLCS 명령어)** |
+| `mHandler` Javadoc | `MESSAGE_READ (3): ... Woosim 서비스로 전달` | `... Bixolon 은 별도 처리 불필요(no-op)` (839 와 일치) |
+| `mHandler` Javadoc | `WoosimService.MESSAGE_PRINTER: Woosim 프린터 관련 메시지` | **삭제** (869 에서 제거 완료된 경로) |
+| `ProgressDlgPrintConnect` Javadoc | `Woosim 블루투스 프린터에 연결한다.` | `BIXOLON 블루투스 프린터에 연결한다.` |
+
+### 8.3 보존한 Woosim 표기
+
+`// 원본: WoosimCmd...`, `// mWoosim 제거됨 - Bixolon SLCS 명령어로 대체` 등 **전환 이력 기록 주석은 손대지 않았다**(43~47·217·483·510·839·844·869·2321·3283·3294·3298). 프로젝트 목적이 Woosim→BIXOLON 전환이므로 대응 관계 기록이 필요하다.
+
+**결과**: 3,581 → 3,582줄 (표 6→8줄 +2, 삭제 −1). 주석/import 외 변경 0건, 빌드 통과.
+
+---
+
+## 9. 미조치 / 후속 후보
 
 이번 범위 밖이며, **사용자 지시 대기** 상태다.
 
 | # | 항목 | 내용 |
 |:-:|------|------|
-| 1 | 미사용 import 7개 | `IOException`, `DecimalFormat`, `ParseException`, `SimpleDateFormat`, `Calendar`, `Date`, `Set` — 파일 내 사용 0회 |
-| 2 | 클래스 Javadoc 내용 오류 | searchType 표가 실제와 불일치 (`"4" 홈플러스`·`"5" 롯데`·`"6" 원앤원` → 실제는 4 비정량 / 5 홈플러스비정량 / 6 롯데), `2`·`7` 누락, "Woosim 프린터" 표기가 Bixolon 전환과 불일치 |
-| 3 | `BixolonShipmentActivity_back.java` (3,730줄) | Manifest 미등록·참조 0건인 백업 파일 |
+| 1 | 상수 주석 `SEARCH_TYPE_NONFIXED = "4"  // 도매 비정량` | 라벨·전송 경로상 **이마트 계열**이므로 "도매" 표기가 부정확. Step 4 범위(클래스 Javadoc) 밖이라 미조치 |
+| 2 | 회사코드 `610933` 중복 선언 | `LabelPrintHelper`·`ShipmentActivity` 2곳에 각각 선언. CLAUDE.md "5. 회사코드 추가" 와 함께 별건 |
 
-> 2번은 **주석 내용 수정**이라 이번 "태그 정리"와 성격이 다르므로 별도 건으로 분리했다.
 
 ---
 
-## 8. 진행 현황
+## 10. 진행 현황
 
 | Step | 작업 | 상태 |
 |------|------|:----:|
 | 1 | Javadoc 태그 전용 줄 삭제 + 인라인 태그 제거 | ✅ 완료 (2026-09-22, −131줄, 주석 외 변경 0건, 빌드 통과) |
 | 2 | 미사용 상수 15개 제거 | ✅ 완료 (2026-09-22, −19줄, 원인=LabelPrintHelper 분리 잔재, Step1 대비 diff 상수분만, 빌드 통과) |
+| 3 | 미사용 import 7개 제거 | ✅ 완료 (2026-09-22, −7줄, 전수 검사로 7개 확정, 빌드 통과) |
+| 4 | 클래스 Javadoc 내용 정정 | ✅ 완료 (2026-09-22, searchType 표 6→8줄·오류 3건 정정, Woosim 표기 3건 정정+1건 삭제, 전환 이력 주석은 보존, 빌드 통과) |
+| 5 | `BixolonShipmentActivity_back.java` 삭제 | ⏳ 진행 |
 
 ---
 

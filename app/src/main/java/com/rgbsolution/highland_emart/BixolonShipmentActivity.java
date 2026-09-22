@@ -49,19 +49,12 @@ import com.rgbsolution.highland_emart.print.DeviceListActivity;
 import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Set;
 
 import static com.rgbsolution.highland_emart.R.id.sp_center;
 
 /**
- * ShipmentActivity - 출하 계근 작업 화면
+ * BixolonShipmentActivity - 출하 계근 작업 화면
  * 개요
  * PDA 앱에서 출하 대상 상품의 계근(무게 측정) 작업을 수행하는 핵심 Activity.
  * 바코드 스캔, 중량 입력, 바코드 라벨 인쇄, 서버 전송 기능을 담당한다.
@@ -69,15 +62,17 @@ import static com.rgbsolution.highland_emart.R.id.sp_center;
  *   출하 대상 조회: 센터별/BL번호별 출하 대상 상품 목록 표시
  *   바코드 스캔: 상품 바코드 및 BL번호 바코드 스캔으로 작업 상품 식별
  *   계근 작업: 저울 연동 또는 수기 입력으로 중량 측정
- *   라벨 인쇄: 블루투스 프린터로 바코드 라벨 인쇄 (Woosim 프린터)
+ *   라벨 인쇄: 블루투스 프린터로 바코드 라벨 인쇄 (BIXOLON, SLCS 명령어)
  *   서버 전송: 계근 완료 데이터를 서버(G3)로 전송
  * 출하 유형 (Common.searchType)
- *   "0" : 이마트 출하 - 바코드 타입별 라벨 인쇄 (M0, M1, M3, M4, M8, M9, E0-E3, P0 등)
- *   "1" : 생산 투입 - 프린터 비활성화, 생산 공정용
- *   "3" : 도매 출하 - activity_shipment_wholesale 레이아웃 사용
- *   "4" : 홈플러스 출하
- *   "5" : 롯데 출하
- *   "6" : 원앤원 출하
+ *   "0" : 이마트 출하     - 바코드 타입별 라벨 인쇄 (M0, M1, M3, M4, M8, M9, E0-E3, P0 등)
+ *   "1" : 생산 계근       - 라벨 인쇄 분기 없음, 생산 공정용
+ *   "2" : 홈플러스 출하   - setHomeplusPrinting 라벨
+ *   "3" : 도매 출하       - activity_shipment_wholesale 레이아웃 사용, 라벨 인쇄 분기 없음
+ *   "4" : 비정량 출하     - 라벨은 이마트와 동일한 setPrinting 경로
+ *   "5" : 홈플러스 비정량 - 라벨은 홈플러스와 동일한 setHomeplusPrinting 경로
+ *   "6" : 롯데 출하       - setPrintingLotte 라벨, 박스 순번 부여
+ *   "7" : 생산 라벨       - 미사용 (2026-08-04 제외 결정)
  * 계근 방식 (ITEM_TYPE)
  *   "W", "HW" : 바코드 계근 - 바코드에서 중량 추출
  *   "S" : 저울 계근 - 저울에서 중량 입력 (소수점 2자리)
@@ -779,10 +774,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      *   MESSAGE_SEARCHCHECK (1002): 검색 체크 - GI_D_ID로 해당 행 선택
      *   MESSAGE_DEVICE_NAME (1): 프린터 연결 성공 - 디바이스명 저장 및 성공음 재생
      *   MESSAGE_TOAST (2): Toast 메시지 표시
-     *   MESSAGE_READ (3): 프린터 데이터 읽기 - Woosim 서비스로 전달
+     *   MESSAGE_READ (3): 프린터 데이터 읽기 - Bixolon 은 별도 처리 불필요(no-op)
      *   MESSAGE_SEARCH (4): 프린터 검색 - DeviceListActivity 호출
      *   MESSAGE_REPRINT (5): 재인쇄 요청 - 출하 유형별 프린팅 메서드 호출
-     *   WoosimService.MESSAGE_PRINTER: Woosim 프린터 관련 메시지
      */
     public Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
@@ -3012,7 +3006,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
     /**
      * 블루투스 프린터 연결 AsyncTask
-     * Woosim 블루투스 프린터에 연결한다.
+     * BIXOLON 블루투스 프린터에 연결한다.
      * 저장된 프린터 주소(Common.printer_address)로 자동 연결을 시도한다.
      * 처리 흐름
      *   onPreExecute: 연결 로딩 다이얼로그 표시
