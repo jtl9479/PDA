@@ -383,22 +383,72 @@ ShipmentActivity (원형, 상수 실사용 중)
 
 ---
 
-## 13. 미조치 / 후속 후보
+## 13. Step 9 — `select_flag` 죽은 분기 제거
+
+### 13.1 원본 대조
+
+원본 `ShipmentActivity.java` 의 `select_flag` 전수 **5곳**, 원본 프로젝트 타 파일 사용 **0건**.
+
+| 원본 라인 | 코드 | 소속 | 현재 |
+|---:|------|------|------|
+| 129 | `private boolean select_flag = true;` | 필드 선언 | 삭제 |
+| 1576 | `if (!select_flag) { scanFlag_init(); }` | `calc_info()` (1561~) | 삭제 |
+| 3026 | `select_flag = true;` | `ProgressDlgShipSelect` (2915~3099, 살아있음) | 삭제 |
+| 3181 | `select_flag = true;` | `ProgressDlgShipSelectBL` (3100~3275, 죽음) | Step 8 에서 클래스째 삭제됨 |
+| 4073 | **`select_flag = false;`** | **`show_wetNextDialog()`** (4053~, 죽음) | Step 8 에서 메서드째 삭제됨 |
+
+### 13.2 죽어 있던 사슬 (원본 시점)
+
+```
+show_wetNextDialog()          호출 0건 (원본 주석 4곳: 867·1110·1249·3249)
+    └ select_flag = false      실행 0회
+            └ if (!select_flag)   항상 거짓        ← 원본 1576
+                    └ scanFlag_init()   실행 0회
+```
+
+`false` 로 만드는 유일한 코드가 도달 불가 메서드 안에 있었으므로, **원본에서도 `select_flag` 는 항상 `true`** 였고 `if (!select_flag)` 는 절대 참이 되지 않았다. Step 8 삭제로 생긴 상태가 아니다.
+
+### 13.3 삭제 내역
+
+| 대상 | 줄수 |
+|------|---:|
+| 필드 Javadoc 4줄 + 선언 1줄 + 앞 빈 줄 | 6 |
+| `if (!select_flag) { scanFlag_init(); }` + 앞 빈 줄 | 4 |
+| `select_flag = true;` (`ProgressDlgShipSelect` 내) | 1 |
+| **합계** | **11** |
+
+필드 주석이 `true: 스캔 모드 / false: 선택 모드` 였으나 "선택 모드"는 도달 불가 상태였다.
+
+### 13.4 검증
+
+| # | 항목 | 결과 |
+|:-:|------|:----:|
+| 1 | 잔존 참조 | ✅ 0건 |
+| 2 | `scanFlag_init()` 다른 호출 6곳 유지 | ✅ (삭제한 것은 도달 불가 1곳뿐) |
+| 3 | 빌드 | ✅ 통과 |
+| 4 | 원본과의 동작 차이 | ✅ 없음 (원본에서도 도달 불가) |
+
+### 13.5 결과
+
+3,298 → **3,287줄** (−11)
+
+---
+
+## 14. 미조치 / 후속 후보
 
 이번 범위 밖이며, **사용자 지시 대기** 상태다.
 
 | # | 항목 | 내용 |
 |:-:|------|------|
 | 1 | **주석 처리된 코드 19줄** (②) | `//scanFlag_swap();`(1906, 이제 존재하지 않는 메서드 지칭), `//current_work_position = -1;`, `//setBarcodeMsg(msg);` 등. 의도적으로 막아둔 로직일 수 있어 원본 대조 후 판단 |
-| 2 | `select_flag` 죽은 분기 | §12.5 — `if (!select_flag)` 가 항상 거짓 |
-| 3 | `ShipmentActivity.java` (4,460줄) | Manifest 등록돼 있으나 `startActivity` 0건. 진입 불가 |
-| 4 | `setBarcodeMsg`(404줄) 분리 | `WeighingState` + 콜백 인터페이스 방식. 실행 코드 재작성이라 **실기기 기준선 확보 후** 착수 |
-| 5 | 회사코드 `610933` 중복 선언 | `LabelPrintHelper`·`ShipmentActivity` 2곳에 각각 선언. CLAUDE.md "5. 회사코드 추가" 와 함께 별건 |
+| 2 | `ShipmentActivity.java` (4,460줄) | Manifest 등록돼 있으나 `startActivity` 0건. 진입 불가 |
+| 3 | `setBarcodeMsg`(404줄) 분리 | `WeighingState` + 콜백 인터페이스 방식. 실행 코드 재작성이라 **실기기 기준선 확보 후** 착수 |
+| 4 | 회사코드 `610933` 중복 선언 | `LabelPrintHelper`·`ShipmentActivity` 2곳에 각각 선언. CLAUDE.md "5. 회사코드 추가" 와 함께 별건 |
 
 
 ---
 
-## 14. 진행 현황
+## 15. 진행 현황
 
 | Step | 작업 | 상태 |
 |------|------|:----:|
@@ -410,6 +460,7 @@ ShipmentActivity (원형, 상수 실사용 중)
 | 6 | Woosim 잔재 주석 9줄 제거 | ✅ 완료 (2026-09-22, 유지 6건은 살아있는 로직·빈 case 사유·SLCS 대응 기록, 빌드 통과) |
 | 7 | 업무 도메인 상수 19개 `Common` 이동 | ✅ 완료 (2026-09-22, 참조 76곳 치환, 리터럴 오염 0건, Activity −30줄 / Common +32줄, 캐시 배제 빌드 통과) |
 | 8 | 죽은 메서드·클래스 4건 제거 | ✅ 완료 (2026-09-22, −238줄, 전부 원본에서도 죽어 있음 대조 완료, onKey 오탐 제외, 캐시 배제 빌드 통과) |
+| 9 | `select_flag` 죽은 분기 제거 | ✅ 완료 (2026-09-22, −11줄, 원본 5곳 전수 대조, 원본에서도 항상 true, 빌드 통과) |
 
 ---
 

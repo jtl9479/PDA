@@ -273,12 +273,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * false: BL번호 바코드 스캔 차례
      */
     private boolean scan_flag = true;
-    /**
-     * 선택 모드 플래그
-     * true: 스캔 모드
-     * false: 선택 모드
-     */
-    private boolean select_flag = true;
 
     /** 진동 알림 */
     private Vibrator vibrator;
@@ -2143,10 +2137,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             //해당 지점 내용불러오기
             edit_product_name.setText(arSM.get(work_position).getITEM_NAME());
             edit_product_code.setText(arSM.get(work_position).getPACKER_PRODUCT_CODE());
-
-            if (!select_flag) {
-                scanFlag_init();
-            }
         } catch (Exception ex) {
             Log.e(TAG, "======== calc_info Exception ========");
             Log.e(TAG, ex.getMessage().toString());
@@ -2403,7 +2393,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     ArrayAdapter<String> position_adapter = new ArrayAdapter<String>(BixolonShipmentActivity.this, android.R.layout.simple_spinner_item, list_position);
                     position_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     sp_point_name.setAdapter(position_adapter);
-                    select_flag = true;
                     ArrayList<String> list_bl = new ArrayList<String>();
 
                     for (int i = 0; i < arSM.size(); i++) {
