@@ -227,8 +227,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     AlertDialog alert;
     /** 다이얼로그 중복 표시 방지 플래그 */
     boolean alert_flag = false;
-    /** 제조일자 입력 플래그 (킬코이 미트센터용) */
-    boolean makingdateInputFlag = false;
 
     // ========================================================================================
     // Keyboard Wedge 자동 감지 (바코드 스캐너 지원)
@@ -245,14 +243,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // ========================================================================================
 
     /**
-     * Activity 생성 시 호출
-     * 주요 처리:
-     *   출하 유형에 따른 레이아웃 설정 (도매: activity_shipment_wholesale, 기타: activity_shipment)
-     *   UI 컴포넌트 초기화 및 이벤트 리스너 등록
-     *   센터 리스트 로드
-     *   블루투스 어댑터 초기화
-     *   생산 계근 시 프린터 비활성화
-     * @param savedInstanceState 저장된 인스턴스 상태
+     * Activity 생성 — 레이아웃·위젯·리스너·블루투스 초기화
+     * 도매(3)만 다른 레이아웃을 쓰고, 생산(1)은 프린터를 비활성화한다.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -554,12 +546,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     };
 
     /**
-     * 전송 버튼 클릭 리스너
-     * 계근 완료된 데이터를 서버(G3)로 전송
-     * 처리 흐름:
-     *   확인 다이얼로그 표시
-     *   확인 시 ProgressDlgShipmentSend AsyncTask 실행
-     *   insert_goods_wet.jsp 호출하여 계근 데이터 전송
+     * 전송 버튼 클릭 리스너 — 확인 후 계근 데이터를 서버로 전송
      */
     private View.OnClickListener sendBtnListener = new View.OnClickListener() {
         @Override
@@ -583,12 +570,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     };
 
     /**
-     * 선택 버튼 클릭 리스너
-     * 선택된 지점의 계근 상세정보 팝업을 표시
-     * 처리 흐름:
-     *   체크박스로 선택된 지점 확인
-     *   선택된 지점이 있으면 show_wetDetailDialog() 호출하여 상세 팝업 표시
-     *   선택된 지점이 없으면 경고 메시지 및 진동 알림
+     * 선택 버튼 클릭 리스너 — 체크된 지점의 계근 상세 팝업 표시
      */
     private View.OnClickListener selectBtnListener = new View.OnClickListener() {
         @Override
@@ -717,7 +699,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         if (Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS) || Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS_NONFIXED)) {
                             labelPrintHelper.setHomeplusPrinting(Double.parseDouble(print_weight_str), arSM.get(select_position), true, printerCallback);
                         } else if (Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)) {
-                            //Toast.makeText(getApplicationContext(), "롯데 재출력은 불가합니다.", Toast.LENGTH_SHORT).show();
                             // 롯데의 경우 바코드 시퀀스를 위해 BOX_ORDER 가져옴.
                             String box_order = msg.getData().getString("BOX_ORDER").toString();
 
@@ -742,13 +723,10 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
      * Bixolon Handler
      */
     /**
-     * Bixolon 프린터 Handler
-     * BixolonSocketPrinter로부터 연결 상태 변경, 디바이스명, 인쇄 완료 등의 메시지를 수신한다.
-     * 기존 ShipmentActivity의 mHandler와 동일한 동작을 유지한다.
-     * STATE_NONE 처리 시 주의사항:
-     * - connect() 호출 시 내부에서 disconnect()가 먼저 호출되어 STATE_NONE이 발생함
-     * - 이때 실패 메시지를 표시하면 안 됨 (아직 연결 시도 전이므로)
-     * - STATE_CONNECTING → STATE_NONE 일 때만 실제 연결 실패로 판단
+     * BIXOLON 프린터 Handler — 연결 상태·디바이스명·인쇄 완료 수신
+     * STATE_NONE 주의: connect() 내부에서 disconnect() 가 먼저 불려 STATE_NONE 이 발생한다.
+     * 아직 연결 시도 전이므로 이때 실패 메시지를 띄우면 안 되고,
+     * STATE_CONNECTING → STATE_NONE 인 경우만 실제 연결 실패로 본다.
      */
     private final Handler mBixolonHandler = new Handler() {
         @Override
@@ -1761,7 +1739,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 return pp_code;
             } else {
                 return "null";
-                //scanFlag_swap();
             }
         } catch (Exception ex) {
             Log.e(TAG, "find_PackerProduct Exception | " + ex.getMessage().toString());
@@ -1858,7 +1835,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
 
                 if (temp_bg.equals(bg)) {                       // barcodegoods find success
-                    //pp_name = bi.getITEM_NAME_KR();
                     work_item_bi_info = bi;
                     edit_product_name.setText(bi.getITEM_NAME_KR());
                     edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
@@ -1868,7 +1844,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
                     }
                     Log.i(TAG, "===================pp_code=================" + pp_code);
-                    //work_ppcode = bi.getPACKER_PRODUCT_CODE();
                     work_item_barcodegoods = bg;
                     count++;
                 } else {
@@ -2014,46 +1989,26 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         return "CB\r\n" + "CS13,0\r\n";
     }
 
-    /**
-     * SLCS 라벨 크기 설정
-     * @param width  라벨 너비 (도트)
-     * @param height 라벨 높이 (도트)
-     * @return SLCS 라벨 크기 명령어 문자열
-     */
+    /** SLCS 라벨 크기 (SW=너비, SL=높이, 단위 도트) */
     private String slcsLabelSize(int width, int height) {
         return "SW" + width + "\r\n" + "SL" + height + "\r\n";
     }
 
-    /**
-     * SLCS 텍스트 출력
-     * - V 명령어 사용 (벡터 폰트)
-     * @param x      X 좌표
-     * @param y      Y 좌표
-     * @param width  폰트 너비
-     * @param height 폰트 높이
-     * @param text   출력할 텍스트
-     * @return SLCS 텍스트 명령어 문자열
-     */
+    /** SLCS 텍스트 출력 (V 명령 = 벡터 폰트). 인자 의미는 본문 주석 참조 */
     private String slcsText(int x, int y, int width, int height, String text) {
         // V x,y,K,w,h,0,N,B,N,0,L,0,'text'
         // K: 한글, 0: 회전없음, N: 일반, B: 굵게, N: 이탤릭없음, 0: 자간, L: 왼쪽정렬, 0: 줄간격
         return "V" + x + "," + y + ",K," + width + "," + height + ",0,N,B,N,0,L,0,'" + text + "'\r\n";
     }
 
-    /**
-     * SLCS 인쇄 실행
-     * @param copies 인쇄 매수
-     * @return SLCS 인쇄 명령어 문자열
-     */
+    /** SLCS 인쇄 실행 (P 명령) */
     private String slcsPrint(int copies) {
         return "P" + copies + "\r\n";
     }
 
     /**
-     * SLCS 라벨 피드 (마크 위치로 이동)
-     * - 원본: WoosimCmd.feedToMark()에 대응
-     * - SLCS T 명령어: Tear-off 위치로 라벨 이동
-     * @return SLCS 피드 명령어 문자열
+     * SLCS 라벨 피드 — Tear-off 위치로 이동 (T 명령)
+     * 원본 {@code WoosimCmd.feedToMark()} 에 대응
      */
     private String slcsFeedToMark() {
         return "T\r\n";
@@ -2107,7 +2062,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             pDialog.setCancelable(false);
             pDialog.show();
 
-            //current_work_position = -1;
             centerTotalCount = 0;
             centerTotalWeight = 0.0;
             centerWorkCount = 0;
@@ -2127,7 +2081,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     arSM.get(i).setGI_QTY(Double.parseDouble(row[0]));      // 중량
                     arSM.get(i).setPACKING_QTY(Integer.parseInt(row[1]));   // 수량
                     arSM.get(i).setSAVE_CNT(Integer.parseInt(row[2]));      // 계근 상품 전송 개수
-                    //arSM.get(i).setWH_AREA("A-01");
                 }
 
                 if (Common.D) {
@@ -2136,7 +2089,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                 // 롯데의 경우만 lotte_TryCount 사용, 초기화 후 현재 찍힌 수량 더해서 전역변수로 만들기.
                 if(Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)) {
-                    //lotte_TryCount = 1;
 
                     Shipments_Info si = arSM.get(0);
                     lotte_TryCount = Integer.parseInt(si.LAST_BOX_ORDER) + 1;
@@ -2246,8 +2198,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         set_scanFlag(true);
                     }
                     current_work_position = -1;
-                    //edit_product_name.setText("");
-                    //edit_product_code.setText("");
                     sp_point_name.setAdapter(null);
                     sp_bl_no.setAdapter(null);
 
@@ -2259,8 +2209,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     edit_wet_weight.setText("0 / 0");
                     edit_product_name.setText("");
                     edit_product_code.setText("");
-                    //work_item_fullbarcode = "";
-                    //work_ppcode = "";
                 }
             } catch (Exception ex) {
                 Log.e(TAG, "======== ProgressDlgShipSelect onPostExecute Exception ========");
@@ -2458,7 +2406,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     //결과값의 앞, 뒤에 공백 제거
                     result = result.replace("\r\n", "");
                     result = result.replace("\n", "");
-                    //Log.d(TAG, "i number : " + i);
                     Log.v(TAG, "전송결과 : " + result); // s : success
 
                     //s : 성공, f : 실패
@@ -2538,12 +2485,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
     /**
      * 블루투스 프린터 연결 AsyncTask
-     * BIXOLON 블루투스 프린터에 연결한다.
-     * 저장된 프린터 주소(Common.printer_address)로 자동 연결을 시도한다.
-     * 처리 흐름
-     *   onPreExecute: 연결 로딩 다이얼로그 표시
-     *   doInBackground: BluetoothAdapter로 디바이스 연결
-     *   연결 성공 시 mHandler로 MESSAGE_DEVICE_NAME 메시지 전달
+     * 저장된 주소({@code Common.printer_address})로 자동 연결하고, 성공 시 mHandler 로 알린다.
      */
     class ProgressDlgPrintConnect extends AsyncTask<Integer, String, Integer> {
         private Context mContext;
@@ -2658,13 +2600,11 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     finish();
                 }
             case GET_DATA_REQUEST:
-                //Log.d(TAG, "BT not enabled");
                 if (resultCode == RESULT_OK) {
                     //weight 그대로 받아온 거..
                     String weight_str = data.getStringExtra("enteredWeightSend");
                     Double weight_double = data.getDoubleExtra("enteredWeightDblSend",0);
                     String making_date = data.getStringExtra("enteredMakingDateSend");
-                    //Double weight_double1 = 0.0;
 
                     Log.d(TAG, "입력 데이터 확인... 1 : " + weight_str);
                     Log.d(TAG, "입력 데이터 확인... 2 : " + weight_double);
@@ -2768,10 +2708,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 edit_wet_weight.setText("");
                 if (work_flag == 1) {
                     new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true).execute();
-                    //setBarcodeMsg(msg);
                 } else if (work_flag == 0){
-                    //Toast.makeText(getApplicationContext(), "수기로 중량을 입력해주세요.", Toast.LENGTH_SHORT).show();
-                    //vibrator.vibrate(500);
                     Log.e(TAG, "수기일때 뒤로가기 = " + work_bl_no);
                     // BL코드로 계근 리스트 조회하기
                     new ProgressDlgShipSelect(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false).execute();
