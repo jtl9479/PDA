@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 import com.rgbsolution.highland_emart.common.Common;
+import com.rgbsolution.highland_emart.common.UiUtils;
 import com.rgbsolution.highland_emart.common.HttpHelper;
 import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
 
@@ -209,7 +210,7 @@ public class ProductionActivity extends HoneywellScannerActivity {
         public void onClick(View v) {
 
             Log.i(TAG, "계근 입력버튼 클릭");
-            Common.hideKeyboard(ProductionActivity.this);
+            UiUtils.hideKeyboard(ProductionActivity.this);
 
                 if (work_flag == 1) {     // 바코드 스캔 작업
 
@@ -244,7 +245,7 @@ public class ProductionActivity extends HoneywellScannerActivity {
                 return;
             }
             getBarcodeInfo();
-            Common.hideKeyboard(ProductionActivity.this);
+            UiUtils.hideKeyboard(ProductionActivity.this);
         }
     };
 

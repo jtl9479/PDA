@@ -494,6 +494,36 @@ hideKeyboard();  →  Common.hideKeyboard(ProductionActivity.this);
 
 > 줄수 감소는 4줄로 미미하다. 목적은 **한쪽만 고치면 갈라지는 중복 제거**이며, Step 7(도메인 상수 `Common` 이동)과 같은 성격이다.
 
+### 14.6 Step 10-1 — `UiUtils` 분리 (같은 날 후속)
+
+`Common` 에 `hideKeyboard()` 를 넣자 **설정·상수 클래스가 Android UI 프레임워크에 의존**하게 됐다.
+
+```java
+// 통합 직후 Common.java 의 import
+import android.app.Activity;                          // 새로 생김
+import android.content.Context;                       // 새로 생김
+import android.util.Log;
+import android.view.inputmethod.InputMethodManager;   // 새로 생김
+```
+
+`Common` 은 이미 ① JSP URL 25개(설정) ② 전역 가변 상태 8개 ③ 도메인 상수 19개가 섞인 117줄이었다. 여기에 ④ UI 동작까지 더하면 성격이 더 흐려진다.
+
+**배치 기준을 정했다.**
+
+| 두는 곳 | 기준 |
+|------|------|
+| `Common` | **값** — 설정·상수·앱 전역 상태 |
+| `UiUtils` | **동작** — 특히 `Activity`·`Context` 를 인자로 받는 화면 유틸 |
+| 전용 클래스 | **업무 로직** — 예: 상품 판정 `find_*` 계열은 `BarcodeMatcher`(예정) |
+
+`common/` 패키지에는 이미 `Base64`·`HttpHelper`·`TestDataHelper`·`ProgressDlg*` 가 역할별로 나뉘어 있어, 유틸 클래스를 추가하는 편이 기존 구성과 맞는다.
+
+**작업**: `common/UiUtils.java` 신설(26줄) → `Common` 에서 `hideKeyboard()` 및 방금 추가된 import 3건 제거(**117 → 106줄, 원래 import 구성으로 복귀**) → 호출부 4곳을 `UiUtils.hideKeyboard(...)` 로 치환 + 두 Activity 에 import 추가.
+
+`UiUtils` 는 인스턴스화할 이유가 없어 `private` 생성자로 막았다.
+
+**검증**: `Common.java` import 가 `Log`·`ArrayList` 로 복귀, 호출부 4곳 치환 확인, `--rerun-tasks` 캐시 배제 빌드 통과.
+
 ---
 
 ## 15. 미조치 / 후속 후보
@@ -523,7 +553,8 @@ hideKeyboard();  →  Common.hideKeyboard(ProductionActivity.this);
 | 7 | 업무 도메인 상수 19개 `Common` 이동 | ✅ 완료 (2026-09-22, 참조 76곳 치환, 리터럴 오염 0건, Activity −30줄 / Common +32줄, 캐시 배제 빌드 통과) |
 | 8 | 죽은 메서드·클래스 4건 제거 | ✅ 완료 (2026-09-22, −238줄, 전부 원본에서도 죽어 있음 대조 완료, onKey 오탐 제외, 캐시 배제 빌드 통과) |
 | 9 | `select_flag` 죽은 분기 제거 | ✅ 완료 (2026-09-22, −11줄, 원본 5곳 전수 대조, 원본에서도 항상 true, 빌드 통과) |
-| 10 | `hideKeyboard()` `Common` 통합 | ✅ 완료 (2026-09-22, 3파일 중복 → Common 1벌, ShipmentActivity 제외, 호출부 4곳 치환, 캐시 배제 빌드 통과) |
+| 10 | `hideKeyboard()` 중복 제거 | ✅ 완료 (2026-09-22, 3파일 중복 → 1벌, ShipmentActivity 제외, 호출부 4곳 치환, 캐시 배제 빌드 통과) |
+| 10-1 | `UiUtils` 분리 | ✅ 완료 (2026-09-22, Common 의 Android 의존 제거, 값/동작 배치 기준 확립, 빌드 통과) |
 
 ---
 

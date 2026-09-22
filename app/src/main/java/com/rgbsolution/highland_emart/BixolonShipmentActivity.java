@@ -32,6 +32,7 @@ import android.widget.Toast;
 import com.rgbsolution.highland_emart.adapter.DetailAdapter;
 import com.rgbsolution.highland_emart.adapter.ShipmentListAdapter;
 import com.rgbsolution.highland_emart.common.Common;
+import com.rgbsolution.highland_emart.common.UiUtils;
 import com.rgbsolution.highland_emart.common.HttpHelper;
 import com.rgbsolution.highland_emart.db.DBHandler;
 import com.rgbsolution.highland_emart.items.Barcodes_Info;
@@ -352,7 +353,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     String barcodeText = edit_barcode.getText().toString().trim();
                     if (!barcodeText.isEmpty()) {
                         Log.d(TAG, "Keyboard Wedge ENTER/TAB 감지, 바코드: " + barcodeText);
-                        Common.hideKeyboard(BixolonShipmentActivity.this);
+                        UiUtils.hideKeyboard(BixolonShipmentActivity.this);
                         if (work_flag == 1 || work_flag == 2) {
                             setBarcodeMsg(barcodeText);
                         } else if (work_flag == 0) {
@@ -509,7 +510,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         public void onClick(View v) {
             Log.i(TAG, "입력버튼 클릭");
 
-            Common.hideKeyboard(BixolonShipmentActivity.this);
+            UiUtils.hideKeyboard(BixolonShipmentActivity.this);
 
             if (work_flag == 1) {     // 바코드 스캔 작업
                 setBarcodeMsg(edit_barcode.getText().toString());
