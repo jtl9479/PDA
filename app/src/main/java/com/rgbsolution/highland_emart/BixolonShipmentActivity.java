@@ -43,7 +43,6 @@ import com.rgbsolution.highland_emart.print.LabelPrintHelper;
 import com.rgbsolution.highland_emart.print.DeviceListActivity;
 import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 import static com.rgbsolution.highland_emart.R.id.sp_center;
@@ -220,29 +219,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /*
         계근 상세내역 팝업 필드
      */
-    private View detail_layout;
-
-    private AlertDialog detail_dialog;
-
-    private EditText detail_edit_position_name;
-
-    private EditText detail_edit_ppname;
-
-    private EditText detail_edit_ppcode;
-
     private EditText detail_edit_count;
 
     private EditText detail_edit_weight;
 
-    private ListView detail_list;
-
     private DetailAdapter detailAdapter;
 
     private Button detail_btn_back;
-
-    private Button detail_btn_delete;
-
-    private Button detail_btn_sum;
 
     // ====================================================================================
     // 필드 - 계근 상태
@@ -2147,17 +2130,17 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private void show_wetDetailDialog(Shipments_Info si, Barcodes_Info bi, int position) {
         try {
             dialog_flag = true;
-            detail_layout = Inflater.inflate(R.layout.dialog_detailshipment, null);
+            View detail_layout = Inflater.inflate(R.layout.dialog_detailshipment, null);
 
-            detail_edit_position_name = (EditText) detail_layout.findViewById(R.id.detail_edit_position);
-            detail_edit_ppname = (EditText) detail_layout.findViewById(R.id.detail_edit_ppname);
-            detail_edit_ppcode = (EditText) detail_layout.findViewById(R.id.detail_edit_ppcode);
+            EditText detail_edit_position_name = (EditText) detail_layout.findViewById(R.id.detail_edit_position);
+            EditText detail_edit_ppname = (EditText) detail_layout.findViewById(R.id.detail_edit_ppname);
+            EditText detail_edit_ppcode = (EditText) detail_layout.findViewById(R.id.detail_edit_ppcode);
             detail_edit_count = (EditText) detail_layout.findViewById(R.id.detail_edit_count);
             detail_edit_weight = (EditText) detail_layout.findViewById(R.id.detail_edit_weight);
 
             detail_btn_back = (Button) detail_layout.findViewById(R.id.detail_btn_back);
-            detail_btn_delete = (Button) detail_layout.findViewById(R.id.detail_btn_select);
-            detail_btn_sum = (Button) detail_layout.findViewById(R.id.detail_btn_sum);
+            final Button detail_btn_delete = (Button) detail_layout.findViewById(R.id.detail_btn_select);
+            final Button detail_btn_sum = (Button) detail_layout.findViewById(R.id.detail_btn_sum);
 
             detail_edit_position_name.setText(si.getCLIENTNAME());
             detail_edit_ppname.setText(si.getITEM_NAME());
@@ -2168,7 +2151,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             final AlertDialog.Builder dlog = new AlertDialog.Builder(this, R.style.AppCompatDialogStyle)
                     .setCancelable(false);
             dlog.setView(detail_layout);
-            detail_dialog = dlog.create();
+            final AlertDialog detail_dialog = dlog.create();
             detail_dialog.show();
 
             detail_btn_back.setOnClickListener(v -> {
@@ -2322,7 +2305,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             list_gi_info = DBHandler.selectqueryGoodsWet(BixolonShipmentActivity.this, si.getGI_D_ID(), si.getPACKER_PRODUCT_CODE(), si.getCLIENT_CODE(), si.getGI_L_ID());
             detailAdapter = new DetailAdapter(BixolonShipmentActivity.this, R.layout.list_detailshipment, list_gi_info, mHandler);
 
-            detail_list = (ListView) detail_layout.findViewById(R.id.detail_list);
+            ListView detail_list = (ListView) detail_layout.findViewById(R.id.detail_list);
             detail_list.setAdapter(detailAdapter);
             detailAdapter.notifyDataSetChanged();
         } catch (Exception ex) {
