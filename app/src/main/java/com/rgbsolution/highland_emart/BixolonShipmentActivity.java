@@ -146,6 +146,12 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /** 소비기한 입력 화면에서 데이터 수신 요청 코드 */
     public static final int GET_DATA_REQUEST = 8;
 
+    // 소비기한 입력 화면(ExpiryEnterActivity)으로 넘길 때 쓰는 Intent 키
+    private final String weightStrKey = "weightStrKey";
+    private final String weightDblKey = "weightDblKey";
+    private final String makingFromKey = "makingFromKey";
+    private final String makingToKey = "makingToKey";
+
     // Handler 키 이름
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
@@ -489,6 +495,27 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
+    /**
+     * 소비기한 입력 화면(ExpiryEnterActivity) 호출
+     * 수기 중량 입력 시 소비기한을 직접 받아야 하는 두 경로(킬코이 미트센터 / 수입육 센터·롯데)가
+     * 동일한 코드를 갖고 있어 메서드로 묶었다. 분기 조건과 호출 순서는 그대로다.
+     * 결과는 {@code onActivityResult} 의 {@code GET_DATA_REQUEST} 에서 받는다.
+     */
+    private void startExpiryEnter(String weight_str, double weight_double) {
+        String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
+        String makingTo = work_item_bi_info.getMAKINGDATE_TO();
+
+        Intent IntentA = new Intent(BixolonShipmentActivity.this, ExpiryEnterActivity.class);
+
+        IntentA.putExtra(weightStrKey,weight_str);
+        IntentA.putExtra(weightDblKey,weight_double);
+        IntentA.putExtra(makingFromKey,makingFrom);
+        IntentA.putExtra(makingToKey,makingTo);
+
+        //소비기한 입력 화면 띄우며 값 전달
+        startActivityForResult(IntentA,GET_DATA_REQUEST);
+    }
+
     // ========================================================================================
     // 버튼 클릭 리스너
     // ========================================================================================
@@ -541,7 +568,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         Log.i(TAG, "=====================weight_double 1-1==================" + weight_double);
                         weight_double = weight_double / 10.0;
                         Log.i(TAG, "=====================weight_double 1-2==================" + weight_double);
-                        Log.i(TAG, "=====================weight_double 2==================" + weight_double);
                         temp_weight = String.format("%.1f", weight_double); //출하일 경우 소숫점 첫째 자리까지 반올림, 위 단계에서 Math.floor로 소숫점 둘째 자리부터 날려서 의미는 없는 코드이나 일단 남겨놓음
                     } else { //이노 생산계근 or 홈플러스 추가계근일경우
                         temp_weight = Double.toString(weight_double); //생산일 경우 그대로 입력
@@ -549,54 +575,23 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     }
 
                     Log.i(TAG, "=====================temp_weight out==================" + temp_weight);
-
                     weight_double = Double.parseDouble(temp_weight); //생산이든 출하든 똑같이 타야함
-
                     Log.i(TAG, "=====================weight_double 3==================" + weight_double);
 
                     weight_str = String.valueOf(weight_double);                                         // 반올림값 다시 저장
-
                     Log.i(TAG, "=====================패커코드 체크==================" + arSM.get(current_work_position).getPACKER_CODE());
                     Log.i(TAG, "=====================스토어코드 체크==================" + arSM.get(current_work_position).getSTORE_CODE());
 
+                    //패커코드가 킬코이패커코드이거나,  스토어코드가 미트센터코드읽경우
                     if (arSM.get(current_work_position).getPACKER_CODE().equals(Common.KILKOY_PACKER_CODE)
                             && arSM.get(current_work_position).getSTORE_CODE().equals(Common.MEAT_CENTER_STORE_CODE)) {
-                          String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
-                          String makingTo = work_item_bi_info.getMAKINGDATE_TO();
-
-                          Intent IntentA = new Intent(BixolonShipmentActivity.this, ExpiryEnterActivity.class);
-
-                          String weightStrKey = "weightStrKey";
-                          String weightDblKey = "weightDblKey";
-                          String makingFromKey = "makingFromKey";
-                          String makingToKey = "makingToKey";
-
-                          IntentA.putExtra(weightStrKey,weight_str);
-                          IntentA.putExtra(weightDblKey,weight_double);
-
-                          IntentA.putExtra(makingFromKey,makingFrom);
-                          IntentA.putExtra(makingToKey,makingTo);
-
-                          startActivityForResult(IntentA,GET_DATA_REQUEST);
-                    }else if(arSM.get(current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_TRD) || arSM.get(current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_WET) || arSM.get(current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_ET) || Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)){
-                        if(Common.searchType.equals(Common.SEARCH_TYPE_EMART) || Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)){ //수입육 계근, 롯데계근일 때 수기입력시 소비기한 창 띄움
-                            String makingFrom = work_item_bi_info.getMAKINGDATE_FROM();
-                            String makingTo = work_item_bi_info.getMAKINGDATE_TO();
-
-                            Intent IntentA = new Intent(BixolonShipmentActivity.this, ExpiryEnterActivity.class);
-
-                            String weightStrKey = "weightStrKey";
-                            String weightDblKey = "weightDblKey";
-                            String makingFromKey = "makingFromKey";
-                            String makingToKey = "makingToKey";
-
-                            IntentA.putExtra(weightStrKey,weight_str);
-                            IntentA.putExtra(weightDblKey,weight_double);
-
-                            IntentA.putExtra(makingFromKey,makingFrom);
-                            IntentA.putExtra(makingToKey,makingTo);
-
-                            startActivityForResult(IntentA,GET_DATA_REQUEST);
+                          startExpiryEnter(weight_str, weight_double);
+                    } else if (arSM.get(current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_TRD) ||
+                                 arSM.get(current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_WET) ||
+                                 arSM.get(current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_ET) || Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)) {
+                        //수입육 계근, 롯데계근일 때 수   기입력시 소비기한 창 띄움
+                        if(Common.searchType.equals(Common.SEARCH_TYPE_EMART) || Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)){
+                            startExpiryEnter(weight_str, weight_double);
                         }else{
                             wet_data_insert(weight_str, weight_double, "", "");
                         }
