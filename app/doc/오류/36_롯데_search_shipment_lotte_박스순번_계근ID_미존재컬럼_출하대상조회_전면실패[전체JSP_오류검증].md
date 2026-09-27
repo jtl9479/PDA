@@ -210,7 +210,10 @@ JSP : SM_출고계근.박스순번 조회 → 컬럼 미존재로 500           
 | — | `search_goods_wet_production.jsp` | ✅ |
 | — | `search_warehouse.jsp` | ✅ |
 
-`search_production_calc.jsp` 는 MSSQL 미전환 상태로 별도 관리(검증 제외).
+~~`search_production_calc.jsp` 는 MSSQL 미전환 상태로 별도 관리(검증 제외).~~
+
+→ **해소 (2026-09-27, 개발68)**. `CO_품목코드` 기반으로 전환 완료하여 HTTP 500 → 200. **PDA JSP 18개 전부 전환 완료.**
+자세한 내용은 `개발/68_생산중량계산_JSP_MSSQL전환.md` 참조.
 
 ---
 
