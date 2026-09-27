@@ -2804,8 +2804,10 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             // 디비접속 설정
                             if(Common.searchType.equals(Common.SEARCH_TYPE_EMART)||Common.searchType.equals(Common.SEARCH_TYPE_WHOLESALE)) {
                                 result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                            }else if(Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS)||Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)){   // 홈플러스, 롯데 같이 태우기
+                            }else if(Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS)){
                                 result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
+                            }else if(Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)){   // 롯데(6) : 박스순번(BOX_ORDER) 포함 적재 (개발63)
+                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_LOTTE);
                             }else if(Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION)){
                                 result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
                             }else if(Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION_LABEL)){

@@ -32,6 +32,8 @@ public class Common {
     public static final String URL_INSERT_GOODS_WET = BASE_URL + "/insert_goods_wet.jsp";
     public static final String URL_INSERT_GOODS_WET_NEW = BASE_URL + "/insert_goods_wet_new.jsp";
     public static final String URL_INSERT_GOODS_WET_PRODUCTION = BASE_URL + "/insert_goods_wet_production.jsp";
+    /** 롯데(6) 계근 전송 - 박스순번 포함 적재 (개발63) */
+    public static final String URL_INSERT_GOODS_WET_LOTTE = BASE_URL + "/insert_goods_wet_lotte.jsp";
     public static final String URL_INSERT_GOODS_WET_HOMEPLUS = BASE_URL + "/insert_goods_wet_homeplus.jsp";
     public static final String URL_INSERT_BARCODE_INFO = BASE_URL + "/insert_barcode_info.jsp";
     public static final String URL_UPDATE_BARCODE_INFO = BASE_URL + "/update_barcode_info.jsp";
