@@ -203,6 +203,43 @@ public class LabelPrintHelper {
     }
 
     /**
+     * 검은 사각형을 비트맵(LD 명령)으로 그린다.
+     * LS/LB 명령이 SPP-L3000 에서 검은 영역으로 인쇄되어, 이마트 텍스트와 같은 LD 비트맵 경로로 선·테두리를 그린다.
+     *
+     * @param x      X 좌표
+     * @param y      Y 좌표
+     * @param width  너비 (dot)
+     * @param height 높이 (dot)
+     * @return LD 비트맵 명령 바이트
+     */
+    private byte[] slcsBitmapRect(int x, int y, int width, int height) {
+        int widthBytes = (width + 7) / 8;
+        byte[] bitmapData = new byte[widthBytes * height];
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                bitmapData[row * widthBytes + (col / 8)] |= (1 << (7 - (col % 8)));
+            }
+        }
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            out.write("LD".getBytes());
+            out.write((byte) (x & 0xFF));
+            out.write((byte) ((x >> 8) & 0xFF));
+            out.write((byte) (y & 0xFF));
+            out.write((byte) ((y >> 8) & 0xFF));
+            out.write((byte) (widthBytes & 0xFF));
+            out.write((byte) ((widthBytes >> 8) & 0xFF));
+            out.write((byte) (height & 0xFF));
+            out.write((byte) ((height >> 8) & 0xFF));
+            out.write(bitmapData);
+        } catch (Exception e) {
+            Log.e("LabelPrintHelper", "LD 사각형 명령 생성 실패: " + e.getMessage());
+        }
+        return out.toByteArray();
+    }
+
+    /**
      * SLCS 인쇄 실행
      *
      * @param copies 인쇄 매수
@@ -1381,6 +1418,7 @@ public class LabelPrintHelper {
         //   [13~15] 가로선 3개 y=60, y=180, y=345 두께3
         try {
             StringBuilder slcsCmd = new StringBuilder();
+            ByteArrayOutputStream lineData = new ByteArrayOutputStream(); // 선·테두리 LD 비트맵
 
             // 초기화: CB(버퍼클리어) + CS13,0(한글문자셋)
             // 원본: WoosimCmd.initPrinter() + setPageMode() + selectTTF()
@@ -1449,9 +1487,9 @@ public class LabelPrintHelper {
 
                 // [13~15] 가로선 3개 (L0 바코드 타입 전용)
                 // 원본: WoosimImage.drawLine(0, 60, 560, 60, 3) 등
-                slcsCmd.append(slcsLine(0, 60, 560, 60, 3));     // 가로선1 (상품명 아래)
-                slcsCmd.append(slcsLine(0, 180, 560, 180, 3));   // 가로선2 (바코드1 아래)
-                slcsCmd.append(slcsLine(0, 345, 560, 345, 3));   // 가로선3 (중량정보 아래)
+                lineData.write(slcsBitmapRect(0, 60, 560, 3));   // 가로선1 (상품명 아래)
+                lineData.write(slcsBitmapRect(0, 180, 560, 3));  // 가로선2 (바코드1 아래)
+                lineData.write(slcsBitmapRect(0, 345, 560, 3));  // 가로선3 (중량정보 아래)
             }
 
             // [11] WH_AREA 출력 (x=385, y=305, 폰트크기 65x65) - 창고구역 코드
@@ -1465,18 +1503,21 @@ public class LabelPrintHelper {
 
             // [12] 겉 테두리 박스 (0,0)에서 (560,440) 크기, 두께 3
             // 원본: WoosimImage.drawBox(0, 0, 560, 440, 3)
-            slcsCmd.append(slcsBox(0, 0, 560, 440, 3));
+            lineData.write(slcsBitmapRect(0, 0, 560, 3));    // 위
+            lineData.write(slcsBitmapRect(0, 437, 560, 3));  // 아래
+            lineData.write(slcsBitmapRect(0, 0, 3, 440));    // 왼쪽
+            lineData.write(slcsBitmapRect(557, 0, 3, 440));  // 오른쪽
 
-            // 인쇄 실행 (1장)
-            // 원본: WoosimCmd.PM_printData()
-            slcsCmd.append(slcsPrint(1));
-
-            // 라벨 피드 (마크 위치로 이동)
-            // 원본: WoosimCmd.feedToMark()
-            slcsCmd.append(slcsFeedToMark());
+            // 텍스트·바코드 명령 + 선·테두리 비트맵 + 인쇄 실행(1장) + 라벨 피드
+            // 원본: WoosimCmd.PM_printData() + WoosimCmd.feedToMark()
+            ByteArrayOutputStream labelData = new ByteArrayOutputStream();
+            labelData.write(slcsCmd.toString().getBytes("EUC-KR"));
+            labelData.write(lineData.toByteArray());
+            labelData.write(slcsPrint(1).getBytes("EUC-KR"));
+            labelData.write(slcsFeedToMark().getBytes("EUC-KR"));
 
             // 전송
-            callback.sendData(slcsCmd.toString().getBytes("EUC-KR"));
+            callback.sendData(labelData.toByteArray());
 
             callback.clearBarcodeInput();
         } catch (Exception e) {
