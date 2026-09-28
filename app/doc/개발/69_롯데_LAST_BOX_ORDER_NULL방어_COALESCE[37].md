@@ -194,7 +194,7 @@ insertqueryGoodsWetLotte(..., 1부터) → TB_GOODS_WET.BOX_ORDER = 1, 2, 3 … 
 - [x] Part 3: 변환 수행
 - [x] Part 4: 쿼리 실행 확인 (HTTP 200, `LAST_BOX_ORDER` 필드가 계근 이력 없을 때 `"0"` 반환) — 20260805 롯데 5건(268~272) 모두 `'0'`, 컬럼 수 26 불변
 - [x] Part 5: 단위테스트 — 앱 재조회 시 logcat `LAST_BOX_ORDER : 0` → `lotte_TryCount 1`
-- [ ] Part 6: 회귀테스트 (계근 이력이 있는 건의 `LAST_BOX_ORDER` 값 불변 확인) — 미검증: 롯데 서버 계근 이력 0건(전송 실패 LT-30)으로 재현 불가
+- [x] Part 6: 회귀테스트 (계근 이력이 있는 건의 `LAST_BOX_ORDER` 값 불변 확인) — 30건 전송 후 재조회 6/12/18·6/12 반환 (COALESCE 미개입)
 
 **Part 6. 변경 내용** (완료 후 작성):
 - **무엇을**: `search_shipment_lotte.jsp` 63~67행 `LAST_BOX_ORDER` 서브쿼리
@@ -226,7 +226,7 @@ insertqueryGoodsWetLotte(..., 1부터) → TB_GOODS_WET.BOX_ORDER = 1, 2, 3 … 
 **Part 6. 변경 내용** (완료 후 작성):
 - **무엇을**: 코드 변경 없음 (실기기 검증)
 - **왜**: Step 1 조치 효과 확인
-- **어떻게**: PDA테스트문서.xlsx `5.계근-롯데` LT-19 PASS 기록. 단 LT-30 전송은 별건(GI_L_ID 누락, insert_goods_wet_lotte.jsp HTTP 500)으로 FAIL — 서버 박스순번 적재 확인 불가
+- **어떻게**: PDA테스트문서.xlsx `5.계근-롯데` LT-19 PASS. LT-30 전송은 별건(GI_L_ID 누락, insert_goods_wet_lotte.jsp HTTP 500) 조치(search_shipment_lotte.jsp GI_L_ID 조회 + ProgressDlgShipSearch 파싱) 후 30건 전송, 서버 박스순번 1~18·1~12 적재 확인
 
 ---
 
@@ -288,8 +288,8 @@ Step 2: 통합 테스트 (실기기 EDA51)
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | `search_shipment_lotte.jsp` `LAST_BOX_ORDER` `COALESCE` 적용 | ✅ 완료 (Part 6 이력 건 회귀 미검증) |
-| 2 | 통합 테스트 (실기기 EDA51) | 🔄 진행중 (로컬 채번 확인, 서버 적재는 LT-30 전송 오류로 보류) |
+| 1 | `search_shipment_lotte.jsp` `LAST_BOX_ORDER` `COALESCE` 적용 | ✅ 완료 |
+| 2 | 통합 테스트 (실기기 EDA51) | ✅ 완료 (서버 박스순번 적재 확인, 타 마트 회귀 Part 6 미실시) |
 
 ---
 
