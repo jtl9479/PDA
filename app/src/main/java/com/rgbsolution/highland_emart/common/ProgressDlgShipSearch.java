@@ -299,10 +299,11 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
                         si.setCT_NAME(temp[27].toString());          // CT명
                         si.setSTORE_CODE(temp[28].toString());       // 점포코드
 
-                    // 롯데(6): 추가 2개 필드
+                    // 롯데(6): 추가 3개 필드
                     } else if(Common.searchType.equals("6")) {
                         si.setWH_AREA(temp[24].toString());          // 창고구역
                         si.setLAST_BOX_ORDER(temp[25].toString());   // 마지막 박스순번 (1~9999 순환)
+                        si.setGI_L_ID(temp[26].toString());          // 출고LOTSEQ
                     }
 
                     // 저장상태: "F" = 미전송 (False)
