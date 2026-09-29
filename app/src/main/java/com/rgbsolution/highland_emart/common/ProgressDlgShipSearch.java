@@ -287,6 +287,10 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
                     } else if(Common.searchType.equals("2")) {
                         si.setGI_L_ID(temp[24].toString());          // 출고LOTSEQ
 
+                    // 도매(3): 추가 1개 필드 (GI_L_ID)
+                    } else if(Common.searchType.equals("3")) {
+                        si.setGI_L_ID(temp[24].toString());          // 출고LOTSEQ
+
                     // 생산(1): 추가 1개 필드 (GI_L_ID = 생산작업지시SEQ)
                     } else if(Common.searchType.equals("1")) {
                         si.setGI_L_ID(temp[24].toString());          // 생산작업지시SEQ
