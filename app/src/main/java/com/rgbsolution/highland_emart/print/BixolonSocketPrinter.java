@@ -346,11 +346,16 @@ public class BixolonSocketPrinter {
             cmd.append("CS13,0\r\n");
             cmd.append("SW600\r\n");
             cmd.append("SL480\r\n");
-            cmd.append("V100,100,K,55,55,0,N,B,N,0,L,0,'TEST PRINT'\r\n");
-            cmd.append("V100,200,K,30,30,0,N,B,N,0,L,0,'프린터 정상 작동'\r\n");
-            cmd.append("P1\r\n");
 
-            byte[] data = cmd.toString().getBytes("EUC-KR");
+            // 글자는 다른 라벨과 같이 Korail.ttf 비트맵(LD)으로 인쇄
+            LabelPrintHelper helper = new LabelPrintHelper();
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            out.write(cmd.toString().getBytes("EUC-KR"));
+            out.write(helper.bitmapText(100, 100, 55, "TEST PRINT"));
+            out.write(helper.bitmapText(100, 200, 30, "프린터 정상 작동"));
+            out.write("P1\r\n".getBytes("EUC-KR"));
+
+            byte[] data = out.toByteArray();
             write(data);
 
             Log.d(TAG, "테스트 라벨 명령어 전송 완료, 데이터 크기: " + data.length + " bytes");

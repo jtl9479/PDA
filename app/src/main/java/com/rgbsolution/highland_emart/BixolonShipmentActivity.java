@@ -2216,6 +2216,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         // 주의: 36개 항목 단위로 라벨 1장 인쇄 (6열 x 6행)
                         try {
                             StringBuilder slcsCmd = new StringBuilder();
+                            java.io.ByteArrayOutputStream sumText = new java.io.ByteArrayOutputStream(); // 글자 비트맵(Korail.ttf)
 
                             // 초기화: CB(버퍼클리어) + CS13,0(한글문자셋)
                             // 원본: WoosimCmd.initPrinter() + setPageMode() + selectTTF() + setTextStyle()
@@ -2238,7 +2239,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                                 // [1] 개별 중량 출력 (동적 좌표, 폰트크기 40x40)
                                 // 원본: PM_setPosition(p_weight, p_hight) + getTTFcode(40, 40, weight)
-                                slcsCmd.append(slcsText(p_weight, p_hight, 40, 40, list_gi_info.get(i).getWEIGHT()));
+                                sumText.write(labelPrintHelper.bitmapText(p_weight, p_hight, 40, list_gi_info.get(i).getWEIGHT()));
 
                                 weight_sum += Double.parseDouble(list_gi_info.get(i).getWEIGHT());
 
@@ -2252,18 +2253,21 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                                     // [2] 페이지별 총 중량 (x=100, y=350, 폰트크기 60x60)
                                     // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
-                                    slcsCmd.append(slcsText(100, 350, 60, 60, ((i + 1) / 36) + "번 총 중량 : " + Double.toString(weight_sum)));
+                                    sumText.write(labelPrintHelper.bitmapText(100, 350, 60, ((i + 1) / 36) + "번 총 중량 : " + Double.toString(weight_sum)));
 
                                     // 인쇄 실행 + 라벨 피드
                                     // 원본: PM_printData() + feedToMark()
-                                    slcsCmd.append(slcsPrint(1));
-                                    slcsCmd.append(slcsFeedToMark());
+                                    java.io.ByteArrayOutputStream sumLabel = new java.io.ByteArrayOutputStream();
+                                    sumLabel.write(slcsCmd.toString().getBytes("EUC-KR"));
+                                    sumLabel.write(sumText.toByteArray());
+                                    sumLabel.write((slcsPrint(1) + slcsFeedToMark()).getBytes("EUC-KR"));
 
                                     // 전송
-                                    sendData(slcsCmd.toString().getBytes("EUC-KR"));
+                                    sendData(sumLabel.toByteArray());
 
                                     // StringBuilder 초기화 (원본: byteStream.reset())
                                     slcsCmd.setLength(0);
+                                    sumText.reset();
                                     slcsCmd.append(slcsInit());
                                     slcsCmd.append(slcsLabelSize(576, 460));
                                     weight_sum = 0;
@@ -2278,15 +2282,17 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                                     // [2] 페이지별 총 중량 (마지막 페이지)
                                     // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
-                                    slcsCmd.append(slcsText(100, 350, 60, 60, (((i + 1) / 36) + 1) + "번 총 중량 : " + Double.toString(weight_sum)));
+                                    sumText.write(labelPrintHelper.bitmapText(100, 350, 60, (((i + 1) / 36) + 1) + "번 총 중량 : " + Double.toString(weight_sum)));
 
                                     // 인쇄 실행 + 라벨 피드
                                     // 원본: PM_printData() + feedToMark()
-                                    slcsCmd.append(slcsPrint(1));
-                                    slcsCmd.append(slcsFeedToMark());
+                                    java.io.ByteArrayOutputStream sumLabel = new java.io.ByteArrayOutputStream();
+                                    sumLabel.write(slcsCmd.toString().getBytes("EUC-KR"));
+                                    sumLabel.write(sumText.toByteArray());
+                                    sumLabel.write((slcsPrint(1) + slcsFeedToMark()).getBytes("EUC-KR"));
 
                                     // 전송
-                                    sendData(slcsCmd.toString().getBytes("EUC-KR"));
+                                    sendData(sumLabel.toByteArray());
                                 }
                             }
                         } catch (Exception e) {
