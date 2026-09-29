@@ -1168,7 +1168,7 @@ public class LabelPrintHelper {
         try {
             StringBuilder slcsCmd = new StringBuilder();
             slcsCmd.append(slcsInit());                                              // 프린터 초기화 (CB + CS13,0)
-            slcsCmd.append(slcsLabelSize(510, 590));                                 // 라벨 크기: 가로 510, 세로 590 (원본 PM_setArea)
+            slcsCmd.append(slcsLabelSize(576, 590));                                 // 라벨 크기: 가로 576(용지 폭, 510 이면 x=510 이후 글자 잘림), 세로 590 (원본 PM_setArea)
             // 참고: 원본 PM_setDirection(1) - SLCS에서는 좌표 체계로 회전 효과 구현
 
             // [1] 지점명 출력 - 위치(30, 170)

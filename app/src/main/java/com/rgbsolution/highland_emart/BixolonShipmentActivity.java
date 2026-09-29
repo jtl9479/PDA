@@ -2804,8 +2804,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             // 디비접속 설정
                             if(Common.searchType.equals(Common.SEARCH_TYPE_EMART)||Common.searchType.equals(Common.SEARCH_TYPE_WHOLESALE)) {
                                 result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                            }else if(Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS)){
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
+                            }else if(Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS)){   // 홈플러스(2) : 박스순번(BOX_ORDER) 포함 적재 (원본 URL_INSERT_GOODS_WET_HOMEPLUS)
+                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_HOMEPLUS);
                             }else if(Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)){   // 롯데(6) : 박스순번(BOX_ORDER) 포함 적재 (개발63)
                                 result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_LOTTE);
                             }else if(Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION)){
@@ -2898,7 +2898,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         if(Common.searchType.equals(Common.SEARCH_TYPE_EMART)) {   // 출하대상 리스트, 스토어 코드 넣은 이유는 앱을 종료로 안 닫고 앱정리로 닫은 후 생산리스트를 다운받지 않은 상태에서 계근입력후 전송하면 하이랜드 스키마로 데이터가 입력될 수 있음
                             result = HttpHelper.getInstance().sendData(packet, "goodswet_insert", Common.URL_INSERT_GOODS_WET);
                         }else if(Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS)){
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
+                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_HOMEPLUS);
                         }else if(Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION) || Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION_LABEL)){   // 생산(1), 생산라벨(7) : PD_생산계근 적재
                             Log.i(TAG, "===================send packet 확인==================" + packet);
                             result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_PRODUCTION);
