@@ -1341,7 +1341,7 @@ public class DBHandler {
                     + DBInfo.TABLE_NAME_GOODS_WET
                     + " WHERE "
                     + qry_where         // 검색조건은 GI_D_ID
-                    + " ORDER BY GI_D_ID ASC, BOX_CNT ASC";
+                    + " ORDER BY GI_D_ID ASC, GI_L_ID ASC, BOX_CNT ASC";  // 출고상세 1건에 LOT 가 여럿이면 LOT 별로 이어서 전송 (롯데 박스순번 등록 순서 보장)
 
             cursor = mDbHelper.selectSql(sqlStr);
             if (Common.D) {
