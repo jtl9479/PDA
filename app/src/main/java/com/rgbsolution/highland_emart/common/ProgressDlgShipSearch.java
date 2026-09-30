@@ -295,13 +295,14 @@ public class ProgressDlgShipSearch extends AsyncTask<Integer, String, Integer> {
                     } else if(Common.searchType.equals("1")) {
                         si.setGI_L_ID(temp[24].toString());          // 생산작업지시SEQ
 
-                    // 홈플러스 비정량(5): 추가 5개 필드
+                    // 홈플러스 비정량(5): 추가 6개 필드
                     } else if(Common.searchType.equals("5")) {
                         si.setWH_AREA(temp[24].toString());          // 창고구역
                         si.setUSE_NAME(temp[25].toString());         // 용도명
                         si.setUSE_CODE(temp[26].toString());         // 용도코드
                         si.setCT_NAME(temp[27].toString());          // CT명
                         si.setSTORE_CODE(temp[28].toString());       // 점포코드
+                        si.setGI_L_ID(temp[29].toString());          // 출고LOTSEQ
 
                     // 롯데(6): 추가 3개 필드
                     } else if(Common.searchType.equals("6")) {
