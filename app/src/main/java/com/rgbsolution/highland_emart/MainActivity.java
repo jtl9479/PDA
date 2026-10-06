@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         // 전역 변수에 선택된 날짜 저장
         Common.selectDay = inPutDay;
         Log.i(TAG, TAG + "=====================selectDay======================" + inPutDay);
+        showWorkDate();
     };
 
     /**
@@ -257,6 +258,7 @@ public class MainActivity extends AppCompatActivity {
                 if (TestDataHelper.TEST_MODE) {
                     Common.searchType = SEARCH_TYPE_EMART;
                     Common.selectDay = formatDateYYYYMMDD();
+                    showWorkDate();
                     TestDataHelper.deleteAllTestData(this);
                     TestDataHelper.insertTestDataForEmartM0(this);
                     Toast.makeText(this, "[테스트] M0 테스트 데이터 삽입됨\n계근입력시작 버튼을 누르세요", Toast.LENGTH_SHORT).show();
@@ -377,6 +379,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.i(TAG, TAG + " onResume");
+        showWorkDate();
     }
 
     /**
@@ -477,6 +480,7 @@ public class MainActivity extends AppCompatActivity {
             calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH));
             Common.selectDay = formatDateYYYYMMDD();
         }
+        showWorkDate();
 
         // 5. 선택된 날짜/창고 로그 출력
         Log.i(TAG, TAG + "=====================Common.selectDay======================" + Common.selectDay);
@@ -517,6 +521,24 @@ public class MainActivity extends AppCompatActivity {
 
         // 4. 최종 결과 반환 (예: "20260107")
         return inPutDay;
+    }
+
+    /**
+     * 액션바 subtitle에 작업 날짜 표시 (표시 전용, Common.selectDay 변경 안 함)
+     * selectDay가 빈 값이면 오늘 날짜를 표시 (다운로드 시 오늘로 설정되는 동작과 일치)
+     */
+    private void showWorkDate() {
+        if (getSupportActionBar() == null) {
+            return;
+        }
+        String shown;
+        if (Common.selectDay != null && Common.selectDay.length() == 8) {
+            shown = Common.selectDay.substring(0, 4) + "-" + Common.selectDay.substring(4, 6) + "-" + Common.selectDay.substring(6, 8);
+        } else {
+            Calendar today = Calendar.getInstance();
+            shown = String.format("%04d-%02d-%02d", today.get(Calendar.YEAR), today.get(Calendar.MONTH) + 1, today.get(Calendar.DAY_OF_MONTH));
+        }
+        getSupportActionBar().setSubtitle("작업일자 : " + shown);
     }
 
     /**
