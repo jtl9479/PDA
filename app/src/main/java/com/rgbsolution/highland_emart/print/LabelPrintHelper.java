@@ -63,16 +63,8 @@ public class LabelPrintHelper {
 
     // 바코드 타입 상수
     private static final String BARCODE_TYPE_M0 = "M0";
-    private static final String BARCODE_TYPE_M1 = "M1";
-    private static final String BARCODE_TYPE_M3 = "M3";
-    private static final String BARCODE_TYPE_M4 = "M4";
     private static final String BARCODE_TYPE_M8 = "M8";
     private static final String BARCODE_TYPE_M9 = "M9";
-    private static final String BARCODE_TYPE_E0 = "E0";
-    private static final String BARCODE_TYPE_E1 = "E1";
-    private static final String BARCODE_TYPE_E2 = "E2";
-    private static final String BARCODE_TYPE_E3 = "E3";
-    private static final String BARCODE_TYPE_P0 = "P0";
 
     // 계근 방식 상수
     private static final String ITEM_TYPE_W = "W";    // 바코드 계근
@@ -392,13 +384,8 @@ public class LabelPrintHelper {
      * <h3>바코드 타입별 라벨 형식</h3>
      * <ul>
      *   <li>M0: 기본형 - 미트센터 납품 시 특별 처리 (EMARTLOGIS_CODE로 분기)</li>
-     *   <li>M1: 타입1 - 상품명, 바코드, 중량 표시</li>
-     *   <li>M3: 타입3 - 소비기한 포함</li>
-     *   <li>M4: 타입4 - 소비기한 포함 (M3과 유사)</li>
      *   <li>M8: 수입식별번호 포함</li>
      *   <li>M9: 납품일자 포함</li>
-     *   <li>E0, E1, E2, E3: 이마트 확장 타입</li>
-     *   <li>P0: 기본 바코드</li>
      * </ul>
      *
      * <h3>특별 처리 케이스</h3>
@@ -459,11 +446,7 @@ public class LabelPrintHelper {
 
             String YYYYMMDD = YYYY+"-"+MM+"-"+DD;
 
-            if(currentWorkItem.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || currentWorkItem.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)){
-                expiryDayConvert = "소비기한: "+YYYYMMDD;
-            }else{
-                expiryDayConvert = "/소비기한 : "+YYYYMMDD;
-            }
+            expiryDayConvert = "/소비기한 : "+YYYYMMDD;
 
         }
 
@@ -499,11 +482,7 @@ public class LabelPrintHelper {
 
                 String YYYYMMDD = YYYY+"-"+MM+"-"+DD;
 
-                if(currentWorkItem.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || currentWorkItem.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)){
-                    expiryDayConvert = "소비기한: "+YYYYMMDD;
-                }else{
-                    expiryDayConvert = "/소비기한: "+YYYYMMDD;
-                }
+                expiryDayConvert = "/소비기한: "+YYYYMMDD;
             }
         }
 
@@ -586,133 +565,6 @@ public class LabelPrintHelper {
                 pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
                 pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
                 break;
-            case "M1":
-                // 이마트 상품코드 형식 2
-                // 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: M1 ::::::::");
-                    Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-                    Log.d(TAG, "중량 6자리 :" + print_weight_str);
-                    Log.d(TAG, "회사코드 : " + pCompCode);
-                }
-
-                pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode;
-                pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode;
-
-                pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode;
-                pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode;
-                break;
-            case "M3":
-                // 이마트상품코드 형식 3
-                // 납품코드 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: M3 ::::::::");
-                    Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-                    Log.d(TAG, "중량 6자리 :" + print_weight_str);
-                    Log.d(TAG, "회사코드 : " + pCompCode);
-                    Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
-                }
-
-                pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-                pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-
-                pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-                pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-                break;
-            case "M4":
-                // 이마트 상품코드 형식 4
-                // 납품코드 + 중량 6자리 + 회사코드
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: M4 ::::::::");
-                    Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-                    Log.d(TAG, "중량 6자리 :" + print_weight_str);
-                    Log.d(TAG, "회사코드 : " + pCompCode);
-                }
-
-                pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode;
-                pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode;
-
-                pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode;
-                pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode;
-                break;
-            case "E0":
-                // 에브리데이 상품코드 형식 1
-                //상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: E0 ::::::::");
-                    Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-                    Log.d(TAG, "중량 6자리 :" + print_weight_str);
-                    Log.d(TAG, "회사코드 : " + pCompCode);
-                    Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
-                }
-
-                pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-                pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-
-                pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-                pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-                break;
-            case "E1":
-                // 에브리데이 상품코드 형식 2
-                // 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 111111111111
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: E1 ::::::::");
-                    Log.d(TAG, "full itemcode : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-                    Log.d(TAG, "중량 6자리 :" + print_weight_str);
-                    Log.d(TAG, "회사코드 : " + pCompCode);
-                }
-
-                pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + "111111111111";
-                pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " 111111111111";
-
-                pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode + "111111111111";
-                pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " 111111111111";
-                break;
-            case "E2":
-                // 에브리데이 상품코드 형식 3
-                // XXXXXXXXXXXXXXXXXXXX 상품코드 앞자리 6 자리 + 수입식별번호(12자리) XXXXXXXXXXXXX
-                // 상품코드 13자리 + 수입식별번호(12자리)  = 25
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: E2 ::::::::");
-                    Log.d(TAG, "full itemcode : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-                    Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
-                }
-                pBarcode = si.getEMARTITEM_CODE().toString() + si.getIMPORT_ID_NO();
-                pBarcodeStr = si.getEMARTITEM_CODE().toString() + " " + si.getIMPORT_ID_NO();
-
-                pBarcode2 = si.getEMARTLOGIS_CODE().toString() + si.getIMPORT_ID_NO();
-                pBarcodeStr2 = si.getEMARTLOGIS_CODE().toString() + " " + si.getIMPORT_ID_NO();
-                break;
-            case "E3":
-                // 에브리데이 상품코드 형식 4
-                // 상품코드 13자리
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: E3 ::::::::");
-                }
-
-                pBarcode = si.getEMARTITEM_CODE();
-                pBarcodeStr = si.getEMARTITEM_CODE();
-
-                pBarcode2 = si.getEMARTLOGIS_CODE();
-                pBarcodeStr2 = si.getEMARTLOGIS_CODE();
-                break;
-            case "P0":
-                // 생산투입시
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: P0 ::::::::");
-                    Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-                    Log.d(TAG, "중량 6자리 :" + print_weight_str);
-                    Log.d(TAG, "회사코드 : " + pCompCode);
-                    Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
-                }
-
-                pBarcode = si.getEMARTITEM_CODE() + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-                pBarcodeStr = si.getEMARTITEM_CODE() + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-
-                pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-                pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-                break;
-
             case "M9":
                 // 비정량 이마트 M9 (문의사항05 답변: 정량 이마트 우육 센터납 임시 사용 종료)
                 // 상품코드 앞자리 6자리 + 중량 6자리 + 회사코드 6자리 = 18자리
@@ -783,26 +635,19 @@ public class LabelPrintHelper {
                     Log.i(TAG, "센터명 <= 7 ,  size 40");
             }
 
-            // 바코드 타입별 업체명/지점명 출력
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                // M3, M4는 여기서 출력 없음
+            // 업체명/지점명 출력
+            if (11 < si.CLIENTNAME.toString().length()) {
+                labelData.write(slcsBitmapText(20, 60, 35, pointName.toString(), true));          // 지점명 출력
+                if (Common.D)
+                    Log.i(TAG, "지점명 > 11 ,  size 30");
             } else {
-                if (11 < si.CLIENTNAME.toString().length()) {
-                    labelData.write(slcsBitmapText(20, 60, 35, pointName.toString(), true));          // 지점명 출력
-                    if (Common.D)
-                        Log.i(TAG, "지점명 > 11 ,  size 30");
-                } else {
-                    labelData.write(slcsBitmapText(20, 60, 40, pointName.toString(), true));          // 지점명 출력
-                    if (Common.D)
-                        Log.i(TAG, "지점명 <= 11 ,  size 40");
-                }
+                labelData.write(slcsBitmapText(20, 60, 40, pointName.toString(), true));          // 지점명 출력
+                if (Common.D)
+                    Log.i(TAG, "지점명 <= 11 ,  size 40");
             }
 
-            // 상품명 출력 (바코드 타입별 위치, 크기)
+            // 상품명 출력 (위치, 크기)
             int itemX = 80, itemY = 120;  // 기본 위치
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                itemX = 15; itemY = 65;
-            }
             if (si.EMARTITEM.length() > 14) {
                 labelData.write(slcsBitmapText(itemX, itemY, 35, si.EMARTITEM, true));
             } else {
@@ -825,66 +670,18 @@ public class LabelPrintHelper {
 
             // 바코드 타입별 메인 바코드 출력 위치 설정
             int barcodeX = 80, barcodeY = 170;  // 기본 위치
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0)
-                    || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
                 barcodeX = 80; barcodeY = 170;
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M1)) {
-                barcodeX = 145; barcodeY = 170;
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E2)) {
-                barcodeX = 90; barcodeY = 170;
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E3)) {
-                barcodeX = 160; barcodeY = 170;
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                barcodeX = 70; barcodeY = 115;
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                barcodeX = 145; barcodeY = 115;
             }
             labelData.write(slcsBarcode(barcodeX, barcodeY, 60, pBarcode).getBytes("EUC-KR"));
 
             // 바코드 타입별 바코드번호(숫자) 출력
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_E1) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
+            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
                 labelData.write(slcsBitmapText(75, 240, 20, pBarcodeStr, true));
             }
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M1)) {
-                labelData.write(slcsBitmapText(147, 240, 25, pBarcodeStr, true));
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E2)) {
-                labelData.write(slcsBitmapText(100, 240, 25, pBarcodeStr, true));
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_E3)) {
-                labelData.write(slcsBitmapText(190, 240, 25, pBarcodeStr, true));
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                labelData.write(slcsBitmapText(25, 175, 25, pBarcodeStr + "  PC매입", true));
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                labelData.write(slcsBitmapText(117, 175, 25, pBarcodeStr + "  PC매입", true));
-            }
 
-            // M3, M4 추가 바코드 출력
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                labelData.write(slcsBarcode(70, 205, 60, pBarcode2).getBytes("EUC-KR"));
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                labelData.write(slcsBarcode(145, 205, 60, pBarcode2).getBytes("EUC-KR"));
-            }
-
-            // M3, M4 PC출하 텍스트 출력
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3)) {
-                labelData.write(slcsBitmapText(25, 265, 25, pBarcodeStr2 + "  PC출하", true));
-            } else if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
-                labelData.write(slcsBitmapText(117, 265, 25, pBarcodeStr2 + "  PC출하", true));
-            }
-
-            // 바코드 타입별 중량, 납품일자, 업체 정보 출력
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M3) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M4)) {
-                labelData.write(slcsBitmapText(15, 300, 40, "중     량 : ", true));
-                labelData.write(slcsBitmapText(175, 300, 40, String.valueOf(print_weight_double) + " KG", true));
-                String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-                labelData.write(slcsBitmapText(15, 348, 30, "납품일자 : " + tempDate, true));
-                if (reprint) {
-                    pCompName = pCompName + "  *";
-                }
-                labelData.write(slcsBitmapText(15, 388, 30, "업        체 : " + pCompCode + "   " + pCompName, true));
-                labelData.write(slcsBitmapText(15, 428, 30, expiryDayConvert, true)); // 소비기한
-
-            } else {
+            // 중량, 납품일자, 업체 정보 출력 (tempDate 가 아래 미트센터 블록과 겹치지 않도록 블록 유지)
+            {
                 labelData.write(slcsBitmapText(20, 280, 40, "중량 : ", true));
                 labelData.write(slcsBitmapText(180, 280, 40, String.valueOf(print_weight_double) + " KG", true));
                 Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
@@ -909,9 +706,7 @@ public class LabelPrintHelper {
             // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
             labelData.write(slcsFeedToMark().getBytes("EUC-KR"));
 
-            if( !si.getBARCODE_TYPE().equals(BARCODE_TYPE_P0) ) {
-                callback.sendData(labelData.toByteArray());
-            }
+            callback.sendData(labelData.toByteArray());
 
             // ========== 이마트 미트센터 +공장코드 라벨 (SLCS) ==========
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && !si.getEMART_PLANT_CODE().equals("")) {
