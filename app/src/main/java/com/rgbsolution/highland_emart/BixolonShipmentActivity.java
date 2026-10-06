@@ -2235,11 +2235,14 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                 // p_hight: 행 위치 (0~5행 반복, 36개마다 리셋)
                                 // p_weight: 열 위치 (0~5열 반복)
                                 p_hight = 10 + (i / 6 * 50) - (i / 36 * 300);
-                                p_weight = 100 * (i % 6);
+                                // 원본: p_weight = 100 * (i%6)
+                                // 6열(x=500)에서 소수 2자리(5글자) 값이 라벨 폭 576을 넘어 잘려 열 간격 95로 축소
+                                p_weight = 95 * (i % 6);
 
-                                // [1] 개별 중량 출력 (동적 좌표, 폰트크기 40x40)
+                                // [1] 개별 중량 출력 (동적 좌표, 폰트크기 32x32)
                                 // 원본: PM_setPosition(p_weight, p_hight) + getTTFcode(40, 40, weight)
-                                sumText.write(labelPrintHelper.bitmapText(p_weight, p_hight, 40, list_gi_info.get(i).getWEIGHT()));
+                                // Korail 비트맵 40 크기는 소수 2자리(5글자) 폭이 열 간격과 같아 숫자가 붙어 32로 축소
+                                sumText.write(labelPrintHelper.bitmapText(p_weight, p_hight, 32, list_gi_info.get(i).getWEIGHT()));
 
                                 weight_sum += Double.parseDouble(list_gi_info.get(i).getWEIGHT());
 
