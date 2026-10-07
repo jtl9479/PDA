@@ -11,6 +11,9 @@ import android.util.Log;
 import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
+import com.rgbsolution.highland_emart.print.label.LabelH2;
+import com.rgbsolution.highland_emart.print.label.LabelH5;
+import com.rgbsolution.highland_emart.print.label.LabelHomeplusUnregistered;
 import com.rgbsolution.highland_emart.print.label.LabelL0;
 import com.rgbsolution.highland_emart.print.label.LabelLotteUnregistered;
 import com.rgbsolution.highland_emart.print.label.LabelM0;
@@ -72,13 +75,15 @@ public class LabelPrintHelper {
     public static final String BARCODE_TYPE_M8 = "M8";
     public static final String BARCODE_TYPE_M9 = "M9";
     public static final String BARCODE_TYPE_L0 = "L0";
+    public static final String BARCODE_TYPE_H2 = "H2";
+    public static final String BARCODE_TYPE_H5 = "H5";
 
     // 계근 방식 상수
     private static final String ITEM_TYPE_W = "W";    // 바코드 계근
     private static final String ITEM_TYPE_HW = "HW";  // 바코드 계근 확장
     private static final String ITEM_TYPE_S = "S";    // 저울 계근
     private static final String ITEM_TYPE_J = "J";    // 지정 중량
-    private static final String ITEM_TYPE_B = "B";    // 홈플러스 비정량
+    public static final String ITEM_TYPE_B = "B";    // 홈플러스 비정량
 
     // 센터명 상수 (수입육 센터 판별용)
     private static final String CENTER_NAME_TRD = "TRD";
@@ -673,11 +678,6 @@ public class LabelPrintHelper {
 
         Log.d(TAG, "===========홈플 출력 시작 ================");
 
-        String pointCode = "";                // 지점코드
-        String storeCode = "";                // 점포코드(홈플러스 비정량)
-        String pointName = "";                // 지점명
-        String pCompName = COMPANY_NAME;
-
         //소수점 한자리 이후 절사
         Double print_weight_double = 0.0;
         String weight_str = String.valueOf(weight_double);
@@ -696,77 +696,21 @@ public class LabelPrintHelper {
 
         print_weight_double = weight_double;
 
-        pointCode = si.EMARTLOGIS_CODE.toString();
-        storeCode = si.STORE_CODE.toString();
-        pointName = si.CLIENTNAME.toString();
-
-        // ========== SLCS 명령어로 홈플러스 라벨 인쇄 (Bixolon 프린터) ==========
-        // StringBuilder + SLCS 헬퍼 메서드
-        // 라벨 레이아웃: 세로 방향
-        try {
-            StringBuilder slcsCmd = new StringBuilder();
-            ByteArrayOutputStream slcsCmdText = new ByteArrayOutputStream(); // 글자 비트맵(Korail.ttf)
-            slcsCmd.append(slcsInit());                                              // 프린터 초기화 (CB + CS13,0)
-            slcsCmd.append(slcsLabelSize(576, 590));                                 // 라벨 크기: 가로 576(용지 폭, 510 이면 x=510 이후 글자 잘림), 세로 590
-
-            // [1] 지점명 출력 - 위치(30, 170)
-            // 6자 초과 시 크기 70, 이하 시 크기 100 (긴 이름은 작게)
-            if(pointName.length() > 6) {
-                slcsCmdText.write(slcsBitmapText(170, 30, 70, pointName.toString(), true));     // 6자 초과: 크기 70
-            } else {
-                slcsCmdText.write(slcsBitmapText(170, 30, 100, pointName.toString(), true));   // 6자 이하: 크기 100
-            }
-
-            // [2] 점포코드/지점코드 출력 - 위치(135, 170), 크기 155
-            // ITEM_TYPE_B(비정량)이면 storeCode, 아니면 pointCode 출력
-            if (si.getITEM_TYPE().equals(ITEM_TYPE_B)) {
-                slcsCmdText.write(slcsBitmapText(170, 135, 155, storeCode.toString(), true));  // 비정량: 점포코드(STORE_CODE)
-            } else {
-                slcsCmdText.write(slcsBitmapText(170, 135, 155, pointCode.toString(), true));  // 정량: 지점코드(EMARTLOGIS_CODE)
-            }
-
-            // [3] 상품명 출력 - 위치(287 or 283, 170)
-            // 17자 초과 시 크기 25, 이하 시 크기 30 (긴 상품명은 작게)
-            if (si.EMARTITEM.length() > 17) {
-                slcsCmdText.write(slcsBitmapText(170, 287, 25, si.EMARTITEM, true));            // 17자 초과: 크기 25
-            } else {
-                slcsCmdText.write(slcsBitmapText(170, 283, 30, si.EMARTITEM, true));            // 17자 이하: 크기 30
-            }
-
-            // [4] BOX 텍스트 - 위치(322, 170), 크기 40
-            slcsCmdText.write(slcsBitmapText(170, 322, 40, "BOX", true));
-
-            // [5] CT코드 (차량코드) - 위치(361, 170), 크기 40
-            slcsCmdText.write(slcsBitmapText(170, 361, 40, String.valueOf(si.getCT_CODE()), true));
-
-            // [6] 중량/수입식별번호 - 위치(361, 380), 크기 40
-            // 형식: "중량/수입식별번호 뒤 4자리"
-            slcsCmdText.write(slcsBitmapText(380, 361, 40, String.valueOf(print_weight_double) + "/"+si.getIMPORT_ID_NO().substring(8, 12), true));
-
-            // [7] 납품일자 - 위치(402, 170), 크기 40
-            // 형식: "YYYY년 MM월 DD일"
-            Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
-            String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-            slcsCmdText.write(slcsBitmapText(170, 402, 40, tempDate, true));
-
-            // [8] 업체명 - 위치(441, 170), 크기 40
-            // 값: COMPANY_NAME 상수 ("(주)하이랜드이노베이션")
-            slcsCmdText.write(slcsBitmapText(170, 441, 40, pCompName, true));
-
-            // [9] 인쇄 실행 - 1장 출력
-            slcsCmd.append(slcsPrint(1));
-            // 라벨 피드 (마크 위치로 이동)
-            slcsCmd.append(slcsFeedToMark());
-
-            // SLCS 명령어를 EUC-KR 인코딩으로 프린터에 전송
-            callback.sendData(withBitmapText(slcsCmd, slcsCmdText));
-            callback.clearBarcodeInput();  // 바코드 입력창 초기화
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (Common.D) {
-                Log.d(TAG, "setHomeplusPrinting Exception\n" + e.getMessage());
-            }
+        // ========== 바코드 타입별 라벨 디자인 → print/label (신규 타입은 HomeplusLabel 구현 클래스 추가 후 case 추가) ==========
+        // 기존 홈플러스 라벨은 바코드 타입을 보지 않았으므로 null 도 default 로 처리한다
+        String barcodeType = si.getBARCODE_TYPE() == null ? "" : si.getBARCODE_TYPE();
+        switch (barcodeType) {
+            case BARCODE_TYPE_H2:
+                new LabelH2(this).print(si, reprint, print_weight_double, callback);
+                break;
+            case BARCODE_TYPE_H5:
+                new LabelH5(this).print(si, reprint, print_weight_double, callback);
+                break;
+            default:
+                new LabelHomeplusUnregistered(this).print(si, reprint, print_weight_double, callback);
+                break;
         }
+
         return String.valueOf(print_weight_double);
     }
 
