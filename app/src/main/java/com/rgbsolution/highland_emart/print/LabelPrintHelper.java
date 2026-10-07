@@ -469,7 +469,6 @@ public class LabelPrintHelper {
         String pBarcodeStr = "";
         String pBarcode2 = "";
         String pBarcodeStr2 = "";
-        String meatCenterBarcode = "";
         String whArea = "";
 
         //소수점 한자리 이후 절사
@@ -514,54 +513,12 @@ public class LabelPrintHelper {
             Log.d(TAG, "중량 6 자리 : " + print_weight_str);
         }
 
-        switch (si.getBARCODE_TYPE()) {
-            case "M0":
-                // 이마트상품코드 형식 1
-                // 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: M0 ::::::::");
-                    Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-                    Log.d(TAG, "중량 6자리 :" + print_weight_str);
-                    Log.d(TAG, "회사코드 : " + pCompCode);
-                    Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
-                }
-
-                pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-                pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-
-                pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-                pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-                break;
-            case "M9":
-                // 비정량 이마트 M9 (문의사항05 답변: 정량 이마트 우육 센터납 임시 사용 종료)
-                // 상품코드 앞자리 6자리 + 중량 6자리 + 회사코드 6자리 = 18자리
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: M9 (비정량 이마트) ::::::::");
-                    Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-                    Log.d(TAG, "중량 6자리 :" + print_weight_str);
-                    Log.d(TAG, "회사코드 : " + pCompCode);
-                }
-
-                pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode;
-                pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode;
-
-                break;
-
-            case "M8":
-                // 이마트 비정량 납품분
-                // 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
-                if (Common.D) {
-                    Log.e(TAG, "::::::::: M8 ::::::::");
-                    Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-                    Log.d(TAG, "중량 6자리 :" + print_weight_str);
-                    Log.d(TAG, "회사코드 : " + pCompCode);
-                    Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
-                }
-
-                pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-                pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-                break;
-        }
+        // 바코드 타입별 바코드 문자열 조립 → buildEmartBarcode
+        String[] emartBarcode = buildEmartBarcode(si, print_weight_str, pCompCode);
+        pBarcode = emartBarcode[0];
+        pBarcodeStr = emartBarcode[1];
+        pBarcode2 = emartBarcode[2];
+        pBarcodeStr2 = emartBarcode[3];
 
         String[] split_name = null;
         if (si.CLIENTNAME.contains("이마트")) {
@@ -635,15 +592,12 @@ public class LabelPrintHelper {
             Log.i(TAG, "===============pBarcode============" + pBarcode);
             Log.i(TAG, "===============pBarcode2============" + pBarcode2);
 
-            // 바코드 타입별 메인 바코드 출력 위치 설정
-            int barcodeX = 80, barcodeY = 170;  // 기본 위치
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8)) {
-                barcodeX = 80; barcodeY = 170;
-            }
-            labelData.write(slcsBarcode(barcodeX, barcodeY, 60, pBarcode).getBytes("EUC-KR"));
+            // 바코드 타입별 메인 바코드 출력 위치 → getEmartBarcodePosition
+            int[] barcodePos = getEmartBarcodePosition(si.getBARCODE_TYPE());
+            labelData.write(slcsBarcode(barcodePos[0], barcodePos[1], 60, pBarcode).getBytes("EUC-KR"));
 
-            // 바코드 타입별 바코드번호(숫자) 출력
-            if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M8) || si.getBARCODE_TYPE().equals(BARCODE_TYPE_M9)) {
+            // 바코드 타입별 바코드번호(숫자) 출력 여부 → isEmartBarcodeNumberVisible
+            if (isEmartBarcodeNumberVisible(si.getBARCODE_TYPE())) {
                 labelData.write(slcsBitmapText(75, 240, 20, pBarcodeStr, true));
             }
 
@@ -677,112 +631,12 @@ public class LabelPrintHelper {
 
             // ========== 이마트 미트센터 +공장코드 라벨 (SLCS) ==========
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && !si.getEMART_PLANT_CODE().equals("")) {
-                System.out.println(">>>>>>>>>>>>>>> 이마트 미트센터 +공장코드 >>>>>>>>>>>>>>>");
-
-                try {
-                    StringBuilder slcsMeat = new StringBuilder();
-                    ByteArrayOutputStream slcsMeatText = new ByteArrayOutputStream(); // 글자 비트맵(Korail.ttf)
-                    slcsMeat.append(slcsInit());
-                    slcsMeat.append(slcsLabelSize(576, 460));
-
-                    String meatCenterTitle = "ERP-미트센터출하코드";
-                    String meatCenterCode = MEAT_CENTER_CODE;
-                    String meatCenterBarcodeStr = "";
-
-                    slcsMeatText.write(slcsBitmapText(120, 35, 40, meatCenterTitle, true));
-
-                    if (si.EMARTITEM.length() > 14) {
-                        slcsMeatText.write(slcsBitmapText(115, 120, 35, si.EMARTITEM, true));
-                    } else {
-                        slcsMeatText.write(slcsBitmapText(115, 120, 40, si.EMARTITEM, true));
-                    }
-
-                    meatCenterBarcode = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + meatCenterCode + si.getIMPORT_ID_NO() + si.getEMART_PLANT_CODE();
-                    meatCenterBarcodeStr = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + meatCenterCode + " " + si.getIMPORT_ID_NO() + " " + si.getEMART_PLANT_CODE();
-
-                    Log.i(TAG, "===============MEATCENTERBARCODE128============" + meatCenterBarcode);
-
-                    slcsMeat.append(slcsBarcode(35, 170, 60, meatCenterBarcode));
-                    slcsMeatText.write(slcsBitmapText(40, 240, 25, meatCenterBarcodeStr, true));
-
-                    slcsMeatText.write(slcsBitmapText(15, 280, 40, "중      량 : ", true));
-                    slcsMeatText.write(slcsBitmapText(175, 280, 40, String.valueOf(print_weight_double) + " KG", true));
-
-                    Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
-                    String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-                    slcsMeatText.write(slcsBitmapText(15, 328, 30, "납품일자 : " + tempDate, true));
-
-                    slcsMeatText.write(slcsBitmapText(15, 368, 30, "업체코드 : " + meatCenterCode + expiryDayConvert, true));
-                    slcsMeatText.write(slcsBitmapText(15, 408, 30, "업 체 명 : " + pCompName, true));
-
-                    whArea = si.getWH_AREA();
-                    Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
-                    if(whArea != null || !whArea.equals("")){
-                        slcsMeatText.write(slcsBitmapText(430, 385, 65, whArea, true));
-                    }
-
-                    slcsMeat.append(slcsPrint(1));
-                    // 라벨 피드 (마크 위치로 이동)
-                    slcsMeat.append(slcsFeedToMark());
-                    callback.sendData(withBitmapText(slcsMeat, slcsMeatText));
-                } catch (Exception e) {
-                    Log.d(TAG, "이마트 공장코드 출력 오류 " +  e.getMessage());
-                    e.printStackTrace();
-                }
+                printEmartMeatCenterPlantLabel(si, print_weight_str, print_weight_double, expiryDayConvert, pCompName, callback);
             }
 
             // ========== 이마트 미트센터 라벨 (SLCS) ==========
             if (si.getBARCODE_TYPE().equals(BARCODE_TYPE_M0) && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE) && !si.getEMARTLOGIS_CODE().equals(LOGIS_CODE_DEFAULT) && si.getEMART_PLANT_CODE().equals("")) {
-                try {
-                    StringBuilder slcsMeat2 = new StringBuilder();
-                    ByteArrayOutputStream slcsMeat2Text = new ByteArrayOutputStream(); // 글자 비트맵(Korail.ttf)
-                    slcsMeat2.append(slcsInit());
-                    slcsMeat2.append(slcsLabelSize(576, 460));
-
-                    String meatCenterTitle = "미트센터출하코드";
-                    String meatCenterCode = MEAT_CENTER_CODE;
-                    String meatCenterBarcodeStr = "";
-
-                    slcsMeat2Text.write(slcsBitmapText(150, 35, 40, meatCenterTitle, true));
-
-                    if (si.EMARTITEM.length() > 14) {
-                        slcsMeat2Text.write(slcsBitmapText(80, 120, 35, si.EMARTITEM, true));
-                    } else {
-                        slcsMeat2Text.write(slcsBitmapText(80, 120, 40, si.EMARTITEM, true));
-                    }
-
-                    meatCenterBarcode = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + meatCenterCode + si.getIMPORT_ID_NO();
-                    meatCenterBarcodeStr = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + meatCenterCode + " " + si.getIMPORT_ID_NO();
-
-                    Log.i(TAG, "===============MEATCENTERBARCODE128============" + meatCenterBarcode);
-
-                    slcsMeat2.append(slcsBarcode(80, 170, 60, meatCenterBarcode));
-                    slcsMeat2Text.write(slcsBitmapText(75, 240, 25, meatCenterBarcodeStr, true));
-
-                    slcsMeat2Text.write(slcsBitmapText(15, 280, 40, "중      량 : ", true));
-                    slcsMeat2Text.write(slcsBitmapText(175, 280, 40, String.valueOf(print_weight_double) + " KG", true));
-
-                    Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
-                    String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
-                    slcsMeat2Text.write(slcsBitmapText(15, 328, 30, "납품일자 : " + tempDate, true));
-
-                    slcsMeat2Text.write(slcsBitmapText(15, 368, 30, "업체코드 : " + meatCenterCode + expiryDayConvert, true));
-                    slcsMeat2Text.write(slcsBitmapText(15, 408, 30, "업 체 명 : " + pCompName, true));
-
-                    whArea = si.getWH_AREA();
-                    Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
-                    if(whArea != null || !whArea.equals("")){
-                        slcsMeat2Text.write(slcsBitmapText(430, 385, 65, whArea, true));
-                    }
-
-                    slcsMeat2.append(slcsPrint(1));
-                    // 라벨 피드 (마크 위치로 이동)
-                    slcsMeat2.append(slcsFeedToMark());
-                    callback.sendData(withBitmapText(slcsMeat2, slcsMeat2Text));
-                } catch (Exception e) {
-                    Log.d(TAG, "이마트 미트센터 출력 오류 " +  e.getMessage());
-                    e.printStackTrace();
-                }
+                printEmartMeatCenterLabel(si, print_weight_str, print_weight_double, expiryDayConvert, pCompName, callback);
             }
             callback.clearBarcodeInput();
         } catch (Exception e) {
@@ -792,6 +646,224 @@ public class LabelPrintHelper {
             }
         }
         return String.valueOf(print_weight_double);
+    }
+
+    // ========================================================================================
+    // 이마트 라벨 바코드 타입별 처리 (신규 타입 추가 시 개발/75 5절 참고)
+    //  1) BARCODE_TYPE_XX 상수 추가  2) buildBarcodeXX 추가 + buildEmartBarcode case 추가
+    //  3) getEmartBarcodePosition / isEmartBarcodeNumberVisible 에 반영
+    // ========================================================================================
+
+    /**
+     * 바코드 타입별 이마트 메인 바코드 문자열 조립
+     *
+     * @return {pBarcode, pBarcodeStr, pBarcode2, pBarcodeStr2} — 등록되지 않은 타입은 모두 ""
+     */
+    private String[] buildEmartBarcode(Shipments_Info si, String print_weight_str, String pCompCode) {
+        switch (si.getBARCODE_TYPE()) {
+            case "M0":
+                return buildBarcodeM0(si, print_weight_str, pCompCode);
+            case "M9":
+                return buildBarcodeM9(si, print_weight_str, pCompCode);
+            case "M8":
+                return buildBarcodeM8(si, print_weight_str, pCompCode);
+        }
+        return new String[]{"", "", "", ""};
+    }
+
+    /**
+     * M0 : 이마트상품코드 형식 1
+     * 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
+     */
+    private String[] buildBarcodeM0(Shipments_Info si, String print_weight_str, String pCompCode) {
+        if (Common.D) {
+            Log.e(TAG, "::::::::: M0 ::::::::");
+            Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
+            Log.d(TAG, "중량 6자리 :" + print_weight_str);
+            Log.d(TAG, "회사코드 : " + pCompCode);
+            Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
+        }
+
+        String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
+        String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
+
+        String pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
+        String pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
+        return new String[]{pBarcode, pBarcodeStr, pBarcode2, pBarcodeStr2};
+    }
+
+    /**
+     * M9 : 비정량 이마트 (문의사항05 답변: 정량 이마트 우육 센터납 임시 사용 종료)
+     * 상품코드 앞자리 6자리 + 중량 6자리 + 회사코드 6자리 = 18자리
+     */
+    private String[] buildBarcodeM9(Shipments_Info si, String print_weight_str, String pCompCode) {
+        if (Common.D) {
+            Log.e(TAG, "::::::::: M9 (비정량 이마트) ::::::::");
+            Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
+            Log.d(TAG, "중량 6자리 :" + print_weight_str);
+            Log.d(TAG, "회사코드 : " + pCompCode);
+        }
+
+        String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode;
+        String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode;
+        return new String[]{pBarcode, pBarcodeStr, "", ""};
+    }
+
+    /**
+     * M8 : 이마트 비정량 납품분
+     * 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
+     */
+    private String[] buildBarcodeM8(Shipments_Info si, String print_weight_str, String pCompCode) {
+        if (Common.D) {
+            Log.e(TAG, "::::::::: M8 ::::::::");
+            Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
+            Log.d(TAG, "중량 6자리 :" + print_weight_str);
+            Log.d(TAG, "회사코드 : " + pCompCode);
+            Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
+        }
+
+        String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
+        String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
+        return new String[]{pBarcode, pBarcodeStr, "", ""};
+    }
+
+    /**
+     * 바코드 타입별 메인 바코드 출력 위치 {x, y}
+     * 현재 M0·M8·M9 및 기타 타입 모두 (80, 170)
+     */
+    private int[] getEmartBarcodePosition(String barcodeType) {
+        return new int[]{80, 170};
+    }
+
+    /**
+     * 바코드 타입별 바코드번호(숫자) 출력 여부
+     */
+    private boolean isEmartBarcodeNumberVisible(String barcodeType) {
+        return barcodeType.equals(BARCODE_TYPE_M0) || barcodeType.equals(BARCODE_TYPE_M8) || barcodeType.equals(BARCODE_TYPE_M9);
+    }
+
+    /**
+     * 이마트 미트센터 +공장코드 라벨 (2번째 라벨)
+     * 진입 조건(setPrinting): M0 && 점포코드 9231 && 물류코드 "0000000" && 공장코드 있음
+     *
+     * @param pCompName 재출력 시 "  *" 가 붙은 업체명
+     */
+    private void printEmartMeatCenterPlantLabel(Shipments_Info si, String print_weight_str, double print_weight_double, String expiryDayConvert, String pCompName, PrinterCallback callback) {
+        String meatCenterBarcode = "";
+        String whArea = "";
+        System.out.println(">>>>>>>>>>>>>>> 이마트 미트센터 +공장코드 >>>>>>>>>>>>>>>");
+
+        try {
+            StringBuilder slcsMeat = new StringBuilder();
+            ByteArrayOutputStream slcsMeatText = new ByteArrayOutputStream(); // 글자 비트맵(Korail.ttf)
+            slcsMeat.append(slcsInit());
+            slcsMeat.append(slcsLabelSize(576, 460));
+
+            String meatCenterTitle = "ERP-미트센터출하코드";
+            String meatCenterCode = MEAT_CENTER_CODE;
+            String meatCenterBarcodeStr = "";
+
+            slcsMeatText.write(slcsBitmapText(120, 35, 40, meatCenterTitle, true));
+
+            if (si.EMARTITEM.length() > 14) {
+                slcsMeatText.write(slcsBitmapText(115, 120, 35, si.EMARTITEM, true));
+            } else {
+                slcsMeatText.write(slcsBitmapText(115, 120, 40, si.EMARTITEM, true));
+            }
+
+            meatCenterBarcode = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + meatCenterCode + si.getIMPORT_ID_NO() + si.getEMART_PLANT_CODE();
+            meatCenterBarcodeStr = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + meatCenterCode + " " + si.getIMPORT_ID_NO() + " " + si.getEMART_PLANT_CODE();
+
+            Log.i(TAG, "===============MEATCENTERBARCODE128============" + meatCenterBarcode);
+
+            slcsMeat.append(slcsBarcode(35, 170, 60, meatCenterBarcode));
+            slcsMeatText.write(slcsBitmapText(40, 240, 25, meatCenterBarcodeStr, true));
+
+            slcsMeatText.write(slcsBitmapText(15, 280, 40, "중      량 : ", true));
+            slcsMeatText.write(slcsBitmapText(175, 280, 40, String.valueOf(print_weight_double) + " KG", true));
+
+            Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
+            String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
+            slcsMeatText.write(slcsBitmapText(15, 328, 30, "납품일자 : " + tempDate, true));
+
+            slcsMeatText.write(slcsBitmapText(15, 368, 30, "업체코드 : " + meatCenterCode + expiryDayConvert, true));
+            slcsMeatText.write(slcsBitmapText(15, 408, 30, "업 체 명 : " + pCompName, true));
+
+            whArea = si.getWH_AREA();
+            Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
+            if(whArea != null || !whArea.equals("")){
+                slcsMeatText.write(slcsBitmapText(430, 385, 65, whArea, true));
+            }
+
+            slcsMeat.append(slcsPrint(1));
+            // 라벨 피드 (마크 위치로 이동)
+            slcsMeat.append(slcsFeedToMark());
+            callback.sendData(withBitmapText(slcsMeat, slcsMeatText));
+        } catch (Exception e) {
+            Log.d(TAG, "이마트 공장코드 출력 오류 " +  e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 이마트 미트센터 라벨 (2번째 라벨)
+     * 진입 조건(setPrinting): M0 && 점포코드 9231 && 물류코드 "0000000" 아님 && 공장코드 없음
+     *
+     * @param pCompName 재출력 시 "  *" 가 붙은 업체명
+     */
+    private void printEmartMeatCenterLabel(Shipments_Info si, String print_weight_str, double print_weight_double, String expiryDayConvert, String pCompName, PrinterCallback callback) {
+        String meatCenterBarcode = "";
+        String whArea = "";
+        try {
+            StringBuilder slcsMeat2 = new StringBuilder();
+            ByteArrayOutputStream slcsMeat2Text = new ByteArrayOutputStream(); // 글자 비트맵(Korail.ttf)
+            slcsMeat2.append(slcsInit());
+            slcsMeat2.append(slcsLabelSize(576, 460));
+
+            String meatCenterTitle = "미트센터출하코드";
+            String meatCenterCode = MEAT_CENTER_CODE;
+            String meatCenterBarcodeStr = "";
+
+            slcsMeat2Text.write(slcsBitmapText(150, 35, 40, meatCenterTitle, true));
+
+            if (si.EMARTITEM.length() > 14) {
+                slcsMeat2Text.write(slcsBitmapText(80, 120, 35, si.EMARTITEM, true));
+            } else {
+                slcsMeat2Text.write(slcsBitmapText(80, 120, 40, si.EMARTITEM, true));
+            }
+
+            meatCenterBarcode = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + meatCenterCode + si.getIMPORT_ID_NO();
+            meatCenterBarcodeStr = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + meatCenterCode + " " + si.getIMPORT_ID_NO();
+
+            Log.i(TAG, "===============MEATCENTERBARCODE128============" + meatCenterBarcode);
+
+            slcsMeat2.append(slcsBarcode(80, 170, 60, meatCenterBarcode));
+            slcsMeat2Text.write(slcsBitmapText(75, 240, 25, meatCenterBarcodeStr, true));
+
+            slcsMeat2Text.write(slcsBitmapText(15, 280, 40, "중      량 : ", true));
+            slcsMeat2Text.write(slcsBitmapText(175, 280, 40, String.valueOf(print_weight_double) + " KG", true));
+
+            Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
+            String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
+            slcsMeat2Text.write(slcsBitmapText(15, 328, 30, "납품일자 : " + tempDate, true));
+
+            slcsMeat2Text.write(slcsBitmapText(15, 368, 30, "업체코드 : " + meatCenterCode + expiryDayConvert, true));
+            slcsMeat2Text.write(slcsBitmapText(15, 408, 30, "업 체 명 : " + pCompName, true));
+
+            whArea = si.getWH_AREA();
+            Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
+            if(whArea != null || !whArea.equals("")){
+                slcsMeat2Text.write(slcsBitmapText(430, 385, 65, whArea, true));
+            }
+
+            slcsMeat2.append(slcsPrint(1));
+            // 라벨 피드 (마크 위치로 이동)
+            slcsMeat2.append(slcsFeedToMark());
+            callback.sendData(withBitmapText(slcsMeat2, slcsMeat2Text));
+        } catch (Exception e) {
+            Log.d(TAG, "이마트 미트센터 출력 오류 " +  e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
