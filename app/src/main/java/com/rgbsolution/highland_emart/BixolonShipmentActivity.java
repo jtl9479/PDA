@@ -2680,7 +2680,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 int iCount = 0;
                 int jChk = 0;
 
-                if(Common.searchType.equals(Common.SEARCH_TYPE_EMART) || Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS) || Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)){ //이마트 혹은 홈플러스, 롯데 출고일때..구로직
+                if(mode.getSendType() == ShipmentMode.SendType.PER_ITEM){ //건별 전송 : 이마트, 홈플러스, 롯데 (개발/76)
                     for (int i = 0; i < list_send_info.size(); i++) { //SAVE_TYPE 과 상관 없이 계근 데이터 모두 루프
                         if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
                             iCount++;
@@ -2708,18 +2708,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                             Log.i(TAG, "=====================Common.searchType==================" + Common.searchType);
 
-                            // 디비접속 설정
-                            if(Common.searchType.equals(Common.SEARCH_TYPE_EMART)||Common.searchType.equals(Common.SEARCH_TYPE_WHOLESALE)) {
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                            }else if(Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS)){   // 홈플러스(2) : 박스순번(BOX_ORDER) 포함 적재 (원본 URL_INSERT_GOODS_WET_HOMEPLUS)
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_HOMEPLUS);
-                            }else if(Common.searchType.equals(Common.SEARCH_TYPE_LOTTE)){   // 롯데(6) : 박스순번(BOX_ORDER) 포함 적재 (개발63)
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_LOTTE);
-                            }else if(Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION)){
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                            }else if(Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION_LABEL)){
-                                result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                            }
+                            // 디비접속 설정 — 마트별 전송 URL (이마트 insert_goods_wet / 홈플러스 _homeplus / 롯데 _lotte)
+                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", mode.getSendUrl());
 
                             //결과값의 앞, 뒤에 공백 제거
                             result = result.replace("\r\n", "");
@@ -2759,7 +2749,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             }
                         }
                     }
-                }else if(Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION) || Common.searchType.equals(Common.SEARCH_TYPE_WHOLESALE) || Common.searchType.equals(Common.SEARCH_TYPE_NONFIXED) || Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS_NONFIXED) || Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION_LABEL)){//생산계근 혹은 도매계근일때
+                }else if(mode.getSendType() == ShipmentMode.SendType.BATCH){ //일괄 전송 : 이마트 비정량, 홈플러스 비정량, 도매, 생산, 생산라벨 (개발/76)
                     Log.i(TAG, "=====================여기 들어오는지 확인==================");
                     Log.i(TAG, "=====================사이즈 확인=================="+list_send_info.size());
                     String packet = "";
@@ -2801,22 +2791,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     }
 
                     if(sendOrNot){
-                        //전문전송..
-                        if(Common.searchType.equals(Common.SEARCH_TYPE_EMART)) {   // 출하대상 리스트, 스토어 코드 넣은 이유는 앱을 종료로 안 닫고 앱정리로 닫은 후 생산리스트를 다운받지 않은 상태에서 계근입력후 전송하면 하이랜드 스키마로 데이터가 입력될 수 있음
-                            result = HttpHelper.getInstance().sendData(packet, "goodswet_insert", Common.URL_INSERT_GOODS_WET);
-                        }else if(Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS)){
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_HOMEPLUS);
-                        }else if(Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION) || Common.searchType.equals(Common.SEARCH_TYPE_PRODUCTION_LABEL)){   // 생산(1), 생산라벨(7) : PD_생산계근 적재
-                            Log.i(TAG, "===================send packet 확인==================" + packet);
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_PRODUCTION);
-                        }else if(Common.searchType.equals(Common.SEARCH_TYPE_NONFIXED)|| Common.searchType.equals(Common.SEARCH_TYPE_HOMEPLUS_NONFIXED)){
-                            Log.i(TAG, "===================send packet 확인==================" + packet);
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_NEW);
-                        }else if(Common.searchType.equals(Common.SEARCH_TYPE_WHOLESALE)){
-                            Log.i(TAG, "==================여기로 들어옴==================");
-                            Log.i(TAG, "===================send packet 확인==================" + packet);
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", Common.URL_INSERT_GOODS_WET_NEW);
-                        }
+                        //전문전송.. 마트별 전송 URL (생산·생산라벨 _production / 이마트 비정량·홈플러스 비정량·도매 _new)
+                        Log.i(TAG, "===================send packet 확인==================" + packet);
+                        result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", mode.getSendUrl());
                     }else{
                         result = "af"; //already finish
                     }

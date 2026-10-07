@@ -15,12 +15,18 @@
 - 미등록 searchType 은 `UnregisteredMode` (기존 else 경로 동작)가 담당한다 (DefaultShipmentMode 대신).
 - 생산은 `ProductionMode`(1) / `ProductionLabelMode`(7) 분리 (권장안 채택).
 - 일괄 전송 중복 로그 4줄(13절 #7)은 유지.
-- 전송(N, Step 4)의 도달 불가 분기 처리(13절 #6)는 사용자 결정 대기 — Step 1~3 먼저 구현.
+- 전송(N, Step 4): 사용자 승인으로 **A안(정리)** 채택 — 건별/일괄 바깥 조건을 mode.getSendType(), 안쪽 URL 체인을 mode.getSendUrl() 로 치환. 도달 불가 분기(건별 안 도매·생산·생산라벨 URL, 일괄 안 이마트 sendData·홈플러스 URL)는 이관하지 않음.
 
 ### 구현 결과 (Step 1~3)
 - `shipment/mode/`: ShipmentMode(인터페이스·SendType), ShipmentModeFactory, EmartMode·EmartNonfixedMode·WholesaleMode·HomeplusMode·HomeplusNonfixedMode·LotteMode·ProductionMode·ProductionLabelMode·UnregisteredMode (각 19개 메서드 전부 구현)
 - BixolonShipmentActivity: 전송(N)을 제외한 분기 A1·A2·A3·B·C·D·E·F1·F2·G·H1·H2·I·J·K1~K4·L·M 을 mode 호출로 치환, `lotte_TryCount` 필드 → LotteMode 이동. 남은 searchType 분기는 전송(ProgressDlgShipmentSend)뿐.
 - 검증: 컴파일 성공, code-verifier PASS (searchType 0~7·미등록·null 전 지점 HEAD 동일, 19개 메서드 매트릭스 일치, 허용 차이: "chk prod 계근중량" 로그가 setGI_QTY 직전으로 이동).
+
+### 구현 결과 (Step 4)
+- ProgressDlgShipmentSend: `if (mode.getSendType() == PER_ITEM)` / `else if (== BATCH)`, 전송은 `HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", mode.getSendUrl())`.
+- Activity 에 남은 searchType 참조: onCreate 의 `ShipmentModeFactory.create(Common.searchType)` 1곳뿐 (마트 분기 0).
+- 검증: 컴파일 성공, code-verifier PASS — 0~7·미등록 진입 블록·HttpHelper 메서드·URL 이 HEAD 실제 도달 경로와 동일, 제거 분기는 바깥 조건 배타성으로 도달 불가 증명, packet·결과처리·개발74 jChk 무변경.
+- 차이: 로그만 — 일괄 "send packet 확인" 로그 1줄로 통일, 도매 전용 "여기로 들어옴" 로그 1줄 제거.
 
 ## AI 제약 조건
 
