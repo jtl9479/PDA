@@ -165,36 +165,6 @@ public class LabelPrintHelper {
     }
 
     /**
-     * SLCS 선 그리기
-     *
-     * @param x1    시작 X 좌표
-     * @param y1    시작 Y 좌표
-     * @param x2    끝 X 좌표
-     * @param y2    끝 Y 좌표
-     * @param width 선 두께
-     * @return SLCS 선 명령어 문자열
-     */
-    private String slcsLine(int x1, int y1, int x2, int y2, int width) {
-        // LS x1,y1,x2,y2,width
-        return "LS" + x1 + "," + y1 + "," + x2 + "," + y2 + "," + width + "\r\n";
-    }
-
-    /**
-     * SLCS 박스 그리기
-     *
-     * @param x         X 좌표
-     * @param y         Y 좌표
-     * @param width     박스 너비
-     * @param height    박스 높이
-     * @param thickness 선 두께
-     * @return SLCS 박스 명령어 문자열
-     */
-    private String slcsBox(int x, int y, int width, int height, int thickness) {
-        // LB x1,y1,x2,y2,thickness
-        return "LB" + x + "," + y + "," + (x + width) + "," + (y + height) + "," + thickness + "\r\n";
-    }
-
-    /**
      * 검은 사각형을 비트맵(LD 명령)으로 그린다.
      * LS/LB 명령이 SPP-L3000 에서 검은 영역으로 인쇄되어, 이마트 텍스트와 같은 LD 비트맵 경로로 선·테두리를 그린다.
      *
@@ -500,13 +470,11 @@ public class LabelPrintHelper {
         String pBarcode2 = "";
         String pBarcodeStr2 = "";
         String meatCenterBarcode = "";
-        String pBarcodeStr3 = "";
         String whArea = "";
 
         //소수점 한자리 이후 절사
         String print_weight_str = "";
         Double print_weight_double = 0.0;
-        String weight_ = String.valueOf(weight_double);
         String weight_str = String.valueOf(weight_double);
         String[] weight_sp = weight_str.split("\\.");
         String print_weight = weight_sp[0] + "." + weight_sp[1].substring(0, 1);
@@ -966,9 +934,7 @@ public class LabelPrintHelper {
         String pCompName = COMPANY_NAME;
 
         //소수점 한자리 이후 절사
-        String print_weight_str = "";
         Double print_weight_double = 0.0;
-        String weight_ = String.valueOf(weight_double);
         String weight_str = String.valueOf(weight_double);
         String[] weight_sp = weight_str.split("\\.");
         String print_weight = "";
@@ -1103,7 +1069,6 @@ public class LabelPrintHelper {
         //소수점 한자리 이후 절사
         String print_weight_str = "";
         Double print_weight_double = 0.0;
-        String weight_ = String.valueOf(weight_double);
         String weight_str = String.valueOf(weight_double);
         String[] weight_sp = weight_str.split("\\.");
         String print_weight = "";
