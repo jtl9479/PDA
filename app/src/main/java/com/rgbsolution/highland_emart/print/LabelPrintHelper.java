@@ -456,20 +456,6 @@ public class LabelPrintHelper {
         }
 
         String pointName = "";                // 이마트 지점명
-        String pCompCode = "";
-        String pCompName = "";
-
-        // 모든 건 이노베이션으로 출고
-        pCompCode = COMPANY_CODE;
-        pCompName = COMPANY_NAME;
-
-        String sBarcode = "";
-        String sBarcodeStr = "";
-        String pBarcode = "";
-        String pBarcodeStr = "";
-        String pBarcode2 = "";
-        String pBarcodeStr2 = "";
-        String whArea = "";
 
         //소수점 한자리 이후 절사
         String print_weight_str = "";
@@ -498,8 +484,6 @@ public class LabelPrintHelper {
 
         // .을 지워서 숫자만으로 표시
         String temp = print_weight_str.replace(".", "");
-        sBarcode = si.getSTORE_CODE();
-        sBarcodeStr = si.getSTORE_CODE();
         int iLen = temp.length();
 
         for (int i = 0; i < 6 - iLen; i++) {
@@ -512,13 +496,6 @@ public class LabelPrintHelper {
         if (Common.D) {
             Log.d(TAG, "중량 6 자리 : " + print_weight_str);
         }
-
-        // 바코드 타입별 바코드 문자열 조립 → buildEmartBarcode
-        String[] emartBarcode = buildEmartBarcode(si, print_weight_str, pCompCode);
-        pBarcode = emartBarcode[0];
-        pBarcodeStr = emartBarcode[1];
-        pBarcode2 = emartBarcode[2];
-        pBarcodeStr2 = emartBarcode[3];
 
         String[] split_name = null;
         if (si.CLIENTNAME.contains("이마트")) {
@@ -537,12 +514,58 @@ public class LabelPrintHelper {
             pointName = split_name[1].toString();
         }
 
+        // ========== 바코드 타입별 라벨 디자인 (신규 타입은 printLabelXX 추가 후 case 추가) ==========
+        switch (si.getBARCODE_TYPE()) {
+            case "M0":
+                printLabelM0(si, reprint, print_weight_str, print_weight_double, pointName, expiryDayConvert, callback);
+                break;
+            case "M9":
+                printLabelM9(si, reprint, print_weight_str, print_weight_double, pointName, expiryDayConvert, callback);
+                break;
+            case "M8":
+                printLabelM8(si, reprint, print_weight_str, print_weight_double, pointName, expiryDayConvert, callback);
+                break;
+            default:
+                printLabelUnregistered(si, reprint, print_weight_str, print_weight_double, pointName, expiryDayConvert, callback);
+                break;
+        }
+        return String.valueOf(print_weight_double);
+    }
+
+    // ========================================================================================
+    // 이마트 라벨 바코드 타입별 디자인 (setPrinting 에서 BARCODE_TYPE 으로 분기)
+    // 신규 타입 : BARCODE_TYPE_XX 상수 + printLabelXX 메서드 추가 → setPrinting switch 에 case 추가 (개발/75)
+    // ========================================================================================
+
+    /**
+     * M0 : 이마트 정량 라벨 (미트센터 9231 납품 시 2번째 라벨 추가)
+     */
+    private void printLabelM0(Shipments_Info si, boolean reprint, String print_weight_str, Double print_weight_double, String pointName, String expiryDayConvert, PrinterCallback callback) {
+        String pCompCode = COMPANY_CODE;
+        String pCompName = COMPANY_NAME;
+        String sBarcode = si.getSTORE_CODE();
+        String sBarcodeStr = si.getSTORE_CODE();
+        String whArea = "";
+
+        // 바코드 조립 (M0) : 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
+        if (Common.D) {
+            Log.e(TAG, "::::::::: M0 ::::::::");
+            Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
+            Log.d(TAG, "중량 6자리 :" + print_weight_str);
+            Log.d(TAG, "회사코드 : " + pCompCode);
+            Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
+        }
+
+        String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
+        String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
+        String pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
+
         if (Common.D) {
             Log.d(TAG, "print Barcode : " + pBarcode.toString());
             Log.d(TAG, "print Weight : " + print_weight_str);
         }
 
-        // ========== SLCS 명령어로 이마트 확장 라벨 인쇄 (Bixolon 프린터) ==========
+        // ========== SLCS 명령어로 이마트 라벨 인쇄 (Bixolon 프린터) ==========
         try {
             ByteArrayOutputStream labelData = new ByteArrayOutputStream();
             labelData.write(slcsInit().getBytes("EUC-KR"));                          // 프린터 초기화
@@ -592,14 +615,11 @@ public class LabelPrintHelper {
             Log.i(TAG, "===============pBarcode============" + pBarcode);
             Log.i(TAG, "===============pBarcode2============" + pBarcode2);
 
-            // 바코드 타입별 메인 바코드 출력 위치 → getEmartBarcodePosition
-            int[] barcodePos = getEmartBarcodePosition(si.getBARCODE_TYPE());
-            labelData.write(slcsBarcode(barcodePos[0], barcodePos[1], 60, pBarcode).getBytes("EUC-KR"));
+            // 메인 바코드 (80, 170)
+            labelData.write(slcsBarcode(80, 170, 60, pBarcode).getBytes("EUC-KR"));
 
-            // 바코드 타입별 바코드번호(숫자) 출력 여부 → isEmartBarcodeNumberVisible
-            if (isEmartBarcodeNumberVisible(si.getBARCODE_TYPE())) {
-                labelData.write(slcsBitmapText(75, 240, 20, pBarcodeStr, true));
-            }
+            // 바코드번호(숫자) 출력
+            labelData.write(slcsBitmapText(75, 240, 20, pBarcodeStr, true));
 
             // 중량, 납품일자, 업체 정보 출력 (tempDate 가 아래 미트센터 블록과 겹치지 않도록 블록 유지)
             {
@@ -645,58 +665,19 @@ public class LabelPrintHelper {
                 Log.d(TAG, "setPrinting Exception\n" + e.getMessage());
             }
         }
-        return String.valueOf(print_weight_double);
-    }
-
-    // ========================================================================================
-    // 이마트 라벨 바코드 타입별 처리 (신규 타입 추가 시 개발/75 5절 참고)
-    //  1) BARCODE_TYPE_XX 상수 추가  2) buildBarcodeXX 추가 + buildEmartBarcode case 추가
-    //  3) getEmartBarcodePosition / isEmartBarcodeNumberVisible 에 반영
-    // ========================================================================================
-
-    /**
-     * 바코드 타입별 이마트 메인 바코드 문자열 조립
-     *
-     * @return {pBarcode, pBarcodeStr, pBarcode2, pBarcodeStr2} — 등록되지 않은 타입은 모두 ""
-     */
-    private String[] buildEmartBarcode(Shipments_Info si, String print_weight_str, String pCompCode) {
-        switch (si.getBARCODE_TYPE()) {
-            case "M0":
-                return buildBarcodeM0(si, print_weight_str, pCompCode);
-            case "M9":
-                return buildBarcodeM9(si, print_weight_str, pCompCode);
-            case "M8":
-                return buildBarcodeM8(si, print_weight_str, pCompCode);
-        }
-        return new String[]{"", "", "", ""};
     }
 
     /**
-     * M0 : 이마트상품코드 형식 1
-     * 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
+     * M9 : 이마트 비정량 라벨
      */
-    private String[] buildBarcodeM0(Shipments_Info si, String print_weight_str, String pCompCode) {
-        if (Common.D) {
-            Log.e(TAG, "::::::::: M0 ::::::::");
-            Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
-            Log.d(TAG, "중량 6자리 :" + print_weight_str);
-            Log.d(TAG, "회사코드 : " + pCompCode);
-            Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
-        }
+    private void printLabelM9(Shipments_Info si, boolean reprint, String print_weight_str, Double print_weight_double, String pointName, String expiryDayConvert, PrinterCallback callback) {
+        String pCompCode = COMPANY_CODE;
+        String pCompName = COMPANY_NAME;
+        String sBarcode = si.getSTORE_CODE();
+        String sBarcodeStr = si.getSTORE_CODE();
+        String whArea = "";
 
-        String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-        String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-
-        String pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-        String pBarcodeStr2 = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-        return new String[]{pBarcode, pBarcodeStr, pBarcode2, pBarcodeStr2};
-    }
-
-    /**
-     * M9 : 비정량 이마트 (문의사항05 답변: 정량 이마트 우육 센터납 임시 사용 종료)
-     * 상품코드 앞자리 6자리 + 중량 6자리 + 회사코드 6자리 = 18자리
-     */
-    private String[] buildBarcodeM9(Shipments_Info si, String print_weight_str, String pCompCode) {
+        // 바코드 조립 (M9) : 상품코드 앞자리 6자리 + 중량 6자리 + 회사코드 6자리 = 18자리
         if (Common.D) {
             Log.e(TAG, "::::::::: M9 (비정량 이마트) ::::::::");
             Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
@@ -706,14 +687,117 @@ public class LabelPrintHelper {
 
         String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode;
         String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode;
-        return new String[]{pBarcode, pBarcodeStr, "", ""};
+        String pBarcode2 = "";
+
+        if (Common.D) {
+            Log.d(TAG, "print Barcode : " + pBarcode.toString());
+            Log.d(TAG, "print Weight : " + print_weight_str);
+        }
+
+        // ========== SLCS 명령어로 이마트 라벨 인쇄 (Bixolon 프린터) ==========
+        try {
+            ByteArrayOutputStream labelData = new ByteArrayOutputStream();
+            labelData.write(slcsInit().getBytes("EUC-KR"));                          // 프린터 초기화
+            labelData.write(slcsLabelSize(576, 460).getBytes("EUC-KR"));             // 라벨 크기 설정
+
+            // 센터명 출력
+            if (7 < si.CENTERNAME.length()) {
+                labelData.write(slcsBitmapText(20, 12, 35, si.CENTERNAME, true));
+                if (Common.D)
+                    Log.i(TAG, "센터명 > 7 ,  size 30");
+            } else {
+                labelData.write(slcsBitmapText(20, 10, 40, si.CENTERNAME, true));
+                if (Common.D)
+                    Log.i(TAG, "센터명 <= 7 ,  size 40");
+            }
+
+            // 업체명/지점명 출력
+            if (11 < si.CLIENTNAME.toString().length()) {
+                labelData.write(slcsBitmapText(20, 60, 35, pointName.toString(), true));          // 지점명 출력
+                if (Common.D)
+                    Log.i(TAG, "지점명 > 11 ,  size 30");
+            } else {
+                labelData.write(slcsBitmapText(20, 60, 40, pointName.toString(), true));          // 지점명 출력
+                if (Common.D)
+                    Log.i(TAG, "지점명 <= 11 ,  size 40");
+            }
+
+            // 상품명 출력 (위치, 크기)
+            int itemX = 80, itemY = 120;  // 기본 위치
+            if (si.EMARTITEM.length() > 14) {
+                labelData.write(slcsBitmapText(itemX, itemY, 35, si.EMARTITEM, true));
+            } else {
+                labelData.write(slcsBitmapText(itemX, itemY, 40, si.EMARTITEM, true));
+            }
+
+            Log.i(TAG, "===============EMARTITEM============" + si.EMARTITEM);
+            Log.i(TAG, "===============sBarcode============" + sBarcode);
+
+            // sBarcode 바코드 출력
+            labelData.write(slcsBarcode(420, 20, 60, sBarcode).getBytes("EUC-KR"));
+
+            Log.i(TAG, "===============sBarcode2============" + sBarcodeStr);
+
+            // sBarcodeStr 텍스트 출력
+            labelData.write(slcsBitmapText(450, 80, 25, sBarcodeStr, true));      // 바코드번호(숫자) 출력
+
+            Log.i(TAG, "===============pBarcode============" + pBarcode);
+            Log.i(TAG, "===============pBarcode2============" + pBarcode2);
+
+            // 메인 바코드 (80, 170)
+            labelData.write(slcsBarcode(80, 170, 60, pBarcode).getBytes("EUC-KR"));
+
+            // 바코드번호(숫자) 출력
+            labelData.write(slcsBitmapText(75, 240, 20, pBarcodeStr, true));
+
+            // 중량, 납품일자, 업체 정보 출력 (tempDate 가 아래 미트센터 블록과 겹치지 않도록 블록 유지)
+            {
+                labelData.write(slcsBitmapText(20, 280, 40, "중량 : ", true));
+                labelData.write(slcsBitmapText(180, 280, 40, String.valueOf(print_weight_double) + " KG", true));
+                Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
+                String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
+                labelData.write(slcsBitmapText(20, 328, 30, "납품일자 : " + tempDate, true));
+                if (reprint) {
+                    pCompName = pCompName + "  *";
+                }
+                labelData.write(slcsBitmapText(20, 368, 30, "업체코드 : " + pCompCode + expiryDayConvert, true));
+                labelData.write(slcsBitmapText(20, 408, 30, "업 체 명 : " + pCompName, true));
+            }
+
+            // WH_AREA 출력
+            whArea = si.getWH_AREA();
+            Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
+            if(whArea != null || !whArea.equals("")){
+                labelData.write(slcsBitmapText(430, 385, 65, whArea, true));
+            }
+
+            // 인쇄 실행
+            labelData.write(slcsPrint(1).getBytes("EUC-KR"));
+            // 라벨 피드 (마크 위치로 이동)
+            labelData.write(slcsFeedToMark().getBytes("EUC-KR"));
+
+            callback.sendData(labelData.toByteArray());
+
+            callback.clearBarcodeInput();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (Common.D) {
+                Log.d(TAG, "setPrinting Exception\n" + e.getMessage());
+            }
+        }
     }
 
     /**
-     * M8 : 이마트 비정량 납품분
-     * 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
+     * M8 : 이마트 비정량 납품분 라벨
      */
-    private String[] buildBarcodeM8(Shipments_Info si, String print_weight_str, String pCompCode) {
+    private void printLabelM8(Shipments_Info si, boolean reprint, String print_weight_str, Double print_weight_double, String pointName, String expiryDayConvert, PrinterCallback callback) {
+        String pCompCode = COMPANY_CODE;
+        String pCompName = COMPANY_NAME;
+        String sBarcode = si.getSTORE_CODE();
+        String sBarcodeStr = si.getSTORE_CODE();
+        String whArea = "";
+
+        // 바코드 조립 (M8) : 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
         if (Common.D) {
             Log.e(TAG, "::::::::: M8 ::::::::");
             Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
@@ -724,22 +808,214 @@ public class LabelPrintHelper {
 
         String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
         String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
-        return new String[]{pBarcode, pBarcodeStr, "", ""};
+        String pBarcode2 = "";
+
+        if (Common.D) {
+            Log.d(TAG, "print Barcode : " + pBarcode.toString());
+            Log.d(TAG, "print Weight : " + print_weight_str);
+        }
+
+        // ========== SLCS 명령어로 이마트 라벨 인쇄 (Bixolon 프린터) ==========
+        try {
+            ByteArrayOutputStream labelData = new ByteArrayOutputStream();
+            labelData.write(slcsInit().getBytes("EUC-KR"));                          // 프린터 초기화
+            labelData.write(slcsLabelSize(576, 460).getBytes("EUC-KR"));             // 라벨 크기 설정
+
+            // 센터명 출력
+            if (7 < si.CENTERNAME.length()) {
+                labelData.write(slcsBitmapText(20, 12, 35, si.CENTERNAME, true));
+                if (Common.D)
+                    Log.i(TAG, "센터명 > 7 ,  size 30");
+            } else {
+                labelData.write(slcsBitmapText(20, 10, 40, si.CENTERNAME, true));
+                if (Common.D)
+                    Log.i(TAG, "센터명 <= 7 ,  size 40");
+            }
+
+            // 업체명/지점명 출력
+            if (11 < si.CLIENTNAME.toString().length()) {
+                labelData.write(slcsBitmapText(20, 60, 35, pointName.toString(), true));          // 지점명 출력
+                if (Common.D)
+                    Log.i(TAG, "지점명 > 11 ,  size 30");
+            } else {
+                labelData.write(slcsBitmapText(20, 60, 40, pointName.toString(), true));          // 지점명 출력
+                if (Common.D)
+                    Log.i(TAG, "지점명 <= 11 ,  size 40");
+            }
+
+            // 상품명 출력 (위치, 크기)
+            int itemX = 80, itemY = 120;  // 기본 위치
+            if (si.EMARTITEM.length() > 14) {
+                labelData.write(slcsBitmapText(itemX, itemY, 35, si.EMARTITEM, true));
+            } else {
+                labelData.write(slcsBitmapText(itemX, itemY, 40, si.EMARTITEM, true));
+            }
+
+            Log.i(TAG, "===============EMARTITEM============" + si.EMARTITEM);
+            Log.i(TAG, "===============sBarcode============" + sBarcode);
+
+            // sBarcode 바코드 출력
+            labelData.write(slcsBarcode(420, 20, 60, sBarcode).getBytes("EUC-KR"));
+
+            Log.i(TAG, "===============sBarcode2============" + sBarcodeStr);
+
+            // sBarcodeStr 텍스트 출력
+            labelData.write(slcsBitmapText(450, 80, 25, sBarcodeStr, true));      // 바코드번호(숫자) 출력
+
+            Log.i(TAG, "===============pBarcode============" + pBarcode);
+            Log.i(TAG, "===============pBarcode2============" + pBarcode2);
+
+            // 메인 바코드 (80, 170)
+            labelData.write(slcsBarcode(80, 170, 60, pBarcode).getBytes("EUC-KR"));
+
+            // 바코드번호(숫자) 출력
+            labelData.write(slcsBitmapText(75, 240, 20, pBarcodeStr, true));
+
+            // 중량, 납품일자, 업체 정보 출력 (tempDate 가 아래 미트센터 블록과 겹치지 않도록 블록 유지)
+            {
+                labelData.write(slcsBitmapText(20, 280, 40, "중량 : ", true));
+                labelData.write(slcsBitmapText(180, 280, 40, String.valueOf(print_weight_double) + " KG", true));
+                Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
+                String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
+                labelData.write(slcsBitmapText(20, 328, 30, "납품일자 : " + tempDate, true));
+                if (reprint) {
+                    pCompName = pCompName + "  *";
+                }
+                labelData.write(slcsBitmapText(20, 368, 30, "업체코드 : " + pCompCode + expiryDayConvert, true));
+                labelData.write(slcsBitmapText(20, 408, 30, "업 체 명 : " + pCompName, true));
+            }
+
+            // WH_AREA 출력
+            whArea = si.getWH_AREA();
+            Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
+            if(whArea != null || !whArea.equals("")){
+                labelData.write(slcsBitmapText(430, 385, 65, whArea, true));
+            }
+
+            // 인쇄 실행
+            labelData.write(slcsPrint(1).getBytes("EUC-KR"));
+            // 라벨 피드 (마크 위치로 이동)
+            labelData.write(slcsFeedToMark().getBytes("EUC-KR"));
+
+            callback.sendData(labelData.toByteArray());
+
+            callback.clearBarcodeInput();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (Common.D) {
+                Log.d(TAG, "setPrinting Exception\n" + e.getMessage());
+            }
+        }
     }
 
     /**
-     * 바코드 타입별 메인 바코드 출력 위치 {x, y}
-     * 현재 M0·M8·M9 및 기타 타입 모두 (80, 170)
+     * 등록되지 않은 바코드 타입 라벨 (바코드 없이 공통 항목만 출력, 기존 동작 유지)
      */
-    private int[] getEmartBarcodePosition(String barcodeType) {
-        return new int[]{80, 170};
-    }
+    private void printLabelUnregistered(Shipments_Info si, boolean reprint, String print_weight_str, Double print_weight_double, String pointName, String expiryDayConvert, PrinterCallback callback) {
+        String pCompCode = COMPANY_CODE;
+        String pCompName = COMPANY_NAME;
+        String sBarcode = si.getSTORE_CODE();
+        String sBarcodeStr = si.getSTORE_CODE();
+        String whArea = "";
 
-    /**
-     * 바코드 타입별 바코드번호(숫자) 출력 여부
-     */
-    private boolean isEmartBarcodeNumberVisible(String barcodeType) {
-        return barcodeType.equals(BARCODE_TYPE_M0) || barcodeType.equals(BARCODE_TYPE_M8) || barcodeType.equals(BARCODE_TYPE_M9);
+        // 등록되지 않은 바코드 타입 : 바코드 문자열 없음 (기존 switch default 와 동일)
+        String pBarcode = "";
+        String pBarcodeStr = "";
+        String pBarcode2 = "";
+
+        if (Common.D) {
+            Log.d(TAG, "print Barcode : " + pBarcode.toString());
+            Log.d(TAG, "print Weight : " + print_weight_str);
+        }
+
+        // ========== SLCS 명령어로 이마트 라벨 인쇄 (Bixolon 프린터) ==========
+        try {
+            ByteArrayOutputStream labelData = new ByteArrayOutputStream();
+            labelData.write(slcsInit().getBytes("EUC-KR"));                          // 프린터 초기화
+            labelData.write(slcsLabelSize(576, 460).getBytes("EUC-KR"));             // 라벨 크기 설정
+
+            // 센터명 출력
+            if (7 < si.CENTERNAME.length()) {
+                labelData.write(slcsBitmapText(20, 12, 35, si.CENTERNAME, true));
+                if (Common.D)
+                    Log.i(TAG, "센터명 > 7 ,  size 30");
+            } else {
+                labelData.write(slcsBitmapText(20, 10, 40, si.CENTERNAME, true));
+                if (Common.D)
+                    Log.i(TAG, "센터명 <= 7 ,  size 40");
+            }
+
+            // 업체명/지점명 출력
+            if (11 < si.CLIENTNAME.toString().length()) {
+                labelData.write(slcsBitmapText(20, 60, 35, pointName.toString(), true));          // 지점명 출력
+                if (Common.D)
+                    Log.i(TAG, "지점명 > 11 ,  size 30");
+            } else {
+                labelData.write(slcsBitmapText(20, 60, 40, pointName.toString(), true));          // 지점명 출력
+                if (Common.D)
+                    Log.i(TAG, "지점명 <= 11 ,  size 40");
+            }
+
+            // 상품명 출력 (위치, 크기)
+            int itemX = 80, itemY = 120;  // 기본 위치
+            if (si.EMARTITEM.length() > 14) {
+                labelData.write(slcsBitmapText(itemX, itemY, 35, si.EMARTITEM, true));
+            } else {
+                labelData.write(slcsBitmapText(itemX, itemY, 40, si.EMARTITEM, true));
+            }
+
+            Log.i(TAG, "===============EMARTITEM============" + si.EMARTITEM);
+            Log.i(TAG, "===============sBarcode============" + sBarcode);
+
+            // sBarcode 바코드 출력
+            labelData.write(slcsBarcode(420, 20, 60, sBarcode).getBytes("EUC-KR"));
+
+            Log.i(TAG, "===============sBarcode2============" + sBarcodeStr);
+
+            // sBarcodeStr 텍스트 출력
+            labelData.write(slcsBitmapText(450, 80, 25, sBarcodeStr, true));      // 바코드번호(숫자) 출력
+
+            Log.i(TAG, "===============pBarcode============" + pBarcode);
+            Log.i(TAG, "===============pBarcode2============" + pBarcode2);
+
+            // 메인 바코드 (80, 170)
+            labelData.write(slcsBarcode(80, 170, 60, pBarcode).getBytes("EUC-KR"));
+
+            // 중량, 납품일자, 업체 정보 출력 (tempDate 가 아래 미트센터 블록과 겹치지 않도록 블록 유지)
+            {
+                labelData.write(slcsBitmapText(20, 280, 40, "중량 : ", true));
+                labelData.write(slcsBitmapText(180, 280, 40, String.valueOf(print_weight_double) + " KG", true));
+                Log.i(TAG, "=====================납품일자==================" + si.getSTORE_IN_DATE());
+                String tempDate = si.getSTORE_IN_DATE().substring(0,4) + "년 " + si.getSTORE_IN_DATE().substring(4,6) + "월 " + si.getSTORE_IN_DATE().substring(6,8) + "일";
+                labelData.write(slcsBitmapText(20, 328, 30, "납품일자 : " + tempDate, true));
+                if (reprint) {
+                    pCompName = pCompName + "  *";
+                }
+                labelData.write(slcsBitmapText(20, 368, 30, "업체코드 : " + pCompCode + expiryDayConvert, true));
+                labelData.write(slcsBitmapText(20, 408, 30, "업 체 명 : " + pCompName, true));
+            }
+
+            // WH_AREA 출력
+            whArea = si.getWH_AREA();
+            Log.e(TAG, "::::::::: whArea check44 ::::::::"+whArea);
+            if(whArea != null || !whArea.equals("")){
+                labelData.write(slcsBitmapText(430, 385, 65, whArea, true));
+            }
+
+            // 인쇄 실행
+            labelData.write(slcsPrint(1).getBytes("EUC-KR"));
+            // 라벨 피드 (마크 위치로 이동)
+            labelData.write(slcsFeedToMark().getBytes("EUC-KR"));
+
+            callback.sendData(labelData.toByteArray());
+
+            callback.clearBarcodeInput();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (Common.D) {
+                Log.d(TAG, "setPrinting Exception\n" + e.getMessage());
+            }
+        }
     }
 
     /**
