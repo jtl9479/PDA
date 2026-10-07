@@ -1,4 +1,4 @@
-package com.rgbsolution.highland_emart.print.label;
+package com.rgbsolution.highland_emart.print.label.lotte;
 
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 import com.rgbsolution.highland_emart.print.LabelPrintHelper;

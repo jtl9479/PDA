@@ -1,4 +1,4 @@
-package com.rgbsolution.highland_emart.print.label;
+package com.rgbsolution.highland_emart.print.label.lotte;
 
 import android.util.Log;
 

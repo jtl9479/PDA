@@ -1,4 +1,4 @@
-package com.rgbsolution.highland_emart.print.label;
+package com.rgbsolution.highland_emart.print.label.emart;
 
 import android.util.Log;
 
@@ -12,13 +12,13 @@ import java.io.ByteArrayOutputStream;
  * 이마트 라벨 — 등록되지 않은 바코드 타입 라벨 (바코드 없이 공통 항목만 출력, 기존 동작 유지)
  * LabelPrintHelper.setPrinting 에서 바코드 타입으로 선택되어 호출된다 (개발/75).
  */
-public class LabelUnregistered implements EmartLabel {
+public class LabelEmartUnregistered implements EmartLabel {
 
     private static final String TAG = "LabelPrintHelper";   // 기존 로그 태그 유지
 
     private final LabelPrintHelper helper;
 
-    public LabelUnregistered(LabelPrintHelper helper) {
+    public LabelEmartUnregistered(LabelPrintHelper helper) {
         this.helper = helper;
     }
 

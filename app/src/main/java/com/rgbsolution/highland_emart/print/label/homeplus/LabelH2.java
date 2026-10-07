@@ -1,4 +1,4 @@
-package com.rgbsolution.highland_emart.print.label;
+package com.rgbsolution.highland_emart.print.label.homeplus;
 
 import android.util.Log;
 
@@ -9,17 +9,17 @@ import com.rgbsolution.highland_emart.print.LabelPrintHelper;
 import java.io.ByteArrayOutputStream;
 
 /**
- * 홈플러스 라벨 — H5 : 홈플러스 비정량 라벨 (H2 와 같은 형식, 비정량은 점포코드 출력)
+ * 홈플러스 라벨 — H2 : 홈플러스 정량 라벨 (지점명·지점코드·상품명·BOX·원산지·중량/이력번호 끝 4자리·납품일자·업체명)
  * LabelPrintHelper.setHomeplusPrinting 에서 바코드 타입으로 선택되어 호출된다 (개발/75).
  * 정량/비정량 차이(점포코드·지점코드)는 ITEM_TYPE 으로 구분한다.
  */
-public class LabelH5 implements HomeplusLabel {
+public class LabelH2 implements HomeplusLabel {
 
     private static final String TAG = "LabelPrintHelper";   // 기존 로그 태그 유지
 
     private final LabelPrintHelper helper;
 
-    public LabelH5(LabelPrintHelper helper) {
+    public LabelH2(LabelPrintHelper helper) {
         this.helper = helper;
     }
 

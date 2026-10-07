@@ -1,4 +1,4 @@
-package com.rgbsolution.highland_emart.print.label;
+package com.rgbsolution.highland_emart.print.label.emart;
 
 import android.util.Log;
 
@@ -9,16 +9,16 @@ import com.rgbsolution.highland_emart.print.LabelPrintHelper;
 import java.io.ByteArrayOutputStream;
 
 /**
- * 이마트 라벨 — M8 : 이마트 비정량 납품분 라벨
+ * 이마트 라벨 — M9 : 이마트 비정량 라벨
  * LabelPrintHelper.setPrinting 에서 바코드 타입으로 선택되어 호출된다 (개발/75).
  */
-public class LabelM8 implements EmartLabel {
+public class LabelM9 implements EmartLabel {
 
     private static final String TAG = "LabelPrintHelper";   // 기존 로그 태그 유지
 
     private final LabelPrintHelper helper;
 
-    public LabelM8(LabelPrintHelper helper) {
+    public LabelM9(LabelPrintHelper helper) {
         this.helper = helper;
     }
 
@@ -30,17 +30,16 @@ public class LabelM8 implements EmartLabel {
         String sBarcodeStr = si.getSTORE_CODE();
         String whArea = "";
 
-        // 바코드 조립 (M8) : 상품코드 앞자리 6 자리 + 중량 6자리 + 회사코드 + 수입식별번호(12자리)
+        // 바코드 조립 (M9) : 상품코드 앞자리 6자리 + 중량 6자리 + 회사코드 6자리 = 18자리
         if (Common.D) {
-            Log.e(TAG, "::::::::: M8 ::::::::");
+            Log.e(TAG, "::::::::: M9 (비정량 이마트) ::::::::");
             Log.d(TAG, "상품코드 full : " + si.getEMARTITEM_CODE() + ", 6 : " + si.getEMARTITEM_CODE().substring(0, 6));
             Log.d(TAG, "중량 6자리 :" + print_weight_str);
             Log.d(TAG, "회사코드 : " + pCompCode);
-            Log.d(TAG, "수입식별번호 : " + si.getIMPORT_ID_NO());
         }
 
-        String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
-        String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
+        String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode;
+        String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode;
         String pBarcode2 = "";
 
         if (Common.D) {

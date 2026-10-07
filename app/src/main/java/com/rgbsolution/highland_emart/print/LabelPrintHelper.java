@@ -11,15 +11,15 @@ import android.util.Log;
 import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
-import com.rgbsolution.highland_emart.print.label.LabelH2;
-import com.rgbsolution.highland_emart.print.label.LabelH5;
-import com.rgbsolution.highland_emart.print.label.LabelHomeplusUnregistered;
-import com.rgbsolution.highland_emart.print.label.LabelL0;
-import com.rgbsolution.highland_emart.print.label.LabelLotteUnregistered;
-import com.rgbsolution.highland_emart.print.label.LabelM0;
-import com.rgbsolution.highland_emart.print.label.LabelM8;
-import com.rgbsolution.highland_emart.print.label.LabelM9;
-import com.rgbsolution.highland_emart.print.label.LabelUnregistered;
+import com.rgbsolution.highland_emart.print.label.emart.LabelEmartUnregistered;
+import com.rgbsolution.highland_emart.print.label.emart.LabelM0;
+import com.rgbsolution.highland_emart.print.label.emart.LabelM8;
+import com.rgbsolution.highland_emart.print.label.emart.LabelM9;
+import com.rgbsolution.highland_emart.print.label.homeplus.LabelH2;
+import com.rgbsolution.highland_emart.print.label.homeplus.LabelH5;
+import com.rgbsolution.highland_emart.print.label.homeplus.LabelHomeplusUnregistered;
+import com.rgbsolution.highland_emart.print.label.lotte.LabelL0;
+import com.rgbsolution.highland_emart.print.label.lotte.LabelLotteUnregistered;
 
 import java.io.ByteArrayOutputStream;
 import java.text.DecimalFormat;
@@ -526,7 +526,7 @@ public class LabelPrintHelper {
             pointName = split_name[1].toString();
         }
 
-        // ========== 바코드 타입별 라벨 디자인 → print/label/LabelXX (신규 타입은 EmartLabel 구현 클래스 추가 후 case 추가) ==========
+        // ========== 바코드 타입별 라벨 디자인 → print/label/{emart|lotte|homeplus}/LabelXX (신규 타입은 EmartLabel 구현 클래스 추가 후 case 추가) ==========
         switch (si.getBARCODE_TYPE()) {
             case BARCODE_TYPE_M0:
                 new LabelM0(this).print(si, reprint, print_weight_str, print_weight_double, pointName, expiryDayConvert, callback);
@@ -538,7 +538,7 @@ public class LabelPrintHelper {
                 new LabelM8(this).print(si, reprint, print_weight_str, print_weight_double, pointName, expiryDayConvert, callback);
                 break;
             default:
-                new LabelUnregistered(this).print(si, reprint, print_weight_str, print_weight_double, pointName, expiryDayConvert, callback);
+                new LabelEmartUnregistered(this).print(si, reprint, print_weight_str, print_weight_double, pointName, expiryDayConvert, callback);
                 break;
         }
         return String.valueOf(print_weight_double);
