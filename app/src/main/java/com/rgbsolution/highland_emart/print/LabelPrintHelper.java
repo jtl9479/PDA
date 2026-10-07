@@ -526,7 +526,7 @@ public class LabelPrintHelper {
             pointName = split_name[1].toString();
         }
 
-        // ========== 바코드 타입별 라벨 디자인 → print/label/{emart|lotte|homeplus}/LabelXX (신규 타입은 EmartLabel 구현 클래스 추가 후 case 추가) ==========
+        // ========== 바코드 타입별 라벨 디자인 → print/label/emart (신규 타입은 EmartLabel 구현 클래스 추가 후 case 추가) ==========
         switch (si.getBARCODE_TYPE()) {
             case BARCODE_TYPE_M0:
                 new LabelM0(this).print(si, reprint, print_weight_str, print_weight_double, pointName, expiryDayConvert, callback);
@@ -696,7 +696,7 @@ public class LabelPrintHelper {
 
         print_weight_double = weight_double;
 
-        // ========== 바코드 타입별 라벨 디자인 → print/label (신규 타입은 HomeplusLabel 구현 클래스 추가 후 case 추가) ==========
+        // ========== 바코드 타입별 라벨 디자인 → print/label/homeplus (신규 타입은 HomeplusLabel 구현 클래스 추가 후 case 추가) ==========
         // 기존 홈플러스 라벨은 바코드 타입을 보지 않았으므로 null 도 default 로 처리한다
         String barcodeType = si.getBARCODE_TYPE() == null ? "" : si.getBARCODE_TYPE();
         switch (barcodeType) {
@@ -822,7 +822,7 @@ public class LabelPrintHelper {
         }
         Log.d(TAG, "============ 바코드 타입 =================== : " + si.getBARCODE_TYPE());
         Log.d(TAG, "============ 바코드 타입 판별 =================== : " + si.getBARCODE_TYPE().equals("L0"));
-        // ========== 바코드 타입별 라벨 디자인 → print/label (신규 타입은 LotteLabel 구현 클래스 추가 후 case 추가) ==========
+        // ========== 바코드 타입별 라벨 디자인 → print/label/lotte (신규 타입은 LotteLabel 구현 클래스 추가 후 case 추가) ==========
         switch (si.getBARCODE_TYPE()) {
             case BARCODE_TYPE_L0:
                 return new LabelL0(this).print(si, reprint, making_date, box_order, print_weight_str, print_weight_double, callback);
