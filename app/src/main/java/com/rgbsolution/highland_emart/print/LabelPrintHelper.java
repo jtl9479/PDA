@@ -243,7 +243,6 @@ public class LabelPrintHelper {
 
     /**
      * SLCS 라벨 피드 (마크 위치로 이동)
-     * - 원본: WoosimCmd.feedToMark()에 대응
      * - SLCS T 명령어: Tear-off 위치로 라벨 이동
      *
      * @return SLCS 피드 명령어 문자열
@@ -703,7 +702,7 @@ public class LabelPrintHelper {
 
             // 인쇄 실행
             labelData.write(slcsPrint(1).getBytes("EUC-KR"));
-            // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
+            // 라벨 피드 (마크 위치로 이동)
             labelData.write(slcsFeedToMark().getBytes("EUC-KR"));
 
             callback.sendData(labelData.toByteArray());
@@ -755,7 +754,7 @@ public class LabelPrintHelper {
                     }
 
                     slcsMeat.append(slcsPrint(1));
-                    // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
+                    // 라벨 피드 (마크 위치로 이동)
                     slcsMeat.append(slcsFeedToMark());
                     callback.sendData(withBitmapText(slcsMeat, slcsMeatText));
                 } catch (Exception e) {
@@ -809,7 +808,7 @@ public class LabelPrintHelper {
                     }
 
                     slcsMeat2.append(slcsPrint(1));
-                    // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
+                    // 라벨 피드 (마크 위치로 이동)
                     slcsMeat2.append(slcsFeedToMark());
                     callback.sendData(withBitmapText(slcsMeat2, slcsMeat2Text));
                 } catch (Exception e) {
@@ -916,7 +915,7 @@ public class LabelPrintHelper {
 
             // 인쇄 실행 (1장)
             slcsCmd.append(slcsPrint(1));
-            // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
+            // 라벨 피드 (마크 위치로 이동)
             slcsCmd.append(slcsFeedToMark());
 
             // SLCS 명령어 전송
@@ -991,18 +990,15 @@ public class LabelPrintHelper {
         pointName = si.CLIENTNAME.toString();
 
         // ========== SLCS 명령어로 홈플러스 라벨 인쇄 (Bixolon 프린터) ==========
-        // 원본: Woosim ByteArrayOutputStream + WoosimCmd 명령어
-        // 변환: StringBuilder + SLCS 헬퍼 메서드
-        // 라벨 레이아웃: 세로 방향 (원본 PM_setDirection(1))
+        // StringBuilder + SLCS 헬퍼 메서드
+        // 라벨 레이아웃: 세로 방향
         try {
             StringBuilder slcsCmd = new StringBuilder();
             ByteArrayOutputStream slcsCmdText = new ByteArrayOutputStream(); // 글자 비트맵(Korail.ttf)
             slcsCmd.append(slcsInit());                                              // 프린터 초기화 (CB + CS13,0)
-            slcsCmd.append(slcsLabelSize(576, 590));                                 // 라벨 크기: 가로 576(용지 폭, 510 이면 x=510 이후 글자 잘림), 세로 590 (원본 PM_setArea)
-            // 참고: 원본 PM_setDirection(1) - SLCS에서는 좌표 체계로 회전 효과 구현
+            slcsCmd.append(slcsLabelSize(576, 590));                                 // 라벨 크기: 가로 576(용지 폭, 510 이면 x=510 이후 글자 잘림), 세로 590
 
             // [1] 지점명 출력 - 위치(30, 170)
-            // 원본: PM_setPosition(30, 170) + getTTFcode(70 or 100)
             // 6자 초과 시 크기 70, 이하 시 크기 100 (긴 이름은 작게)
             if(pointName.length() > 6) {
                 slcsCmdText.write(slcsBitmapText(170, 30, 70, pointName.toString(), true));     // 6자 초과: 크기 70
@@ -1011,7 +1007,6 @@ public class LabelPrintHelper {
             }
 
             // [2] 점포코드/지점코드 출력 - 위치(135, 170), 크기 155
-            // 원본: PM_setPosition(135, 170) + getTTFcode(155, 155)
             // ITEM_TYPE_B(비정량)이면 storeCode, 아니면 pointCode 출력
             if (si.getITEM_TYPE().equals(ITEM_TYPE_B)) {
                 slcsCmdText.write(slcsBitmapText(170, 135, 155, storeCode.toString(), true));  // 비정량: 점포코드(STORE_CODE)
@@ -1020,7 +1015,6 @@ public class LabelPrintHelper {
             }
 
             // [3] 상품명 출력 - 위치(287 or 283, 170)
-            // 원본: PM_setPosition + getTTFcode
             // 17자 초과 시 크기 25, 이하 시 크기 30 (긴 상품명은 작게)
             if (si.EMARTITEM.length() > 17) {
                 slcsCmdText.write(slcsBitmapText(170, 287, 25, si.EMARTITEM, true));            // 17자 초과: 크기 25
@@ -1050,7 +1044,7 @@ public class LabelPrintHelper {
 
             // [9] 인쇄 실행 - 1장 출력
             slcsCmd.append(slcsPrint(1));
-            // 라벨 피드 (마크 위치로 이동) - 원본: WoosimCmd.feedToMark()
+            // 라벨 피드 (마크 위치로 이동)
             slcsCmd.append(slcsFeedToMark());
 
             // SLCS 명령어를 EUC-KR 인코딩으로 프린터에 전송
@@ -1230,8 +1224,7 @@ public class LabelPrintHelper {
         }
 
         // ========== SLCS 명령어로 롯데(원앤원) 라벨 인쇄 (Bixolon 프린터) ==========
-        // 원본: Woosim ByteArrayOutputStream + WoosimCmd/WoosimBarcode/WoosimImage 명령어
-        // 변환: StringBuilder + SLCS 헬퍼 메서드
+        // StringBuilder + SLCS 헬퍼 메서드
         // 출력 항목:
         //   [1] 상품명 (10,12) 35x35 - si.EMARTITEM
         //   [2] 바코드1 - 중량바코드 (100,80) CODE128 h=60
@@ -1252,17 +1245,14 @@ public class LabelPrintHelper {
             ByteArrayOutputStream lineData = new ByteArrayOutputStream(); // 선·테두리 LD 비트맵
 
             // 초기화: CB(버퍼클리어) + CS13,0(한글문자셋)
-            // 원본: WoosimCmd.initPrinter() + setPageMode() + selectTTF()
             slcsCmd.append(slcsInit());
 
             // 라벨 크기 설정: 576x460 도트
-            // 원본: WoosimCmd.PM_setArea(0, 0, 576, 460)
             slcsCmd.append(slcsLabelSize(576, 460));
 
             Log.i(TAG, "===============EMARTITEM============" + si.EMARTITEM);
 
             // [1] 상품명 출력 (x=10, y=12, 폰트크기 35x35)
-            // 원본: PM_setPosition(10, 12) + getTTFcode(35, 35, si.EMARTITEM)
             slcsCmdText.write(slcsBitmapText(10, 12, 35, si.EMARTITEM, true));
 
             Log.i(TAG, "===============pBarcode============" + pBarcode);
@@ -1271,33 +1261,26 @@ public class LabelPrintHelper {
             // L0 바코드 타입 (롯데/원앤원 전용)
             if (si.getBARCODE_TYPE().equals("L0")) {
                 // [2] 중량바코드 출력 (x=100, y=80, CODE128, 높이60)
-                // 원본: WoosimBarcode.createBarcode(CODE128, 2, 60, false, pBarcode.getBytes()) at (100,80)
                 slcsCmd.append(slcsBarcode(100, 80, 60, pBarcode));
 
                 // [3] 바코드1 숫자 (중량바코드 아래) (x=114, y=139, 폰트크기 25x25)
-                // 원본: PM_setPosition(114, 139) + getTTFcode(25, 25, pBarcodeStr)
                 slcsCmdText.write(slcsBitmapText(114, 139, 25, pBarcodeStr, true));
 
                 Log.i(TAG, "===============LOGISCODE128============");
 
                 // [4] 이력번호 바코드 출력 (x=150, y=350, CODE128, 높이60)
-                // 원본: WoosimBarcode.createBarcode(CODE128, 2, 60, false, pBarcode2.getBytes()) at (150,350)
                 slcsCmd.append(slcsBarcode(150, 350, 60, pBarcode2));
 
                 // [5] 이력번호 숫자 (바코드2 아래) (x=155, y=410, 폰트크기 25x25)
-                // 원본: PM_setPosition(155, 410) + getTTFcode(25, 25, pBarcode2)
                 slcsCmdText.write(slcsBitmapText(155, 410, 25, pBarcode2, true));
 
                 // [6] 중량 라벨 (x=15, y=180, 폰트크기 40x40)
-                // 원본: PM_setPosition(15, 180) + getTTFcode(40, 40, "중      량 : ")
                 slcsCmdText.write(slcsBitmapText(15, 180, 40, "중      량 : ", true));
 
                 // [7] 중량 값 (x=175, y=180, 폰트크기 40x40)
-                // 원본: PM_setPosition(175, 180) + getTTFcode(40, 40, weight + " KG")
                 slcsCmdText.write(slcsBitmapText(175, 180, 40, String.valueOf(print_weight_double) + " KG", true));
 
                 // [8] 납품처 (x=15, y=228, 폰트크기 30x30)
-                // 원본: PM_setPosition(15, 228) + getTTFcode(30, 30, "납품처 : " + pCompName)
                 slcsCmdText.write(slcsBitmapText(15, 228, 30, "납품처 : " + pCompName, true));
 
                 // 재인쇄 표시
@@ -1308,23 +1291,19 @@ public class LabelPrintHelper {
                 Log.i(TAG, "=====================제조일자==================" + making_date);
 
                 // [9] 제조일자 (x=15, y=268, 폰트크기 30x30)
-                // 원본: PM_setPosition(15, 268) + getTTFcode(30, 30, "제조일자 : " + tempDate)
                 String tempDate = "20" + making_date.substring(0, 2) + "년 " + making_date.substring(2, 4) + "월 " + making_date.substring(4, 6) + "일";
                 slcsCmdText.write(slcsBitmapText(15, 268, 30, "제조일자 : " + tempDate, true));
 
                 // [10] 이력(묶음)번호 (x=15, y=313, 폰트크기 30x30)
-                // 원본: PM_setPosition(15, 313) + getTTFcode(30, 30, "이력(묶음)번호 : " + ...)
                 slcsCmdText.write(slcsBitmapText(15, 313, 30, "이력(묶음)번호 : " + si.getIMPORT_ID_NO(), true));
 
                 // [13~15] 가로선 3개 (L0 바코드 타입 전용)
-                // 원본: WoosimImage.drawLine(0, 60, 560, 60, 3) 등
                 lineData.write(slcsBitmapRect(0, 60, 560, 3));   // 가로선1 (상품명 아래)
                 lineData.write(slcsBitmapRect(0, 180, 560, 3));  // 가로선2 (바코드1 아래)
                 lineData.write(slcsBitmapRect(0, 345, 560, 3));  // 가로선3 (중량정보 아래)
             }
 
             // [11] WH_AREA 출력 (x=385, y=305, 폰트크기 65x65) - 창고구역 코드
-            // 원본: PM_setPosition(385, 305) + getTTFcode(65, 65, whArea)
             whArea = si.getWH_AREA();
             Log.e(TAG, "::::::::: whArea check44 ::::::::" + whArea);
 
@@ -1333,14 +1312,12 @@ public class LabelPrintHelper {
             }
 
             // [12] 겉 테두리 박스 (0,0)에서 (560,440) 크기, 두께 3
-            // 원본: WoosimImage.drawBox(0, 0, 560, 440, 3)
             lineData.write(slcsBitmapRect(0, 0, 560, 3));    // 위
             lineData.write(slcsBitmapRect(0, 437, 560, 3));  // 아래
             lineData.write(slcsBitmapRect(0, 0, 3, 440));    // 왼쪽
             lineData.write(slcsBitmapRect(557, 0, 3, 440));  // 오른쪽
 
             // 텍스트·바코드 명령 + 선·테두리 비트맵 + 인쇄 실행(1장) + 라벨 피드
-            // 원본: WoosimCmd.PM_printData() + WoosimCmd.feedToMark()
             ByteArrayOutputStream labelData = new ByteArrayOutputStream();
             labelData.write(slcsCmd.toString().getBytes("EUC-KR"));
             labelData.write(slcsCmdText.toByteArray());
