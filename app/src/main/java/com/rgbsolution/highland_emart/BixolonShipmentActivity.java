@@ -2949,12 +2949,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                                     DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
 
                                                     jChk++;
-
-                                                    if (jChk == arSM.size()) {
-                                                        Log.d(TAG, "arSM.size() when return: " + arSM.size());
-                                                        Log.d(TAG, "jChk number when return: " + jChk);
-                                                        return "ss";
-                                                    }
+                                                    // 원본: 여기서 jChk == arSM.size() 이면 즉시 return "ss"
+                                                    // 일괄전송은 서버에 이미 전부 적재되므로 남은 계근 행도 Y 처리해야 재전송 중복이 없어 루프 종료 후 판정 (개발/74)
                                             }
                                         }
                                     }
@@ -2963,6 +2959,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                 return result;
                             }//result "s이면" 끝
                         }
+                    }
+
+                    // jChk > 0 : 출하대상이 없을 때(0 == 0) 기존처럼 result 를 반환하도록 유지
+                    if (jChk > 0 && jChk == arSM.size()) {
+                        Log.d(TAG, "arSM.size() when return: " + arSM.size());
+                        Log.d(TAG, "jChk number when return: " + jChk);
+                        return "ss";
                     }
                 }
                 return result;
