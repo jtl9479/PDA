@@ -9,6 +9,19 @@
 
 ---
 
+## ⚠ 구현 결정 (2026-10-07, 사용자)
+
+- **기본 클래스(DefaultShipmentMode) 없이 마트별 전부 구현으로 시작**: 각 Mode 클래스가 19개 메서드를 모두 직접 구현한다. 공통 부분을 기본 클래스로 묶는 작업은 **분리·검증이 끝난 뒤 마지막 단계**로 진행한다(사용자 지시). 아래 2~4절의 DefaultShipmentMode 상속 설계는 그 마지막 단계의 목표 구조다.
+- 미등록 searchType 은 `UnregisteredMode` (기존 else 경로 동작)가 담당한다 (DefaultShipmentMode 대신).
+- 생산은 `ProductionMode`(1) / `ProductionLabelMode`(7) 분리 (권장안 채택).
+- 일괄 전송 중복 로그 4줄(13절 #7)은 유지.
+- 전송(N, Step 4)의 도달 불가 분기 처리(13절 #6)는 사용자 결정 대기 — Step 1~3 먼저 구현.
+
+### 구현 결과 (Step 1~3)
+- `shipment/mode/`: ShipmentMode(인터페이스·SendType), ShipmentModeFactory, EmartMode·EmartNonfixedMode·WholesaleMode·HomeplusMode·HomeplusNonfixedMode·LotteMode·ProductionMode·ProductionLabelMode·UnregisteredMode (각 19개 메서드 전부 구현)
+- BixolonShipmentActivity: 전송(N)을 제외한 분기 A1·A2·A3·B·C·D·E·F1·F2·G·H1·H2·I·J·K1~K4·L·M 을 mode 호출로 치환, `lotte_TryCount` 필드 → LotteMode 이동. 남은 searchType 분기는 전송(ProgressDlgShipmentSend)뿐.
+- 검증: 컴파일 성공, code-verifier PASS (searchType 0~7·미등록·null 전 지점 HEAD 동일, 19개 메서드 매트릭스 일치, 허용 차이: "chk prod 계근중량" 로그가 setGI_QTY 직전으로 이동).
+
 ## AI 제약 조건
 
 - 기존 WHERE 조건, 로직을 임의로 제거/추가/변경하지 않는다
