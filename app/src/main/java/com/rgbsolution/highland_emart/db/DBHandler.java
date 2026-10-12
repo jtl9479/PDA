@@ -9,6 +9,7 @@ import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Goodswets_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
+import com.rgbsolution.highland_emart.print.LabelPrintHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1219,12 +1220,50 @@ public class DBHandler {
                     + DBInfo.MEMO + " TEXT, "
                     + DBInfo.DUPLICATE + " TEXT, "
                     + DBInfo.CLIENT_TYPE + " TEXT, "
-                    + DBInfo.BOX_ORDER + " Integer DEFAULT 0"
+                    + DBInfo.BOX_ORDER + " Integer DEFAULT 0, "
+                    + DBInfo.BARCODE_TYPE + " TEXT DEFAULT '', "
+                    + DBInfo.LABEL_BARCODE1 + " TEXT DEFAULT '', "
+                    + DBInfo.LABEL_BARCODE2 + " TEXT DEFAULT '', "
+                    + DBInfo.PRINT_WEIGHT + " TEXT DEFAULT '', "
+                    + DBInfo.EXPIRY_DATE + " TEXT DEFAULT '', "
+                    + DBInfo.EXPIRY_TEXT + " TEXT DEFAULT '', "
+                    + DBInfo.PRINT_IMPORT_ID_NO + " TEXT DEFAULT '', "
+                    + DBInfo.PRINT_STORE_CODE + " TEXT DEFAULT '', "
+                    + DBInfo.PRINT_ITEM_NAME + " TEXT DEFAULT '', "
+                    + DBInfo.PRINT_POINT_NAME + " TEXT DEFAULT '', "
+                    + DBInfo.PRINT_CENTER_NAME + " TEXT DEFAULT ''"
                     + ")";
             if (Common.D) {
                 Log.v(TAG, "createqueryGoodsWet -> " + createTable);
             }
             dbHelper.executeSql(createTable);
+
+            // 기존 테이블(개발/80 이전 생성)에 라벨 출력 정보 컬럼이 없으면 추가 — 기존 행은 ''
+            ArrayList<String> existCols = new ArrayList<String>();
+            Cursor colCursor = dbHelper.selectSql("PRAGMA table_info(" + DBInfo.TABLE_NAME_GOODS_WET + ")");
+            while (colCursor.moveToNext()) {
+                existCols.add(colCursor.getString(colCursor.getColumnIndex("name")));
+            }
+            colCursor.close();
+            String[] labelCols = {
+                    DBInfo.BARCODE_TYPE,
+                    DBInfo.LABEL_BARCODE1,
+                    DBInfo.LABEL_BARCODE2,
+                    DBInfo.PRINT_WEIGHT,
+                    DBInfo.EXPIRY_DATE,
+                    DBInfo.EXPIRY_TEXT,
+                    DBInfo.PRINT_IMPORT_ID_NO,
+                    DBInfo.PRINT_STORE_CODE,
+                    DBInfo.PRINT_ITEM_NAME,
+                    DBInfo.PRINT_POINT_NAME,
+                    DBInfo.PRINT_CENTER_NAME
+            };
+            for (String col : labelCols) {
+                if (!existCols.contains(col)) {
+                    dbHelper.executeSql("ALTER TABLE " + DBInfo.TABLE_NAME_GOODS_WET + " ADD COLUMN " + col + " TEXT DEFAULT ''");
+                    Log.i(TAG, "createqueryGoodsWet ADD COLUMN -> " + col);
+                }
+            }
         } catch (Exception e) {
             if (Common.D) {
                 Log.d(TAG, "createqueryGoodsWet exception -> " + e.getMessage().toString());
@@ -1336,7 +1375,18 @@ public class DBHandler {
                     + DBInfo.SAVE_TYPE + ", "
                     + DBInfo.DUPLICATE + ", "
                     + DBInfo.CLIENT_TYPE + ", "
-                    + DBInfo.BOX_ORDER + " "
+                    + DBInfo.BOX_ORDER + ", "
+                    + DBInfo.BARCODE_TYPE + ", "
+                    + DBInfo.LABEL_BARCODE1 + ", "
+                    + DBInfo.LABEL_BARCODE2 + ", "
+                    + DBInfo.PRINT_WEIGHT + ", "
+                    + DBInfo.EXPIRY_DATE + ", "
+                    + DBInfo.EXPIRY_TEXT + ", "
+                    + DBInfo.PRINT_IMPORT_ID_NO + ", "
+                    + DBInfo.PRINT_STORE_CODE + ", "
+                    + DBInfo.PRINT_ITEM_NAME + ", "
+                    + DBInfo.PRINT_POINT_NAME + ", "
+                    + DBInfo.PRINT_CENTER_NAME + " "
                     + " FROM "
                     + DBInfo.TABLE_NAME_GOODS_WET
                     + " WHERE "
@@ -1371,6 +1421,17 @@ public class DBHandler {
                 gi.setDUPLICATE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("DUPLICATE")), ""));
                 gi.setCLIENT_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("CLIENT_TYPE")), ""));
                 gi.setBOX_ORDER(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BOX_ORDER")), ""));
+                gi.setBARCODE_TYPE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("BARCODE_TYPE")), ""));
+                gi.setLABEL_BARCODE1(Common.nullCheck(cursor.getString(cursor.getColumnIndex("LABEL_BARCODE1")), ""));
+                gi.setLABEL_BARCODE2(Common.nullCheck(cursor.getString(cursor.getColumnIndex("LABEL_BARCODE2")), ""));
+                gi.setPRINT_WEIGHT(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PRINT_WEIGHT")), ""));
+                gi.setEXPIRY_DATE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EXPIRY_DATE")), ""));
+                gi.setEXPIRY_TEXT(Common.nullCheck(cursor.getString(cursor.getColumnIndex("EXPIRY_TEXT")), ""));
+                gi.setPRINT_IMPORT_ID_NO(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PRINT_IMPORT_ID_NO")), ""));
+                gi.setPRINT_STORE_CODE(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PRINT_STORE_CODE")), ""));
+                gi.setPRINT_ITEM_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PRINT_ITEM_NAME")), ""));
+                gi.setPRINT_POINT_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PRINT_POINT_NAME")), ""));
+                gi.setPRINT_CENTER_NAME(Common.nullCheck(cursor.getString(cursor.getColumnIndex("PRINT_CENTER_NAME")), ""));
                 list_gi_info.add(gi);
             }
             cursor.close();
@@ -1726,6 +1787,44 @@ public class DBHandler {
 
 
     // 계근정보 UPDATE
+    // 라벨 출력 정보 UPDATE (개발/80) — 계근 저장 직후 최초 출력 값을 방금 INSERT 한 미전송 행에 기록
+    public static boolean updatequeryGoodsWetLabel(Context context, String gi_d_id, String gi_l_id, String box_cnt, LabelPrintHelper.PrintedLabel pl) {
+        DBHelper dbHelper = new DBHelper(context);
+        dbHelper.open();
+        try {
+            String sqlStr = "UPDATE "
+                    + DBInfo.TABLE_NAME_GOODS_WET
+                    + " SET "
+                    + DBInfo.BARCODE_TYPE + " = ?, "
+                    + DBInfo.LABEL_BARCODE1 + " = ?, "
+                    + DBInfo.LABEL_BARCODE2 + " = ?, "
+                    + DBInfo.PRINT_WEIGHT + " = ?, "
+                    + DBInfo.EXPIRY_DATE + " = ?, "
+                    + DBInfo.EXPIRY_TEXT + " = ?, "
+                    + DBInfo.PRINT_IMPORT_ID_NO + " = ?, "
+                    + DBInfo.PRINT_STORE_CODE + " = ?, "
+                    + DBInfo.PRINT_ITEM_NAME + " = ?, "
+                    + DBInfo.PRINT_POINT_NAME + " = ?, "
+                    + DBInfo.PRINT_CENTER_NAME + " = ? "
+                    + "WHERE GI_D_ID = ? AND GI_L_ID = ? AND BOX_CNT = ? AND SAVE_TYPE = 'F'";
+            Object[] args = {
+                    pl.barcodeType, pl.labelBarcode1, pl.labelBarcode2, pl.printWeight, pl.expiryDate, pl.expiryText,
+                    pl.importIdNo, pl.storeCode, pl.itemName, pl.pointName, pl.centerName,
+                    gi_d_id, gi_l_id, box_cnt
+            };
+            if (Common.D) {
+                Log.v(TAG, "updatequeryGoodsWetLabel -> " + sqlStr + " / " + java.util.Arrays.toString(args));
+            }
+            dbHelper.executeSql(sqlStr, args);
+            return true;
+        } catch (Exception e) {
+            Log.d(TAG, "updatequeryGoodsWetLabel exception -> " + e.getMessage());
+            return false;
+        } finally {
+            dbHelper.close();
+        }
+    }
+
     public static boolean updatequeryGoodsWet(Context context, String gi_d_id, String barcode, String box_cnt, String gi_l_id) {
         DBHelper dbHelper = new DBHelper(context);
         dbHelper.open();

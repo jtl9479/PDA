@@ -93,4 +93,9 @@ public class DBHelper {
     public void executeSql(String sql) {
         mDb.execSQL(sql);
     }
+
+    // 바인드 값 실행 (값에 작은따옴표가 들어갈 수 있는 경우, 개발/80)
+    public void executeSql(String sql, Object[] bindArgs) {
+        mDb.execSQL(sql, bindArgs);
+    }
 }

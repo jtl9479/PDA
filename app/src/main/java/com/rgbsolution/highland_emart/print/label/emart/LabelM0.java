@@ -42,6 +42,7 @@ public class LabelM0 implements EmartLabel {
         String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
         String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
         String pBarcode2 = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
+        helper.recordBarcode(pBarcode, "");     // 출력 정보 기록 (개발/80) — pBarcode2 는 출력하지 않음, 미트센터 라벨 출력 시 라벨바코드2
 
         if (Common.D) {
             Log.d(TAG, "print Barcode : " + pBarcode.toString());
@@ -180,6 +181,7 @@ public class LabelM0 implements EmartLabel {
             }
 
             meatCenterBarcode = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + meatCenterCode + si.getIMPORT_ID_NO() + si.getEMART_PLANT_CODE();
+            helper.recordBarcode2(meatCenterBarcode);     // 출력 정보 기록 (개발/80)
             meatCenterBarcodeStr = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + meatCenterCode + " " + si.getIMPORT_ID_NO() + " " + si.getEMART_PLANT_CODE();
 
             Log.i(TAG, "===============MEATCENTERBARCODE128============" + meatCenterBarcode);
@@ -241,6 +243,7 @@ public class LabelM0 implements EmartLabel {
             }
 
             meatCenterBarcode = si.getEMARTLOGIS_CODE().substring(0, 6) + print_weight_str + meatCenterCode + si.getIMPORT_ID_NO();
+            helper.recordBarcode2(meatCenterBarcode);     // 출력 정보 기록 (개발/80)
             meatCenterBarcodeStr = si.getEMARTLOGIS_CODE().substring(0, 6) + " " + print_weight_str + " " + meatCenterCode + " " + si.getIMPORT_ID_NO();
 
             Log.i(TAG, "===============MEATCENTERBARCODE128============" + meatCenterBarcode);

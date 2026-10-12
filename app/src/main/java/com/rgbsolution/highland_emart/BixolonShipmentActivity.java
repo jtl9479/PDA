@@ -1981,7 +1981,13 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
         if (Common.print_bool) {
             // 마트별 저장 직후 라벨 출력 (개발/76)
+            labelPrintHelper.clearLastPrinted();
             mode.printOnSave(labelPrintHelper, weight_double, arSM.get(current_work_position), making_date, work_item_bi_info, lotteBoxOrder, printerCallback);
+
+            // 최초 출력 라벨 값을 방금 저장한 계근 행에 기록 → 전송 패킷 [15]~[25] (개발/80)
+            if (labelPrintHelper.getLastPrinted() != null) {
+                DBHandler.updatequeryGoodsWetLabel(this, gi.getGI_D_ID(), gi.getGI_L_ID(), gi.getBOX_CNT(), labelPrintHelper.getLastPrinted());
+            }
         }
 
         set_scanFlag(true);
@@ -2745,7 +2751,19 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             packet += list_send_info.get(i).getBRAND_CODE() + "::";
                             packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
                             packet += list_send_info.get(i).getBOX_ORDER() + "::";
-                            packet += list_send_info.get(i).getGI_L_ID();
+                            packet += list_send_info.get(i).getGI_L_ID() + "::";
+                            // 라벨 출력 정보 [15]~[25] (개발/80)
+                            packet += list_send_info.get(i).getBARCODE_TYPE() + "::";
+                            packet += list_send_info.get(i).getLABEL_BARCODE1() + "::";
+                            packet += list_send_info.get(i).getLABEL_BARCODE2() + "::";
+                            packet += list_send_info.get(i).getPRINT_WEIGHT() + "::";
+                            packet += list_send_info.get(i).getEXPIRY_DATE() + "::";
+                            packet += list_send_info.get(i).getEXPIRY_TEXT() + "::";
+                            packet += list_send_info.get(i).getPRINT_IMPORT_ID_NO() + "::";
+                            packet += list_send_info.get(i).getPRINT_STORE_CODE() + "::";
+                            packet += list_send_info.get(i).getPRINT_ITEM_NAME() + "::";
+                            packet += list_send_info.get(i).getPRINT_POINT_NAME() + "::";
+                            packet += list_send_info.get(i).getPRINT_CENTER_NAME();
 
 
                             if (Common.D) {
@@ -2816,7 +2834,19 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                             packet += Common.selectCompanyCode + "::";
                             packet += list_send_info.get(i).getBRAND_CODE() + "::";
                             packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
-                            packet += list_send_info.get(i).getBOX_ORDER() + "::" + list_send_info.get(i).getGI_L_ID() +"##";
+                            packet += list_send_info.get(i).getBOX_ORDER() + "::" + list_send_info.get(i).getGI_L_ID() + "::";
+                            // 라벨 출력 정보 [15]~[25] (개발/80)
+                            packet += list_send_info.get(i).getBARCODE_TYPE() + "::";
+                            packet += list_send_info.get(i).getLABEL_BARCODE1() + "::";
+                            packet += list_send_info.get(i).getLABEL_BARCODE2() + "::";
+                            packet += list_send_info.get(i).getPRINT_WEIGHT() + "::";
+                            packet += list_send_info.get(i).getEXPIRY_DATE() + "::";
+                            packet += list_send_info.get(i).getEXPIRY_TEXT() + "::";
+                            packet += list_send_info.get(i).getPRINT_IMPORT_ID_NO() + "::";
+                            packet += list_send_info.get(i).getPRINT_STORE_CODE() + "::";
+                            packet += list_send_info.get(i).getPRINT_ITEM_NAME() + "::";
+                            packet += list_send_info.get(i).getPRINT_POINT_NAME() + "::";
+                            packet += list_send_info.get(i).getPRINT_CENTER_NAME() + "##";
 
                             if (Common.D) {
                                 Log.d(TAG, "Send Packet : '" + packet + "'");

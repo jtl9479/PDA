@@ -254,6 +254,63 @@ public class LabelPrintHelper {
         return slcsBitmapText(x, y, size, text, true);
     }
 
+    // ========================================================================================
+    // 라벨 출력 정보 (개발/80) — 출력한 값을 SM_출고계근 11컬럼으로 전송하기 위해 기록
+    // ========================================================================================
+
+    /** 최초 출력 라벨 값 (패킷 [15]~[25]) */
+    public static class PrintedLabel {
+        public String barcodeType = "";     // 바코드타입
+        public String labelBarcode1 = "";   // 라벨바코드1
+        public String labelBarcode2 = "";   // 라벨바코드2
+        public String printWeight = "";     // 출력중량
+        public String expiryDate = "";      // 소비기한 (YYYYMMDD)
+        public String expiryText = "";      // 소비기한문구
+        public String importIdNo = "";      // 출력이력번호
+        public String storeCode = "";       // 점포코드
+        public String itemName = "";        // 출력상품명
+        public String pointName = "";       // 출력지점명
+        public String centerName = "";      // 출력센터명
+    }
+
+    private PrintedLabel lastPrinted = null;
+
+    public void clearLastPrinted() {
+        lastPrinted = null;
+    }
+
+    public PrintedLabel getLastPrinted() {
+        return lastPrinted;
+    }
+
+    /** 라벨 클래스에서 조립한 바코드 문자열 기록 */
+    public void recordBarcode(String barcode1, String barcode2) {
+        if (lastPrinted != null) {
+            lastPrinted.labelBarcode1 = nz(barcode1);
+            lastPrinted.labelBarcode2 = nz(barcode2);
+        }
+    }
+
+    /** 미트센터 2번째 라벨 바코드 기록 (라벨바코드2) */
+    public void recordBarcode2(String barcode2) {
+        if (lastPrinted != null) {
+            lastPrinted.labelBarcode2 = nz(barcode2);
+        }
+    }
+
+    private static String nz(String v) {
+        return v == null ? "" : v;
+    }
+
+    private PrintedLabel newPrintedLabel(Shipments_Info si, Double print_weight_double) {
+        PrintedLabel p = new PrintedLabel();
+        p.barcodeType = nz(si.getBARCODE_TYPE());
+        p.printWeight = String.valueOf(print_weight_double);
+        p.importIdNo = nz(si.getIMPORT_ID_NO());
+        p.itemName = nz(si.EMARTITEM);
+        return p;
+    }
+
     /**
      * bitmapText로 그렸을 때의 텍스트 폭(도트) 측정 (slcsBitmapText와 동일한 Paint 설정, 굵게)
      */
@@ -407,6 +464,7 @@ public class LabelPrintHelper {
         }
 
         String expiryDayConvert = "";
+        String expiryDate = "";     // 소비기한 YYYYMMDD (개발/80 저장용)
 
         if (si.getPACKER_CODE().equals(KILKOY_PACKER_CODE) && si.getSTORE_CODE().equals(MEAT_CENTER_STORE_CODE)) { //킬코이 , 미트센터 납품분으로 makingdate 이용해 소비기한 변조해 출력
 
@@ -441,6 +499,7 @@ public class LabelPrintHelper {
             String YYYYMMDD = YYYY+"-"+MM+"-"+DD;
 
             expiryDayConvert = "/소비기한 : "+YYYYMMDD;
+            expiryDate = expireDateCalc;
 
         }
 
@@ -477,6 +536,7 @@ public class LabelPrintHelper {
                 String YYYYMMDD = YYYY+"-"+MM+"-"+DD;
 
                 expiryDayConvert = "/소비기한: "+YYYYMMDD;
+                expiryDate = expireDateCalc;
             }
         }
 
@@ -538,6 +598,14 @@ public class LabelPrintHelper {
         if (split_name != null && split_name.length > 1) {
             pointName = split_name[1].toString();
         }
+
+        // 출력 정보 기록 (개발/80) — 바코드 문자열은 라벨 클래스에서 recordBarcode
+        lastPrinted = newPrintedLabel(si, print_weight_double);
+        lastPrinted.expiryDate = expiryDate;
+        lastPrinted.expiryText = expiryDayConvert;
+        lastPrinted.storeCode = nz(si.getSTORE_CODE());
+        lastPrinted.pointName = pointName;
+        lastPrinted.centerName = nz(si.CENTERNAME);
 
         // ========== 바코드 타입별 라벨 디자인 → print/label/emart (신규 타입은 EmartLabel 구현 클래스 추가 후 case 추가) ==========
         switch (si.getBARCODE_TYPE()) {
@@ -709,6 +777,11 @@ public class LabelPrintHelper {
 
         print_weight_double = weight_double;
 
+        // 출력 정보 기록 (개발/80) — 홈플러스 라벨은 바코드 없음, 비정량은 점포코드·정량은 지점코드(EMARTLOGIS_CODE) 출력
+        lastPrinted = newPrintedLabel(si, print_weight_double);
+        lastPrinted.storeCode = ITEM_TYPE_B.equals(si.getITEM_TYPE()) ? nz(si.STORE_CODE) : nz(si.EMARTLOGIS_CODE);
+        lastPrinted.pointName = nz(si.CLIENTNAME);
+
         // ========== 바코드 타입별 라벨 디자인 → print/label/homeplus (신규 타입은 HomeplusLabel 구현 클래스 추가 후 case 추가) ==========
         // 기존 홈플러스 라벨은 바코드 타입을 보지 않았으므로 null 도 default 로 처리한다
         String barcodeType = si.getBARCODE_TYPE() == null ? "" : si.getBARCODE_TYPE();
@@ -835,6 +908,9 @@ public class LabelPrintHelper {
         }
         Log.d(TAG, "============ 바코드 타입 =================== : " + si.getBARCODE_TYPE());
         Log.d(TAG, "============ 바코드 타입 판별 =================== : " + si.getBARCODE_TYPE().equals("L0"));
+        // 출력 정보 기록 (개발/80) — 바코드 문자열은 라벨 클래스에서 recordBarcode
+        lastPrinted = newPrintedLabel(si, print_weight_double);
+
         // ========== 바코드 타입별 라벨 디자인 → print/label/lotte (신규 타입은 LotteLabel 구현 클래스 추가 후 case 추가) ==========
         switch (si.getBARCODE_TYPE()) {
             case BARCODE_TYPE_L0:

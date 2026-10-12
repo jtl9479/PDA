@@ -42,6 +42,7 @@ public class LabelM8 implements EmartLabel {
         String pBarcode = si.getEMARTITEM_CODE().substring(0, 6) + print_weight_str + pCompCode + si.getIMPORT_ID_NO();
         String pBarcodeStr = si.getEMARTITEM_CODE().substring(0, 6) + " " + print_weight_str + " " + pCompCode + " " + si.getIMPORT_ID_NO();
         String pBarcode2 = "";
+        helper.recordBarcode(pBarcode, pBarcode2);     // 출력 정보 기록 (개발/80)
 
         if (Common.D) {
             Log.d(TAG, "print Barcode : " + pBarcode.toString());

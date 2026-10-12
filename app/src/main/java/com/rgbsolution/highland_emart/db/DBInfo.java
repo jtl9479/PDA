@@ -112,6 +112,17 @@ public class DBInfo {
 	public static final String STORE_CODE				    = "STORE_CODE";
 	public static final String SHELF_LIFE				    = "SHELF_LIFE";
 	public static final String LAST_BOX_ORDER				= "LAST_BOX_ORDER";
+	// 라벨 출력 정보 (개발/80, TB_GOODS_WET → SM_출고계근 11컬럼, BARCODE_TYPE 은 기존 상수 사용)
+	public static final String LABEL_BARCODE1 = "LABEL_BARCODE1";	// 라벨바코드1
+	public static final String LABEL_BARCODE2 = "LABEL_BARCODE2";	// 라벨바코드2
+	public static final String PRINT_WEIGHT = "PRINT_WEIGHT";	// 출력중량
+	public static final String EXPIRY_DATE = "EXPIRY_DATE";	// 소비기한(YYYYMMDD)
+	public static final String EXPIRY_TEXT = "EXPIRY_TEXT";	// 소비기한문구
+	public static final String PRINT_IMPORT_ID_NO = "PRINT_IMPORT_ID_NO";	// 출력이력번호
+	public static final String PRINT_STORE_CODE = "PRINT_STORE_CODE";	// 점포코드
+	public static final String PRINT_ITEM_NAME = "PRINT_ITEM_NAME";	// 출력상품명
+	public static final String PRINT_POINT_NAME = "PRINT_POINT_NAME";	// 출력지점명
+	public static final String PRINT_CENTER_NAME = "PRINT_CENTER_NAME";	// 출력센터명
 
 	//	::::::::::::::: ↑ GOODS_WET Columns ↑ ::::::::::::::::::
 }

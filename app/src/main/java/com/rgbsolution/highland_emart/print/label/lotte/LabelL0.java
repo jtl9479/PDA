@@ -61,6 +61,7 @@ public class LabelL0 implements LotteLabel {
 
             pBarcode2 = si.getIMPORT_ID_NO();
             pBarcodeStr2 = si.getIMPORT_ID_NO();
+            helper.recordBarcode(pBarcode, pBarcode2);     // 출력 정보 기록 (개발/80)
 
 
         String[] split_name = null;

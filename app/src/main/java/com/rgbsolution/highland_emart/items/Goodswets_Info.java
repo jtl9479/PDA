@@ -25,6 +25,18 @@ public class Goodswets_Info {
     public String DUPLICATE					    = "";					    // 중복스캔
     public String CLIENT_TYPE 					= "";
     public String BOX_ORDER					    = "";
+    // 라벨 출력 정보 (개발/80)
+    public String BARCODE_TYPE = "";	// 바코드타입
+    public String LABEL_BARCODE1 = "";	// 라벨바코드1
+    public String LABEL_BARCODE2 = "";	// 라벨바코드2
+    public String PRINT_WEIGHT = "";	// 출력중량
+    public String EXPIRY_DATE = "";	// 소비기한(YYYYMMDD)
+    public String EXPIRY_TEXT = "";	// 소비기한문구
+    public String PRINT_IMPORT_ID_NO = "";	// 출력이력번호
+    public String PRINT_STORE_CODE = "";	// 점포코드
+    public String PRINT_ITEM_NAME = "";	// 출력상품명
+    public String PRINT_POINT_NAME = "";	// 출력지점명
+    public String PRINT_CENTER_NAME = "";	// 출력센터명
     public String COMPANY_CODE					    = "";
 
 
@@ -218,5 +230,93 @@ public class Goodswets_Info {
 
     public void setCOMPANY_CODE(String BOX_ORDER) {
         this.COMPANY_CODE= COMPANY_CODE;
+    }
+
+    public String getBARCODE_TYPE() {
+        return BARCODE_TYPE;
+    }
+
+    public void setBARCODE_TYPE(String BARCODE_TYPE) {
+        this.BARCODE_TYPE = BARCODE_TYPE;
+    }
+
+    public String getLABEL_BARCODE1() {
+        return LABEL_BARCODE1;
+    }
+
+    public void setLABEL_BARCODE1(String LABEL_BARCODE1) {
+        this.LABEL_BARCODE1 = LABEL_BARCODE1;
+    }
+
+    public String getLABEL_BARCODE2() {
+        return LABEL_BARCODE2;
+    }
+
+    public void setLABEL_BARCODE2(String LABEL_BARCODE2) {
+        this.LABEL_BARCODE2 = LABEL_BARCODE2;
+    }
+
+    public String getPRINT_WEIGHT() {
+        return PRINT_WEIGHT;
+    }
+
+    public void setPRINT_WEIGHT(String PRINT_WEIGHT) {
+        this.PRINT_WEIGHT = PRINT_WEIGHT;
+    }
+
+    public String getEXPIRY_DATE() {
+        return EXPIRY_DATE;
+    }
+
+    public void setEXPIRY_DATE(String EXPIRY_DATE) {
+        this.EXPIRY_DATE = EXPIRY_DATE;
+    }
+
+    public String getEXPIRY_TEXT() {
+        return EXPIRY_TEXT;
+    }
+
+    public void setEXPIRY_TEXT(String EXPIRY_TEXT) {
+        this.EXPIRY_TEXT = EXPIRY_TEXT;
+    }
+
+    public String getPRINT_IMPORT_ID_NO() {
+        return PRINT_IMPORT_ID_NO;
+    }
+
+    public void setPRINT_IMPORT_ID_NO(String PRINT_IMPORT_ID_NO) {
+        this.PRINT_IMPORT_ID_NO = PRINT_IMPORT_ID_NO;
+    }
+
+    public String getPRINT_STORE_CODE() {
+        return PRINT_STORE_CODE;
+    }
+
+    public void setPRINT_STORE_CODE(String PRINT_STORE_CODE) {
+        this.PRINT_STORE_CODE = PRINT_STORE_CODE;
+    }
+
+    public String getPRINT_ITEM_NAME() {
+        return PRINT_ITEM_NAME;
+    }
+
+    public void setPRINT_ITEM_NAME(String PRINT_ITEM_NAME) {
+        this.PRINT_ITEM_NAME = PRINT_ITEM_NAME;
+    }
+
+    public String getPRINT_POINT_NAME() {
+        return PRINT_POINT_NAME;
+    }
+
+    public void setPRINT_POINT_NAME(String PRINT_POINT_NAME) {
+        this.PRINT_POINT_NAME = PRINT_POINT_NAME;
+    }
+
+    public String getPRINT_CENTER_NAME() {
+        return PRINT_CENTER_NAME;
+    }
+
+    public void setPRINT_CENTER_NAME(String PRINT_CENTER_NAME) {
+        this.PRINT_CENTER_NAME = PRINT_CENTER_NAME;
     }
 }
