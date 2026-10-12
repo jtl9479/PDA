@@ -50,6 +50,7 @@ import com.rgbsolution.highland_emart.shipment.scan.BarcodeInfoFinder;
 import com.rgbsolution.highland_emart.shipment.scan.BarcodeParser;
 import com.rgbsolution.highland_emart.shipment.task.PrintConnectTask;
 import com.rgbsolution.highland_emart.shipment.task.PrintDisconnectTask;
+import com.rgbsolution.highland_emart.shipment.dialog.WetDetailDialog;
 import com.rgbsolution.highland_emart.shipment.task.ShipSelectTask;
 import com.rgbsolution.highland_emart.shipment.task.ShipmentSendTask;
 
@@ -226,21 +227,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private ShipmentListAdapter sListAdapter;
 
     // ====================================================================================
-    // 필드 - 화면 위젯 (계근 상세 팝업)
-    // ====================================================================================
-
-    /*
-        계근 상세내역 팝업 필드
-     */
-    private EditText detail_edit_count;
-
-    private EditText detail_edit_weight;
-
-    private DetailAdapter detailAdapter;
-
-    private Button detail_btn_back;
-
-    // ====================================================================================
     // 필드 - 계근 상태
     // ====================================================================================
 
@@ -252,8 +238,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
     /** 전송할 계근 데이터 목록 */
     private ArrayList<Goodswets_Info> list_send_info;
-
-    private ArrayList<Goodswets_Info> list_gi_info;
 
     /**
      * 현재 계근 작업 중인 리스트 위치
@@ -1822,17 +1806,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
-    public void refresh_delete(String delete_weight) {
-        Log.d(TAG, "삭제되는 계근대상의 중량 : " + delete_weight);
-        arSM.get(select_position).setPACKING_QTY(arSM.get(select_position).getPACKING_QTY() - 1);
-        double temp = arSM.get(select_position).getGI_QTY() - Double.parseDouble(delete_weight);
-        temp = Math.round(temp * 100) / 100.0;
-        arSM.get(select_position).setGI_QTY(temp);
-
-        detail_edit_count.setText(arSM.get(select_position).getGI_REQ_PKG() + " / " + arSM.get(select_position).getPACKING_QTY());
-        detail_edit_weight.setText(arSM.get(select_position).getGI_REQ_QTY() + " / " + arSM.get(select_position).getGI_QTY());
-    }
-
     public Shipments_Info getSelect_Shipment(int pos) {
         return arSM.get(pos);
     }
@@ -1849,182 +1822,61 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // 다이얼로그
     // ====================================================================================
 
-    private void show_wetDetailDialog(Shipments_Info si, Barcodes_Info bi, int position) {
-        try {
-            dialog_flag = true;
-            View detail_layout = Inflater.inflate(R.layout.dialog_detailshipment, null);
-
-            EditText detail_edit_position_name = (EditText) detail_layout.findViewById(R.id.detail_edit_position);
-            EditText detail_edit_ppname = (EditText) detail_layout.findViewById(R.id.detail_edit_ppname);
-            EditText detail_edit_ppcode = (EditText) detail_layout.findViewById(R.id.detail_edit_ppcode);
-            detail_edit_count = (EditText) detail_layout.findViewById(R.id.detail_edit_count);
-            detail_edit_weight = (EditText) detail_layout.findViewById(R.id.detail_edit_weight);
-
-            detail_btn_back = (Button) detail_layout.findViewById(R.id.detail_btn_back);
-            final Button detail_btn_delete = (Button) detail_layout.findViewById(R.id.detail_btn_select);
-            final Button detail_btn_sum = (Button) detail_layout.findViewById(R.id.detail_btn_sum);
-
-            detail_edit_position_name.setText(si.getCLIENTNAME());
-            detail_edit_ppname.setText(si.getITEM_NAME());
-            detail_edit_ppcode.setText(si.getPACKER_PRODUCT_CODE());
-            detail_edit_count.setText(si.getGI_REQ_PKG() + " / " + si.getPACKING_QTY());
-            detail_edit_weight.setText(si.getGI_REQ_QTY() + " / " + si.getGI_QTY());
-
-            final AlertDialog.Builder dlog = new AlertDialog.Builder(this, R.style.AppCompatDialogStyle)
-                    .setCancelable(false);
-            dlog.setView(detail_layout);
-            final AlertDialog detail_dialog = dlog.create();
-            detail_dialog.show();
-
-            detail_btn_back.setOnClickListener(v -> {
-                detail_dialog.dismiss();
-                dialog_flag = false;
-                for (int i = 0; i < sListAdapter.cbStatus.size(); i++) {
-                    sListAdapter.cbStatus.set(i, false);
-                }
-                edit_barcode.setText("");
-                edit_wet_count.setText("");
-                edit_wet_weight.setText("");
-                if (work_flag == 1) {
-                    new ShipSelectTask(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true, mode, shipSelectHost).execute();
-                } else if (work_flag == 0){
-                    Log.e(TAG, "수기일때 뒤로가기 = " + work_bl_no);
-                    // BL코드로 계근 리스트 조회하기
-                    new ShipSelectTask(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false, mode, shipSelectHost).execute();
-                } else if (work_flag == 2){
-                    new ShipSelectTask(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false, mode, shipSelectHost).execute();
-                }
-            });
-
-            detail_btn_delete.setOnClickListener(v -> {
-                // 선택된 Items 삭제
-                try {
-                    if (list_gi_info.size() == 0) {
-                        Toast.makeText(getApplicationContext(), "삭제할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
-                        vibrator.vibrate(1000);
-                    } else if (list_gi_info.size() > 0) {
-                        ArrayList<Goodswets_Info> list_delete = new ArrayList<Goodswets_Info>();
-                        for (int i = 0; i < detailAdapter.cbStatus.size(); i++) {
-                            if (detailAdapter.cbStatus.get(i))
-                                list_delete.add(list_gi_info.get(i));
-                        }
-                        if (list_delete.size() > 0) {
-                            deleteQuestionDialog(getSelect_Shipment(getSelect_Position()), list_delete);
-                        } else {
-                            Toast.makeText(getApplicationContext(), "삭제할 항목을 선택하세요.", Toast.LENGTH_SHORT).show();
-                            vibrator.vibrate(1000);
-                        }
-                    }
-                } catch (Exception ex) {
-                    Log.e(TAG, "==== detail_btn_delete Exception ====");
-                    Log.e(TAG, ex.getMessage().toString());
-                }
-            });
-
-            detail_btn_sum.setOnClickListener(v -> {
-                // 전체 리스트 합
-                try {
-                    if (list_gi_info.size() == 0) {
-                        Toast.makeText(getApplicationContext(), "합산할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
-                        vibrator.vibrate(1000);
-                    } else if (list_gi_info.size() > 0) {
-                        // 파렛트당 박스 수 입력 (개발 79, 수정 리스트 C2)
-                        // 기본값 36 = 원본 36건(6열 x 6행) 단위와 동일 출력
-                        final EditText edit_pallet_cnt = new EditText(BixolonShipmentActivity.this);
-                        edit_pallet_cnt.setInputType(InputType.TYPE_CLASS_NUMBER);
-                        edit_pallet_cnt.setText("36");
-                        edit_pallet_cnt.setSelectAllOnFocus(true);
-
-                        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
-                                .setIcon(R.drawable.highland)
-                                .setTitle("합산 라벨")
-                                .setMessage("파렛트당 박스 수를 입력하세요.")
-                                .setView(edit_pallet_cnt)
-                                .setPositiveButton("출력", (dialog, which) -> {
-                                    int pallet_box_cnt = 0;
-                                    try {
-                                        pallet_box_cnt = Integer.parseInt(edit_pallet_cnt.getText().toString().trim());
-                                    } catch (NumberFormatException e) {
-                                        pallet_box_cnt = 0;
-                                    }
-                                    if (pallet_box_cnt <= 0) {
-                                        Toast.makeText(getApplicationContext(), "파렛트당 박스 수를 입력하세요.", Toast.LENGTH_SHORT).show();
-                                        vibrator.vibrate(1000);
-                                        return;
-                                    }
-                                    SumLabel.print(labelPrintHelper, list_gi_info, pallet_box_cnt, printerCallback);   // 개발/77 Step 1
-                                }).setNegativeButton("취소", null)
-                                .show();
-                    }
-                } catch (Exception ex) {
-                    Log.e(TAG, "==== detail_btn_sum Exception ====");
-                    Log.e(TAG, ex.getMessage().toString());
-                }
-            });
-
-            list_gi_info = DBHandler.selectqueryGoodsWet(BixolonShipmentActivity.this, si.getGI_D_ID(), si.getPACKER_PRODUCT_CODE(), si.getCLIENT_CODE(), si.getGI_L_ID());
-            detailAdapter = new DetailAdapter(BixolonShipmentActivity.this, R.layout.list_detailshipment, list_gi_info, mHandler);
-
-            ListView detail_list = (ListView) detail_layout.findViewById(R.id.detail_list);
-            detail_list.setAdapter(detailAdapter);
-            detailAdapter.notifyDataSetChanged();
-        } catch (Exception ex) {
-            Log.e(TAG, "======== show_wetDetailDialog Exception ========");
-            Log.e(TAG, ex.getMessage().toString());
+    /** 계근 상세 팝업 Host (개발/77 Step 7) */
+    private WetDetailDialog.Host wetDetailHost = new WetDetailDialog.Host() {
+        @Override
+        public void setDialogFlag(boolean flag) {
+            dialog_flag = flag;
         }
+
+        @Override
+        public void onDetailBack() {
+            onWetDetailBack();
+        }
+
+        @Override
+        public void vibrate(long ms) {
+            vibrator.vibrate(ms);
+        }
+
+        @Override
+        public void disableSendButton() {
+            btn_send.setEnabled(false);
+            btn_send.setBackgroundResource(R.drawable.disable_round_button);
+        }
+
+        @Override
+        public Shipments_Info getSelectedShipment() {
+            return arSM.get(select_position);
+        }
+
+        @Override
+        public Handler getHandler() {
+            return mHandler;
+        }
+    };
+
+    private void show_wetDetailDialog(Shipments_Info si, Barcodes_Info bi, int position) {
+        new WetDetailDialog(this, wetDetailHost, labelPrintHelper, printerCallback).show(si, Inflater);
     }
 
-    //	계근상품 삭제 Dialog
-    public void deleteQuestionDialog(final Shipments_Info si, final ArrayList<Goodswets_Info> list_delete) {
-        String alertTitle = "계근상품 삭제";
-        String buttonMessage = "정말 삭제하시겠습니까?";
-        String buttonYes = "삭제";
-        String buttonNo = "취소";
-
-        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
-                .setIcon(R.drawable.highland)
-                .setTitle(alertTitle)
-                .setMessage(buttonMessage)
-                .setCancelable(false)
-                .setPositiveButton(buttonYes, (dialog, which) -> {
-                    try {
-                        if (Common.D) {
-                            Log.d(TAG, "삭제할 계근상품 수 : " + list_delete.size());
-                        }
-                        for (int i = list_delete.size()-1; i >= 0; i--) {
-                            // List 삭제 & SQLite 삭제
-                            Log.i(TAG, "삭제 i count : " + i);
-                            Log.i(TAG, "삭제 row position : " + list_delete.get(i).getBOX_CNT());
-                            String delete_box = list_delete.get(i).getBOX_CNT();
-
-                            DBHandler.deletequerySelectGoodsWet(getApplicationContext(),
-                                    list_delete.get(i).getGI_D_ID(), list_delete.get(i).getBARCODE(), Integer.parseInt(delete_box), list_delete.get(i).getGI_L_ID());
-                            refresh_delete(list_delete.get(i).getWEIGHT());
-
-                        /*    int removeindex = Integer.parseInt(delete_box)-1;
-                            detailAdapter.remove(removeindex);*/
-                        }
-                        /*detailAdapter.notifyDataSetChanged();*/
-
-                        vibrator.vibrate(500);
-                        btn_send.setEnabled(false);
-                        btn_send.setBackgroundResource(R.drawable.disable_round_button);
-
-                        detail_btn_back.performClick();
-
-                        if (Common.D) {
-                            Log.d(TAG, "계근 선택항목 삭제 성공 !");
-                        }
-                        Toast.makeText(getApplicationContext(), "삭제 성공", Toast.LENGTH_SHORT).show();
-
-                    } catch (Exception ex) {
-                        if (Common.D) {
-                            Log.d(TAG, "계근 선택항목 삭제 실패 -> " + ex.getMessage().toString());
-                        }
-                        Toast.makeText(getApplicationContext(), "삭제 실패", Toast.LENGTH_SHORT).show();
-                    }
-                }).setNegativeButton(buttonNo, null)
-                .show();
+    // 계근 상세 팝업 뒤로가기 후 화면 정리·재조회 (기존 detail_btn_back 클릭 본문, 개발/77 Step 7)
+    private void onWetDetailBack() {
+        for (int i = 0; i < sListAdapter.cbStatus.size(); i++) {
+            sListAdapter.cbStatus.set(i, false);
+        }
+        edit_barcode.setText("");
+        edit_wet_count.setText("");
+        edit_wet_weight.setText("");
+        if (work_flag == 1) {
+            new ShipSelectTask(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_ppcode, true, mode, shipSelectHost).execute();
+        } else if (work_flag == 0){
+            Log.e(TAG, "수기일때 뒤로가기 = " + work_bl_no);
+            // BL코드로 계근 리스트 조회하기
+            new ShipSelectTask(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false, mode, shipSelectHost).execute();
+        } else if (work_flag == 2){
+            new ShipSelectTask(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), work_bl_no, false, mode, shipSelectHost).execute();
+        }
     }
 
     // 전송이 끝났음을 알리는 Dialog

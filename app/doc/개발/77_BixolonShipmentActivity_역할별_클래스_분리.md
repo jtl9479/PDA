@@ -718,17 +718,17 @@ public class WetDetailDialog {
 - **동치 검증**: 팝업 열기 → 목록 표시, 항목 체크 삭제(1건·복수), 삭제 후 수량/중량 갱신·전송 버튼 비활성, 뒤로가기 후 `work_flag` 0/1/2 별 재조회, 합산 라벨 출력, 항목 없을 때 토스트. 변경 전 APK 대비 화면 동일(스크린샷) + 로컬 DB 행 수 동일.
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 (삭제·합산·뒤로가기 경로)
-- [ ] Part 6: 회귀테스트 (이마트 상세 삭제 후 재계근, 합산 라벨, 홈플러스·롯데 재출력(DetailAdapter→MESSAGE_REPRINT) 동작)
+- [x] Part 1: 분석 완료 확인 — 팝업 필드 5개(detail_edit_count/weight, detailAdapter, detail_btn_back, list_gi_info)는 팝업 밖 사용 0
+- [x] Part 2: 변환 계획 확인 — Host 6개(`setDialogFlag`, `onDetailBack`, `vibrate`, `disableSendButton`, `getSelectedShipment`, `getHandler`). 기존 람다는 문법 그대로 이동. `show_wetDetailDialog(si, bi, position)` 시그니처는 Activity 에 유지(본문은 `new WetDetailDialog(...).show(si, Inflater)`)
+- [x] Part 3: 변환 수행 — 뒤로가기: dismiss → `dialog_flag=false` → `onWetDetailBack()`(체크 해제·입력창 비움·재조회, 원래 본문). 삭제 성공 순서: 삭제 루프 → vibrate(500) → 전송 버튼 비활성 → `performClick` → Toast 그대로. `getApplicationContext()` → `mContext.getApplicationContext()`(같은 Application 컨텍스트)
+- [x] Part 4: 컴파일 확인
+- [ ] Part 5: 단위테스트 — Step 10
+- [ ] Part 6: 회귀테스트 — Step 10
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `shipment/dialog/WetDetailDialog` (show·deleteQuestionDialog·refresh_delete)
+- **왜**: 상세 팝업·삭제·합산 버튼 분리
+- **어떻게**: Activity 는 Host 익명 클래스 + `onWetDetailBack()` + 1줄 `show_wetDetailDialog`. Activity 2,193줄
 
 ---
 
