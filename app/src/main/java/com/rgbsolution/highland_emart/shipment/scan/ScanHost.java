@@ -8,7 +8,6 @@ import java.util.ArrayList;
  * ScanProcessor 가 호출하는 화면·태스크 기능 (개발/77 Step 8) — BixolonShipmentActivity 가 구현
  */
 public interface ScanHost {
-    void setBarcodeMsgProduction(String msg);                    // 생산(1) 전용 흐름
     String findPackerProduct(String barcode);                    // find_PackerProduct
     String findPackerProductBarcodeGoods(String barcode);        // find_PackerProductBarcodeGoods
     void setBarcodeText(String text);                            // edit_barcode.setText
