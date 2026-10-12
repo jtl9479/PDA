@@ -752,17 +752,17 @@ public class WetDetailDialog {
 - **동치 검증**: 상품 스캔 6경로(코드 없음/최초/같은 상품 신규/같은 상품 중복/다른 상품 Yes·No) × BL 스캔 경로(소비기한 필수 걸림/BL 없음/계근 끝난 지점/중복/정상 저장) × 마트 6종의 로그 시퀀스(`Log.e` 문구) diff. 디바운스(1초 내 동일 바코드) 확인.
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인 (치환 지점 전수 목록)
-- [ ] Part 2: 변환 계획 확인 (사용자 승인)
-- [ ] Part 3: 변환 수행 (3-1 상태 치환 커밋 / 3-2 흐름 이동 커밋)
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 (경로별 로그 시퀀스 diff)
-- [ ] Part 6: 회귀테스트 (전 마트 스캔 → 계근 → 라벨 → 전송)
+- [x] Part 1: 분석 완료 확인 — 상태 필드 13개(dialog_flag, alert_flag, lastProcessedBarcode, lastBarcodeProcessedTime, scan_flag, work_flag, work_ppcode, work_bl_no, work_item_fullbarcode, work_item_barcodegoods, work_item_bi_info, current_work_position, expiryDayTrans). 같은 이름 지역변수·매개변수 없음 확인
+- [x] Part 2: 변환 계획 확인 (사용자 승인 2026-10-12 "세 가지 다 진행하라")
+- [x] Part 3: 변환 수행 — 3-1 `ScanState` 이전(문자열·주석 밖 식별자만 `scan.` 치환, 293곳) / 3-2 `ScanProcessor.process` 이동. `centerTotal/WorkCount`·`arSM`·위젯·태스크 기동은 `ScanHost`(16개)로, 디바운스 상수는 ScanProcessor 로
+- [x] Part 4: 컴파일 확인
+- [x] Part 5: 단위테스트 — EDA51: 상품 스캔(식별) → BL 스캔(계근) → 같은 바코드 재스캔 "오류지점1" 차단 → 다른 상품 스캔 "상품 변경" 창 → 예 → 다른 상품 목록 조회
+- [x] Part 6: 회귀테스트 — Step 10 표
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `shipment/scan/ScanState`, `ScanHost`, `ScanProcessor`
+- **왜**: setBarcodeMsg(234줄) 분리
+- **어떻게**: 본문 그대로, Activity 필드 → `scan.*`, 화면 호출 → `host.*`, `getApplicationContext()` → `mContext.getApplicationContext()`
 
 ---
 
@@ -785,17 +785,17 @@ public class WetDetailDialog {
 - **동치 검증**: searchType=1 으로 진입(MainActivity 경로 또는 테스트 하네스)해 BL 스캔 → 저장 → 일괄 전송(`URL_INSERT_GOODS_WET_PRODUCTION`) 로그 비교. 미사용 방침상 **컴파일 + code-verifier 비교만으로 갈음할지 사용자 결정**.
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트
-- [ ] Part 6: 회귀테스트
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인 — 통합하지 않고 `processProduction` 으로 복사 이동(S/J 인라인 추출 그대로, BarcodeParser 재사용 안 함)
+- [x] Part 3: 변환 수행 — Step 8 과 같은 치환 규칙, 재귀는 `processProduction(msg)`
+- [x] Part 4: 컴파일 확인
+- [ ] Part 5: 단위테스트 — 생산(1) 미사용으로 실기기 미수행 (컴파일·치환 규칙 동일성으로 갈음)
+- [ ] Part 6: 회귀테스트 — 미수행
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `setBarcodeMsgProduction` → `ScanProcessor.processProduction`
+- **왜**: Activity 에서 미사용 생산 흐름(261줄) 제거
+- **어떻게**: ScanHost 의 생산 위임 메서드 삭제, `process` 가 직접 `processProduction` 호출
 
 ---
 
@@ -830,6 +830,28 @@ public class WetDetailDialog {
 
 - 서버 적재: SM_출고계근 SEQ 301 (506 박스 1). 로컬 506 박스 2 는 F(미전송)로 남음
 - 미수행: 롯데·홈플러스 정량·도매 재테스트, 수기 입력(work_flag 0)·상품코드 입력(2), 전송 실패(f)
+
+**Step 8·9·추가 정리 반영 빌드 (2026-10-12 14:17)**
+
+| 경로 | 결과 |
+|------|------|
+| 이마트 0928 시화WET 504 상품 스캔 → BL 스캔 | 식별·조회 후 10.8kg 계근, 라벨 출력 |
+| 같은 바코드 재스캔 | "오류지점1" 이미 스캔한 바코드 차단 |
+| 다른 상품(691) 스캔 | "상품 변경" 확인 창 → 예 → 505 목록 조회, BL 스캔 차례 전환 |
+| 그 상태에서 다음 스캔 | 상품 확인 없이 505 에 계근 (BL 스캔 차례 — 원래 흐름) |
+
+- 테스트로 생긴 로컬 미전송 행(504·505 각 1건)은 로컬DB에서 삭제
+
+---
+
+### 추가 정리 (사용자 지시 2026-10-12, 11절 "필드 주석·미사용 필드·import 정리")
+
+- 구분선 배너 14개, 필드 선언 사이 빈 줄, `{` 뒤·`}` 앞·연속 빈 줄 제거
+- 영문 템플릿 주석·주석 처리된 죽은 코드 8줄 제거 (이유·원본 설명 주석은 유지)
+- 미사용 import 7개(`AsyncTask`, `BluetoothDevice`, `InputType`, `DetailAdapter`, `HttpHelper`, `SumLabel`, `BarcodeParser`), 미사용 메서드 `getSelect_Shipment` 제거
+- 결과: Activity 1,734줄 → 1,602줄
+
+**Activity 줄 수 경과**: 3,042(착수 전) → 2,894(Step 1) → 2,193(Step 7) → 1,734(Step 9) → 1,602(추가 정리)
 
 ---
 
@@ -942,9 +964,9 @@ Step 10: 통합 테스트
 | 5 | ShipmentSendTask 분리 | ✅ 완료 |
 | 6 | ShipSelectTask 분리 (선택) | ✅ 완료 |
 | 7 | WetDetailDialog 분리 | ✅ 완료 |
-| 8 | ScanProcessor 분리 (게이트) | ⏳ 대기 |
-| 9 | 생산 스캔 이동 (게이트) | ⏳ 대기 |
-| 10 | 통합 테스트 | 🔄 Step 1~7 부분 완료 (2026-10-12) |
+| 8 | ScanProcessor 분리 (게이트) | ✅ 완료 |
+| 9 | 생산 스캔 이동 (게이트) | ✅ 완료 (실기기 미수행 — 생산 미사용) |
+| 10 | 통합 테스트 | 🔄 부분 완료 (2026-10-12, 롯데·홈플러스 정량·도매·수기·상품코드 입력 미수행) |
 
 ---
 
