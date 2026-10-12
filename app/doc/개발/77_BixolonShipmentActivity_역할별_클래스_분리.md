@@ -545,17 +545,17 @@ public class WetDetailDialog {
 - **동치 검증**: ① 하이드레이션 입력 표(타입 W/HW/S/J/B × LB/KG × zeropoint 0·1·2 × 제조일/박스시리얼 위치 유/무 × 마트 0·2·3·4·5·6) 를 만들어 변경 전 APK 와 변경 후 APK 의 `wet_data_insert` 인자 로그(`weight_str`, `making_date`, `box_serial`)를 비교. ② code-verifier(Parser 와 변경 전 블록 diff), original-comparator.
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 (입력 표 인자 로그 일치)
-- [ ] Part 6: 회귀테스트 (이마트 W·S·J·LB, 홈플러스 B, 비정량, 롯데, 트레이더스 소비기한)
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행 — 추출 블록을 역치환해 원본과 diff: 알림 블록 3곳(→ `isWeightPositionMissing`) 외 차이 0. 로그 문구 동일
+- [x] Part 4: 컴파일 확인
+- [ ] Part 5: 단위테스트 — Step 10 통합 테스트에서 실기기 계근 인자·라벨 바이트 비교
+- [ ] Part 6: 회귀테스트 — Step 10
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `shipment/scan/BarcodeParser` (`Result`, `isWeightPositionMissing`, `parse`)
+- **왜**: setBarcodeMsg 의 순수 계산(약 160줄) 분리
+- **어떻게**: Activity 는 `******current_work_position` 로그 → 알림 검사 → `parse` → `wet_data_insert(parsed.*)`. `getPACKWEIGHT()` 는 인자로 항상 평가(부수효과 없는 getter)
 
 ---
 

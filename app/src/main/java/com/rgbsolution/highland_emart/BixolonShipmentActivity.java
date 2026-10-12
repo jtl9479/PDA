@@ -46,6 +46,7 @@ import com.rgbsolution.highland_emart.print.DeviceListActivity;
 import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
 import com.rgbsolution.highland_emart.shipment.mode.ShipmentMode;
 import com.rgbsolution.highland_emart.shipment.mode.ShipmentModeFactory;
+import com.rgbsolution.highland_emart.shipment.scan.BarcodeParser;
 
 import java.util.ArrayList;
 
@@ -1271,183 +1272,17 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         Log.i(TAG, "## 패커상품코드 & BL번호 확인 완료. 계근 시작 ##");
                         Log.i(TAG, "현재 계근할 FULL 바코드                     : " + work_item_fullbarcode);
                         Log.i(TAG, "현재 계근할 바코드의 BarcodeGodos            : " + work_item_barcodegoods);
-                        /*
-                         * 계근 필드값
-                         */
-                        String item_weight = "";            // 상품 최초 중량 절사값(XXXX)
-                        Double item_weight_double = 0.0;    // 상품 Double 중량값
-                        String item_weight_str = "";        // 상품 String 중량값
-
-                        double item_pow = 0;              // 상품 zeroPoint에 대한 pow
-
-                        String item_making_date = "";       // 상품 제조일
-                        String item_box_serial = "";        // 상품 박스시리얼
-                        /*
-                         *      중량(LB체크) / 제조일 / 박스번호 Find
-                         */
                         Log.d(TAG, "******************current_work_position:" + arSM.get(current_work_position).getITEM_TYPE());
 
-                        if (arSM.get(current_work_position).getITEM_TYPE().equals(Common.ITEM_TYPE_W) || arSM.get(current_work_position).getITEM_TYPE().equals(Common.ITEM_TYPE_HW)) {
-                            String weight_from = work_item_bi_info.getWEIGHT_FROM();
-                            String weight_to = work_item_bi_info.getWEIGHT_TO();
-
-                            Log.d(TAG, "weightfrom,to:" + weight_from + ":" + weight_to + ":");
-                            if (weight_from.equals("0") || weight_to.equals("0")) {
-                                showAlertDialog("weight", 0);
-                                alert_flag = true;
-                            }
-
-                            // 이마트 ITEM_TYPE W (바코드 계근)
-                            item_weight = work_item_fullbarcode.substring(
-                                    Integer.parseInt(work_item_bi_info.getWEIGHT_FROM()) - 1, Integer.parseInt(work_item_bi_info.getWEIGHT_TO()));
-                            Log.i(TAG, "Type W | 절사한 중량값 : " + item_weight);
-
-                            item_pow = Math.pow(10, Integer.parseInt(work_item_bi_info.getZEROPOINT()));
-                            Log.i(TAG, "Type W | item_pow 확인 : " + item_pow);
-                            Log.i(TAG, "Type W | zero point 확인 : " + work_item_bi_info.getZEROPOINT());
-
-                            item_weight_double = Double.parseDouble(item_weight) / item_pow;
-
-                            Log.i(TAG, "Type W | item_weight 확인 : " + Double.parseDouble(item_weight));
-                            Log.i(TAG, "Type W | item_weight_double 확인 : " + item_weight_double);
-
-                            if ("LB".equals(work_item_bi_info.getBASEUNIT())) {
-                                // LB(파운드)라면 KG으로 환산 LB * 0.453592 = KG
-                                double temp_weight_double = item_weight_double * 0.453592;
-                                item_weight_double = Math.floor(temp_weight_double * item_pow) / item_pow;
-                                item_weight_str = String.valueOf(item_weight_double);
-                                Log.i(TAG, "LB->KG | 환산 중량 Double값 : " + item_weight_double);
-                                Log.i(TAG, "LB->KG | 환산 중량 String값 : " + item_weight_str);
-                            }
-
-                            item_weight_double = Math.floor(item_weight_double * 10);
-                            item_weight_double = item_weight_double / 10.0;
-
-                            String temp_weight = String.format("%.1f", item_weight_double);
-                            item_weight_double = Double.parseDouble(temp_weight);
-                            item_weight_str = String.valueOf(item_weight_double);
-                            Log.i(TAG, "Type W | ZeroPoint 적용 중량 Double값 : " + item_weight_double);
-                            Log.i(TAG, "Type W | ZeroPoint 적용 중량 String값 : " + item_weight_str);
-
-                            if (work_item_bi_info.getMAKINGDATE_FROM() != "" && work_item_bi_info.getMAKINGDATE_TO() != "") {
-                                item_making_date = work_item_fullbarcode.substring(
-                                        Integer.parseInt(work_item_bi_info.getMAKINGDATE_FROM()) - 1, Integer.parseInt(work_item_bi_info.getMAKINGDATE_TO()));
-                                Log.i(TAG, "Type W | 절사한 제조일 : " + item_making_date);
-                            }
-
-                            if (work_item_bi_info.getBOXSERIAL_FROM() != "" && work_item_bi_info.getBOXSERIAL_TO() != "") {
-                                item_box_serial = work_item_fullbarcode.substring(
-                                        Integer.parseInt(work_item_bi_info.getBOXSERIAL_FROM()) - 1, Integer.parseInt(work_item_bi_info.getBOXSERIAL_TO()));
-                                Log.i(TAG, "Type W | 절사한 박스시리얼 : " + item_box_serial);
-                            }
-                        } else if (arSM.get(current_work_position).getITEM_TYPE().equals(Common.ITEM_TYPE_S)) {
-                            String weight_from = work_item_bi_info.getWEIGHT_FROM();
-                            String weight_to = work_item_bi_info.getWEIGHT_TO();
-
-                            Log.d(TAG, "weightfrom,to:" + weight_from + ":" + weight_to + ":");
-                            if (weight_from.equals("0") || weight_to.equals("0")) {
-                                showAlertDialog("weight", 0);
-                                alert_flag = true;
-                            }
-
-                            // 이마트 ITEM_TYPE W (바코드 계근)
-                            item_weight = work_item_fullbarcode.substring(
-                                    Integer.parseInt(work_item_bi_info.getWEIGHT_FROM()) - 1, Integer.parseInt(work_item_bi_info.getWEIGHT_TO()));
-                            Log.i(TAG, "Type S | 절사한 중량값 : " + item_weight);
-
-                            item_pow = Math.pow(10, Integer.parseInt(work_item_bi_info.getZEROPOINT()));
-                            item_weight_double = Double.parseDouble(item_weight) / item_pow;
-
-                            if ("LB".equals(work_item_bi_info.getBASEUNIT())) {
-                                Log.i(TAG, "LB로 들어옴, 환산");
-                                Log.i(TAG, "LB 원 중량 : " + item_weight_double);
-                                // LB(파운드)라면 KG으로 환산 LB * 0.453592 = KG
-                                double temp_weight_double = item_weight_double * 0.453592;
-
-                                item_weight_double = mode.lbToKgFloor(temp_weight_double, item_pow);   // 이마트 vs 그 외 절사 자릿수 (개발/76)
-                                item_weight_str = String.valueOf(item_weight_double);
-                                Log.i(TAG, "LB->KG | 환산 중량 Double값 : " + item_weight_double);
-                                Log.i(TAG, "LB->KG | 환산 중량 String값 : " + item_weight_str);
-                            }
-
-                            String temp_weight = String.format("%.2f", item_weight_double);
-                            item_weight_double = Double.parseDouble(temp_weight);
-                            item_weight_str = String.valueOf(item_weight_double);
-                            Log.i(TAG, "Type S | ZeroPoint 적용 중량 Double값 : " + item_weight_double);
-                            Log.i(TAG, "Type S | ZeroPoint 적용 중량 String값 : " + item_weight_str);
-
-                            if (work_item_bi_info.getMAKINGDATE_FROM() != "" && work_item_bi_info.getMAKINGDATE_TO() != "") {
-                                item_making_date = work_item_fullbarcode.substring(
-                                        Integer.parseInt(work_item_bi_info.getMAKINGDATE_FROM()) - 1, Integer.parseInt(work_item_bi_info.getMAKINGDATE_TO()));
-                                Log.i(TAG, "Type S | 절사한 제조일 : " + item_making_date);
-                            }
-
-                            if (work_item_bi_info.getBOXSERIAL_FROM() != "" && work_item_bi_info.getBOXSERIAL_TO() != "") {
-                                item_box_serial = work_item_fullbarcode.substring(
-                                        Integer.parseInt(work_item_bi_info.getBOXSERIAL_FROM()) - 1, Integer.parseInt(work_item_bi_info.getBOXSERIAL_TO()));
-                                Log.i(TAG, "Type S | 절사한 박스시리얼 : " + item_box_serial);
-                            }
-                        } else if (arSM.get(current_work_position).getITEM_TYPE().equals(Common.ITEM_TYPE_J)) {
-                            // 이마트 ITEM_TYPE J (지정된 중량 입력) | 바코드에서 중량, 제조일, 박스시리얼 X
-                            item_weight = arSM.get(current_work_position).getPACKWEIGHT();
-                            Log.i(TAG, "Type J | 지정된 중량값 : " + item_weight);
-                            item_weight_double = Double.parseDouble(item_weight);
-                            item_weight_str = String.valueOf(item_weight_double);
-                            Log.i(TAG, "Type J | ZeroPoint 적용 중량 Double값 : " + item_weight_double);
-                            Log.i(TAG, "Type J | ZeroPoint 적용 중량 String값 : " + item_weight_str);
+                        // 중량·제조일·박스시리얼 추출 (개발/77 Step 2) — 중량 위치 없음 알림은 추출 전
+                        if (BarcodeParser.isWeightPositionMissing(arSM.get(current_work_position).getITEM_TYPE(), work_item_bi_info)) {
+                            showAlertDialog("weight", 0);
+                            alert_flag = true;
                         }
+                        BarcodeParser.Result parsed = BarcodeParser.parse(arSM.get(current_work_position).getITEM_TYPE(), work_item_fullbarcode,
+                                work_item_bi_info, arSM.get(current_work_position).getPACKWEIGHT(), mode);
 
-                        // Homeplus 비정량 "B"
-                        if (arSM.get(current_work_position).getITEM_TYPE().equals(Common.ITEM_TYPE_B)) {
-                            String weight_from = work_item_bi_info.getWEIGHT_FROM();
-                            String weight_to = work_item_bi_info.getWEIGHT_TO();
-
-                            Log.d(TAG, "weightfrom,to:" + weight_from + ":" + weight_to + ":");
-                            if (weight_from.equals("0") || weight_to.equals("0")) {
-                                showAlertDialog("weight", 0);
-                                alert_flag = true;
-                            }
-
-                            // 이마트 ITEM_TYPE W (바코드 계근)
-                            item_weight = work_item_fullbarcode.substring(
-                                    Integer.parseInt(work_item_bi_info.getWEIGHT_FROM()) - 1, Integer.parseInt(work_item_bi_info.getWEIGHT_TO()));
-                            Log.i(TAG, "Type S | 절사한 중량값 : " + item_weight);
-
-                            item_pow = Math.pow(10, Integer.parseInt(work_item_bi_info.getZEROPOINT()));
-                            item_weight_double = Double.parseDouble(item_weight) / item_pow;
-
-                            if ("LB".equals(work_item_bi_info.getBASEUNIT())) {
-                                Log.i(TAG, "LB로 들어옴, 환산");
-                                Log.i(TAG, "LB 원 중량 : " + item_weight_double);
-                                // LB(파운드)라면 KG으로 환산 LB * 0.453592 = KG
-                                double temp_weight_double = item_weight_double * 0.453592;
-
-                                item_weight_double = mode.lbToKgFloor(temp_weight_double, item_pow);   // 이마트 vs 그 외 절사 자릿수 (개발/76)
-                                item_weight_str = String.valueOf(item_weight_double);
-                                Log.i(TAG, "LB->KG | 환산 중량 Double값 : " + item_weight_double);
-                                Log.i(TAG, "LB->KG | 환산 중량 String값 : " + item_weight_str);
-                            }
-
-                            String temp_weight = String.format("%.2f", item_weight_double);
-                            item_weight_double = Double.parseDouble(temp_weight);
-                            item_weight_str = String.valueOf(item_weight_double);
-                            Log.i(TAG, "Type S | ZeroPoint 적용 중량 Double값 : " + item_weight_double);
-                            Log.i(TAG, "Type S | ZeroPoint 적용 중량 String값 : " + item_weight_str);
-
-                            if (work_item_bi_info.getMAKINGDATE_FROM() != "" && work_item_bi_info.getMAKINGDATE_TO() != "") {
-                                item_making_date = work_item_fullbarcode.substring(
-                                        Integer.parseInt(work_item_bi_info.getMAKINGDATE_FROM()) - 1, Integer.parseInt(work_item_bi_info.getMAKINGDATE_TO()));
-                                Log.i(TAG, "Type S | 절사한 제조일 : " + item_making_date);
-                            }
-
-                            if (work_item_bi_info.getBOXSERIAL_FROM() != "" && work_item_bi_info.getBOXSERIAL_TO() != "") {
-                                item_box_serial = work_item_fullbarcode.substring(
-                                        Integer.parseInt(work_item_bi_info.getBOXSERIAL_FROM()) - 1, Integer.parseInt(work_item_bi_info.getBOXSERIAL_TO()));
-                                Log.i(TAG, "Type S | 절사한 박스시리얼 : " + item_box_serial);
-                            }
-                        }
-
-                    wet_data_insert(item_weight_str, item_weight_double, item_making_date, item_box_serial);
+                    wet_data_insert(parsed.weightStr, parsed.weightDouble, parsed.makingDate, parsed.boxSerial);
                     } else {
                         Toast.makeText(getApplicationContext(), "BL번호가 일치하지않습니다.\n확인 후 다시 스캔해주세요.", Toast.LENGTH_SHORT).show();
                         vibrator.vibrate(1000);
