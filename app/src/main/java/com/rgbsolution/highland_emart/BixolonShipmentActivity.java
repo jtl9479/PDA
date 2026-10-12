@@ -2224,7 +2224,22 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                     // [2] 파렛트별 총 중량 (x=100, y=350, 폰트크기 60x60)
                     // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
-                    sumText.write(labelPrintHelper.bitmapText(100, 350, 60, pallet_no + "번 총 중량 : " + Double.toString(weight_sum)));
+                    // 총 중량 5자리 이상이면 라벨 폭 576을 넘어 잘림 → 넘칠 때만 x를 왼쪽으로(최소 10), 그래도 넘치면 글자 크기 축소(최소 40)
+                    String total_text = pallet_no + "번 총 중량 : " + Double.toString(weight_sum);
+                    int total_x = 100;
+                    int total_size = 60;
+                    int total_width = labelPrintHelper.bitmapTextWidth(total_size, total_text);
+                    if (total_x + total_width > 576) {
+                        total_x = Math.max(10, 576 - total_width);
+                    }
+                    while (total_x + total_width > 576 && total_size > 40) {
+                        total_size -= 2;
+                        total_width = labelPrintHelper.bitmapTextWidth(total_size, total_text);
+                    }
+                    if (Common.D) {
+                        Log.d(TAG, "합산 총 중량 : " + total_text + " x=" + total_x + " size=" + total_size + " width=" + total_width);
+                    }
+                    sumText.write(labelPrintHelper.bitmapText(total_x, 350, total_size, total_text));
 
                     // 인쇄 실행 + 라벨 피드
                     // 원본: PM_printData() + feedToMark()

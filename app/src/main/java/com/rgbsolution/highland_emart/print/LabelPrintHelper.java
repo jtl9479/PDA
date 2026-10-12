@@ -254,6 +254,19 @@ public class LabelPrintHelper {
         return slcsBitmapText(x, y, size, text, true);
     }
 
+    /**
+     * bitmapText로 그렸을 때의 텍스트 폭(도트) 측정 (slcsBitmapText와 동일한 Paint 설정, 굵게)
+     */
+    public int bitmapTextWidth(int size, String text) {
+        if (text == null || text.isEmpty()) return 0;
+        Paint paint = new Paint();
+        paint.setAntiAlias(false);
+        paint.setTextSize(size);
+        paint.setTypeface(customFont != null ? customFont : Typeface.DEFAULT_BOLD);
+        paint.setFakeBoldText(true);
+        return (int) Math.ceil(paint.measureText(text));
+    }
+
     public byte[] withBitmapText(StringBuilder cmd, ByteArrayOutputStream textData) throws Exception {
         String command = cmd.toString();
         int printIdx = command.lastIndexOf(slcsPrint(1));
