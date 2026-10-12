@@ -48,6 +48,8 @@ import com.rgbsolution.highland_emart.shipment.mode.ShipmentMode;
 import com.rgbsolution.highland_emart.shipment.mode.ShipmentModeFactory;
 import com.rgbsolution.highland_emart.shipment.scan.BarcodeInfoFinder;
 import com.rgbsolution.highland_emart.shipment.scan.BarcodeParser;
+import com.rgbsolution.highland_emart.shipment.task.PrintConnectTask;
+import com.rgbsolution.highland_emart.shipment.task.PrintDisconnectTask;
 
 import java.util.ArrayList;
 
@@ -482,7 +484,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         Intent i = new Intent(BixolonShipmentActivity.this, DeviceListActivity.class);
                         startActivityForResult(i, REQUEST_CONNECT_DEVICE);
                     } else {
-                        new ProgressDlgPrintConnect(BixolonShipmentActivity.this).execute();
+                        new PrintConnectTask(BixolonShipmentActivity.this, printConnectHost).execute();
                     }
                 }
             }
@@ -501,7 +503,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         Log.i(TAG, TAG + " onDestroy");
 
         if (mBixolonPrinter != null) {
-            new ProgressDlgDiscon(BixolonShipmentActivity.this).execute();
+            new PrintDisconnectTask(BixolonShipmentActivity.this, printDisconnectHost).execute();
         }
 
         if (cDialog != null && cDialog.isShowing()) {
@@ -533,7 +535,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                                 editor.putString("printer_address", Common.printer_address);
                                 editor.putInt("printer_no", 10);                //	30 = PM30
                                 editor.commit();
-                                new ProgressDlgPrintConnect(BixolonShipmentActivity.this).execute();        // 선택된 모바일프린터 연결 시도
+                                new PrintConnectTask(BixolonShipmentActivity.this, printConnectHost).execute();        // 선택된 모바일프린터 연결 시도
                             }
                         } catch (Exception e) {
                             if (Common.D) {
@@ -1044,6 +1046,41 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     Toast.makeText(BixolonShipmentActivity.this, (String)msg.obj, Toast.LENGTH_SHORT).show();
                     break;
             }
+        }
+    };
+
+    /** 프린터 연결·해제 태스크 Host (개발/77 Step 4) — cDialog·mBluetoothAdapter·mBixolonPrinter 는 Activity 필드 그대로 */
+    private PrintConnectTask.Host printConnectHost = new PrintConnectTask.Host() {
+        @Override
+        public void setConnectDialog(ProgressDialog dialog) {
+            cDialog = dialog;
+        }
+
+        @Override
+        public BluetoothAdapter getBluetoothAdapter() {
+            return mBluetoothAdapter;
+        }
+
+        @Override
+        public BixolonSocketPrinter getPrinter() {
+            return mBixolonPrinter;
+        }
+    };
+
+    private PrintDisconnectTask.Host printDisconnectHost = new PrintDisconnectTask.Host() {
+        @Override
+        public void setConnectDialog(ProgressDialog dialog) {
+            cDialog = dialog;
+        }
+
+        @Override
+        public BixolonSocketPrinter getPrinter() {
+            return mBixolonPrinter;
+        }
+
+        @Override
+        public void releasePrinter() {
+            mBixolonPrinter = null;
         }
     };
 
@@ -2568,89 +2605,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 vibrator.vibrate(500);
             }
             super.onPostExecute(_result);
-        }
-    }
-
-    /**
-     * 블루투스 프린터 연결 AsyncTask
-     * 저장된 주소({@code Common.printer_address})로 자동 연결하고, 성공 시 mHandler 로 알린다.
-     */
-    class ProgressDlgPrintConnect extends AsyncTask<Integer, String, Integer> {
-        private Context mContext;
-
-        public ProgressDlgPrintConnect(Context context) {
-            mContext = context;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            cDialog = new ProgressDialog(mContext);
-            cDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            cDialog.setTitle("프린터 연결중...");
-            cDialog.setMessage("잠시만 기다려 주세요..");
-            cDialog.setCancelable(false);
-            cDialog.show();
-
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Integer doInBackground(Integer... params) {
-            try {
-                //선택된 장비 연결 시도
-                BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(Common.printer_address);
-                if (Common.D) {
-                    Log.e(TAG, "print_address :: " + Common.printer_address);
-                }
-                mBixolonPrinter.connect(device);
-            } catch (Exception e) {
-                if (Common.D) {
-                    Log.e(TAG, "e : " + e.toString());
-                }
-            }
-
-            return 0;
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-        }
-    }
-
-    /**
-     * 블루투스 프린터 연결 해제 AsyncTask
-     * Activity 종료 시 프린터 연결을 해제한다.
-     * onDestroy()에서 호출된다.
-     */
-    class ProgressDlgDiscon extends AsyncTask<Void, Void, Void> {
-        private Context mContextDiscon;
-
-        public ProgressDlgDiscon(Context context) {
-            mContextDiscon = context;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            cDialog = new ProgressDialog(mContextDiscon);
-            cDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            cDialog.setTitle("프린터를 해제중 입니다.");
-            cDialog.setMessage("잠시만 기다려 주세요..");
-            cDialog.setCancelable(false);
-            cDialog.show();
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                if (mBixolonPrinter != null) mBixolonPrinter.disconnect();
-                mBixolonPrinter = null;
-            } catch (Exception e) {
-                if (Common.D) {
-                    Log.e(TAG, "e : " + e.toString());
-                }
-            }
-            return null;
         }
     }
 

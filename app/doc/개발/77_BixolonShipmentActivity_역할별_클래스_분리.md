@@ -613,17 +613,17 @@ public class WetDetailDialog {
 - **동치 검증**: 실기기에서 프린터 연결 성공/실패(전원 OFF)·Activity 종료 시 해제 다이얼로그 표시·재진입 시 재연결 확인, logcat 의 `print_address ::` 로그 확인.
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 (연결 성공·실패·종료 해제)
-- [ ] Part 6: 회귀테스트 (프린터 첫 선택 → 연결, 재진입 자동 연결, 생산(1) 은 프린터 미연결)
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인 — **설계 보완**: 프린터·어댑터를 생성 시 참조로 넘기지 않고 `Host.getPrinter()/getBluetoothAdapter()` 로 `doInBackground` 시점에 필드를 읽음(원래와 같은 시점). `cDialog` 는 `setConnectDialog` 로 `onPreExecute` 안에서 대입
+- [x] Part 3: 변환 수행 — 다이얼로그 문구·로그·예외 처리 그대로
+- [x] Part 4: 컴파일 확인
+- [ ] Part 5: 단위테스트 — Step 10
+- [ ] Part 6: 회귀테스트 — Step 10
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `shipment/task/PrintConnectTask`, `PrintDisconnectTask`
+- **왜**: 프린터 연결·해제 AsyncTask 외부화
+- **어떻게**: 내부 클래스 2개 삭제, 호출 3곳 교체, Activity 에 Host 익명 클래스 2개
 
 ---
 
