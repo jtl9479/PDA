@@ -48,6 +48,8 @@ import com.rgbsolution.highland_emart.shipment.mode.ShipmentMode;
 import com.rgbsolution.highland_emart.shipment.mode.ShipmentModeFactory;
 import com.rgbsolution.highland_emart.shipment.scan.BarcodeInfoFinder;
 import com.rgbsolution.highland_emart.shipment.scan.BarcodeParser;
+import com.rgbsolution.highland_emart.shipment.scan.ScanHost;
+import com.rgbsolution.highland_emart.shipment.scan.ScanProcessor;
 import com.rgbsolution.highland_emart.shipment.scan.ScanState;
 import com.rgbsolution.highland_emart.shipment.task.PrintConnectTask;
 import com.rgbsolution.highland_emart.shipment.task.PrintDisconnectTask;
@@ -258,6 +260,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     /** 스캔 흐름 상태 (작업 모드·스캔 순서·작업 중 상품/BL·바코드·다이얼로그 플래그) (개발/77 Step 8) */
     private final ScanState scan = new ScanState();
 
+    private ScanProcessor scanProcessor;
+
     // ====================================================================================
     // 생명주기
     // ====================================================================================
@@ -278,6 +282,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         // 출하 유형에 따른 레이아웃 설정
         // 마트별 처리 클래스 생성 (개발/76), 도매는 별도 레이아웃 사용
         mode = ShipmentModeFactory.create(Common.searchType);
+        scanProcessor = new ScanProcessor(this, scan, mode, scanHost);
         if(mode.usesWholesaleLayout()){
             setContentView(R.layout.activity_shipment_wholesale);
         }else{
@@ -1040,237 +1045,97 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     // 바코드 스캔 처리
     // ====================================================================================
 
-    /**
-     * 스캔된 바코드 처리 (생산 제외 6종)
-     * {@code scan_flag} 가 true 면 상품 바코드, false 면 BL번호 차례다.
-     * 생산(1)은 진입 즉시 {@link #setBarcodeMsgProduction(String)} 으로 위임한다.
-     * @param msg 스캔된 바코드 문자열
-     */
+    /** ScanProcessor 화면·태스크 연결 (개발/77 Step 8) */
+    private ScanHost scanHost = new ScanHost() {
+        @Override
+        public void setBarcodeMsgProduction(String msg) {
+            BixolonShipmentActivity.this.setBarcodeMsgProduction(msg);
+        }
+
+        @Override
+        public String findPackerProduct(String barcode) {
+            return find_PackerProduct(barcode);
+        }
+
+        @Override
+        public String findPackerProductBarcodeGoods(String barcode) {
+            return find_PackerProductBarcodeGoods(barcode);
+        }
+
+        @Override
+        public void setBarcodeText(String text) {
+            edit_barcode.setText(text);
+        }
+
+        @Override
+        public void vibrate(long ms) {
+            vibrator.vibrate(ms);
+        }
+
+        @Override
+        public String getSelectedCenterName() {
+            return sp_center_name.getSelectedItem().toString();
+        }
+
+        @Override
+        public void startShipSelect(String centerName, String condition, boolean type) {
+            new ShipSelectTask(BixolonShipmentActivity.this, centerName, condition, type, mode, shipSelectHost).execute();
+        }
+
+        @Override
+        public void setScanFlag(boolean flag) {
+            set_scanFlag(flag);
+        }
+
+        @Override
+        public int getCenterTotalCount() {
+            return centerTotalCount;
+        }
+
+        @Override
+        public int getCenterWorkCount() {
+            return centerWorkCount;
+        }
+
+        @Override
+        public void showWetFinishDialog() {
+            show_wetFinishDialog();
+        }
+
+        @Override
+        public String getSelectedBlNo() {
+            return sp_bl_no.getItemAtPosition(sp_bl_no.getSelectedItemPosition()).toString();
+        }
+
+        @Override
+        public ArrayList<Shipments_Info> getShipments() {
+            return arSM;
+        }
+
+        @Override
+        public void selectPoint(int position) {
+            sp_point_name.setSelection(position);
+        }
+
+        @Override
+        public void selectListPosition(int position) {
+            sList.setSelection(position);
+        }
+
+        @Override
+        public void showAlertDialog(String type, int i) {
+            BixolonShipmentActivity.this.showAlertDialog(type, i);
+        }
+
+        @Override
+        public void wetDataInsert(String weight_str, double weight_double, String making_date, String box_serial) {
+            wet_data_insert(weight_str, weight_double, making_date, box_serial);
+        }
+    };
+
+    /** 스캔 바코드 처리 → ScanProcessor (개발/77 Step 8) */
     public void setBarcodeMsg(final String msg) {
-        // 생산(searchType=1) : 전용 메서드로 분리 (개발60)
-        if (mode.usesProductionBarcodeFlow()) {
-            setBarcodeMsgProduction(msg);
-            return;
-        }
-
-        try {
-            if (scan.dialog_flag)
-                return;
-
-            // 중복 호출 방지: 동일 바코드가 1초 이내 재처리되면 무시 (다른 바코드는 통과)
-            long now = System.currentTimeMillis();
-
-            if (msg != null && msg.equals(scan.lastProcessedBarcode)
-                    && (now - scan.lastBarcodeProcessedTime) < BARCODE_PROCESS_DEBOUNCE_MS) {
-                Log.d(TAG, "setBarcodeMsg 중복 호출 무시 (디바운싱)");
-                return;
-            }
-
-            scan.lastProcessedBarcode = msg;
-            scan.lastBarcodeProcessedTime = now;
-
-            Log.e(TAG, "========================setBarcodeMsg 시작======================");
-
-            edit_barcode.setText(msg);
-            if (scan.scan_flag) { // 패커상품 스캔
-                Log.e(TAG, "========================상품스캔======================" + scan.work_flag);
-                try {
-                    String find_ppcodetemp = "";
-
-                    if (scan.work_flag == 1) {
-                        find_ppcodetemp = find_PackerProduct(msg);
-                        Log.e(TAG, "========================상품바코드스캔1 ppcode ======================" + find_ppcodetemp);
-                    }else {
-                        find_ppcodetemp = find_PackerProductBarcodeGoods(msg);
-                        Log.e(TAG, "========================상품코드스캔2 ppcode ======================" + find_ppcodetemp);
-                    }
-
-                    Log.e(TAG, "========================바코드 정보가져옴======================");
-                    final String find_ppcode = find_ppcodetemp;
-
-                    if (find_ppcode.equals("null")) {
-                        Toast.makeText(getApplicationContext(), "패커상품이 존재하지않거나,\n바코드가 정확하지 않습니다.", Toast.LENGTH_SHORT).show();
-                        vibrator.vibrate(1000);
-                        scan.work_item_fullbarcode = "";
-                        scan.work_item_barcodegoods = "";
-                    } else {
-                        if (scan.work_ppcode.equals("")) {
-                            Log.e(TAG, "========================find_ppcode test!!======================"+find_ppcode);
-                            scan.work_ppcode = find_ppcode;
-                            scan.work_item_fullbarcode = msg;
-                            new ShipSelectTask(this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan.scan_flag, mode, shipSelectHost).execute();
-                        } else if (!scan.work_ppcode.equals("") && scan.work_ppcode.equals(find_ppcode)) {         // 작업 중이고, 같은 상품을 스캔했을 경우
-                            scan.work_item_fullbarcode = msg;
-                            Log.e("바코드", "" + scan.work_item_fullbarcode);
-                            boolean dup = DBHandler.duplicatequeryGoodsWet_check(getApplicationContext(), scan.work_item_fullbarcode);
-
-                            if(mode.skipsDuplicateCheck()){ //비정량은 바코드 같은게 얼마든지 나올 수 있기 때문에 중복확인 제외
-                                dup = false;
-                            }
-
-                            if (dup) {
-                                Log.e(TAG, "=====================오류지점1=========================");
-                                Toast.makeText(getApplicationContext(), "이미 스캔한 바코드입니다.\n다른 바코드를 스캔하세요.", Toast.LENGTH_SHORT).show();
-                                vibrator.vibrate(1000);
-                                scan.work_item_fullbarcode = "";
-                                scan.work_item_barcodegoods = "";
-                                return;
-                            } else{
-                                Log.e(TAG, "=====================상품스캔일반=========================");
-                                set_scanFlag(false);        // BL스캔 시작
-                                scan.work_ppcode = find_ppcode;
-                                scan.work_item_fullbarcode = msg;
-
-                                if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
-                                    show_wetFinishDialog();
-                                }
-
-                                scan.lastBarcodeProcessedTime = 0;   // 의도된 재귀 호출은 디바운스 우회
-                                setBarcodeMsg(msg);
-                            }
-                        } else if (!scan.work_ppcode.equals(find_ppcode)) {                                   // 작업 중이고, 다른 상품을 스캔했을 경우
-                            Log.e(TAG, "=====================작업중다른상품스캔=========================");
-                            Log.i(TAG, "작업 중 다른 상품 스캔 !");
-                            vibrator.vibrate(500);
-                            scan.dialog_flag = true;
-
-                            new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
-                                    .setIcon(R.drawable.highland)
-                                    .setTitle(R.string.shipment_wet_other)
-                                    .setMessage(R.string.shipment_wet_other_msg)
-                                    .setCancelable(false)
-                                    .setPositiveButton(R.string.shipment_wet_yes, (dialog, which) -> {
-                                        scan.dialog_flag = false;
-                                        scan.work_ppcode = find_ppcode;
-                                        scan.work_item_fullbarcode = msg;
-                                        new ShipSelectTask(BixolonShipmentActivity.this, sp_center_name.getSelectedItem().toString(), find_ppcode, scan.scan_flag, mode, shipSelectHost).execute();
-                                    })
-                                    .setNegativeButton(R.string.shipment_wet_no, (dialog, which) -> {
-                                        scan.dialog_flag = false;
-                                    })
-                                    .show();
-                        }
-                    }
-                } catch (Exception ex) {
-                    Log.e(TAG, "setBarcodeMsg's 패커상품 스캔 Exception -> " + ex.getMessage().toString());
-                }
-            } else {//BL스캔
-                Log.e(TAG, "========================BL스캔======================" + sp_bl_no.getItemAtPosition(sp_bl_no.getSelectedItemPosition()).toString());
-
-                scan.work_item_fullbarcode = msg;
-
-                try {
-                    if (true) {
-                        String temp_bl_no = sp_bl_no.getItemAtPosition(sp_bl_no.getSelectedItemPosition()).toString();
-                        for (int i = 0; i < arSM.size(); i++) {
-                            if (temp_bl_no.equals(arSM.get(i).getBL_NO()) && !arSM.get(i).getGI_REQ_PKG().equals(String.valueOf(arSM.get(i).getPACKING_QTY()))) {
-                                // BL번호 같은 상품 검색 완료
-                                scan.current_work_position = i;
-
-                                Log.e(TAG, "========================current_work_position======================" + i);
-
-                                scan.work_bl_no = temp_bl_no;
-
-                                Log.e(TAG, "========================work_bl_no======================" + scan.work_bl_no);
-
-                                break;
-                            } else {
-                                scan.work_bl_no = "";
-                                scan.current_work_position = -1;
-                            }
-                        }
-
-                        scan.expiryDayTrans = ""; //일단 스캔할 때 마다 초기화
-
-                        Log.e(TAG, "========================TEST TEST======================" + arSM.get(scan.current_work_position).getCENTERNAME()); //센터 선택하고 스캔할떄 여기 탐
-
-                        if (arSM.get(scan.current_work_position).getPACKER_CODE().equals(Common.KILKOY_PACKER_CODE) && arSM.get(scan.current_work_position).getSTORE_CODE().equals(Common.MEAT_CENTER_STORE_CODE)) { //킬코이제품이면서 이마트미트센터나갈때, 미트센터는 지점이 없기 때문에 센터코드와 스토어코드가 같다. 현재 뷰에 센터코드가 없어서 스토어코드로 처리
-                            if (scan.work_item_bi_info.getSHELF_LIFE().equals("") || scan.work_item_bi_info.getMAKINGDATE_FROM().equals("") || scan.work_item_bi_info.getMAKINGDATE_TO().equals("")) {
-                                Toast.makeText(getApplicationContext(), "미트센터 납품 - KILKOY 상품의 경우 소비기한정보가 필수로 입력되어야 합니다.\n 현 상품의 계근을 진행할 수 없습니다. 관리자에게 문의하세요.", Toast.LENGTH_LONG).show();
-                                vibrator.vibrate(1000);
-                                scan.work_ppcode = "";
-                                scan.scan_flag = true;
-                                return;
-                            }
-                        } else if (arSM.get(scan.current_work_position).getCENTERNAME().equals("용인TRD") || arSM.get(scan.current_work_position).getCENTERNAME().equals("대구TRD") || arSM.get(scan.current_work_position).getCENTERNAME().equals("시화(W)_TRD") || arSM.get(scan.current_work_position).getCENTERNAME().equals("여주TRD") || arSM.get(scan.current_work_position).getCENTERNAME().substring(0, 3).equals(Common.CENTER_NAME_ET) || arSM.get(scan.current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_ET)  ||  arSM.get(scan.current_work_position).getCENTERNAME().contains(Common.CENTER_NAME_WET)) {
-                            if (mode.requiresShelfLifeForTraders()) {
-                                if (scan.work_item_bi_info.getSHELF_LIFE().equals("") || scan.work_item_bi_info.getMAKINGDATE_FROM().equals("") || scan.work_item_bi_info.getMAKINGDATE_TO().equals("")) {
-                                    Toast.makeText(getApplicationContext(), "트레이더스 납품 상품의 경우 소비기한정보가 필수로 입력되어야 합니다.\n 현 상품의 계근을 진행할 수 없습니다. 관리자에게 문의하세요.", Toast.LENGTH_LONG).show();
-                                    vibrator.vibrate(1000);
-                                    scan.work_ppcode = "";
-                                    scan.scan_flag = true;
-                                    return;
-                                }
-                            }
-                        }
-
-                        if (scan.current_work_position == -1) {
-                            Toast.makeText(getApplicationContext(), "해당하는 BL상품이 없습니다.\nBL번호를 확인해주세요.", Toast.LENGTH_SHORT).show();
-                            vibrator.vibrate(300);
-                            return;
-                        } else {
-                            sp_point_name.setSelection(scan.current_work_position);
-                        }
-
-                        sList.setSelection(scan.current_work_position);      // 현재 계근지점으로 위치 변경
-
-                        if (arSM.get(scan.current_work_position).getGI_REQ_PKG().equals(String.valueOf(arSM.get(scan.current_work_position).getPACKING_QTY()))) {
-                            if ((centerTotalCount > 0) && (centerTotalCount == centerWorkCount)) {       // 총 계근 완료
-                                show_wetFinishDialog();
-                            }
-                            return;
-                        }
-
-                        Log.e(TAG, "=====================work_item_fullbarcode=========================" + scan.work_item_fullbarcode);
-                        Log.e(TAG, "=====================arSM.get(current_work_position).getGI_D_ID()=========================" + arSM.get(scan.current_work_position).getGI_D_ID());
-                        Log.e(TAG, "=====================arSM.get(current_work_position).getPACKER_PRODUCT_CODE()=========================" + arSM.get(scan.current_work_position).getPACKER_PRODUCT_CODE());
-
-                        boolean dup = DBHandler.duplicatequeryGoodsWet(getApplicationContext(), scan.work_item_fullbarcode,
-                                arSM.get(scan.current_work_position).getGI_D_ID(), arSM.get(scan.current_work_position).getPACKER_PRODUCT_CODE(), arSM.get(scan.current_work_position).getGI_L_ID());
-
-                        if (mode.skipsDuplicateCheck()) { //비정량은 바코드 같은게 얼마든지 나올 수 있기 때문에 중복확인 제외
-                            dup = false;
-                        }
-
-                        Log.e(TAG, "=====================체크1=========================" + arSM.get(scan.current_work_position).getPACKER_CODE());
-                        Log.e(TAG, "=====================체크2=========================" + arSM.get(scan.current_work_position).getSTORE_CODE());
-                        Log.e(TAG, "=====================체크3=========================" + scan.work_item_bi_info.getSHELF_LIFE());
-
-                        if (dup) {
-                            Log.e(TAG, "=====================오류지점2=========================");
-                            Toast.makeText(getApplicationContext(), "이미 스캔한 바코드입니다.\n다른 바코드를 스캔하세요.", Toast.LENGTH_SHORT).show();
-                            vibrator.vibrate(1000);
-                            scan.work_item_fullbarcode = "";
-                            scan.work_item_barcodegoods = "";
-                            return;
-                        }
-
-                        Goodswets_Info gi = new Goodswets_Info();
-                        Log.i(TAG, "## 패커상품코드 & BL번호 확인 완료. 계근 시작 ##");
-                        Log.i(TAG, "현재 계근할 FULL 바코드                     : " + scan.work_item_fullbarcode);
-                        Log.i(TAG, "현재 계근할 바코드의 BarcodeGodos            : " + scan.work_item_barcodegoods);
-                        Log.d(TAG, "******************current_work_position:" + arSM.get(scan.current_work_position).getITEM_TYPE());
-
-                        // 중량·제조일·박스시리얼 추출 (개발/77 Step 2) — 중량 위치 없음 알림은 추출 전
-                        if (BarcodeParser.isWeightPositionMissing(arSM.get(scan.current_work_position).getITEM_TYPE(), scan.work_item_bi_info)) {
-                            showAlertDialog("weight", 0);
-                            scan.alert_flag = true;
-                        }
-                        BarcodeParser.Result parsed = BarcodeParser.parse(arSM.get(scan.current_work_position).getITEM_TYPE(), scan.work_item_fullbarcode,
-                                scan.work_item_bi_info, arSM.get(scan.current_work_position).getPACKWEIGHT(), mode);
-
-                    wet_data_insert(parsed.weightStr, parsed.weightDouble, parsed.makingDate, parsed.boxSerial);
-                    } else {
-                        Toast.makeText(getApplicationContext(), "BL번호가 일치하지않습니다.\n확인 후 다시 스캔해주세요.", Toast.LENGTH_SHORT).show();
-                        vibrator.vibrate(1000);
-                    }
-                } catch (Exception ex) {
-                    Log.e(TAG, "setBarcodeMsg's BL 스캔 Exception -> " + ex.getMessage().toString());
-                }
-            }
-        } catch (Exception ex) {
-            Log.e(TAG, "setBarcodeMsg Exception -> " + ex.getMessage().toString());
-        }
+        scanProcessor.process(msg);
     }
 
     /**
