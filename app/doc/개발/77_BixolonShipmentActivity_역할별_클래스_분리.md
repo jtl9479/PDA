@@ -509,17 +509,17 @@ public class WetDetailDialog {
 - **동치 검증(바이트 비교)**: 변경 전/후 동일 입력(예: 중량 1건·36건·37건·72건)에서 `sendData` 직전 `byte[]` 의 SHA-1 을 임시 `Log.i` 로 찍어 비교(검증 후 임시 로그 제거, 커밋 제외). 페이지 분기(36개 단위·마지막 페이지 `((i+1)/36)+1` 번호)를 포함.
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 (바이트 SHA 일치: 1건/36건/37건/72건)
-- [ ] Part 6: 회귀테스트 (이마트 1건 계근 라벨·합산 라벨 실물 출력, 홈플러스·롯데 합산)
+- [x] Part 1: 분석 완료 확인 — 개발 79(파렛트당 박스 수)·Step 3(총 중량 위치)로 합산 본문이 이미 `printSumLabel(int)` 메서드로 분리되어 있어 그 메서드를 이동. 시그니처 `SumLabel.print(helper, list, pallet_box_cnt, callback)` (5.1 설계에 `pallet_box_cnt` 추가)
+- [x] Part 2: 변환 계획 확인 — SLCS 복사본 4개 문자열이 `LabelPrintHelper` 와 동일함 대조, `slcsText` 호출 0
+- [x] Part 3: 변환 수행 — 본문 diff 는 `slcsXxx()`→`helper.slcsXxx()`, `labelPrintHelper.`→`helper.`, `sendData`→`callback.sendData`, `list_gi_info`→`list` 치환만
+- [x] Part 4: 컴파일 확인
+- [x] Part 5: 단위테스트 (EDA51 전송 바이트 = 변경 전 측정값): 3건 박스수 36 → 5189 / 박스수 2 → 4761·4447 / 43건(임시 계근, 테스트 후 원복) 박스수 36 → 22460·8186 / 박스수 43 → 17835·8470(36건 이어지는 라벨 + 총 중량 x 조정)
+- [x] Part 6: 회귀테스트 — 위 측정값 모두 변경 전(개발 79 Step 2·3 테스트)과 동일. `sendData`(printerCallback 경로) 유지
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: 합산 라벨 인쇄를 `print/label/SumLabel` 로 이동, Activity SLCS 복사본 5개(`slcsInit`·`slcsLabelSize`·`slcsText`·`slcsPrint`·`slcsFeedToMark`) 삭제
+- **왜**: 라벨 조립 책임 분리, `LabelPrintHelper` 와 중복된 헬퍼 제거
+- **어떻게**: 본문 그대로 복사 + 헬퍼·콜백 치환. Activity 2,894줄 (변경 전 3,042줄, -148)
 
 ---
 
@@ -919,7 +919,7 @@ Step 10: 통합 테스트
 
 | Step | 작업 | 상태 |
 |------|------|------|
-| 1 | SumLabel 분리 + Activity SLCS 복사본 제거 | ⏳ 대기 |
+| 1 | SumLabel 분리 + Activity SLCS 복사본 제거 | ✅ 완료 (EDA51 바이트 동일) |
 | 2 | BarcodeParser 분리 | ⏳ 대기 |
 | 3 | BarcodeInfoFinder 분리 | ⏳ 대기 |
 | 4 | PrintConnectTask / PrintDisconnectTask 분리 | ⏳ 대기 |
