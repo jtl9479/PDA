@@ -46,6 +46,7 @@ import com.rgbsolution.highland_emart.print.DeviceListActivity;
 import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
 import com.rgbsolution.highland_emart.shipment.mode.ShipmentMode;
 import com.rgbsolution.highland_emart.shipment.mode.ShipmentModeFactory;
+import com.rgbsolution.highland_emart.shipment.scan.BarcodeInfoFinder;
 import com.rgbsolution.highland_emart.shipment.scan.BarcodeParser;
 
 import java.util.ArrayList;
@@ -1597,67 +1598,10 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
+    // 바코드 정보 조회·매칭 → BarcodeInfoFinder (개발/77 Step 3), 위젯·필드 반영은 findSink, 예외 처리는 그대로
     private String find_work_info(String req, boolean type) {
         try {
-            String pp_code = "";
-            int count = 0;
-            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeInfo(this);
-            Log.e(TAG, "===================바코드 디비조회 완료=======================");
-            Log.e(TAG, "===================    req check !!   ======================="+req); //여기서 풀바코드를 던진다
-            for (Barcodes_Info bi : list_barcode_info) {
-                String bg = bi.getBARCODEGOODS();
-                String bg_from = bi.getBARCODEGOODS_FROM();
-                String bg_to = bi.getBARCODEGOODS_TO();
-                String temp_bg;
-
-                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
-                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
-
-                if (type && req.length() >= Integer.parseInt(bg_to)) {              // PACKER_PRODUCT_CODE로 찾을 경우
-                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
-                } else {                // false : BL로 찾을 경우
-                    temp_bg = req;
-                }
-
-                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
-                Log.i(TAG, "TEMP BARCODEGOODS eq : \t" + temp_bg.equals(bg));
-
-                if (temp_bg.equals(bg)) {                       // barcodegoods find success
-                    Log.i(TAG, "barcodegoods find success");
-                    work_item_bi_info = bi;
-                    edit_product_name.setText(bi.getITEM_NAME_KR());
-                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
-                    if(count == 0){
-                        pp_code = bi.getPACKER_PRODUCT_CODE();
-                    }else{
-                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
-                    }
-                    Log.i(TAG, "===================pp_code=================" + pp_code);
-                    work_item_barcodegoods = bg;
-                    count++;
-                } else {
-                    edit_product_name.setText("");
-                    edit_product_code.setText("");
-                    work_item_barcodegoods = "";
-                }
-
-                if(mode.acceptsAnyBarcodeInfoRow()){   // 이마트 비정량
-                    work_item_bi_info = bi;
-                    edit_product_name.setText(bi.getITEM_NAME_KR());
-                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
-                    if(count == 0){
-                        pp_code = bi.getPACKER_PRODUCT_CODE();
-                    }else{
-                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
-                    }
-                    Log.i(TAG, "===================pp_code=================" + pp_code);
-                    work_item_barcodegoods = bg;
-                    count++;
-                }
-            }
-
-            Log.i(TAG, "===================return pp_code test!!! =================" + pp_code);
-            return pp_code;
+            return BarcodeInfoFinder.byPackerProduct(this, req, type, mode.acceptsAnyBarcodeInfoRow(), findSink);
         } catch (Exception ex) {
             Log.e(TAG, "======== find_work_info Exception ========");
             Log.e(TAG, ex.getMessage().toString());
@@ -1668,48 +1612,31 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     private String find_work_info_barcodeGoods(String req, boolean type) {
         Log.e(TAG, "find_work_info_barcodeGoods");
         try {
-            String pp_code = "";
-            int count = 0;
-            ArrayList<Barcodes_Info> list_barcode_info = DBHandler.selectqueryBarcodeGoodsInfo(this);
-            for (Barcodes_Info bi : list_barcode_info) {
-                String bg = bi.getBARCODEGOODS();
-                String bg_from = bi.getBARCODEGOODS_FROM();
-                String bg_to = bi.getBARCODEGOODS_TO();
-                String temp_bg;
-                if (type) {              // PACKER_PRODUCT_CODE로 찾을 경우
-                    temp_bg = req.substring(Integer.parseInt(bg_from) - 1, Integer.parseInt(bg_to));
-                } else {                // false : BL로 찾을 경우
-                    temp_bg = req;
-                }
-                Log.i(TAG, "BARCODEGOODS \t\tFROM : " + bg_from + "\t TO : " + bg_to);
-                Log.i(TAG, "BARCODEGOODS : \t\t" + bg);
-                Log.i(TAG, "TEMP BARCODEGOODS : \t" + temp_bg);
-
-                if (temp_bg.equals(bg)) {                       // barcodegoods find success
-                    work_item_bi_info = bi;
-                    edit_product_name.setText(bi.getITEM_NAME_KR());
-                    edit_product_code.setText(bi.getPACKER_PRODUCT_CODE());
-                    if(count == 0){
-                        pp_code = bi.getPACKER_PRODUCT_CODE();
-                    }else{
-                        pp_code = pp_code + "', '" + bi.getPACKER_PRODUCT_CODE();
-                    }
-                    Log.i(TAG, "===================pp_code=================" + pp_code);
-                    work_item_barcodegoods = bg;
-                    count++;
-                } else {
-                    edit_product_name.setText("");
-                    edit_product_code.setText("");
-                    work_item_barcodegoods = "";
-                }
-            }
-            return pp_code;
+            return BarcodeInfoFinder.byBarcodeGoods(this, req, type, findSink);
         } catch (Exception ex) {
             Log.e(TAG, "======== find_work_info_barcodeGoods Exception ========");
             Log.e(TAG, ex.getMessage().toString());
             return "null";
         }
     }
+
+    private BarcodeInfoFinder.Sink findSink = new BarcodeInfoFinder.Sink() {
+        @Override
+        public void setBarcodeInfo(Barcodes_Info bi) {
+            work_item_bi_info = bi;
+        }
+
+        @Override
+        public void setProduct(String name, String code) {
+            edit_product_name.setText(name);
+            edit_product_code.setText(code);
+        }
+
+        @Override
+        public void setBarcodeGoods(String barcodeGoods) {
+            work_item_barcodegoods = barcodeGoods;
+        }
+    };
 
     public void scanFlag_init() {
         if (work_flag == 1)

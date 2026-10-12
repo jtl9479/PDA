@@ -579,17 +579,17 @@ public class WetDetailDialog {
 - **동치 검증**: 바코드 정보 N건(일치 1건·복수 일치·불일치·마지막 행만 불일치) 로컬 DB 로 두 APK 의 `work_ppcode`·위젯 텍스트·`work_item_barcodegoods` 를 로그로 비교. 이마트 비정량(`acceptsAny`) 포함.
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 (일치/복수/불일치/마지막 불일치/비정량)
-- [ ] Part 6: 회귀테스트 (상품 바코드 스캔, 상품코드(work_flag=2) 스캔, 이마트 비정량)
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인 — **설계 변경**: 5.3 의 Result(최종값 일괄 반영) 대신 `Sink` 인터페이스로 루프 안에서 즉시 반영. 예외 메시지 null 등 catch 안에서 다시 예외가 나는 경우까지 부분 반영 상태가 원래와 같아지도록 하기 위함. try/catch·`"null"` 반환은 Activity 래퍼에 그대로 둠
+- [x] Part 3: 변환 수행 — 루프 본문·로그 그대로, 위젯/필드 대입 4종만 `sink.*` 로 치환. `mode.acceptsAnyBarcodeInfoRow()` 는 호출 시 1회 평가(루프 중 불변)
+- [x] Part 4: 컴파일 확인
+- [ ] Part 5: 단위테스트 — Step 10
+- [ ] Part 6: 회귀테스트 — Step 10
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `shipment/scan/BarcodeInfoFinder` (`byPackerProduct`, `byBarcodeGoods`, `Sink`)
+- **왜**: DB 조회·매칭 분리
+- **어떻게**: Activity `find_work_info*` 는 try/catch 래퍼 + `findSink`(work_item_bi_info·상품명/코드·barcodegoods 대입)만 남김. `find_PackerProduct*` 래퍼·8.4 #1 동작 유지
 
 ---
 
