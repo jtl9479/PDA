@@ -4,18 +4,15 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
-import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.KeyEvent;
@@ -30,24 +27,20 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.rgbsolution.highland_emart.adapter.DetailAdapter;
 import com.rgbsolution.highland_emart.adapter.ShipmentListAdapter;
 import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.common.CommonUtils;
-import com.rgbsolution.highland_emart.common.HttpHelper;
 import com.rgbsolution.highland_emart.db.DBHandler;
 import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Goodswets_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 import com.rgbsolution.highland_emart.print.BixolonSocketPrinter;
 import com.rgbsolution.highland_emart.print.LabelPrintHelper;
-import com.rgbsolution.highland_emart.print.label.SumLabel;
 import com.rgbsolution.highland_emart.print.DeviceListActivity;
 import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
 import com.rgbsolution.highland_emart.shipment.mode.ShipmentMode;
 import com.rgbsolution.highland_emart.shipment.mode.ShipmentModeFactory;
 import com.rgbsolution.highland_emart.shipment.scan.BarcodeInfoFinder;
-import com.rgbsolution.highland_emart.shipment.scan.BarcodeParser;
 import com.rgbsolution.highland_emart.shipment.scan.ScanHost;
 import com.rgbsolution.highland_emart.shipment.scan.ScanProcessor;
 import com.rgbsolution.highland_emart.shipment.scan.ScanState;
@@ -69,199 +62,123 @@ import static com.rgbsolution.highland_emart.R.id.sp_center;
  * 생산(1)·생산라벨(7)은 미사용이며 7은 UI 가 막혀 있다.
  */
 public class BixolonShipmentActivity extends HoneywellScannerActivity {
-
-    // ====================================================================================
-    // 상수 - Handler 메시지 / 요청 코드 / Intent 키
-    // ====================================================================================
-
     private final String TAG = "BixolonShipmentActivity";
-
     /** Handler 메시지 타입 - 리스트 행 체크 완료 */
     private final int MESSAGE_ROWCHECK = 1000;
-
     /** Handler 메시지 타입 - 계근 작업 완료 */
     private final int MESSAGE_COMPLETE = 1001;
-
     /** Handler 메시지 타입 - 검색 체크 완료 */
     private final int MESSAGE_SEARCHCHECK = 1002;
-
     /** 프린터 연결 요청 코드 */
     public static final int REQUEST_CONNECT_DEVICE = 1;
-
     /** 비보안 모드 프린터 연결 요청 코드 */
     private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
-
     /** 블루투스 활성화 요청 코드 */
     private static final int REQUEST_ENABLE_BT = 3;
 
     // BluetoothPrintService Handler 메시지 타입
     /** 프린터 디바이스명 수신 */
     public static final int MESSAGE_DEVICE_NAME = 1;
-
     /** Toast 메시지 표시 */
     public static final int MESSAGE_TOAST = 2;
-
     /** 프린터 데이터 읽기 */
     public static final int MESSAGE_READ = 3;
-
     /** 검색 완료 */
     public static final int MESSAGE_SEARCH = 4;
-
     /** 재인쇄 요청 */
     public static final int MESSAGE_REPRINT = 5;
-
     /** 소비기한 입력 화면에서 데이터 수신 요청 코드 */
     public static final int GET_DATA_REQUEST = 8;
 
     // Handler 키 이름
     public static final String DEVICE_NAME = "device_name";
-
     public static final String TOAST = "toast";
 
     // 소비기한 입력 화면(ExpiryEnterActivity)으로 넘길 때 쓰는 Intent 키
     private final String weightStrKey = "weightStrKey";
-
     private final String weightDblKey = "weightDblKey";
-
     private final String makingFromKey = "makingFromKey";
-
     private final String makingToKey = "makingToKey";
-
-    // ====================================================================================
-    // 필드 - 프린터 / 블루투스 / 사운드
-    // ====================================================================================
-
     /** 연결된 프린터 디바이스명 */
     private String mConnectedDeviceName = null;
-
     /** 블루투스 어댑터 */
     private BluetoothAdapter mBluetoothAdapter = null;
-
     /** 블루투스 프린터 서비스 */
     private BixolonSocketPrinter mBixolonPrinter = null;
-
     /** Bixolon 프린터 이전 상태 (연결 실패 판단용) */
     private int mPreviousBixolonState = BixolonSocketPrinter.STATE_NONE;
-
     /** 라벨 출력 헬퍼 */
     private LabelPrintHelper labelPrintHelper = new LabelPrintHelper();
-
     /** 마트(searchType)별 처리 — onCreate 에서 생성 (개발/76) */
     private ShipmentMode mode;
-
     /** 효과음 풀 */
     protected SoundPool sound_pool;
-
     /** 성공 효과음 ID */
     protected int sound_success;
-
     /** 실패 효과음 ID */
     protected int sound_fail;
-
     /** 진동 알림 */
     private Vibrator vibrator;
-
-    // ====================================================================================
-    // 필드 - 화면 위젯 (메인)
-    // ====================================================================================
-
     private LayoutInflater Inflater;
-
     /** 로딩 다이얼로그 */
     private ProgressDialog pDialog = null;
-
     /** 프린터 연결 다이얼로그 */
     private ProgressDialog cDialog = null;
-
     AlertDialog alert;
-
     /** 작업 모드 선택 스피너 (바코드스캔/수기입력/상품코드) */
     private Spinner sp_work;
-
     /** 센터 선택 스피너 - 이마트 물류센터 선택 */
     private Spinner sp_center_name;
-
     /** 지점 선택 스피너 - 출고 대상 지점 선택 (CLIENTNAME) */
     private Spinner sp_point_name;
-
     /** BL번호 선택 스피너 - 동일 BL건 그룹핑 */
     private Spinner sp_bl_no;
-
     /** 바코드/중량 입력 필드 - 스캔된 바코드 또는 수기 입력 중량 */
     private EditText edit_barcode;
-
     /** 상품명 표시 필드 - 현재 작업 중인 상품명 (ITEM_NAME) */
     private EditText edit_product_name;
-
     /** 상품코드 표시 필드 - 현재 작업 중인 패커상품코드 (PACKER_PRODUCT_CODE) */
     private EditText edit_product_code;
-
     /** 센터 총 요청수량 - 선택된 센터의 전체 GI_REQ_PKG 합계 */
     private EditText edit_center_tcount;
-
     /** 센터 총 요청중량 - 선택된 센터의 전체 GI_REQ_QTY 합계 */
     private EditText edit_center_tweight;
-
     /** 지점 계근 현황 - "요청수량 / 완료수량" 형태 (GI_REQ_PKG / PACKING_QTY) */
     private EditText edit_wet_count;
-
     /** 지점 계근 중량 - "요청중량 / 완료중량" 형태 (GI_REQ_QTY / GI_QTY) */
     private EditText edit_wet_weight;
-
     /** 입력 버튼 - 바코드 입력 또는 중량 입력 확인 */
     private Button btn_input;
-
     /** 뒤로가기 버튼 */
     private Button btn_back;
-
     /** 전송 버튼 - 계근 완료 데이터를 서버(G3)로 전송 */
     private Button btn_send;
-
     /** 선택 버튼 - 선택된 지점의 계근 상세정보 팝업 */
     private Button btn_select;
-
     /** 출하 대상 리스트뷰 - 센터별 출하 대상 목록 표시 */
     private ListView sList;
-
     /** 출하 대상 리스트 어댑터 */
     private ShipmentListAdapter sListAdapter;
-
-    // ====================================================================================
-    // 필드 - 계근 상태
-    // ====================================================================================
-
     /**
      * 출하 대상 리스트 - VIEW에서 조회한 출하 대상 정보
      * @see Shipments_Info
      */
     private ArrayList<Shipments_Info> arSM;
-
     /** 전송할 계근 데이터 목록 */
     private ArrayList<Goodswets_Info> list_send_info;
-
     /** 리스트에서 선택된 위치 (상세보기용) */
     private int select_position;
-
     /** 센터 총 요청수량 (GI_REQ_PKG 합계) */
     private int centerTotalCount;
-
     /** 센터 완료수량 (PACKING_QTY 합계) */
     private int centerWorkCount;
-
     /** 센터 총 요청중량 (GI_REQ_QTY 합계) */
     private double centerTotalWeight;
-
     /** 센터 완료중량 (GI_QTY 합계) */
     private double centerWorkWeight;
-
     /** 스캔 흐름 상태 (작업 모드·스캔 순서·작업 중 상품/BL·바코드·다이얼로그 플래그) (개발/77 Step 8) */
     private final ScanState scan = new ScanState();
-
     private ScanProcessor scanProcessor;
-
-    // ====================================================================================
-    // 생명주기
-    // ====================================================================================
 
     /**
      * Activity 생성 — 레이아웃·위젯·리스너·블루투스 초기화
@@ -362,10 +279,8 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         btn_select.setOnClickListener(selectBtnListener);
 
         btn_init.setOnClickListener(initBtnListener);
-        // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, R.string.toast_bt_na, Toast.LENGTH_LONG).show();
             finish();
@@ -415,7 +330,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         if (!mBluetoothAdapter.isEnabled() && mode.requiresPrinterSetup()) {  //안드로이드 디바이스에서 블루투스 ON 여부, 이노이천에서 생산 계근일때는 블루투스 on 여부 묻지 않는다
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-            // Otherwise, setup the chat session
         } else {
             if (Common.printer_setting && mode.requiresPrinterSetup()) {  //메인화면 프린터설정에서 ON으로 하면 아래 로직을 탄다, 이노이천에서 생산 계근일떄는 물어보지 않도록 변경
                 if (mBixolonPrinter == null) {
@@ -509,7 +423,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             case REQUEST_ENABLE_BT:
                 // 장비의 블루투스 사용 가능여부 확인
                 if (resultCode == Activity.RESULT_OK) {
-                    // Bluetooth is now enabled, so set up a print
                     // 장비 블루투스 사용 가능
                     Message msg = new Message();
                     msg.what = MESSAGE_SEARCH;
@@ -538,10 +451,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                 }
         }
     }
-
-    // ====================================================================================
-    // 액션바 메뉴
-    // ====================================================================================
 
     /**
      * 액션바 메뉴 생성
@@ -572,10 +481,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-    // ====================================================================================
-    // 리스너 - 버튼
-    // ====================================================================================
 
     /**
      * 입력 버튼 클릭 리스너
@@ -717,10 +622,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     };
 
-    // ====================================================================================
-    // 리스너 - 스피너
-    // ====================================================================================
-
     private Spinner.OnItemSelectedListener workSelectedListener = new Spinner.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
@@ -823,10 +724,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     };
 
-    // ====================================================================================
-    // 핸들러 / 콜백
-    // ====================================================================================
-
     /**
      * 메인 핸들러 - UI 스레드 메시지 처리
      * 처리 대상은 {@code MESSAGE_*} 상수. 각 case 본문 참조.
@@ -863,7 +760,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         }
                         break;
                     case MESSAGE_DEVICE_NAME:
-                        // save the connected device's name
                         mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
                         if (Common.D) {
                             Log.d(TAG, "MESSAGE_DEVICE_NAME : " + mConnectedDeviceName);
@@ -889,7 +785,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         }
                         break;
                     case MESSAGE_READ:
-                        // mWoosim.processRcvData 제거됨 - Bixolon은 별도 처리 불필요
                         break;
                     case MESSAGE_SEARCH:
                         if (mBixolonPrinter == null) {
@@ -1037,10 +932,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             edit_barcode.setText("");
         }
     };
-
-    // ====================================================================================
-    // 바코드 스캔 처리
-    // ====================================================================================
 
     /** ScanProcessor 화면·태스크 연결 (개발/77 Step 8) */
     private ScanHost scanHost = new ScanHost() {
@@ -1218,10 +1109,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         Log.i(TAG, "####### scan_flag : " + scan.scan_flag + " #######");
     }
 
-    // ====================================================================================
-    // 계근 저장 / 집계
-    // ====================================================================================
-
     /**
      * 계근 데이터 저장 및 화면 반영
      * 출하 유형별로 저장 테이블·중량 자릿수·라벨 분기가 달라진다. 상세는 본문 분기 참조.
@@ -1348,10 +1235,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
-    public Shipments_Info getSelect_Shipment(int pos) {
-        return arSM.get(pos);
-    }
-
     public void setSelect_Position(int i) {
         this.select_position = i;
     }
@@ -1359,10 +1242,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
     public int getSelect_Position() {
         return this.select_position;
     }
-
-    // ====================================================================================
-    // 다이얼로그
-    // ====================================================================================
 
     /** 계근 상세 팝업 Host (개발/77 Step 7) */
     private WetDetailDialog.Host wetDetailHost = new WetDetailDialog.Host() {
@@ -1548,10 +1427,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         startActivityForResult(IntentA,GET_DATA_REQUEST);
     }
 
-    // ====================================================================================
-    // 프린터 - SLCS 명령 조립 / 전송
-    // ====================================================================================
-
     private void sendData(byte[] data) {
         // Check that we're actually connected before trying printing
         if (mBixolonPrinter.getState() != BixolonSocketPrinter.STATE_CONNECTED) {
@@ -1563,10 +1438,6 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         if (data.length > 0)
             mBixolonPrinter.sendCommandBytes(data);
     }
-
-    // ====================================================================================
-    // 내부 클래스 - AsyncTask
-    // ====================================================================================
 
     /** 출하대상 조회 태스크 Host (개발/77 Step 6) */
     private ShipSelectTask.Host shipSelectHost = new ShipSelectTask.Host() {
@@ -1607,11 +1478,9 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
 
                 if (!type)
                     scan.work_ppcode = find_work_info(arSM.get(0).getBARCODEGOODS().toString(), type);
-                // find_work_info에서 처리
 
                 ArrayList<String> list_position = new ArrayList<String>();
                 for (int i = 0; i < arSM.size(); i++) {
-                    /*list_position.add(arSM.get(i).getCLIENTNAME() + " / " + arSM.get(i).getPACKER_PRODUCT_CODE() + " / " + arSM.get(i).getITEM_NAME());*/
                     list_position.add(arSM.get(i).getCLIENTNAME() + " / " + arSM.get(i).getIMPORT_ID_NO());
                 }
 
@@ -1731,5 +1600,4 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
             vibrator.vibrate(500);
         }
     }
-
 }
