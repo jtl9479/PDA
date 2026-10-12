@@ -50,6 +50,7 @@ import com.rgbsolution.highland_emart.shipment.scan.BarcodeInfoFinder;
 import com.rgbsolution.highland_emart.shipment.scan.BarcodeParser;
 import com.rgbsolution.highland_emart.shipment.task.PrintConnectTask;
 import com.rgbsolution.highland_emart.shipment.task.PrintDisconnectTask;
+import com.rgbsolution.highland_emart.shipment.task.ShipmentSendTask;
 
 import java.util.ArrayList;
 
@@ -729,7 +730,7 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                     .setPositiveButton(R.string.shipment_wet_yes, (dialog, which) -> {
                         // 전송시작
                         dialog_flag = false;
-                        new ProgressDlgShipmentSend(BixolonShipmentActivity.this).execute();
+                        new ShipmentSendTask(BixolonShipmentActivity.this, mode, shipmentSendHost).execute();
                     }).setNegativeButton(R.string.shipment_wet_no, (dialog, which) -> {
                 dialog_flag = false;
             }).show();
@@ -2339,272 +2340,49 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         }
     }
 
-    /**
-     * 계근 데이터 서버 전송 AsyncTask
-     * 출하 유형별로 호출 URL 이 다르다(본문 분기 참조). 패킷 구분자는 {@code ::} 다.
-     * @see HttpHelper#sendDataDb(String, String, String, String)
-     */
-    class ProgressDlgShipmentSend extends AsyncTask<Void, String, String> {
-        private Context mContext;
-        String receiveData = "";
-
-        public ProgressDlgShipmentSend(Context context) {
-            mContext = context;
+    /** 서버 전송 태스크 Host (개발/77 Step 5) */
+    private ShipmentSendTask.Host shipmentSendHost = new ShipmentSendTask.Host() {
+        @Override
+        public void setProgressDialog(ProgressDialog dialog) {
+            pDialog = dialog;
         }
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pDialog = new ProgressDialog(mContext);
-            pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            pDialog.setTitle("전송 중 입니다.");
-            pDialog.setMessage("잠시만 기다려 주세요..");
-            pDialog.setCancelable(false);
-            pDialog.show();
+        public ArrayList<Shipments_Info> getShipments() {
+            return arSM;
         }
 
         @Override
-        protected String doInBackground(Void... params) {
-            String result = "";
-            String qry_where = "";
-            try {
-                for (int i = 0; i < arSM.size(); i++) {
-                    if (i == (arSM.size() - 1)) {
-                        qry_where = qry_where + "GI_D_ID = " + arSM.get(i).getGI_D_ID();
-                    } else {
-                        qry_where = qry_where + "GI_D_ID = " + arSM.get(i).getGI_D_ID() + " OR ";
-                    }
-                }
-                Log.v(TAG, "전송상품 검색 where : " + qry_where);
-
-                list_send_info = DBHandler.selectquerySendGoodsWet(mContext, qry_where);        // 목록 조회 성공
-                publishProgress("max", Integer.toString(list_send_info.size()));
-
-                int iCount = 0;
-                int jChk = 0;
-
-                if(mode.getSendType() == ShipmentMode.SendType.PER_ITEM){ //건별 전송 : 이마트, 홈플러스, 롯데 (개발/76)
-                    for (int i = 0; i < list_send_info.size(); i++) { //SAVE_TYPE 과 상관 없이 계근 데이터 모두 루프
-                        if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
-                            iCount++;
-                            String packet = "";
-                            packet += list_send_info.get(i).getGI_D_ID() + "::";
-                            packet += list_send_info.get(i).getWEIGHT() + "::";
-                            packet += list_send_info.get(i).getWEIGHT_UNIT() + "::";
-                            packet += list_send_info.get(i).getPACKER_PRODUCT_CODE() + "::";
-                            packet += list_send_info.get(i).getBARCODE() + "::";
-                            packet += list_send_info.get(i).getPACKER_CLIENT_CODE() + "::";
-                            packet += list_send_info.get(i).getMAKINGDATE() + "::";
-                            packet += list_send_info.get(i).getBOXSERIAL() + "::";
-                            packet += list_send_info.get(i).getBOX_CNT() + "::";
-                            packet += list_send_info.get(i).getREG_ID() + "::";
-                            packet += Common.selectCompanyCode + "::";
-                            packet += list_send_info.get(i).getBRAND_CODE() + "::";
-                            packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
-                            packet += list_send_info.get(i).getBOX_ORDER() + "::";
-                            packet += list_send_info.get(i).getGI_L_ID() + "::";
-                            // 라벨 출력 정보 [15]~[25] (개발/80)
-                            packet += list_send_info.get(i).getBARCODE_TYPE() + "::";
-                            packet += list_send_info.get(i).getLABEL_BARCODE1() + "::";
-                            packet += list_send_info.get(i).getLABEL_BARCODE2() + "::";
-                            packet += list_send_info.get(i).getPRINT_WEIGHT() + "::";
-                            packet += list_send_info.get(i).getEXPIRY_DATE() + "::";
-                            packet += list_send_info.get(i).getEXPIRY_TEXT() + "::";
-                            packet += list_send_info.get(i).getPRINT_IMPORT_ID_NO() + "::";
-                            packet += list_send_info.get(i).getPRINT_STORE_CODE() + "::";
-                            packet += list_send_info.get(i).getPRINT_ITEM_NAME() + "::";
-                            packet += list_send_info.get(i).getPRINT_POINT_NAME() + "::";
-                            packet += list_send_info.get(i).getPRINT_CENTER_NAME();
-
-
-                            if (Common.D) {
-                                Log.d(TAG, "Send Packet : '" + packet + "'");
-                            }
-
-                            Log.i(TAG, "=====================Common.searchType==================" + Common.searchType);
-
-                            // 디비접속 설정 — 마트별 전송 URL (이마트 insert_goods_wet / 홈플러스 _homeplus / 롯데 _lotte)
-                            result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", mode.getSendUrl());
-
-                            //결과값의 앞, 뒤에 공백 제거
-                            result = result.replace("\r\n", "");
-                            result = result.replace("\n", "");
-                            Log.d(TAG, "i number : " + i);
-                            Log.v(TAG, "전송결과 : " + result);
-                            //s : 성공, f : 실패
-                            if (result.equals("s")) {
-                                boolean bool = DBHandler.updatequeryGoodsWet(mContext, list_send_info.get(i).getGI_D_ID(), list_send_info.get(i).getBARCODE(), list_send_info.get(i).getBOX_CNT(), list_send_info.get(i).getGI_L_ID());
-                                Log.d(TAG, "boolean " + bool);
-                                if (bool) {          // 전송 & PDA SQLite update 성공
-                                    publishProgress("progress", Integer.toString(iCount), Integer.toString(iCount) + "번 데이터 전송성공..");
-
-                                    for (int j = 0; j < arSM.size(); j++) {
-                                        if (arSM.get(j).getGI_D_ID().equals(list_send_info.get(i).getGI_D_ID())
-                                                && arSM.get(j).getGI_L_ID().equals(list_send_info.get(i).getGI_L_ID())) {
-                                            arSM.get(j).setSAVE_CNT(arSM.get(j).getSAVE_CNT() + 1);
-
-                                            if (arSM.get(j).getSAVE_CNT() == Integer.parseInt(arSM.get(j).getGI_REQ_PKG())) {            // 전송 개수와 요청 개수 비교
-                                                    Log.v(TAG, "출하대상 계근 완료");
-                                                    arSM.get(j).setSAVE_TYPE("Y");          // 전부 전송했다면 전송여부 Y로 변경
-                                                    DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
-
-                                                    jChk++;
-
-                                                    if (jChk == arSM.size()) {
-                                                        Log.d(TAG, "arSM.size() when return: " + arSM.size());
-                                                        Log.d(TAG, "jChk number when return: " + jChk);
-                                                        return "ss";
-                                                    }
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if (result.equals("f")) {
-                                return result;
-                            }
-                        }
-                    }
-                }else if(mode.getSendType() == ShipmentMode.SendType.BATCH){ //일괄 전송 : 이마트 비정량, 홈플러스 비정량, 도매, 생산, 생산라벨 (개발/76)
-                    Log.i(TAG, "=====================여기 들어오는지 확인==================");
-                    Log.i(TAG, "=====================사이즈 확인=================="+list_send_info.size());
-                    String packet = "";
-                    //전문 전송용 for문
-                    for (int i = 0; i < list_send_info.size(); i++) {
-                        if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
-                            iCount++;
-                            packet += list_send_info.get(i).getGI_D_ID() + "::";
-                            packet += list_send_info.get(i).getWEIGHT() + "::";
-                            packet += list_send_info.get(i).getWEIGHT_UNIT() + "::";
-                            packet += list_send_info.get(i).getPACKER_PRODUCT_CODE() + "::";
-                            packet += list_send_info.get(i).getBARCODE() + "::";
-                            packet += list_send_info.get(i).getPACKER_CLIENT_CODE() + "::";
-                            packet += list_send_info.get(i).getMAKINGDATE() + "::";
-                            packet += list_send_info.get(i).getBOXSERIAL() + "::";
-                            packet += list_send_info.get(i).getBOX_CNT() + "::";
-                            packet += list_send_info.get(i).getREG_ID() + "::";
-                            packet += Common.selectCompanyCode + "::";
-                            packet += list_send_info.get(i).getBRAND_CODE() + "::";
-                            packet += list_send_info.get(i).getCLIENT_TYPE() + "::";
-                            packet += list_send_info.get(i).getBOX_ORDER() + "::" + list_send_info.get(i).getGI_L_ID() + "::";
-                            // 라벨 출력 정보 [15]~[25] (개발/80)
-                            packet += list_send_info.get(i).getBARCODE_TYPE() + "::";
-                            packet += list_send_info.get(i).getLABEL_BARCODE1() + "::";
-                            packet += list_send_info.get(i).getLABEL_BARCODE2() + "::";
-                            packet += list_send_info.get(i).getPRINT_WEIGHT() + "::";
-                            packet += list_send_info.get(i).getEXPIRY_DATE() + "::";
-                            packet += list_send_info.get(i).getEXPIRY_TEXT() + "::";
-                            packet += list_send_info.get(i).getPRINT_IMPORT_ID_NO() + "::";
-                            packet += list_send_info.get(i).getPRINT_STORE_CODE() + "::";
-                            packet += list_send_info.get(i).getPRINT_ITEM_NAME() + "::";
-                            packet += list_send_info.get(i).getPRINT_POINT_NAME() + "::";
-                            packet += list_send_info.get(i).getPRINT_CENTER_NAME() + "##";
-
-                            if (Common.D) {
-                                Log.d(TAG, "Send Packet : '" + packet + "'");
-                            }
-
-                            Log.i(TAG, "=====================여기 들어오는지 확인==================");
-
-                            Log.i(TAG, "=====================Common.searchType==================" + Common.searchType);
-                        }// "F이면" 끝
-                    }//for문 끝
-                    //새 로직 여기다가 넣어야 될 듯
-                    Log.i(TAG, "===================send packet 확인==================" + packet);
-                    boolean sendOrNot = true;
-
-                    if(packet ==""){
-
-                        sendOrNot = false;
-                    }
-
-                    if(sendOrNot){
-                        //전문전송.. 마트별 전송 URL (생산·생산라벨 _production / 이마트 비정량·홈플러스 비정량·도매 _new)
-                        Log.i(TAG, "===================send packet 확인==================" + packet);
-                        result = HttpHelper.getInstance().sendDataDb(packet, "inno", "goodswet_insert", mode.getSendUrl());
-                    }else{
-                        result = "af"; //already finish
-                    }
-
-                    //결과값의 앞, 뒤에 공백 제거
-                    result = result.replace("\r\n", "");
-                    result = result.replace("\n", "");
-                    Log.v(TAG, "전송결과 : " + result); // s : success
-
-                    //s : 성공, f : 실패
-                    //list_send_info : PDA 계근데이터
-                    //arSM : 출하대상
-                    for (int i = 0; i < list_send_info.size(); i++) { //계근데이터 루프돌면서
-                        if (list_send_info.get(i).getSAVE_TYPE().equals("F")) {
-                            if (result.equals("s")) {
-                                boolean bool = DBHandler.updatequeryGoodsWet(mContext, list_send_info.get(i).getGI_D_ID(), list_send_info.get(i).getBARCODE(), list_send_info.get(i).getBOX_CNT(), list_send_info.get(i).getGI_L_ID()); //PDA 계근테이블 SAVE TYPE Y로 업데이트
-                                Log.d(TAG, "boolean " + bool);
-                                if (bool) {          // 전송 & PDA SQLite update 성공
-                                    publishProgress("progress", Integer.toString(iCount), Integer.toString(iCount) + "번 데이터 전송성공..");
-                                    for (int j = 0; j < arSM.size(); j++) { //출하대상루프(GI_D_ID별 1 ROW)
-                                        if (arSM.get(j).getGI_D_ID().equals(list_send_info.get(i).getGI_D_ID())
-                                                && arSM.get(j).getGI_L_ID().equals(list_send_info.get(i).getGI_L_ID())) { //출하대상 루프의 GI_D_ID와 계근데이터의 GI_D_ID가 같으면
-                                            arSM.get(j).setSAVE_CNT(arSM.get(j).getSAVE_CNT() + 1); //출하대상 데이터에 SAVE_CNT(저장갯수) 데이터 저장
-
-                                            if (arSM.get(j).getSAVE_CNT() == Integer.parseInt(arSM.get(j).getGI_REQ_PKG())) {  // 전송 개수와 출하요청 개수가 같으면
-                                                    Log.v(TAG, "출하대상 계근 완료");
-                                                    arSM.get(j).setSAVE_TYPE("Y");          // 전부 전송했다면 전송여부 Y로 변경
-                                                    DBHandler.updatequeryShipment(mContext, arSM.get(j).getGI_D_ID(), arSM.get(j).getPACKER_PRODUCT_CODE(), arSM.get(j).getGI_L_ID());
-
-                                                    jChk++;
-                                                    // 원본: 여기서 jChk == arSM.size() 이면 즉시 return "ss"
-                                                    // 일괄전송은 서버에 이미 전부 적재되므로 남은 계근 행도 Y 처리해야 재전송 중복이 없어 루프 종료 후 판정 (개발/74)
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if (result.equals("f")) {
-                                return result;
-                            }//result "s이면" 끝
-                        }
-                    }
-
-                    // jChk > 0 : 출하대상이 없을 때(0 == 0) 기존처럼 result 를 반환하도록 유지
-                    if (jChk > 0 && jChk == arSM.size()) {
-                        Log.d(TAG, "arSM.size() when return: " + arSM.size());
-                        Log.d(TAG, "jChk number when return: " + jChk);
-                        return "ss";
-                    }
-                }
-                return result;
-            } catch (Exception ex) {
-                Log.e(TAG, "======== ProgressDlgShipmentSend doInBackgounrd Exception ========");
-                Log.e(TAG, ex.toString());
-                return null;
-            }
+        public void setSendList(ArrayList<Goodswets_Info> list) {
+            list_send_info = list;
         }
 
         @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
+        public void onSendPostExecute(String _result) {
+            onShipmentSendPostExecute(_result);
         }
+    };
 
-        @Override
-        protected void onPostExecute(String _result) {
-            Log.v(TAG, "전송결과 : " + _result);
-            pDialog.dismiss();
-            if (_result.equals("s")) {
-                Toast.makeText(getApplicationContext(), "결과 s, 전송 성공.", Toast.LENGTH_SHORT).show();
-                sListAdapter.notifyDataSetChanged();
-            } else if (_result.equals("ss")) {
-                Toast.makeText(getApplicationContext(), "결과 ss, 전송성공.", Toast.LENGTH_SHORT).show();
-                sListAdapter.notifyDataSetChanged();
-                show_sendFinishDialog();
-            } else if (_result.equals("update_fail")) {
-                Toast.makeText(getApplicationContext(), "출하대상 완료 작업실패", Toast.LENGTH_SHORT).show();
-                vibrator.vibrate(500);
-            }else if(_result.equals("f")){ //전송간 에러
-                Toast.makeText(getApplicationContext(), "네트워크 에러로 인한 전송간 오류 발생, 잠시 후 다시 시도해주세요", Toast.LENGTH_SHORT).show();
-                vibrator.vibrate(500);
-            }else if(_result.equals("af")){
-                Toast.makeText(getApplicationContext(), "이미 모두 전송되었거나 전송할 건이 없습니다.", Toast.LENGTH_SHORT).show();
-                vibrator.vibrate(500);
-            }
-            super.onPostExecute(_result);
+    // 전송 결과 화면 처리 (기존 ProgressDlgShipmentSend.onPostExecute 본문, 개발/77 Step 5)
+    private void onShipmentSendPostExecute(String _result) {
+        Log.v(TAG, "전송결과 : " + _result);
+        pDialog.dismiss();
+        if (_result.equals("s")) {
+            Toast.makeText(getApplicationContext(), "결과 s, 전송 성공.", Toast.LENGTH_SHORT).show();
+            sListAdapter.notifyDataSetChanged();
+        } else if (_result.equals("ss")) {
+            Toast.makeText(getApplicationContext(), "결과 ss, 전송성공.", Toast.LENGTH_SHORT).show();
+            sListAdapter.notifyDataSetChanged();
+            show_sendFinishDialog();
+        } else if (_result.equals("update_fail")) {
+            Toast.makeText(getApplicationContext(), "출하대상 완료 작업실패", Toast.LENGTH_SHORT).show();
+            vibrator.vibrate(500);
+        }else if(_result.equals("f")){ //전송간 에러
+            Toast.makeText(getApplicationContext(), "네트워크 에러로 인한 전송간 오류 발생, 잠시 후 다시 시도해주세요", Toast.LENGTH_SHORT).show();
+            vibrator.vibrate(500);
+        }else if(_result.equals("af")){
+            Toast.makeText(getApplicationContext(), "이미 모두 전송되었거나 전송할 건이 없습니다.", Toast.LENGTH_SHORT).show();
+            vibrator.vibrate(500);
         }
     }
 

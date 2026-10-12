@@ -647,17 +647,17 @@ public class WetDetailDialog {
 - **동치 검증**: 변경 전/후 APK 로 같은 계근 데이터를 로컬 DB 에 두고 전송 → 서버 수신 packet 로그(`Send Packet`/`send packet 확인`), `result`, 로컬 `SAVE_TYPE`·`SAVE_CNT`, 마지막 Toast 비교. 건별(0·2·6)·일괄(3·4·5) 모두. 부분 전송 실패(서버 `f`) 경로 포함. code-verifier 로 doInBackground 라인 diff 가 `listener` 호출 3곳 외 0 인지 확인.
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 (packet·URL·결과 문자열 일치)
-- [ ] Part 6: 회귀테스트 (이마트·홈플러스·롯데 건별, 도매·비정량·홈플러스비정량 일괄, 전체 전송 완료 "ss" 다이얼로그, 재전송 시 "af")
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인 — **설계 보완**: `onPostExecute` 본문은 `pDialog` 필드를 그 시점에 읽으므로(조회 태스크와 공유) Activity 메서드 `onShipmentSendPostExecute` 로 그대로 남김. `arSM` 은 `doInBackground` 시작 시 `host.getShipments()` 로 같은 객체 참조
+- [x] Part 3: 변환 수행 — `doInBackground` diff: Host 연결 3줄(arSM 지역 참조, list_send_info 지역 + `setSendList`) 외 0. 개발 80 패킷 [15]~[25] 포함 그대로
+- [x] Part 4: 컴파일 확인
+- [ ] Part 5: 단위테스트 — Step 10
+- [ ] Part 6: 회귀테스트 — Step 10
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `shipment/task/ShipmentSendTask`
+- **왜**: 서버 전송(약 210줄) 외부화
+- **어떻게**: 내부 클래스 삭제, 호출 1곳 교체, Host 익명 클래스 + 결과 처리 메서드
 
 ---
 
