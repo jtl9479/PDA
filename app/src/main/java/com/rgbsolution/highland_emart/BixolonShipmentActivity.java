@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.KeyEvent;
@@ -2119,104 +2120,33 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
                         Toast.makeText(getApplicationContext(), "합산할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
                         vibrator.vibrate(1000);
                     } else if (list_gi_info.size() > 0) {
-                        // ========== SLCS 명령어로 합계 라벨 인쇄 (Bixolon 프린터) ==========
-                        // 원본: Woosim ByteArrayOutputStream + WoosimCmd 명령어
-                        // 변환: StringBuilder + SLCS 헬퍼 메서드
-                        // 용도: 계근 내역 합계 버튼 클릭 시 중량 합산 라벨 인쇄
-                        // 출력 항목:
-                        //   [1] 개별 중량 - 동적 좌표(p_weight, p_hight) 40x40
-                        //   [2] 페이지별 총 중량 - (100, 350) 60x60
-                        // 주의: 36개 항목 단위로 라벨 1장 인쇄 (6열 x 6행)
-                        try {
-                            StringBuilder slcsCmd = new StringBuilder();
-                            java.io.ByteArrayOutputStream sumText = new java.io.ByteArrayOutputStream(); // 글자 비트맵(Korail.ttf)
+                        // 파렛트당 박스 수 입력 (개발 79, 수정 리스트 C2)
+                        // 기본값 36 = 원본 36건(6열 x 6행) 단위와 동일 출력
+                        final EditText edit_pallet_cnt = new EditText(BixolonShipmentActivity.this);
+                        edit_pallet_cnt.setInputType(InputType.TYPE_CLASS_NUMBER);
+                        edit_pallet_cnt.setText("36");
+                        edit_pallet_cnt.setSelectAllOnFocus(true);
 
-                            // 초기화: CB(버퍼클리어) + CS13,0(한글문자셋)
-                            // 원본: WoosimCmd.initPrinter() + setPageMode() + selectTTF() + setTextStyle()
-                            slcsCmd.append(slcsInit());
-
-                            // 라벨 크기 설정: 576x460 도트
-                            // 원본: WoosimCmd.PM_setArea(0, 0, 576, 460)
-                            slcsCmd.append(slcsLabelSize(576, 460));
-
-                            double weight_sum = 0;
-                            int p_weight = 0;
-                            int p_hight = 0;
-
-                            for (int i = 0; i < list_gi_info.size(); i++) {
-                                // 동적 좌표 계산 (6열 x 6행 = 36개 단위)
-                                // p_hight: 행 위치 (0~5행 반복, 36개마다 리셋)
-                                // p_weight: 열 위치 (0~5열 반복)
-                                p_hight = 10 + (i / 6 * 50) - (i / 36 * 300);
-                                // 원본: p_weight = 100 * (i%6)
-                                // 6열(x=500)에서 소수 2자리(5글자) 값이 라벨 폭 576을 넘어 잘려 열 간격 95로 축소
-                                p_weight = 95 * (i % 6);
-
-                                // [1] 개별 중량 출력 (동적 좌표, 폰트크기 32x32)
-                                // 원본: PM_setPosition(p_weight, p_hight) + getTTFcode(40, 40, weight)
-                                // Korail 비트맵 40 크기는 소수 2자리(5글자) 폭이 열 간격과 같아 숫자가 붙어 32로 축소
-                                sumText.write(labelPrintHelper.bitmapText(p_weight, p_hight, 32, list_gi_info.get(i).getWEIGHT()));
-
-                                weight_sum += Double.parseDouble(list_gi_info.get(i).getWEIGHT());
-
-                                // 36개 단위 완료 시 라벨 인쇄
-                                if ((i + 1) % 36 == 0) {
-                                    weight_sum = Math.floor(weight_sum * 100);
-                                    weight_sum = weight_sum / 100.0;
-
-                                    String temp_weight = String.format("%.1f", weight_sum);
-                                    weight_sum = Double.parseDouble(temp_weight);
-
-                                    // [2] 페이지별 총 중량 (x=100, y=350, 폰트크기 60x60)
-                                    // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
-                                    sumText.write(labelPrintHelper.bitmapText(100, 350, 60, ((i + 1) / 36) + "번 총 중량 : " + Double.toString(weight_sum)));
-
-                                    // 인쇄 실행 + 라벨 피드
-                                    // 원본: PM_printData() + feedToMark()
-                                    java.io.ByteArrayOutputStream sumLabel = new java.io.ByteArrayOutputStream();
-                                    sumLabel.write(slcsCmd.toString().getBytes("EUC-KR"));
-                                    sumLabel.write(sumText.toByteArray());
-                                    sumLabel.write((slcsPrint(1) + slcsFeedToMark()).getBytes("EUC-KR"));
-
-                                    // 전송
-                                    sendData(sumLabel.toByteArray());
-
-                                    // StringBuilder 초기화 (원본: byteStream.reset())
-                                    slcsCmd.setLength(0);
-                                    sumText.reset();
-                                    slcsCmd.append(slcsInit());
-                                    slcsCmd.append(slcsLabelSize(576, 460));
-                                    weight_sum = 0;
-
-                                } else if ((i + 1) == list_gi_info.size()) {
-                                    // 마지막 항목 처리 (36개 미만인 경우)
-                                    weight_sum = Math.floor(weight_sum * 100);
-                                    weight_sum = weight_sum / 100.0;
-
-                                    String temp_weight = String.format("%.1f", weight_sum);
-                                    weight_sum = Double.parseDouble(temp_weight);
-
-                                    // [2] 페이지별 총 중량 (마지막 페이지)
-                                    // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
-                                    sumText.write(labelPrintHelper.bitmapText(100, 350, 60, (((i + 1) / 36) + 1) + "번 총 중량 : " + Double.toString(weight_sum)));
-
-                                    // 인쇄 실행 + 라벨 피드
-                                    // 원본: PM_printData() + feedToMark()
-                                    java.io.ByteArrayOutputStream sumLabel = new java.io.ByteArrayOutputStream();
-                                    sumLabel.write(slcsCmd.toString().getBytes("EUC-KR"));
-                                    sumLabel.write(sumText.toByteArray());
-                                    sumLabel.write((slcsPrint(1) + slcsFeedToMark()).getBytes("EUC-KR"));
-
-                                    // 전송
-                                    sendData(sumLabel.toByteArray());
-                                }
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            if (Common.D) {
-                                Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
-                            }
-                        }
+                        new AlertDialog.Builder(BixolonShipmentActivity.this, R.style.AppCompatDialogStyle)
+                                .setIcon(R.drawable.highland)
+                                .setTitle("합산 라벨")
+                                .setMessage("파렛트당 박스 수를 입력하세요.")
+                                .setView(edit_pallet_cnt)
+                                .setPositiveButton("출력", (dialog, which) -> {
+                                    int pallet_box_cnt = 0;
+                                    try {
+                                        pallet_box_cnt = Integer.parseInt(edit_pallet_cnt.getText().toString().trim());
+                                    } catch (NumberFormatException e) {
+                                        pallet_box_cnt = 0;
+                                    }
+                                    if (pallet_box_cnt <= 0) {
+                                        Toast.makeText(getApplicationContext(), "파렛트당 박스 수를 입력하세요.", Toast.LENGTH_SHORT).show();
+                                        vibrator.vibrate(1000);
+                                        return;
+                                    }
+                                    printSumLabel(pallet_box_cnt);
+                                }).setNegativeButton("취소", null)
+                                .show();
                     }
                 } catch (Exception ex) {
                     Log.e(TAG, "==== detail_btn_sum Exception ====");
@@ -2233,6 +2163,107 @@ public class BixolonShipmentActivity extends HoneywellScannerActivity {
         } catch (Exception ex) {
             Log.e(TAG, "======== show_wetDetailDialog Exception ========");
             Log.e(TAG, ex.getMessage().toString());
+        }
+    }
+
+    // 합산 라벨 인쇄 (파렛트 단위)
+    // 원본: detail_btn_sum 리스너 내 36건 단위 인쇄 → 개발 79에서 메서드로 옮기고 파렛트당 박스 수 단위로 끊음
+    // pallet_box_cnt = 36 이면 원본과 동일 출력
+    private void printSumLabel(int pallet_box_cnt) {
+        // ========== SLCS 명령어로 합계 라벨 인쇄 (Bixolon 프린터) ==========
+        // 원본: Woosim ByteArrayOutputStream + WoosimCmd 명령어
+        // 변환: StringBuilder + SLCS 헬퍼 메서드
+        // 용도: 계근 내역 합계 버튼 클릭 시 중량 합산 라벨 인쇄
+        // 출력 항목:
+        //   [1] 개별 중량 - 동적 좌표(p_weight, p_hight) 32x32
+        //   [2] 파렛트별 총 중량 - (100, 350) 60x60
+        // 주의: 라벨 1장 최대 36개 항목 (6열 x 6행), 파렛트가 36개를 넘으면 이어지는 라벨에 총 중량 없이 인쇄
+        try {
+            StringBuilder slcsCmd = new StringBuilder();
+            java.io.ByteArrayOutputStream sumText = new java.io.ByteArrayOutputStream(); // 글자 비트맵(Korail.ttf)
+
+            // 초기화: CB(버퍼클리어) + CS13,0(한글문자셋)
+            // 원본: WoosimCmd.initPrinter() + setPageMode() + selectTTF() + setTextStyle()
+            slcsCmd.append(slcsInit());
+
+            // 라벨 크기 설정: 576x460 도트
+            // 원본: WoosimCmd.PM_setArea(0, 0, 576, 460)
+            slcsCmd.append(slcsLabelSize(576, 460));
+
+            double weight_sum = 0;
+            int p_weight = 0;
+            int p_hight = 0;
+
+            for (int i = 0; i < list_gi_info.size(); i++) {
+                int pallet_no = i / pallet_box_cnt + 1;     // 파렛트 번호
+                int k = i % pallet_box_cnt;                 // 파렛트 내 순번
+
+                // 동적 좌표 계산 (6열 x 6행 = 36개 단위)
+                // p_hight: 행 위치 (0~5행 반복, 36개마다 리셋)
+                // p_weight: 열 위치 (0~5열 반복)
+                // 원본: i 기준 → 파렛트 내 순번 k 기준
+                p_hight = 10 + (k / 6 * 50) - (k / 36 * 300);
+                // 원본: p_weight = 100 * (i%6)
+                // 6열(x=500)에서 소수 2자리(5글자) 값이 라벨 폭 576을 넘어 잘려 열 간격 95로 축소
+                p_weight = 95 * (k % 6);
+
+                // [1] 개별 중량 출력 (동적 좌표, 폰트크기 32x32)
+                // 원본: PM_setPosition(p_weight, p_hight) + getTTFcode(40, 40, weight)
+                // Korail 비트맵 40 크기는 소수 2자리(5글자) 폭이 열 간격과 같아 숫자가 붙어 32로 축소
+                sumText.write(labelPrintHelper.bitmapText(p_weight, p_hight, 32, list_gi_info.get(i).getWEIGHT()));
+
+                weight_sum += Double.parseDouble(list_gi_info.get(i).getWEIGHT());
+
+                if ((k + 1) == pallet_box_cnt || (i + 1) == list_gi_info.size()) {
+                    // 파렛트 끝 또는 마지막 항목 → 총 중량 인쇄
+                    weight_sum = Math.floor(weight_sum * 100);
+                    weight_sum = weight_sum / 100.0;
+
+                    String temp_weight = String.format("%.1f", weight_sum);
+                    weight_sum = Double.parseDouble(temp_weight);
+
+                    // [2] 파렛트별 총 중량 (x=100, y=350, 폰트크기 60x60)
+                    // 원본: PM_setPosition(100, 350) + getTTFcode(60, 60, "N번 총 중량 : XX.X")
+                    sumText.write(labelPrintHelper.bitmapText(100, 350, 60, pallet_no + "번 총 중량 : " + Double.toString(weight_sum)));
+
+                    // 인쇄 실행 + 라벨 피드
+                    // 원본: PM_printData() + feedToMark()
+                    java.io.ByteArrayOutputStream sumLabel = new java.io.ByteArrayOutputStream();
+                    sumLabel.write(slcsCmd.toString().getBytes("EUC-KR"));
+                    sumLabel.write(sumText.toByteArray());
+                    sumLabel.write((slcsPrint(1) + slcsFeedToMark()).getBytes("EUC-KR"));
+
+                    // 전송
+                    sendData(sumLabel.toByteArray());
+
+                    // StringBuilder 초기화 (원본: byteStream.reset())
+                    slcsCmd.setLength(0);
+                    sumText.reset();
+                    slcsCmd.append(slcsInit());
+                    slcsCmd.append(slcsLabelSize(576, 460));
+                    weight_sum = 0;
+
+                } else if ((k + 1) % 36 == 0) {
+                    // 라벨 1장(36개) 가득 참, 파렛트 진행 중 → 총 중량 없이 인쇄, 합계 유지
+                    java.io.ByteArrayOutputStream sumLabel = new java.io.ByteArrayOutputStream();
+                    sumLabel.write(slcsCmd.toString().getBytes("EUC-KR"));
+                    sumLabel.write(sumText.toByteArray());
+                    sumLabel.write((slcsPrint(1) + slcsFeedToMark()).getBytes("EUC-KR"));
+
+                    // 전송
+                    sendData(sumLabel.toByteArray());
+
+                    slcsCmd.setLength(0);
+                    sumText.reset();
+                    slcsCmd.append(slcsInit());
+                    slcsCmd.append(slcsLabelSize(576, 460));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (Common.D) {
+                Log.d(TAG, "setPrinting Exception\n" + e.getMessage().toString());
+            }
         }
     }
 
