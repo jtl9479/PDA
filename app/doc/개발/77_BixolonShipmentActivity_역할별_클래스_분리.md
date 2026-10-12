@@ -583,8 +583,8 @@ public class WetDetailDialog {
 - [x] Part 2: 변환 계획 확인 — **설계 변경**: 5.3 의 Result(최종값 일괄 반영) 대신 `Sink` 인터페이스로 루프 안에서 즉시 반영. 예외 메시지 null 등 catch 안에서 다시 예외가 나는 경우까지 부분 반영 상태가 원래와 같아지도록 하기 위함. try/catch·`"null"` 반환은 Activity 래퍼에 그대로 둠
 - [x] Part 3: 변환 수행 — 루프 본문·로그 그대로, 위젯/필드 대입 4종만 `sink.*` 로 치환. `mode.acceptsAnyBarcodeInfoRow()` 는 호출 시 1회 평가(루프 중 불변)
 - [x] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 — Step 10
-- [ ] Part 6: 회귀테스트 — Step 10
+- [x] Part 5: 단위테스트 — Step 10 실기기 (2026-10-12)
+- [x] Part 6: 회귀테스트 — Step 10 실기기 (2026-10-12)
 
 **Part 6. 변경 내용**:
 - **무엇을**: `shipment/scan/BarcodeInfoFinder` (`byPackerProduct`, `byBarcodeGoods`, `Sink`)
@@ -617,8 +617,8 @@ public class WetDetailDialog {
 - [x] Part 2: 변환 계획 확인 — **설계 보완**: 프린터·어댑터를 생성 시 참조로 넘기지 않고 `Host.getPrinter()/getBluetoothAdapter()` 로 `doInBackground` 시점에 필드를 읽음(원래와 같은 시점). `cDialog` 는 `setConnectDialog` 로 `onPreExecute` 안에서 대입
 - [x] Part 3: 변환 수행 — 다이얼로그 문구·로그·예외 처리 그대로
 - [x] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 — Step 10
-- [ ] Part 6: 회귀테스트 — Step 10
+- [x] Part 5: 단위테스트 — Step 10 실기기 (2026-10-12)
+- [x] Part 6: 회귀테스트 — Step 10 실기기 (2026-10-12)
 
 **Part 6. 변경 내용**:
 - **무엇을**: `shipment/task/PrintConnectTask`, `PrintDisconnectTask`
@@ -651,8 +651,8 @@ public class WetDetailDialog {
 - [x] Part 2: 변환 계획 확인 — **설계 보완**: `onPostExecute` 본문은 `pDialog` 필드를 그 시점에 읽으므로(조회 태스크와 공유) Activity 메서드 `onShipmentSendPostExecute` 로 그대로 남김. `arSM` 은 `doInBackground` 시작 시 `host.getShipments()` 로 같은 객체 참조
 - [x] Part 3: 변환 수행 — `doInBackground` diff: Host 연결 3줄(arSM 지역 참조, list_send_info 지역 + `setSendList`) 외 0. 개발 80 패킷 [15]~[25] 포함 그대로
 - [x] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 — Step 10
-- [ ] Part 6: 회귀테스트 — Step 10
+- [x] Part 5: 단위테스트 — Step 10 실기기 (2026-10-12)
+- [x] Part 6: 회귀테스트 — Step 10 실기기 (2026-10-12)
 
 **Part 6. 변경 내용**:
 - **무엇을**: `shipment/task/ShipmentSendTask`
@@ -686,8 +686,8 @@ public class WetDetailDialog {
 - [x] Part 2: 변환 계획 확인 — Host 4개(`setProgressDialog`, `resetCenterTotals`, `setShipments`, `onSelectPostExecute`). `onProgressUpdate`(호출처 없음)는 태스크가 만든 다이얼로그 참조 사용
 - [x] Part 3: 변환 수행 — `selectqueryShipment` 반환 직후 `setShipments`(백그라운드, 원래 대입 시점), 이후 루프는 같은 객체. `onPostExecute` 본문은 `onShipSelectPostExecute(boolean type)` 로 이동(`mContext`→`this`, `this.type`→`type` 만 변경). 호출 8곳 교체
 - [x] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 — Step 10
-- [ ] Part 6: 회귀테스트 — Step 10
+- [x] Part 5: 단위테스트 — Step 10 실기기 (2026-10-12)
+- [x] Part 6: 회귀테스트 — Step 10 실기기 (2026-10-12)
 
 **Part 6. 변경 내용**:
 - **무엇을**: `shipment/task/ShipSelectTask`
@@ -722,8 +722,8 @@ public class WetDetailDialog {
 - [x] Part 2: 변환 계획 확인 — Host 6개(`setDialogFlag`, `onDetailBack`, `vibrate`, `disableSendButton`, `getSelectedShipment`, `getHandler`). 기존 람다는 문법 그대로 이동. `show_wetDetailDialog(si, bi, position)` 시그니처는 Activity 에 유지(본문은 `new WetDetailDialog(...).show(si, Inflater)`)
 - [x] Part 3: 변환 수행 — 뒤로가기: dismiss → `dialog_flag=false` → `onWetDetailBack()`(체크 해제·입력창 비움·재조회, 원래 본문). 삭제 성공 순서: 삭제 루프 → vibrate(500) → 전송 버튼 비활성 → `performClick` → Toast 그대로. `getApplicationContext()` → `mContext.getApplicationContext()`(같은 Application 컨텍스트)
 - [x] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 — Step 10
-- [ ] Part 6: 회귀테스트 — Step 10
+- [x] Part 5: 단위테스트 — Step 10 실기기 (2026-10-12)
+- [x] Part 6: 회귀테스트 — Step 10 실기기 (2026-10-12)
 
 **Part 6. 변경 내용**:
 - **무엇을**: `shipment/dialog/WetDetailDialog` (show·deleteQuestionDialog·refresh_delete)
@@ -814,6 +814,22 @@ public class WetDetailDialog {
 | 9 | 상세 팝업 삭제·뒤로가기·합산 | □ |
 | 10 | 프린터 연결 실패/성공/종료 해제, 전송 실패(서버 `f`) | □ |
 | 11 | 전 Phase 변경 전 APK 대비 logcat 시퀀스·로컬 DB·서버 packet 일치 (code-verifier + original-comparator) | □ |
+
+**2026-10-12 EDA51 실행 결과 (Step 1~7 반영 빌드)**
+
+| 경로 | 결과 |
+|------|------|
+| 프린터 자동 연결(Step 4) | `print_address :: 40:19:20:5B:90:10` → 연결 성공 |
+| 이마트 0928 대구WET 506: 상품 스캔 → 조회(Step 3·6) | 상품명·PPcode·작업지점·BL 표시, 2/0 |
+| BL 스캔 2박스 → 추출(Step 2) → 저장·라벨 | 10.8kg, 제조일 260928, 박스시리얼 0001·0002, M0 13928 bytes ×2, 라벨 정보 UPDATE(개발 80) 정상 |
+| 상세 팝업(Step 7) 박스 2 선택 삭제 → 뒤로 → 재조회 | 삭제 성공, 재조회 0건·목록 비움 — **정리 전 빌드(before-77)로 같은 순서 재현 결과와 로그·화면 동일** |
+| 건별 전송(Step 5) | "s" → "ss" 전송 완료 창. 단 박스 2 미전송: 목록 로드 시 이미 있던 미전송 행을 SAVE_CNT 로 세는 기존 결함(오류 41 안2, 미적용) — 원본 동일 |
+| 홈플러스 비정량 0928 499 합산 라벨(Step 1·7) | 박스수 36 → 5189 bytes (정리 전 동일) |
+| 빈 목록 일괄 전송(Step 5) | "af" 토스트 |
+| 화면 종료 → 프린터 해제(Step 4) | ACL_DISCONNECTED |
+
+- 서버 적재: SM_출고계근 SEQ 301 (506 박스 1). 로컬 506 박스 2 는 F(미전송)로 남음
+- 미수행: 롯데·홈플러스 정량·도매 재테스트, 수기 입력(work_flag 0)·상품코드 입력(2), 전송 실패(f)
 
 ---
 
@@ -920,15 +936,15 @@ Step 10: 통합 테스트
 | Step | 작업 | 상태 |
 |------|------|------|
 | 1 | SumLabel 분리 + Activity SLCS 복사본 제거 | ✅ 완료 (EDA51 바이트 동일) |
-| 2 | BarcodeParser 분리 | ⏳ 대기 |
-| 3 | BarcodeInfoFinder 분리 | ⏳ 대기 |
-| 4 | PrintConnectTask / PrintDisconnectTask 분리 | ⏳ 대기 |
-| 5 | ShipmentSendTask 분리 | ⏳ 대기 |
-| 6 | ShipSelectTask 분리 (선택) | ⏳ 대기 |
-| 7 | WetDetailDialog 분리 | ⏳ 대기 |
+| 2 | BarcodeParser 분리 | ✅ 완료 |
+| 3 | BarcodeInfoFinder 분리 | ✅ 완료 |
+| 4 | PrintConnectTask / PrintDisconnectTask 분리 | ✅ 완료 |
+| 5 | ShipmentSendTask 분리 | ✅ 완료 |
+| 6 | ShipSelectTask 분리 (선택) | ✅ 완료 |
+| 7 | WetDetailDialog 분리 | ✅ 완료 |
 | 8 | ScanProcessor 분리 (게이트) | ⏳ 대기 |
 | 9 | 생산 스캔 이동 (게이트) | ⏳ 대기 |
-| 10 | 통합 테스트 | ⏳ 대기 |
+| 10 | 통합 테스트 | 🔄 Step 1~7 부분 완료 (2026-10-12) |
 
 ---
 
