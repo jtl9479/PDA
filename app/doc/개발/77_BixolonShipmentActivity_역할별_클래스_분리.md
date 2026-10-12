@@ -682,17 +682,17 @@ public class WetDetailDialog {
 - **동치 검증**: 상품 스캔 조회·BL(수기) 조회·조회 결과 없음·상세 팝업 뒤로가기 재조회 4경로에서 `arSM.size()`, 센터 집계 위젯, 스피너 선택 위치 비교. 롯데는 `mode.onShipmentListLoaded` 의 박스순번(`lotte_TryCount`) 초기화 값 로그 비교.
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 (4경로 + 롯데 박스순번)
-- [ ] Part 6: 회귀테스트 (이마트·홈플러스·롯데·도매·비정량 조회 후 첫 미완료 지점 선택, 총 계근 완료 다이얼로그)
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인 — Host 4개(`setProgressDialog`, `resetCenterTotals`, `setShipments`, `onSelectPostExecute`). `onProgressUpdate`(호출처 없음)는 태스크가 만든 다이얼로그 참조 사용
+- [x] Part 3: 변환 수행 — `selectqueryShipment` 반환 직후 `setShipments`(백그라운드, 원래 대입 시점), 이후 루프는 같은 객체. `onPostExecute` 본문은 `onShipSelectPostExecute(boolean type)` 로 이동(`mContext`→`this`, `this.type`→`type` 만 변경). 호출 8곳 교체
+- [x] Part 4: 컴파일 확인
+- [ ] Part 5: 단위테스트 — Step 10
+- [ ] Part 6: 회귀테스트 — Step 10
 
-**Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+**Part 6. 변경 내용**:
+- **무엇을**: `shipment/task/ShipSelectTask`
+- **왜**: 조회 AsyncTask 외부화 (화면 반영은 Activity 잔류)
+- **어떻게**: 내부 클래스 삭제, Host 익명 클래스 + 결과 반영 메서드
 
 ---
 
