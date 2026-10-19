@@ -118,17 +118,17 @@
 ### Step 2: 미사용 리소스 삭제 (3장 #10)
 
 **체크리스트**
-- [ ] Part 1: 분석 완료 확인
-- [ ] Part 2: 변환 계획 확인
-- [ ] Part 3: 변환 수행
-- [ ] Part 4: 컴파일 확인
-- [ ] Part 5: 단위테스트 (리소스 참조 재검색 0건)
+- [x] Part 1: 분석 완료 확인
+- [x] Part 2: 변환 계획 확인
+- [x] Part 3: 변환 수행
+- [x] Part 4: 컴파일 확인
+- [x] Part 5: 단위테스트 (리소스 참조 재검색 0건)
 - [ ] Part 6: 회귀테스트
 
 **Part 6. 변경 내용** (완료 후 작성):
-- **무엇을**:
-- **왜**:
-- **어떻게**:
+- **무엇을**: 파일 10개(layout `popup_activity`, drawable `highland_back.jpg`·`printer.png`, raw `chk.wav`·`s.mp3`, mipmap `ic_launcher.png` 5), `values/emart_center_list.xml` 파일, string 36·color 3(`colorSelect`, `titletextcolor`, `titlebackgroundcolor`)·style 1(`WindowTitleBackground`) 삭제
+- **왜**: `R.xxx.name`·`@xxx/name` 참조 0. `titlebackgroundcolor`는 `WindowTitleBackground` 삭제 후 참조 0이 되어 함께 삭제
+- **어떻게**: 리소스 참조 스캔 → 삭제 → 재스캔 0건, `gradlew assembleDebug` 성공 (2026-10-19). Part 6 회귀테스트는 Step 3에서 수행
 
 ---
 
@@ -180,7 +180,7 @@ Step 3: 통합 테스트
 | Step | 작업 | 상태 |
 |------|------|------|
 | 1 | Java 미사용 소스 삭제 | ✅ 완료 |
-| 2 | 미사용 리소스 삭제 | ⏳ 대기 |
+| 2 | 미사용 리소스 삭제 | ✅ 완료 |
 | 3 | 통합 테스트 | ⏳ 대기 |
 
 ---
