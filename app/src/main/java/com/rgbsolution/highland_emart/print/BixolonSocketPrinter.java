@@ -4,9 +4,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -283,31 +280,6 @@ public class BixolonSocketPrinter {
     }
 
     /**
-     * SLCS 명령어 전송 (문자열)
-     * - EUC-KR 인코딩으로 전송 (SLCS 프린터 표준)
-     */
-    public void sendCommand(String command) {
-        if (!isConnected()) {
-            sendToast("프린터가 연결되지 않았습니다.");
-            return;
-        }
-
-        try {
-            // SLCS 프린터는 EUC-KR 인코딩 사용
-            byte[] data = command.getBytes("EUC-KR");
-            write(data);
-            Log.d(TAG, "명령어 전송 완료 (EUC-KR, " + data.length + " bytes)");
-
-            if (mHandler != null) {
-                mHandler.sendEmptyMessage(MESSAGE_PRINT_COMPLETE);
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "sendCommand error: " + e.getMessage(), e);
-            sendToast("명령어 전송 오류: " + e.getMessage());
-        }
-    }
-
-    /**
      * SLCS 명령어 전송 (바이트 배열)
      * - 이미 인코딩된 바이트 배열 직접 전송
      */
@@ -375,73 +347,6 @@ public class BixolonSocketPrinter {
             Message msg = mHandler.obtainMessage(MESSAGE_TOAST);
             msg.obj = message;
             mHandler.sendMessage(msg);
-        }
-    }
-
-    public String getConnectedDeviceName() {
-        return mConnectedDeviceName;
-    }
-
-    /**
-     * Bitmap 이미지를 라벨로 출력 (EG 명령어 사용)
-     * @param bitmap 출력할 비트맵 (자동으로 1비트 모노크롬 변환)
-     * @param x 출력 X 좌표
-     * @param y 출력 Y 좌표
-     */
-    public void printBitmap(Bitmap bitmap, int x, int y) {
-        if (!isConnected()) {
-            sendToast("프린터가 연결되지 않았습니다.");
-            return;
-        }
-
-        try {
-            int width = bitmap.getWidth();
-            int height = bitmap.getHeight();
-            int widthBytes = (width + 7) / 8;
-
-            Log.d(TAG, "printBitmap: " + width + "x" + height + ", widthBytes=" + widthBytes);
-
-            StringBuilder cmd = new StringBuilder();
-            cmd.append("CB\r\n");
-            cmd.append("EG ").append(x).append(",").append(y).append(",")
-               .append(width).append(",").append(height).append(",");
-
-            // Bitmap -> 1bit 모노크롬 HEX 변환
-            for (int row = 0; row < height; row++) {
-                for (int col = 0; col < widthBytes; col++) {
-                    int byteVal = 0;
-                    for (int bit = 0; bit < 8; bit++) {
-                        int px = col * 8 + bit;
-                        if (px < width) {
-                            int pixel = bitmap.getPixel(px, row);
-                            int gray = (int) (0.299 * Color.red(pixel)
-                                            + 0.587 * Color.green(pixel)
-                                            + 0.114 * Color.blue(pixel));
-                            // EG 명령어: 1=검정, 0=흰색 (gray >= 128이면 흰색이므로 비트 0)
-                            if (gray >= 128) {
-                                byteVal |= (1 << (7 - bit));
-                            }
-                        }
-                    }
-                    cmd.append(String.format("%02X", byteVal));
-                }
-            }
-
-            cmd.append("\r\n");
-            cmd.append("P1\r\n");
-
-            byte[] data = cmd.toString().getBytes("EUC-KR");
-            write(data);
-
-            Log.d(TAG, "이미지 라벨 전송 완료, 데이터 크기: " + data.length + " bytes");
-
-            if (mHandler != null) {
-                mHandler.sendEmptyMessage(MESSAGE_PRINT_COMPLETE);
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, "printBitmap error: " + e.getMessage(), e);
-            sendToast("이미지 출력 오류: " + e.getMessage());
         }
     }
 

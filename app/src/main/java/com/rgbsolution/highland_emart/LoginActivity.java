@@ -16,26 +16,15 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rgbsolution.highland_emart.common.Common;
 import com.rgbsolution.highland_emart.common.HttpHelper;
 import com.rgbsolution.highland_emart.db.DBHandler;
-import com.rgbsolution.highland_emart.print.BluetoothPrintService;
-import com.rgbsolution.highland_emart.print.BixolonSocketPrinter;
-import com.rgbsolution.highland_emart.print.DeviceListActivity;
 
 import java.security.MessageDigest;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.os.Handler;
-import android.os.Message;
-import com.sgis.labelengine.*;
 
-import java.security.MessageDigest;
-import java.util.Set;
 
 public class LoginActivity extends AppCompatActivity {
     private final String TAG = "LoginActivity";                        // Log's TAG
@@ -46,13 +35,6 @@ public class LoginActivity extends AppCompatActivity {
     private EditText editPWD;                                        // PWD 입력창
     private String user_id = "";
     private String user_pwd = "";
-
-    // 블루투스 프린터 관련
-    private BluetoothAdapter mBluetoothAdapter = null;
-    private BluetoothPrintService mPrintService = null;
-
-    // 빅솔론 프린터 (소켓 통신 방식)
-    private BixolonSocketPrinter mBixolonPrinter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -333,145 +315,4 @@ public class LoginActivity extends AppCompatActivity {
                         }).setNegativeButton(buttonNo, null).show();
     }
 
-    //빅솔론 프린트 출력 테스트 (소켓 통신 방식)
-    private void printTest() {
-        try {
-            // 블루투스 어댑터 초기화
-            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-            if (mBluetoothAdapter == null) {
-                Toast.makeText(this, "블루투스를 지원하지 않는 기기입니다.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // 블루투스 활성화 확인
-            if (!mBluetoothAdapter.isEnabled()) {
-                Toast.makeText(this, "블루투스를 켜주세요.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // 빅솔론 프린터 초기화 (소켓 통신 방식)
-            if (mBixolonPrinter == null) {
-                mBixolonPrinter = new BixolonSocketPrinter(this, mBixolonHandler);
-            }
-
-            // 프린터 선택 다이얼로그 표시
-            showPrinterSelectDialog();
-
-        } catch (Exception e) {
-            Log.e(TAG, "printTest Error: " + e.getMessage());
-            Toast.makeText(this, "오류: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // 프린터 선택 다이얼로그 표시
-    private void showPrinterSelectDialog() {
-        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-
-        if (pairedDevices.size() > 0) {
-            final BluetoothDevice[] deviceArray = pairedDevices.toArray(new BluetoothDevice[0]);
-            String[] deviceNames = new String[deviceArray.length];
-
-            for (int i = 0; i < deviceArray.length; i++) {
-                deviceNames[i] = deviceArray[i].getName() + "\n" + deviceArray[i].getAddress();
-            }
-
-            new AlertDialog.Builder(this)
-                .setTitle("프린터 선택")
-                .setItems(deviceNames, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        BluetoothDevice selectedDevice = deviceArray[which];
-                        String address = selectedDevice.getAddress();
-                        Log.d(TAG, "선택된 프린터: " + selectedDevice.getName() + " - " + address);
-
-                        // 선택한 프린터 주소 저장
-                        SharedPreferences spfBixolon = getSharedPreferences("spfBixolon", MODE_PRIVATE);
-                        SharedPreferences.Editor editor = spfBixolon.edit();
-                        editor.putString("bixolon_address", address);
-                        editor.apply();
-
-                        mBixolonPrinter.connect(selectedDevice);
-                        Toast.makeText(LoginActivity.this, "프린터 연결 중...", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .setNegativeButton("취소", null)
-                .show();
-        } else {
-            Toast.makeText(this, "페어링된 블루투스 장치가 없습니다.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // 블루투스 통신을 위한 Handler (기존 호환용)
-    private final Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 1: // MESSAGE_DEVICE_NAME
-                    break;
-                case 2: // MESSAGE_TOAST
-                    break;
-                case 3: // MESSAGE_READ
-                    break;
-            }
-        }
-    };
-
-    // 빅솔론 프린터 Handler (소켓 통신 방식)
-    private final Handler mBixolonHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case BixolonSocketPrinter.MESSAGE_STATE_CHANGE:
-                    switch (msg.arg1) {
-                        case BixolonSocketPrinter.STATE_CONNECTED:
-                            Log.d(TAG, "빅솔론 프린터 연결됨");
-                            Toast.makeText(LoginActivity.this, "프린터 연결 성공!", Toast.LENGTH_SHORT).show();
-                            // 연결 성공 후 테스트 출력
-                            sendBixolonTestPrint();
-                            break;
-                        case BixolonSocketPrinter.STATE_CONNECTING:
-                            Log.d(TAG, "빅솔론 프린터 연결 중...");
-                            break;
-                        case BixolonSocketPrinter.STATE_NONE:
-                            Log.d(TAG, "빅솔론 프린터 연결 해제됨");
-                            break;
-                    }
-                    break;
-                case BixolonSocketPrinter.MESSAGE_PRINT_COMPLETE:
-                    Log.d(TAG, "인쇄 완료");
-                    Toast.makeText(LoginActivity.this, "인쇄 완료!", Toast.LENGTH_SHORT).show();
-                    break;
-                case BixolonSocketPrinter.MESSAGE_TOAST:
-                    String toastMsg = (String) msg.obj;
-                    Toast.makeText(LoginActivity.this, toastMsg, Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        }
-    };
-
-    // 빅솔론 프린터로 테스트 출력 (소켓 통신 방식)
-    private void sendBixolonTestPrint() {
-        try {
-            if (mBixolonPrinter == null) {
-                Toast.makeText(this, "프린터가 초기화되지 않았습니다.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (!mBixolonPrinter.isConnected()) {
-                Toast.makeText(this, "프린터가 연결되지 않았습니다.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // 소켓 통신으로 테스트 라벨 출력
-            //mBixolonPrinter.printTestLabel();
-            mBixolonPrinter.printTestLabel();
-
-            Log.d(TAG, "테스트 출력 명령 전송 완료");
-
-        } catch (Exception e) {
-            Log.e(TAG, "sendBixolonTestPrint Error: " + e.getMessage());
-            Toast.makeText(this, "출력 오류: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-    }
 }

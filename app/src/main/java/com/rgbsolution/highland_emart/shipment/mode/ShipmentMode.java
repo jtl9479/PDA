@@ -2,10 +2,7 @@ package com.rgbsolution.highland_emart.shipment.mode;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 
-import com.rgbsolution.highland_emart.common.Common;
-import com.rgbsolution.highland_emart.db.DBHandler;
 import com.rgbsolution.highland_emart.items.Barcodes_Info;
 import com.rgbsolution.highland_emart.items.Goodswets_Info;
 import com.rgbsolution.highland_emart.items.Shipments_Info;

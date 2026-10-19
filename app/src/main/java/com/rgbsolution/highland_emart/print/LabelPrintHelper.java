@@ -145,23 +145,6 @@ public class LabelPrintHelper {
     }
 
     /**
-     * SLCS 텍스트 출력
-     * - V 명령어 사용 (벡터 폰트)
-     *
-     * @param x      X 좌표
-     * @param y      Y 좌표
-     * @param width  폰트 너비
-     * @param height 폰트 높이
-     * @param text   출력할 텍스트
-     * @return SLCS 텍스트 명령어 문자열
-     */
-    private String slcsText(int x, int y, int width, int height, String text) {
-        // V x,y,K,w,h,0,N,B,N,0,L,0,'text'
-        // K: 한글, 0: 회전없음, N: 일반, B: 굵게, N: 이탤릭없음, 0: 자간, L: 왼쪽정렬, 0: 줄간격
-        return "V" + x + "," + y + ",K," + width + "," + height + ",0,N,B,N,0,L,0,'" + text + "'\r\n";
-    }
-
-    /**
      * SLCS CODE128 바코드 생성
      *
      * @param x      X 좌표

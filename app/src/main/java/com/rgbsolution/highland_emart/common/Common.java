@@ -16,7 +16,6 @@ public class Common {
 
 
     // URL 변수
-    public static final String URL_VERSION = BASE_URL + "/check_version.jsp";
     public static final String URL_LOGIN = BASE_URL + "/manager_login.jsp";
     public static final String URL_SEARCH_SHIPMENT = BASE_URL + "/search_shipment.jsp";
     public static final String URL_SEARCH_SHIPMENT_HOMEPLUS = BASE_URL + "/search_shipment_homeplus.jsp";
@@ -36,7 +35,6 @@ public class Common {
     public static final String URL_INSERT_GOODS_WET_LOTTE = BASE_URL + "/insert_goods_wet_lotte.jsp";
     public static final String URL_INSERT_GOODS_WET_HOMEPLUS = BASE_URL + "/insert_goods_wet_homeplus.jsp";
     public static final String URL_INSERT_BARCODE_INFO = BASE_URL + "/insert_barcode_info.jsp";
-    public static final String URL_UPDATE_BARCODE_INFO = BASE_URL + "/update_barcode_info.jsp";
     public static final String URL_UPDATE_SHIPMENT = BASE_URL + "/update_shipment.jsp";
     public static final String URL_WET_PRODUCTION_CALC = BASE_URL + "/search_production_calc.jsp";
     public static final String URL_SEARCH_PRODUCTION_NONFIXED = BASE_URL + "/search_production_nonfixed.jsp";

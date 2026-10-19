@@ -9,7 +9,6 @@ import com.rgbsolution.highland_emart.db.DBHandler;
 import com.rgbsolution.highland_emart.items.Shipments_Info;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * ProgressDlgShipSearch - 출하대상 조회 AsyncTask

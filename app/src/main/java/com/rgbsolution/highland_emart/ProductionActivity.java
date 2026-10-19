@@ -19,7 +19,6 @@ import com.rgbsolution.highland_emart.common.HttpHelper;
 import com.rgbsolution.highland_emart.scanner.HoneywellScannerActivity;
 
 import com.rgbsolution.highland_emart.db.DBHandler;
-import java.util.ArrayList;
 
 /**
  * 생산 계근 계산기 Activity
