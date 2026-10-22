@@ -142,33 +142,8 @@ public class WetDetailDialog {
                         Toast.makeText(mContext.getApplicationContext(), "합산할 항목이 없습니다.", Toast.LENGTH_SHORT).show();
                         host.vibrate(1000);
                     } else if (list_gi_info.size() > 0) {
-                        // 파렛트당 박스 수 입력 (개발 79, 수정 리스트 C2)
-                        // 기본값 36 = 원본 36건(6열 x 6행) 단위와 동일 출력
-                        final EditText edit_pallet_cnt = new EditText(mContext);
-                        edit_pallet_cnt.setInputType(InputType.TYPE_CLASS_NUMBER);
-                        edit_pallet_cnt.setText("36");
-                        edit_pallet_cnt.setSelectAllOnFocus(true);
-
-                        new AlertDialog.Builder(mContext, R.style.AppCompatDialogStyle)
-                                .setIcon(R.drawable.highland)
-                                .setTitle("합산 라벨")
-                                .setMessage("파렛트당 박스 수를 입력하세요.")
-                                .setView(edit_pallet_cnt)
-                                .setPositiveButton("출력", (dialog, which) -> {
-                                    int pallet_box_cnt = 0;
-                                    try {
-                                        pallet_box_cnt = Integer.parseInt(edit_pallet_cnt.getText().toString().trim());
-                                    } catch (NumberFormatException e) {
-                                        pallet_box_cnt = 0;
-                                    }
-                                    if (pallet_box_cnt <= 0) {
-                                        Toast.makeText(mContext.getApplicationContext(), "파렛트당 박스 수를 입력하세요.", Toast.LENGTH_SHORT).show();
-                                        host.vibrate(1000);
-                                        return;
-                                    }
-                                    SumLabel.print(labelPrintHelper, list_gi_info, pallet_box_cnt, printerCallback);   // 개발/77 Step 1
-                                }).setNegativeButton("취소", null)
-                                .show();
+                        // 파렛트당 박스 수를 입력받은 뒤 출력 (개발/86, 최신 원본 palletCountDialog)
+                        palletCountDialog();
                     }
                 } catch (Exception ex) {
                     Log.e(TAG, "==== detail_btn_sum Exception ====");
@@ -186,6 +161,40 @@ public class WetDetailDialog {
             Log.e(TAG, "======== show_wetDetailDialog Exception ========");
             Log.e(TAG, ex.getMessage().toString());
         }
+    }
+
+    //	파렛트당 박스 수 입력 Dialog (최신 원본 ShipmentActivity.palletCountDialog, 개발/86)
+    public void palletCountDialog() {
+        final EditText edit_pallet = new EditText(mContext);
+        edit_pallet.setInputType(InputType.TYPE_CLASS_NUMBER);
+        edit_pallet.setText(String.valueOf(36)); // 기본 파렛트당 박스 수
+        edit_pallet.setSelectAllOnFocus(true);
+
+        new AlertDialog.Builder(mContext, R.style.AppCompatDialogStyle)
+                .setIcon(R.drawable.highland)
+                .setTitle("파렛트당 박스 수")
+                .setMessage("한 파렛트에 쌓는 박스 수를 입력하세요.")
+                .setView(edit_pallet)
+                .setCancelable(false)
+                .setPositiveButton("출력", (dialog, which) -> {
+                    int box_per_pallet = 0;
+                    try {
+                        box_per_pallet = Integer.parseInt(edit_pallet.getText().toString().trim());
+                    } catch (Exception ex) {
+                        box_per_pallet = 0;
+                    }
+
+                    if (box_per_pallet <= 0) {
+                        Toast.makeText(mContext.getApplicationContext(), "파렛트당 박스 수를 정확히 입력하세요.", Toast.LENGTH_SHORT).show();
+                        host.vibrate(1000);
+                        palletCountDialog();                                // 다시 입력받기
+                        return;
+                    }
+
+                    SumLabel.print(labelPrintHelper, list_gi_info, box_per_pallet, printerCallback);
+                })
+                .setNegativeButton("취소", (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     //	계근상품 삭제 Dialog
