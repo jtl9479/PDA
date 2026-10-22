@@ -12,10 +12,12 @@
 |------|------|
 | 호출 | `HTTP POST <BASE_URL>/<JSP명>.jsp` (`common/HttpHelper.java`), 인코딩 UTF-8 |
 | 로그인 파라미터 | `id`(사번), `pwd`(SHA-1 16진수), `companyCode`(20) |
-| 그 외 파라미터 | `data` — 조회는 **WHERE 조건 문자열**(예: `WHERE D.회사코드 = '20' AND D.출고일자 = '20261022' AND D.창고코드 = '…'`), 전송은 계근 패킷(7장)<br>`dbid` — 원본 시절 DB 구분값(`inno`/`highland`). 현재 JSP는 받기만 하고 쓰지 않는다(모든 JSP가 `common/db_connection.jsp` 하나로 접속) |
+| 그 외 파라미터 | `data` — 조회는 **조건 문자열**, 전송은 계근 패킷(7장)<br>· 출하대상: `" AND D.회사코드 = '20' AND D.출고일자 = '20261022' [AND D.창고코드 = '…']"` — JSP가 자기 WHERE 뒤에 그대로 붙인다<br>· 창고·바코드정보·기존 계근분: `" WHERE …"`로 시작<br>`dbid` — 원본 시절 DB 접속 계정명(`inno`/`highland`, 1·7은 `Inno`). 현재 JSP 11개가 읽기만 하고 접속에는 쓰지 않는다(모든 JSP가 `common/db_connection.jsp` 하나로 접속). 로그인 요청에는 보내지 않는다 |
 | 응답 (조회) | 행 구분 `;;`, 칸 구분 `::`. 앱은 `split("::", -1)`로 끝의 빈 칸까지 받는다 |
-| 응답 (전송) | `s` 성공 / `f` 실패 |
-| 응답 (로그인) | 성공 시 사번, 실패 시 `fail` |
+| 응답 (전송) | `s` 성공 / `f` 실패. 건별 JSP 3개는 실패 시 `f` 다음 줄에 예외 메시지를 붙이고, 5개 insert JSP 모두 실패 처리에서 자동 커밋 상태로 `rollback()`을 불러 다시 예외가 날 수 있다 → 실제 실패 응답은 `f`가 아니라 HTTP 500 등일 수 있다(원본 JSP와 같은 구조, 실제 실패 응답은 미확인) |
+| 일괄 전송 | `insert_goods_wet_new.jsp`는 자동 커밋이라 **행마다 바로 저장**된다. 중간에 실패하면 앞 행은 서버에 남고 PDA는 전부 'F'로 남아, 다시 보낼 때 중복될 수 있다 |
+| 응답 (로그인) | 성공 시 사번, 실패 시 `fail`. 앱은 응답이 정확히 `fail`일 때만 실패로 본다(빈 응답·통신 오류 문자열도 성공으로 처리) |
+| 앱 내부 결과값 | `ss`(불러온 행 전부 전송 완료), `af`(보낼 것 없음), `update_fail` 등은 JSP 응답이 아니라 앱이 만드는 값 |
 
 > 앱이 WHERE 조건을 만들어 보내고 JSP가 쿼리 뒤에 그대로 붙이는 구조(원본과 같음)라, 조회 조건을 바꿀 때는 **앱(`ProgressDlg*`)과 JSP를 함께** 봐야 한다. JSP 안에서 앱이 보낸 조건의 컬럼명을 바꿔 끼우는 경우도 있다(예: 비정량 바코드정보 `SBI.ITEM_CODE` → `SBI.품목코드`).
 
@@ -33,7 +35,7 @@
 | `search_homeplus_nonfixed.jsp` | 출하대상 | 5 | 〃 | 3장 | 읽기 |
 | `search_shipment_wholesale.jsp` | 출하대상 | 3 | 〃 | 3장 | 읽기 |
 | `search_shipment_lotte.jsp` | 출하대상 | 6 | 〃 | 3장 | 읽기 |
-| `search_production.jsp` | 출하대상(생산) | 1 | 〃 | `PD_생산작업지시`·`PD_생산작업지시소요량`·`PD_생산작업일보`·`PD_생산계근` 등 | 읽기 · **미사용** |
+| `search_production.jsp` | 출하대상(생산) | 1 | 〃 | `PD_생산작업지시`·`PD_생산작업지시소요량`·`PD_생산계근` 등 (`PD_생산작업일보` 조건은 **미커밋 작업본에만** 있음) | 읽기 · **미사용** |
 | `search_barcode_info.jsp` | 바코드정보 | 0·1·2·3·6·7 | `ProgressDlgBarcodeSearch` | `CO_품목코드` | 읽기 |
 | `search_barcode_info_nonfixed.jsp` | 바코드정보 | 4 | 〃 | `CO_품목코드` | 읽기 |
 | `search_homeplus_nonfixed2.jsp` | 바코드정보 | 5 | 〃 | `CO_품목코드` | 읽기 |
@@ -44,10 +46,10 @@
 | `insert_goods_wet_lotte.jsp` | 계근 전송 (건별) | 6 | 〃 | `SM_출고계근` (+박스순번) | **쓰기** |
 | `insert_goods_wet_new.jsp` | 계근 전송 (일괄) | 3·4·5 | 〃 | `SM_출고계근` | **쓰기** |
 | `insert_goods_wet_production.jsp` | 계근 전송(생산) | 1·7 | 〃 | `PD_생산계근` | 쓰기 · 미사용 |
-| `search_production_calc.jsp` | 생산 중량 계산 | — | `ProductionActivity` | `CO_품목코드` | 읽기 · 보류 |
+| `search_production_calc.jsp` | 생산 중량 계산 | — | `ProductionActivity` | `CO_품목코드` (**미커밋 작업본 기준**. 커밋된 `79c3480`은 아직 Oracle 테이블 `B_SUPPLIER_ITEM`·`S_BARCODE_INFO`) | 읽기 · 보류 |
 | `common/db_connection.jsp` | DB 접속 (모든 JSP가 include) | — | — | — | — |
 
-- 앱 `Common.java`에는 있지만 서버에 JSP가 없는 주소: `search_production_4label.jsp`(생산 라벨, 삭제), `update_shipment.jsp`(호출 제거, 개발/33), `insert_barcode_info.jsp`(호출 없음).
+- 앱 `Common.java`에는 있지만 서버에 JSP가 없는 주소: `search_production_4label.jsp`(생산 라벨, 삭제), `update_shipment.jsp`(계근 화면에서 호출 제거, 개발/33 — 진입 경로 없는 `ShipmentActivity`에는 호출 코드가 남아 있음), `insert_barcode_info.jsp`(호출 없음).
 
 ---
 
@@ -61,14 +63,15 @@
 | D | `SM_출고상세` | O | O | O | O |
 | L | `SM_출고LOT` | O | O | O | O |
 | I | `CO_품목코드` | O | O | O | O |
-| G / B / BC / G2 | `CO_거래처MASTER` (출고거래처·센터·최상위거래처) | G·B·BC·G2 | G·B·G2 | G | G·G2 |
+| G / B / BC / G2 | `CO_거래처MASTER` — G 출고거래처, G2 최상위 거래처(매핑용), 이마트 B 점포·BC 센터, 홈플러스 B 납품처(센터명으로 사용) | G·B·BC·G2 | G·B·G2 | G | G·G2 |
 | M1 / M2 | `CO_매출처품목코드매핑` (하위·최상위 거래처) | O | O | — | O |
 | ME / HE / LE | `SM_마트사발주이마트` / `SM_마트사발주홈플러스` / `SM_마트사발주롯데마트` | ME | HE | — | LE |
 | SD | `SM_수주상세` (납기일자) | 4만 | 5만 | — | O |
 | C / C1 | `CO_각종소분류코드` (용도명·원산지명) | O | C1 | — | — |
 | W | `SM_출고계근` (마지막 박스순번) | — | — | — | O |
 
-공통 조건: `D.회사코드`, `D.출고일자 = 작업일자`, `H.거래명세발행여부 = 'N'`, 마트사구분·타입구분(05 문서 1장), 창고(0·2·3·6).
+공통 조건: `D.회사코드`, `D.출고일자 = 작업일자`, **`D.출고수량 > 0`**, `H.거래명세발행여부 = 'N'`, 창고(0·2·3·6).
+마트별 조건: 이마트·홈플러스·롯데 `타입구분 = 'W'`, 이마트 비정량 `타입구분 = 'B'`, 홈플러스 비정량 **`바코드타입 = 'H5'`**, 도매 `원료육여부 = '1'`(매핑 미사용) — 마트사구분 포함 상세는 05 문서 1장.
 
 ### 3.2 공통 인덱스 0~23
 
@@ -101,7 +104,7 @@
 | 22 | STORE_IN_DATE | `H.출고일자` | `SD.납기일자` | `H.출고일자` | `SD.납기일자` | `D.출고일자` | `SD.납기일자` |
 | 23 | EMARTLOGIS_CODE | 매핑 물류코드, 비면 `'0000000'` | 〃 | `HE.납품처코드` | `''` | `'0000000'` | 매핑 물류코드 |
 
-> - 19 ITEM_TYPE은 **조회 조건의 타입구분과 다르다.** 조회는 `타입구분 = 'W'`로 걸러도 응답은 마트별 고정값(`HW`·`S`)을 보낸다. 앱은 이 값으로 바코드 중량 추출 방식을 고른다(05 문서 2.6).
+> - 19 ITEM_TYPE은 **조회 조건과 다른 값이 내려온다.** 홈플러스·롯데는 `W`로 걸러 `S`를, 이마트 비정량은 `B`로 걸러 `HW`를, 도매는 원료육 조건으로 걸러 `S`를, 홈플러스 비정량은 `H5`로 걸러 매핑 타입구분을 보낸다. 앱은 이 값으로 바코드 중량 추출 방식을 고른다(05 문서 2.6).
 > - 22 STORE_IN_DATE는 마트마다 원천이 다르다(04 문서 M4).
 > - "매핑"은 `CO_매출처품목코드매핑`을 하위 거래처(M1) → 최상위 거래처(M2) 순으로 찾은 값이다.
 
@@ -110,7 +113,7 @@
 | Idx | 이마트·이마트 비정량 (0·4) | 홈플러스 (2) | 홈플러스 비정량 (5) | 도매 (3) | 롯데 (6) |
 |:-:|------|------|------|------|------|
 | 24 | WH_AREA `B.창고구역` | **GI_L_ID** `L.SEQ` | WH_AREA `''` | **GI_L_ID** `L.SEQ` | WH_AREA `''` |
-| 25 | USE_NAME `C.명칭` | | USE_NAME `''` | | LAST_BOX_ORDER — 품목 기준 `SM_출고계근.박스순번`의 연속 구간 마지막 값, 없으면 0 |
+| 25 | USE_NAME `C.명칭` | | USE_NAME `''` | | LAST_BOX_ORDER — 패커상품코드(`W.ppCode = I.PPCODE`) 기준, 회사 전체 계근 이력의 `박스순번` 연속 구간 마지막 값(9999 다음 1 포함), 없으면 0 |
 | 26 | USE_CODE `I.제품용도` | | USE_CODE `''` | | **GI_L_ID** `L.SEQ` |
 | 27 | CT_NAME `C1.명칭` | | CT_NAME `C1.명칭` | | |
 | 28 | STORE_CODE `ME.점포코드` | | STORE_CODE `HE.납품처코드` | | |
@@ -131,7 +134,7 @@
 | 0 | PACKER_CLIENT_CODE | `패커코드` | `'이마트용'` / `'홈플러스용'` | |
 | 1 | PACKER_PRODUCT_CODE | `ppCode` | `품목코드` | 스캔 품목 매칭 키 |
 | 2 | PACKER_PRD_NAME | `''` | `품목명` | |
-| 3 | ITEM_CODE | `''` | `품목코드` | |
+| 3 | ITEMCODE (앱·로컬은 ITEM_CODE) | `''` | `품목코드` | |
 | 4 | ITEM_NAME_KR | `품목명` | `품목명` | 화면 품목명 |
 | 5 | BRAND_CODE | `''` | `'0000'` | |
 | 6 | BARCODEGOODS | `상품바코드` | `품목코드` | 상품코드 작업 매칭 |
@@ -147,7 +150,7 @@
 | 23 | MEMO | `''` | `'0000'` | |
 | 24 | SHELF_LIFE | 적용단위가 1이면 적용값×365, 2면 ×30, 그 외 적용값 (일수) | **없음 — 4·5는 파싱 안 함** | 소비기한 일수 |
 
-조회 조건: 앱이 출하대상의 패커상품코드 목록으로 `(SBI.PPCODE = … OR …) AND SBI.회사코드 = '20'`을 만들어 보낸다. 공통 JSP는 여기에 `ppCode != ''`(빈 행 제외)를 더 붙인다. 비정량 JSP는 `ITEM_CODE`를 `품목코드`로 바꿔 끼운다.
+조회 조건: 앱이 `" WHERE (… OR …) AND SBI.회사코드 = '20'"`을 만들어 보낸다. 괄호 안은 0·2·3·6이 출하대상 패커상품코드 목록(`SBI.PPCODE = …`), 4·5가 출하대상 품목코드 목록(`SBI.ITEM_CODE = …` — JSP가 `SBI.품목코드`로 바꿔 끼움)이다. 목록이 비면 `1=0`. 공통 JSP는 여기에 `ppCode != ''`(빈 행 제외)를 더 붙인다.
 
 ---
 
@@ -221,7 +224,7 @@
 | `TB_SHIPMENT` | 출하대상 | SHIPMENT_ID(PK), GI_D_ID, GI_L_ID, ITEM_CODE, ITEM_NAME, EMARTITEM_CODE, EMARTITEM, GI_REQ_PKG, GI_REQ_QTY, GI_REQ_DATE, BL_NO, BRAND_CODE, CLIENT_CODE, CLIENTNAME, CENTERNAME, ITEM_SPEC, CT_CODE, IMPORT_ID_NO, PACKER_CODE, PACKER_PRODUCT_CODE, BARCODE_TYPE, ITEM_TYPE, PACKWEIGHT, BARCODEGOODS, STORE_IN_DATE, EMARTLOGIS_CODE, SAVE_TYPE, WH_AREA, USE_NAME, USE_CODE, CT_NAME, STORE_CODE, EMART_PLANT_CODE, LAST_BOX_ORDER (34) |
 | `TB_BARCODE_INFO` | 바코드 규칙 | BARCODE_INFO_ID(PK), PACKER_CLIENT_CODE, PACKER_PRODUCT_CODE, PACKER_PRD_NAME, ITEM_CODE, ITEM_NAME_KR, BRAND_CODE, BARCODEGOODS, BASEUNIT, ZEROPOINT, PACKER_PRD_CODE_FROM, PACKER_PRD_CODE_TO, BARCODEGOODS_FROM, BARCODEGOODS_TO, WEIGHT_FROM, WEIGHT_TO, MAKINGDATE_FROM, MAKINGDATE_TO, BOXSERIAL_FROM, BOXSERIAL_TO, STATUS, REG_ID, REG_DATE, REG_TIME, MEMO, SHELF_LIFE (26) |
 | `TB_GOODS_WET` | 계근 내역 | GOODS_WET_ID(PK), GI_D_ID, GI_L_ID, WEIGHT, WEIGHT_UNIT, PACKER_PRODUCT_CODE, BARCODE, PACKER_CLIENT_CODE, MAKINGDATE, BOXSERIAL, BOX_CNT, EMARTITEM_CODE, EMARTITEM, ITEM_CODE, BRAND_CODE, REG_ID, REG_DATE, REG_TIME, **SAVE_TYPE**('F' 미전송 / 'Y' 전송·서버분), MEMO, DUPLICATE, CLIENT_TYPE, BOX_ORDER, 라벨 출력정보 11개(BARCODE_TYPE, LABEL_BARCODE1, LABEL_BARCODE2, PRINT_WEIGHT, EXPIRY_DATE, EXPIRY_TEXT, PRINT_IMPORT_ID_NO, PRINT_STORE_CODE, PRINT_ITEM_NAME, PRINT_POINT_NAME, PRINT_CENTER_NAME) (34) |
-| `TB_GOODS_WET_PRODUCTION_CALC` | 생산 중량 계산 | BARCODE 등 (보류 기능) |
+| `TB_GOODS_WET_PRODUCTION_CALC` | 생산 중량 계산 | BARCODE (1개, 보류 기능) |
 
 - 테이블은 로그인 때 없으면 만든다(`DBHandler.createquery*`). 라벨 출력정보 11개는 예전에 만든 기기에서도 로그인 때 자동으로 추가된다.
 - `DBHelper.onUpgrade`의 테이블 삭제 코드는 주석 처리돼 있다. 컬럼 구조를 크게 바꾸면 **앱을 지우고 다시 설치**하는 것을 전제로 한다(미전송 계근 주의).
@@ -229,7 +232,19 @@
 
 ---
 
-## 9. 작성 시 검증 기록 (2026-10-22)
+## 9. 알아둘 동작
+
+| 항목 | 내용 |
+|------|------|
+| NULL 값 | JSP는 NULL을 문자열 `"null"`로 보낸다(`rs.getString` + 문자열 연결). 로컬 저장 때 `Common.nullCheck`가 빈 값으로 바꾼다. 단 출하대상 5번(박스수)이 `"null"`이거나 한 행의 칸 수가 모자라면 파싱 예외로 **출하대상 저장 전체가 중단**되고 화면 안내는 없다 |
+| 작업 순서 | 로컬 목록은 받은 순서대로 쓰므로 JSP 정렬이 곧 작업 순서다 — 이마트·이마트 비정량 출고상세 SEQ, 홈플러스 납품처코드·PPCODE·품목명, 홈플러스 비정량 납품처코드·품목코드, 도매 출고상세 SEQ, 롯데 롯데마트 발주 SEQ |
+| 기존 계근분 조회 | 조건은 출고상세 SEQ 목록뿐(회사코드·LOT 조건 없음). 등록일자·시간(8·9번)은 받지만 로컬에는 기기의 현재 시각으로 저장. 박스순번은 `''`로 내려와 서버 값이 복원되지 않고, 라벨 출력정보 11개도 내려받지 않는다 |
+| 바코드정보 미저장 칸 | REG_DATE·REG_TIME·MEMO는 파싱하지만 로컬에 저장하지 않는다 (오류/23, 원본 동일) |
+| SQL 구성 | 조회 JSP와 로그인 JSP는 문자열을 이어 붙여 SQL을 만든다(바인딩 없음). insert JSP만 PreparedStatement를 쓴다 (02 문서 S5) |
+
+---
+
+## 10. 작성 시 검증 기록 (2026-10-22)
 
 | 검증 | 방법 | 결과 |
 |------|------|------|
